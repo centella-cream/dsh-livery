@@ -1,7 +1,0 @@
-export type CharterErrorCode = 'INVALID_ARGUMENT' | 'FORBIDDEN' | 'NOT_FOUND' | 'LIFECYCLE_MISMATCH' | 'REVISION_CONFLICT' | 'MUTATION_ID_REUSED' | 'INVALID_REFERENCE' | 'INVALID_TRANSITION' | 'IMMUTABLE_FIELD' | 'QUOTA_EXCEEDED' | 'CORRUPT_STATE' | 'UNAVAILABLE';
-export declare class CharterError extends Error {
-    readonly code: CharterErrorCode;
-    readonly details?: Readonly<Record<string, unknown>>;
-    constructor(code: CharterErrorCode, message: string, details?: Readonly<Record<string, unknown>>, options?: ErrorOptions);
-}
-export declare function charterError(code: CharterErrorCode, message: string, details?: Readonly<Record<string, unknown>>): CharterError;

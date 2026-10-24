@@ -8,7 +8,7 @@
  */
 import { useMemo, useState } from 'react'
 import type { CompiledLivery } from '../../core/types.js'
-import { formatNumber, formatRatio } from '../../i18n/index.js'
+import { formatNumber, formatList, formatRatio } from '../../i18n/index.js'
 import { writeClipboard, Button, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import { formatDiagnostics } from '../diagnostics.js'
 import {
@@ -20,6 +20,7 @@ import {
 } from '../model.js'
 import type { LiveryRuntimeSnapshot } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
+import { capabilityLabel } from './capability-names.js'
 
 /** Props of the self-check panel. */
 export interface SelfCheckProps {
@@ -28,6 +29,8 @@ export interface SelfCheckProps {
   /** Report whether a copy attempt succeeded (the page owns the toast). */
   readonly onCopyResult: (ok: boolean) => void
   readonly copyFailed: boolean
+  /** Start expanded (tests and future deep links); the page keeps it collapsed. */
+  readonly defaultOpen?: boolean
 }
 
 function findPresented(snapshot: LiveryRuntimeSnapshot): CompiledLivery | undefined {
@@ -42,8 +45,8 @@ function findPresented(snapshot: LiveryRuntimeSnapshot): CompiledLivery | undefi
  * @param props - panel properties; see {@link SelfCheckProps}.
  * @returns the panel element.
  */
-export function SelfCheck({ t, snapshot, onCopyResult, copyFailed }: SelfCheckProps): JSX.Element {
-  const [open, setOpen] = useState(false)
+export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen = false }: SelfCheckProps): JSX.Element {
+  const [open, setOpen] = useState(defaultOpen)
   const presented = useMemo(() => findPresented(snapshot), [snapshot])
   const counts = useMemo(() => countCapabilities(snapshot.capabilities), [snapshot.capabilities])
   const contractMissing = useMemo(
@@ -224,9 +227,16 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed }: SelfCheckPr
               ? <p className="livery-check__value">{t('check.none')}</p>
               : degraded.map(entry => (
                 <p key={`${entry.id}-${entry.fallback}`} className="livery-check__value">
-                  {entry.id}: {entry.fallback}
+                  {capabilityLabel(t, entry.id)} ({entry.id}): {entry.fallback}
                 </p>
               ))}
+            {degraded.length > 0 && snapshot.missingRequired.length === 0 && (
+              <p className="livery-check__value" data-testid="livery-optional-info">
+                {t('check.optionalInfo', {
+                  items: formatList(locale, degraded.map(entry => capabilityLabel(t, entry.id))),
+                })}
+              </p>
+            )}
           </div>
 
           <div className="livery-check__block">

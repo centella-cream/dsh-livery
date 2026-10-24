@@ -1,7 +1,24 @@
 # Phase 0 evidence — DSH 0.2.0-rc.2 boundary freeze
 
 Status: **complete for the Web Profile; desktop platforms remain uncertified.**
-Captured: 2026-10-24. Adapter: `dsh-0.2.0-rc.2-r1`.
+Captured: 2026-10-24, last updated 2026-10-25. Adapter: `dsh-0.2.0-rc.2-r1`.
+
+Final acceptance evidence: `docs/verification/acceptance-summary.md` and
+`artifacts/release/evidence-index.json`. Summary of outcomes for this Phase 0 freeze:
+
+- Contract, loader-ABI, token, layout and profile-schema classes are frozen and
+  re-verifiable (`pnpm contract:verify` → OK on the certified install).
+- First-frame injection is verified live in a real Web Profile boot: the injected
+  `<style id="dsh-livery-boot">` + body attribute script + `__DSH_LIVERY_BOOT__`
+  payload appear before app scripts, and the client adopts the style with zero CSS
+  writes (hash equality asserted in the acceptance run).
+- Capability table stands: theme-css / host-font-family / surface-material available;
+  density / transcript-width / message-flow unavailable and reported as degraded.
+- Isolated full acceptance: 110 pass / 0 fail / 3 expected skips / 2 warnings.
+  Real-profile-equivalent acceptance (clone of the user's Web Profile with
+  dsh-charter + dsh-context): 80 pass / 0 fail / 7 expected skips / 2 warnings.
+- Wallpaper stays removed from schemaVersion 1; Desktop/Edge stay pending in the
+  proposed support matrix and G6 is not claimed.
 
 ## 1. Fixrated installation
 

@@ -11,7 +11,7 @@
  *   gate:support-matrix -- --matrix <path> --version <v>
  *   gate:release        -- --matrix <path> --version <v>
  */
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -88,12 +88,14 @@ async function resolveInstallFlag(flags: ParsedArgs['flags']): Promise<string> {
     const candidate = join(dir, 'dsh')
     if (!existsSync(candidate)) continue
     try {
-      const real = resolve(candidate)
-      const packagesRoot = resolve(dirname(real), '..', '..')
-      const dshRoot = join(dirname(packagesRoot), '@deepseek-ai', 'dsh')
-      if (existsSync(join(dshRoot, 'package.json'))) return dshRoot
-      const nested = join(dirname(packagesRoot), 'dsh')
-      if (existsSync(join(nested, 'package.json'))) return nested
+      // The bin is usually a symlink into the package: `.../@scope/dsh/lib/bin.js`.
+      const real = realpathSync(candidate)
+      const parts = real.split('/')
+      const libIndex = parts.lastIndexOf('lib')
+      if (libIndex > 0) {
+        const dshRoot = parts.slice(0, libIndex).join('/')
+        if (existsSync(join(dshRoot, 'package.json'))) return dshRoot
+      }
     } catch {
       // keep looking
     }

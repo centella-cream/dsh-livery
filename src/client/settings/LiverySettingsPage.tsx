@@ -16,6 +16,7 @@ import {
   sortLiveries,
 } from '../model.js'
 import type { LiverySettingsPageProps } from '../platform.js'
+import { capabilityList } from './capability-names.js'
 import { Gallery } from './Gallery.js'
 import { SelfCheck } from './SelfCheck.js'
 
@@ -241,10 +242,20 @@ export function LiverySettingsPage({ runtime, t }: LiverySettingsPageProps): JSX
           )}
 
           {degraded && (
-            <div className="livery-notice livery-notice--warn" data-testid="livery-degraded" role="status">
+            <div className="livery-notice livery-notice--info" data-testid="livery-degraded" role="status">
               <div className="livery-notice__copy">
                 <span className="livery-notice__title">{t('state.degradedTitle')}</span>
                 <span className="livery-notice__body">{t('state.degradedBody')}</span>
+                {snapshot.invalidSkinId !== undefined && (
+                  <span className="livery-notice__body">
+                    {t('current.incompatible')}: {snapshot.invalidSkinId}
+                  </span>
+                )}
+                {snapshot.missingRequired.length > 0 && (
+                  <span className="livery-notice__body">
+                    {t('check.capabilities')}: {capabilityList(t, locale, snapshot.missingRequired)}
+                  </span>
+                )}
               </div>
             </div>
           )}

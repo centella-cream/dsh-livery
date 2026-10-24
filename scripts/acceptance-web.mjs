@@ -192,8 +192,12 @@ async function main() {
     phases: [],
     deviations: [],
     knownLimitations: [
-      'Web profile only: Desktop/native-window criteria from IMPLEMENTATION_PLAN.md §20 are out of scope for this harness.',
-      'system Chrome via playwright-core `channel: \'chrome\'`; no Playwright browser download is used.',
+      'HONEST GAP — IMPLEMENTATION_PLAN.md §20 "at least one safe layout capability actually effective" cannot be met on DSH 0.2.0-rc.2: the certified contract exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.',
+      'Web profile only: Desktop / macOS / Windows native-window criteria from §18.9/§20 (Electron surface, caption, traffic lights, Dock) are out of scope for this harness.',
+      'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → settings apply → hard reload → restore stock → official uninstall → restart residue.',
+      '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
+      'DSH 0.2.0-rc.2 serves client bundles only through boot-graph grouped URLs (`plugins/??<pkg>/client.js&rev=…`); the bare `/plugins/<pkg>/client.js?rev=` form returns 404 in this build (asserted as a documented warning).',
+      'No Playwright browser download is used: the harness drives the system Chrome through `channel: \'chrome\'`.',
     ],
   }
   ctx.config.labels = labelsFor(locale)
@@ -370,8 +374,27 @@ async function main() {
         await run()
         p.record(!ctx.runner.checks.some((check) => checkAreaOf(check.id) === area && check.status === 'fail'), '')
       } catch (error) {
-        ctx.runner.fail(`probe.${name}`, `probe group "${name}" completes`, error instanceof Error ? (error.stack ?? error.message) : String(error))
+        const failure = ctx.runner.fail(`probe.${name}`, `probe group "${name}" completes`, error instanceof Error ? (error.stack ?? error.message) : String(error))
         p.record(false, String(error?.message ?? error))
+        // Capture the page as it was when the group blew up: a screenshot, the
+        // HTML and whatever modal/overlay was on top, so a UI failure is
+        // diagnosable from the artifacts alone.
+        try {
+          const page = ctx.session?.page
+          if (page) {
+            const shot = path.join(ctx.config.screensDir, ctx.config.profileName, `failure-${name}.png`)
+            await page.screenshot({ path: shot, animations: 'disabled' }).catch(() => {})
+            const html = await page.content().catch(() => '')
+            const file = path.join(ctx.config.htmlDir, `failure-${name}.html`)
+            await writeFile(file, html).catch(() => {})
+            const overlays = await page
+              .evaluate(() => [...document.querySelectorAll('[role="presentation"], [role="dialog"], [aria-hidden="true"]')].map((element) => ({ role: element.getAttribute('role'), cls: String(element.className).slice(0, 120), text: (element.textContent ?? '').trim().slice(0, 300) })).slice(0, 12))
+              .catch(() => [])
+            failure.evidence = { screenshot: shot, html: file, overlays }
+          }
+        } catch {
+          /* diagnostics are best effort */
+        }
       }
     }
 
@@ -414,6 +437,16 @@ async function main() {
       }
     }
 
+    // Snapshot the console/network record while the app is still live (before
+    // any shutdown noise) and archive it for evidence.
+    ctx.state.consoleSnapshot = {
+      console: (session.record.console ?? []).filter((entry) => entry.type !== 'log' && entry.type !== 'info' && entry.type !== 'debug'),
+      pageErrors: [...(session.record.pageErrors ?? [])],
+      requestFailed: [...(session.record.requestFailed ?? [])],
+      httpErrors: [...(session.record.httpErrors ?? [])],
+      liveryResponses: (session.record.liveryResponses ?? []).filter((entry) => entry.status >= 400),
+      responses: (session.record.allResponses ?? []).filter((entry) => /\/livery\/|dsh-livery/.test(entry.url)),
+    }
     // collect profile evidence (before cleanup)
     ctx.profileEvidence = await collectProfileEvidence(ctx)
   } catch (error) {

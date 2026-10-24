@@ -99,17 +99,74 @@ export async function installFirstPaintRecorder(page) {
     // the count between the stock boot and the livery-active boot proves the
     // livery adds no document-wide observer (IMPLEMENTATION_PLAN.md §18.3/§20).
     const NativeObserver = window.MutationObserver
-    const observerStats = { wholeDocument: 0, observations: [] }
+    const observerStats = { wholeDocument: 0, liveryAttributed: 0, materializing: false, observations: [] }
     window.__LIVERY_OBSERVERS__ = observerStats
+    // Multiple client modules ship inside one combined batch script URL, so a
+    // stack frame cannot name the owning package. Wrap the loader registration
+    // instead: observers created synchronously while the Livery factory
+    // materializes are attributable even with shared batch URLs.
+    try {
+      let loaderValue
+      Object.defineProperty(window, '__ModuleLoader__', {
+        configurable: true,
+        get() { return loaderValue },
+        set(value) {
+          loaderValue = value
+          try {
+            if (value && typeof value.load === 'function' && !value.__liveryAttributionWrapped) {
+              const originalLoad = value.load.bind(value)
+              value.load = (registration) => {
+                let wrapped = registration
+                try {
+                  const id = typeof registration?.id === 'string' ? registration.id.replace(/\/client$/, '') : ''
+                  if (id === 'dsh-livery' && typeof registration.factory === 'function') {
+                    const factory = registration.factory
+                    wrapped = {
+                      ...registration,
+                      factory: (require) => {
+                        observerStats.materializing = true
+                        try {
+                          return factory(require)
+                        } finally {
+                          observerStats.materializing = false
+                        }
+                      },
+                    }
+                  }
+                } catch {
+                  wrapped = registration
+                }
+                return originalLoad(wrapped)
+              }
+              value.__liveryAttributionWrapped = true
+            }
+          } catch {
+            /* wrapping is diagnostics only */
+          }
+        },
+      })
+    } catch {
+      /* non-configurable loader in a future host build: delta check still works */
+    }
     if (typeof NativeObserver === 'function') {
       window.MutationObserver = class LiveryTrackedMutationObserver extends NativeObserver {
         observe(target, options) {
           try {
             if (target === document || target === document.documentElement || target === document.body) {
+              // Attribute the observer to its creator: the shell itself installs
+              // document-level observers, so only a stack naming the Livery
+              // bundle counts against the livery.
+              const stack = String(new Error().stack ?? '')
+              const liveryAttributed = observerStats.materializing === true
+                || /\/plugins\/\?\?dsh-livery\/client\.js/.test(stack)
+                || /\/plugins\/dsh-livery\/client\.js/.test(stack)
+              if (liveryAttributed) observerStats.liveryAttributed += 1
               observerStats.wholeDocument += 1
               observerStats.observations.push({
                 target: target === document ? 'document' : target === document.documentElement ? 'html' : 'body',
                 t: Math.round(performance.now()),
+                liveryAttributed,
+                stack: stack.split('\n').slice(1, 6).map((line) => line.trim()).join(' | ').slice(0, 500),
               })
             }
           } catch {
@@ -148,6 +205,17 @@ export async function installFirstPaintRecorder(page) {
 /** Read the first-paint rAF samples recorded for the current document. */
 export async function readFirstPaintSamples(page) {
   return page.evaluate(() => window.__LIVERY_FIRST_PAINT__ ?? null)
+}
+
+/** Whole-document MutationObserver attribution recorded for this document. */
+export async function readObserverReport(page) {
+  return page
+    .evaluate(() => {
+      const stats = window.__LIVERY_OBSERVERS__
+      if (!stats) return { wholeDocument: 0, liveryAttributed: 0, observations: [] }
+      return { wholeDocument: stats.wholeDocument, liveryAttributed: stats.liveryAttributed, observations: stats.observations }
+    })
+    .catch(() => ({ wholeDocument: 0, liveryAttributed: 0, observations: [] }))
 }
 
 /** Navigation timing + paint entries for the current document. */
@@ -200,7 +268,7 @@ export async function waitForBootGraph(page, { timeoutMs = 30_000 } = {}) {
 /** Dismiss the first-run welcome notice / API-key onboarding overlays. */
 export async function dismissFirstRunDialogs(page, { maxRounds = 8 } = {}) {
   const dismissed = []
-  const words = ['继续', '稍后配置', '关闭', '稍后', '跳过', 'Continue', 'Configure later', 'Later', 'Skip', 'Close', 'Got it']
+  const words = ['继续', '稍后配置', '保存并继续', '关闭', '稍后', '跳过', 'Continue', 'Configure later', 'Save and continue', 'Later', 'Skip', 'Close', 'Got it']
   for (let round = 0; round < maxRounds; round += 1) {
     const clicked = await page.evaluate((candidateWords) => {
       const isVisible = (element) => {
@@ -283,7 +351,16 @@ export async function openSettings(page, { timeoutMs = 20_000 } = {}) {
   }
   const trigger = settingsTrigger(page)
   if (!(await trigger.count())) throw new Error('settings trigger button not found')
-  await trigger.click({ timeout: timeoutMs })
+  try {
+    await trigger.click({ timeout: Math.min(timeoutMs, 8_000) })
+  } catch {
+    // Some first-run overlays leave a pointer-events mask over the shell even
+    // after their dismiss button is gone; a JS-level activation still opens the
+    // settings dialog (and never submits anything).
+    await page.keyboard.press('Escape').catch(() => {})
+    await dismissFirstRunDialogs(page)
+    await trigger.evaluate((element) => element.click()).catch(() => {})
+  }
   const dialog = settingsDialog(page).first()
   await dialog.waitFor({ state: 'visible', timeout: timeoutMs })
   return dialog

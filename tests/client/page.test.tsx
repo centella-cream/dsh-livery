@@ -26,11 +26,12 @@ vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
   }
 })
 import { LiverySettingsPage } from '../../src/client/settings/LiverySettingsPage.js'
+import { SelfCheck } from '../../src/client/settings/SelfCheck.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
 import type { LiveryPageProps } from '../../src/client/platform.js'
 import { enUS, zhCN } from '../../src/i18n/index.js'
-import { makeCatalog, TEST_CONTRACT_HASH } from './fixtures.js'
+import { makeCatalog, makeLivery, TEST_CONTRACT_HASH } from './fixtures.js'
 
 const IDENTITY = {
   adapterId: 'dsh-0.2.0-rc.2-r1',
@@ -165,6 +166,66 @@ describe('settings page server render', () => {
     expect(html).toContain('/livery/assets/previews/fjord-zh-light.svg')
     expect(html).toContain(zhCN['gallery.title'])
     expect(html).not.toContain(enUS['gallery.title'])
+  })
+
+  it('shows no degraded alert for optional-only capability fallbacks (certified behavior)', () => {
+    const html = render({
+      ...READY,
+      degraded: [
+        { id: 'host-density-tokens', reason: 'absent', fallback: 'host' },
+        { id: 'host-transcript-width', reason: 'absent', fallback: 'host' },
+        { id: 'host-message-flow', reason: 'absent', fallback: 'stock' },
+      ],
+    })
+    expect(html).not.toContain('data-testid="livery-degraded"')
+    expect(html).not.toContain(enUS['state.degradedTitle'])
+  })
+
+  it('renders a neutral information notice when a required capability is missing', () => {
+    const html = render({ ...READY, phase: 'degraded', missingRequired: ['theme-css'] })
+    expect(html).toContain('data-testid="livery-degraded"')
+    expect(html).toContain('livery-notice--info')
+    expect(html).not.toContain('livery-notice--warn')
+    expect(html).toContain('theme CSS')
+  })
+
+  it('explains an unknown configured skin id without alert styling', () => {
+    const html = render({
+      ...READY,
+      phase: 'degraded',
+      effectiveId: 'stock',
+      invalidSkinId: 'deleted-livery',
+    })
+    expect(html).toContain('data-testid="livery-degraded"')
+    expect(html).toContain('deleted-livery')
+  })
+
+  it('reports optional degradation inside the self-check panel only', () => {
+    const optionalCatalog = makeCatalog([
+      makeLivery('fjord', {
+        optional: ['host-density-tokens', 'host-transcript-width', 'host-message-flow'],
+      }),
+    ])
+    const snapshot = {
+      ...READY,
+      catalog: optionalCatalog,
+      capabilities: optionalCatalog.capabilities,
+    }
+    const html = renderToStaticMarkup(
+      <SelfCheck
+        t={translate(enUS)}
+        snapshot={snapshot}
+        onCopyResult={() => undefined}
+        copyFailed={false}
+        defaultOpen
+      />,
+    )
+    expect(html).toContain('data-testid="livery-optional-info"')
+    expect(html).toContain('density')
+    expect(html).toContain('conversation width')
+    expect(html).toContain('message flow')
+    // Required-capability alert must not appear for the normal host fallbacks.
+    expect(render(snapshot)).not.toContain('data-testid="livery-degraded"')
   })
 
   it('renders no unresolved dictionary keys', () => {

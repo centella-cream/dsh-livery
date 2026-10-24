@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-24T15:52:48.230Z",
+  "updatedAt": "2026-10-25T00:16:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
       "adapterId": "dsh-0.2.0-rc.2-r1",
       "contractHash": "sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce",
-      "status": "draft",
+      "status": "g0-g5-passed",
       "profiles": {
         "desktop": {
           "macos": "pending",
           "win32": "pending"
         },
         "web": {
-          "chrome": "pending",
+          "chrome": "passed",
           "edge": "pending"
         }
       },
@@ -28,9 +28,29 @@
         }
       ],
       "clientTarget": "chrome120",
-      "evidence": [],
+      "evidence": [
+        "artifacts/acceptance/probe.json",
+        "artifacts/acceptance/screens/web-chrome-dsh-livery/",
+        "artifacts/acceptance/filmstrip/web-chrome-dsh-livery/",
+        "artifacts/acceptance/real-profile-clone/probe.json",
+        "artifacts/abi/0.2.0-rc.2/loader.json",
+        "artifacts/contracts/0.2.0-rc.2/hashes.json",
+        "artifacts/contracts/0.2.0-rc.2/provenance.json",
+        "artifacts/liveries/report.json",
+        "artifacts/liveries/contrast.json",
+        "artifacts/liveries/token-coverage.json",
+        "artifacts/liveries/css-safety.json",
+        "docs/verification/phase0-contract.md",
+        "docs/verification/web-acceptance.md",
+        "docs/verification/web-acceptance-real-profile-clone.md"
+      ],
       "notes": [
-        "Phase 0 draft: static contract snapshot only until G0-G6 evidence is attached."
+        "G0-G2 passed: contract snapshot frozen (six hashes), adapter check, loader-ABI bundle test, unit/compiler/host/client suites, all CSS/token/contrast/build/pack gates.",
+        "G3 passed for the Web Profile lifecycle (official install -> boot -> disable/enable coverage in unit/runtime harness -> uninstall -> restart residue) using an isolated DSH_HOME and the official dsh plugin manager path.",
+        "G4/G5 Web/Chrome passed: 110/115 isolated acceptance checks pass, 0 fail, 3 expected skips, 2 documented warnings; real-profile-equivalent (byte-clone of the user's ~/.dsh/profiles/web with dsh-charter + dsh-context installed) reuse pass: 80 pass / 0 fail / 7 skips / 2 warnings on tarball sha256:3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb.",
+        "G6 is NOT claimed: desktop/macos and desktop/win32 are pending (native chrome/runtime not certified in this environment) and web/edge is pending. The formal support-matrix.json is intentionally absent until Phase 6.",
+        "Known \u00a720 gap: no host-level safe layout capability exists in DSH 0.2.0-rc.2 (density/transcript-width/message-flow degrade to host; self-check reports unavailable; no fake compensation). Wallpaper/custom import are out of schemaVersion 1.",
+        "Final tarball: dsh-livery-0.1.0.tgz sha256:3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb (162,024 B, 62 files, no dev CLIs, no host paths)."
       ]
     }
   ]

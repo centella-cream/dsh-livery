@@ -65,6 +65,7 @@ export const CLIENT_CSS = `
 .livery-notice{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 14px;padding:10px 14px;border:1px solid var(--lw-line);border-radius:9px;background:var(--lw-layer);font-size:12.5px;line-height:1.55}
 .livery-notice--error{border-color:var(--lw-err)}
 .livery-notice--warn{border-color:var(--lw-warn)}
+.livery-notice--info{border-color:var(--lw-line2);background:var(--lw-layer2)}
 .livery-notice__copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .livery-notice__title{font-weight:600}
 .livery-notice__body{color:var(--lw-2);overflow-wrap:anywhere}

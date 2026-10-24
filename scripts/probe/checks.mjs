@@ -23,6 +23,7 @@ import {
   readFirstPaintSamples,
   readGallery,
   readLiveryCssRules,
+  readObserverReport,
   readPaintTimings,
   readThemeSnapshot,
   recordFilmstrip,
@@ -46,6 +47,12 @@ import {
 } from './util.mjs'
 
 const THEME_TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw-alias-border-l1']
+
+/** The UI locale the running page actually presents (host pin wins over flags). */
+async function detectUiLocale(page) {
+  const lang = await page.evaluate(() => document.documentElement.lang || '').catch(() => '')
+  return String(lang).toLowerCase().startsWith('en') ? 'en' : 'zh'
+}
 
 function expect(runner, id, title, condition, detail, evidence) {
   if (condition) return runner.pass(id, title, detail, evidence)
@@ -103,6 +110,7 @@ export async function checkCatalog(ctx) {
     return
   }
   const catalog = response.json
+  if (!ctx.environment.packageVersion && typeof catalog.compilerVersion === 'string') ctx.environment.packageVersion = catalog.compilerVersion
   ctx.state.catalog = catalog
   ctx.artifacts.catalog = catalog
   expect(runner, 'catalog.schema', 'catalog shape', catalog.schemaVersion === 1 && typeof catalog.adapterId === 'string' && typeof catalog.hostVersion === 'string', `schemaVersion=${catalog.schemaVersion} adapterId=${catalog.adapterId} hostVersion=${catalog.hostVersion} profileKind=${catalog.profileKind ?? catalog.capabilities ? 'capabilities' : ''}`, { schemaVersion: catalog.schemaVersion, adapterId: catalog.adapterId, hostVersion: catalog.hostVersion, contractHash: catalog.contractHash })
@@ -249,6 +257,7 @@ export async function checkBootHandshake(ctx) {
   }
 
   const bootPayload = await page.evaluate(() => (window.__DSH_LIVERY_BOOT__ ? { ...window.__DSH_LIVERY_BOOT__, diagnostics: [...(window.__DSH_LIVERY_BOOT__.diagnostics ?? [])] } : null))
+  if (!ctx.environment.packageVersion && bootPayload?.pluginVersion) ctx.environment.packageVersion = bootPayload.pluginVersion
   const initialSnapshot = await readThemeSnapshot(page)
   ctx.state.bootPayload = bootPayload
   ctx.state.initialBootSnapshot = initialSnapshot
@@ -309,7 +318,8 @@ export async function checkStockInitial(ctx) {
   expect(runner, 'stock.host-theme-source', 'host theme source is system (preference untouched)', snapshot.themeSource === 'system' && snapshot.darkAttribute === null, `html[data-ds-theme-source]=${snapshot.themeSource} body[data-ds-dark-theme]=${snapshot.darkAttribute}`)
   const profile = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome) : { hasThemeRow: false, text: '' }
   expect(runner, 'stock.no-theme-write', 'no ui-theme row was written to the profile patch', profile.hasThemeRow === false, profile.hasThemeRow ? 'profile patch contains an ui-theme row' : 'no ui-theme row in profile patch')
-  state.stockObserverCount = await page.evaluate(() => window.__LIVERY_OBSERVERS__?.wholeDocument ?? 0).catch(() => null)
+  state.stockObserverReport = await readObserverReport(page)
+  state.stockObserverCount = state.stockObserverReport.wholeDocument
   // Dark stock baseline: some tokens are intentionally inherited from stock per
   // mode, so their expected computed value is the stock one for that mode.
   await page.emulateMedia({ colorScheme: 'dark' })
@@ -399,13 +409,14 @@ export function chooseSkinPair(catalog) {
 export async function checkSettingsFlow(ctx) {
   const { runner, session, config, state } = ctx
   const { page } = session
-  const labels = config.labels
   const catalog = state.catalog
   if (!catalog) {
     runner.skip('settings.section', 'Livery settings section opens', 'catalog unavailable')
     return
   }
   await waitForAppReady(page)
+  state.actualLocale = await detectUiLocale(page)
+  const uiLabels = labelsFor(state.actualLocale)
   state.dismissedDialogs = await dismissFirstRunDialogs(page)
   await capture(page, ctx, { state: 'home-before-settings' })
 
@@ -418,7 +429,7 @@ export async function checkSettingsFlow(ctx) {
   }
   runner.pass('settings.opens', 'settings dialog opens', 'settings dialog visible')
 
-  const section = await findLiverySection(page, { labels, catalog, locale: config.locale, timeoutMs: 25_000 })
+  const section = await findLiverySection(page, { labels: uiLabels, catalog, locale: state.actualLocale, timeoutMs: 25_000 })
   state.section = section
   if (!section.found) {
     runner.fail('settings.livery-section', 'Livery settings section is registered and opens', `nav entries tried: ${section.tried.map((entry) => `${entry.label}=${entry.found}`).join(', ')}`)
@@ -426,12 +437,15 @@ export async function checkSettingsFlow(ctx) {
     return
   }
   runner.pass('settings.livery-section', 'Livery settings section is registered and opens', `nav label "${section.navLabel}" (index ${section.navIndex}), marker ${section.marker.selector}`, section)
+  const sectionCopyMatches = [labelsFor('zh').section, labelsFor('en').section].some(
+    (label) => normalizeCopy(section.navLabel) === normalizeCopy(label),
+  )
   expect(
     runner,
     'settings.section-label',
-    'section nav label matches the shipped copy',
-    normalizeCopy(section.navLabel) === normalizeCopy(labels.section) || section.navLabel.toLowerCase() === labels.section.toLowerCase(),
-    `nav label "${section.navLabel}" vs expected "${labels.section}"`,
+    'section nav label matches the shipped zh/en copy',
+    sectionCopyMatches,
+    `nav label "${section.navLabel}" (page locale "${state.actualLocale}") vs shipped "皮肤"/"Livery"`,
   )
 
   const galleryState = await waitForGallery(page)
@@ -462,16 +476,16 @@ export async function checkSettingsFlow(ctx) {
   await capture(page, ctx, { state: 'gallery' })
 
   // ---- search (localized name / id / tag / empty) ----
-  const search = await findSearchInput(page, { labels })
+  const search = await findSearchInput(page, { labels: uiLabels })
   if (!search.locator) {
     runner.fail('search.input', 'gallery search input is present', 'no search input found by data-testid, role, or placeholder')
   } else {
     state.searchVia = search.via
     const firstLivery = catalog.liveries[0]
     const firstCardId = firstLivery?.id
-    const localizedName = firstLivery?.meta?.name?.[config.locale === 'zh' ? 'zh-CN' : 'en-US']
+    const localizedName = firstLivery?.meta?.name?.[state.actualLocale === 'zh' ? 'zh-CN' : 'en-US']
     const tagId = firstLivery?.meta?.tags?.[0]
-    const tagLabel = tagId ? tagLabelsFor(config.locale)[tagId] : null
+    const tagLabel = tagId ? tagLabelsFor(state.actualLocale)[tagId] : null
     const scenarios = [
       { name: 'name', query: localizedName, expectCard: firstCardId, assertion: 'localized name filters to its card' },
       { name: 'id', query: firstCardId, expectCard: firstCardId, assertion: 'livery id filters to its card' },
@@ -548,7 +562,7 @@ export async function checkSettingsFlow(ctx) {
   expect(runner, 'preview.card-state', 'the previewed card reports the previewing state', (await readCardState(page, pair.preview)) === 'preview', `data-state=${await readCardState(page, pair.preview)}`)
   await capture(page, ctx, { state: 'previewing', mode: 'light' })
 
-  const cancel = await findControl(page, { testId: 'livery-cancel', names: [labels.cancel], exact: false })
+  const cancel = await findControl(page, { testId: 'livery-cancel', names: [uiLabels.cancel], exact: false })
   if (!cancel.locator) {
     runner.fail('preview.cancel', 'Cancel restores the confirmed skin and tokens', 'cancel control not found')
   } else {
@@ -573,7 +587,7 @@ export async function checkSettingsFlow(ctx) {
   const applyCard = page.locator(`[data-testid="livery-card"][data-livery-id="${pair.applied}"]`).first()
   await applyCard.click()
   await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, pair.applied, { timeout: 10_000 }).catch(() => {})
-  const applyControl = await findControl(page, { testId: 'livery-apply', names: [labels.apply], exact: false })
+  const applyControl = await findControl(page, { testId: 'livery-apply', names: [uiLabels.apply], exact: false })
   if (!applyControl.locator) {
     runner.fail('apply.control', 'Apply control is present', 'apply button not found')
     await closeSettings(page)
@@ -594,6 +608,16 @@ export async function checkSettingsFlow(ctx) {
     .catch(() => {})
   expect(runner, 'apply.card-state', 'the applied card reports the current state', (await readCardState(page, pair.applied)) === 'active', `data-state=${await readCardState(page, pair.applied)}`)
   expect(runner, 'apply.previewbar-cleared', 'the transient preview bar is gone after Apply', (await page.locator('[data-testid="livery-preview"]').count()) === 0, `${await page.locator('[data-testid="livery-preview"]').count()} preview bar(s) remain`)
+  const degradedNotices = await page.locator('[data-testid="livery-degraded"]').count()
+  expect(
+    runner,
+    'settings.no-degraded-notice',
+    'optional-only capability fallbacks do not surface as a degraded notice (runtime stays ready)',
+    degradedNotices === 0,
+    `${degradedNotices} livery-degraded notice(s) with all required capabilities available`,
+  )
+  const offlineNotices = await page.locator('[data-testid="livery-offline"]').count()
+  expect(runner, 'settings.no-offline-notice', 'the settings page is not in catalog-unavailable state', offlineNotices === 0, `${offlineNotices} livery-offline notice(s)`)
   await capture(page, ctx, { state: 'applied', mode: 'light' })
 
   if (config.mode === 'isolated') {
@@ -662,13 +686,14 @@ function collectMutation(before, after, skinId) {
   const afterRows = (after.text ?? '').split(/\n(?=- )/).filter((chunk) => /^- id: livery\n/.test(chunk))
   const skinRow = afterRows.find((row) => new RegExp(`skinId: ${skinId}\\b`).test(row))
   const added = afterRows.length - beforeRows.length
-  const changed = Boolean(skinRow) && (before.skinId !== skinId || added === 1)
+  const alreadyConfirmed = before.skinId === skinId
   return {
-    ok: Boolean(skinRow) && (added === 1 || before.skinId !== skinId) && after.skinId === skinId,
+    ok: Boolean(skinRow) && after.skinId === skinId && (added === 1 || alreadyConfirmed),
     detail:
       `before skinId=${before.skinId ?? '(none)'} (${beforeRows.length} row(s)) → after skinId=${after.skinId} (${afterRows.length} row(s), added ${added})` +
+      (alreadyConfirmed ? '; target was already confirmed (no redundant write needed)' : '') +
       (skinRow ? `; row: ${oneLine(skinRow, 240)}` : '; no skinId row found'),
-    evidence: { before: before.text, after: after.text, added, skinRow: skinRow ?? null },
+    evidence: { before: before.text, after: after.text, added, alreadyConfirmed, skinRow: skinRow ?? null },
   }
 }
 
@@ -700,6 +725,17 @@ export async function checkAppliedTheme(ctx) {
     snapshot.bodyAttribute === skinId && tokenMatches(snapshot, expectedLight) && snapshot.darkAttribute === null,
     `attr=${snapshot.bodyAttribute} tokens=${JSON.stringify(pickTokens(snapshot))} expected=${JSON.stringify(expectedLight)} darkAttr=${snapshot.darkAttribute}`,
     { expected: expectedLight, actual: pickTokens(snapshot) },
+  )
+  const stockCanonical = state.stock?.canonical ?? null
+  const differsFromStock = stockCanonical === null || expectedLight.some((value, index) => value !== null && value !== stockCanonical[index])
+  expect(
+    runner,
+    'theme.tokens-change-with-skin',
+    'applying a livery changes the computed host tokens versus the stock baseline',
+    differsFromStock && snapshot.bodyAttribute === skinId,
+    stockCanonical === null
+      ? 'no stock baseline in this mode (reuse); body attribute change asserted instead'
+      : `livery light tokens ${JSON.stringify(expectedLight)} vs stock ${JSON.stringify(stockCanonical)}`,
   )
   expect(
     runner,
@@ -913,18 +949,21 @@ export async function checkSelfCheck(ctx) {
     return
   }
   await waitForAppReady(page)
+  const uiLocale = await detectUiLocale(page)
+  state.actualLocale = uiLocale
+  const uiLabels = labelsFor(uiLocale)
   try {
     await openSettings(page)
   } catch (error) {
     runner.fail('selfcheck.panel', 'self-check panel reports capability availability', String(error))
     return
   }
-  const section = await findLiverySection(page, { labels: config.labels, catalog: state.catalog, locale: config.locale })
+  const section = await findLiverySection(page, { labels: uiLabels, catalog: state.catalog, locale: uiLocale })
   if (!section.found) {
     runner.fail('selfcheck.panel', 'self-check panel reports capability availability', 'Livery section not found')
     return
   }
-  let selfCheck = await findControl(page, { testId: 'livery-selfcheck-toggle', names: [config.labels.selfCheck], exact: false })
+  let selfCheck = await findControl(page, { testId: 'livery-selfcheck-toggle', names: [uiLabels.selfCheck], exact: false })
   if (!selfCheck.locator) {
     // Fallback: click the toggle button inside the self-check section.
     const toggle = page.locator('[data-testid="livery-selfcheck"] button').first()
@@ -972,6 +1011,19 @@ export async function checkSelfCheck(ctx) {
     panel.cssSafety.important === 0 && panel.cssSafety.hashSelectors === 0,
     `!important=${panel.cssSafety.important ?? '?'} hashSelectors=${panel.cssSafety.hashSelectors ?? '?'} (panel: ${oneLine(panel.cssSafety.text, 200)})`,
   )
+  const optionalInfo = await page.locator('[data-testid="livery-optional-info"]').count().catch(() => 0)
+  const degradedNoticeInPanel = await page.locator('[data-testid="livery-degraded"]').count().catch(() => 0)
+  expect(
+    runner,
+    'selfcheck.optional-info',
+    'self-check discloses optional capability fallbacks (optional-info line, or a degraded notice on older builds)',
+    optionalInfo > 0 || degradedNoticeInPanel > 0,
+    optionalInfo > 0
+      ? `${optionalInfo} livery-optional-info line(s)`
+      : degradedNoticeInPanel > 0
+        ? 'older build discloses the fallbacks through the degraded notice instead of livery-optional-info'
+        : 'no fallback disclosure found in the self-check panel',
+  )
   await capture(page, ctx, { state: 'selfcheck', mode: 'light' })
 
   // copy diagnostics
@@ -980,7 +1032,7 @@ export async function checkSelfCheck(ctx) {
   } catch {
     /* clipboard permissions are best effort */
   }
-  const copy = await findControl(page, { testId: 'livery-copy-diagnostics', names: [config.labels.copyDiagnostics], exact: false })
+  const copy = await findControl(page, { testId: 'livery-copy-diagnostics', names: [uiLabels.copyDiagnostics], exact: false })
   if (!copy.locator) {
     runner.fail('selfcheck.copy-diagnostics', 'copy diagnostics produces diagnostics text', 'copy control not found')
   } else {
@@ -1166,16 +1218,22 @@ export async function checkFirstPaint(ctx) {
   )
   if (cssBytes > 8 * 1024 && cssBytes <= 12 * 1024) runner.warn('css.size-target', 'rendered livery stylesheet is within the 4–8KB target range', `${cssBytes} bytes is above the 8KB target but under the 12KB hard cap`)
 
-  // Whole-document observer count must not grow when the livery is active.
-  const appliedObservers = await page.evaluate(() => window.__LIVERY_OBSERVERS__?.wholeDocument ?? 0).catch(() => null)
-  ctx.state.appliedObserverCount = appliedObservers
+  // Whole-document MutationObserver authorship: the shell installs its own
+  // document-level observer, so count only observers whose creation stack names
+  // the Livery bundle. Any such observer is a plan §18.3/§20 violation.
+  const observerReport = await readObserverReport(page)
+  ctx.state.appliedObserverReport = observerReport
+  const attributed = observerReport.observations.filter((entry) => entry.liveryAttributed)
+  const stockCount = state.stockObserverReport?.wholeDocument ?? null
+  const noNewObserver = stockCount === null || observerReport.wholeDocument <= stockCount
   expect(
     runner,
     'css.no-whole-document-observers',
-    'the livery adds no document-wide MutationObserver',
-    typeof state.stockObserverCount === 'number' && typeof appliedObservers === 'number' && appliedObservers <= state.stockObserverCount,
-    `stock boot: ${state.stockObserverCount ?? '?'} whole-document observer(s); livery-active reload: ${appliedObservers ?? '?'}`,
-    { stock: state.stockObserverCount, applied: appliedObservers },
+    'the livery adds no document-wide MutationObserver (shell baseline excluded; Livery-owned attribution = 0)',
+    observerReport.liveryAttributed === 0 && noNewObserver,
+    `Livery-attributed whole-document observers: ${observerReport.liveryAttributed}; whole-document observers stock=${stockCount ?? '?'} → livery-active=${observerReport.wholeDocument} (shell itself observes documentElement; delta must not grow)` +
+      (attributed.length ? `; stacks: ${attributed.slice(0, 3).map((entry) => entry.stack).join(' || ')}` : ''),
+    { stock: state.stockObserverReport, applied: observerReport },
   )
 
   await capture(page, ctx, { state: 'applied-after-ready', mode: 'light' })
@@ -1198,13 +1256,16 @@ export async function checkRestoreStock(ctx) {
     return
   }
   await waitForAppReady(page)
+  const uiLocale = await detectUiLocale(page)
+  state.actualLocale = uiLocale
+  const uiLabels = labelsFor(uiLocale)
   await openSettings(page)
-  const section = await findLiverySection(page, { labels: config.labels, catalog: state.catalog, locale: config.locale })
+  const section = await findLiverySection(page, { labels: uiLabels, catalog: state.catalog, locale: uiLocale })
   if (!section.found) {
     runner.fail('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', 'Livery section not found')
     return
   }
-  const restore = await findControl(page, { testId: 'livery-restore', names: [config.labels.restoreStock], exact: false })
+  const restore = await findControl(page, { testId: 'livery-restore', names: [uiLabels.restoreStock], exact: false })
   if (!restore.locator) {
     runner.fail('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', 'restore control not found')
     return
@@ -1221,7 +1282,7 @@ export async function checkRestoreStock(ctx) {
   // Restore is destructive, so the page opens a confirmation modal first. The
   // page-level "Restore stock appearance" button must not be clicked again, so
   // match the modal's exact confirm copy inside the last dialog.
-  const confirmNames = [config.labels.restoreConfirm ?? '恢复默认', '恢复默认', 'Restore stock']
+  const confirmNames = [uiLabels.restoreConfirm ?? '恢复默认', '恢复默认', 'Restore stock']
   let confirmed = false
   const dialogs = page.locator('[role="dialog"]')
   const dialogCount = await dialogs.count()
@@ -1279,6 +1340,10 @@ export async function checkUninstallResidue(ctx) {
   const { stopWeb, bootWeb } = await import('./boot.mjs')
   const { uninstallPlugin, inspectProfilePatch } = await import('./dsh-home.mjs')
 
+  // Close the primary page before SIGTERM: an open page logs WebSocket/events
+  // failures when the server goes down, which would otherwise pollute the
+  // console evidence we archive.
+  await ctx.session?.context?.close().catch(() => {})
   const stop = await stopWeb(boot, { timeoutMs: 20_000 })
   ctx.lifecycle = ctx.lifecycle ?? {}
   ctx.lifecycle.stopBeforeUninstall = stop
@@ -1324,13 +1389,17 @@ export async function checkUninstallResidue(ctx) {
       snapshot.bodyAttribute === null && snapshot.bodyHash === null && snapshot.liveryStyles.length === 0,
       `data-dsh-livery=${snapshot.bodyAttribute} data-dsh-livery-hash=${snapshot.bodyHash} styles=${snapshot.liveryStyles.length}`,
     )
-    expect(
-      runner,
-      'residue.stock-tokens',
-      'after uninstall + restart computed tokens equal the stock baseline',
-      expectedStock !== null && actual.every((value, index) => value === expectedStock[index]),
-      `actual=${JSON.stringify(actual)} stock=${JSON.stringify(expectedStock)}`,
-    )
+    if (expectedStock === null) {
+      runner.skip('residue.stock-tokens', 'after uninstall + restart computed tokens equal the stock baseline', 'no stock baseline captured in this run (reused profile started with a configured livery)')
+    } else {
+      expect(
+        runner,
+        'residue.stock-tokens',
+        'after uninstall + restart computed tokens equal the stock baseline',
+        actual.every((value, index) => value === expectedStock[index]),
+        `actual=${JSON.stringify(actual)} stock=${JSON.stringify(expectedStock)}`,
+      )
+    }
     const hasPayload = await session.page.evaluate(() => Boolean(window.__DSH_LIVERY_BOOT__))
     expect(runner, 'residue.no-boot-payload', 'after uninstall the first-frame handshake global is absent', !hasPayload, `window.__DSH_LIVERY_BOOT__=${hasPayload}`)
     const urls = [

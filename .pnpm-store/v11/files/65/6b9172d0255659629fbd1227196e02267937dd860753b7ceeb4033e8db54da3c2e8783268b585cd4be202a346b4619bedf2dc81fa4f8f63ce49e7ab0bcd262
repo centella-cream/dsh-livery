@@ -1,8 +1,0 @@
-# DSH Livery profile patch.
-#
-# The entry id `livery` is a public contract: the client settings page reads and
-# writes this entry's config through `ctx.configForms.get('livery')`, and the
-# settings namespace is the same string. Renaming it breaks persisted config.
-- insert:
-    - id: livery
-      name: dsh-livery

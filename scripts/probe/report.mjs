@@ -155,16 +155,25 @@ export function buildProbeReport(ctx) {
 /** Persist console.json, timings.json (if not already), and probe.json. */
 export async function writeEvidence(ctx) {
   const record = ctx.session?.record ?? {}
-  const consoleEvidence = {
-    runId: ctx.runId,
-    urls: { baseUrl: redact(ctx.config.baseUrl ?? ''), reuse: ctx.config.reuseUrl ? redact(ctx.config.reuseUrl) : null },
-    console: (record.console ?? []).filter((entry) => entry.type !== 'log' && entry.type !== 'info' && entry.type !== 'debug'),
-    pageErrors: record.pageErrors ?? [],
-    requestFailed: record.requestFailed ?? [],
-    httpErrors: record.httpErrors ?? [],
-    liveryResponses: (record.liveryResponses ?? []).filter((entry) => entry.status >= 400),
-    liveryOwnedErrorCount: (record.console ?? []).filter((entry) => entry.type === 'error' && entry.liveryOwned).length,
-  }
+  const snapshot = ctx.state.consoleSnapshot
+  const consoleEvidence = snapshot
+    ? {
+        runId: ctx.runId,
+        capturedBeforeShutdown: true,
+        urls: { baseUrl: redact(ctx.config.baseUrl ?? ''), reuse: ctx.config.reuseUrl ? redact(ctx.config.reuseUrl) : null },
+        ...snapshot,
+        liveryOwnedErrorCount: (snapshot.console ?? []).filter((entry) => entry.type === 'error' && entry.liveryOwned).length,
+      }
+    : {
+        runId: ctx.runId,
+        urls: { baseUrl: redact(ctx.config.baseUrl ?? ''), reuse: ctx.config.reuseUrl ? redact(ctx.config.reuseUrl) : null },
+        console: (record.console ?? []).filter((entry) => entry.type !== 'log' && entry.type !== 'info' && entry.type !== 'debug'),
+        pageErrors: record.pageErrors ?? [],
+        requestFailed: record.requestFailed ?? [],
+        httpErrors: record.httpErrors ?? [],
+        liveryResponses: (record.liveryResponses ?? []).filter((entry) => entry.status >= 400),
+        liveryOwnedErrorCount: (record.console ?? []).filter((entry) => entry.type === 'error' && entry.liveryOwned).length,
+      }
   await writeJson(path.join(ctx.config.outDir, 'console.json'), consoleEvidence)
   if (!ctx.state.timingsWritten && ctx.state.firstPaint) {
     await writeJson(path.join(ctx.config.outDir, 'timings.json'), {
@@ -214,6 +223,90 @@ function groupedChecks(report) {
   return areas
 }
 
+/**
+ * IMPLEMENTATION_PLAN.md §20 criteria mapped to the checks that prove them in
+ * this Web-profile run. Rows without checks are out of scope or an honest gap
+ * and are reported as such, never faked.
+ */
+export const PLAN20_ROWS = [
+  {
+    criterion: 'Exact DSH 0.2.0-rc.2 install + certified contract hash',
+    checks: ['boot.graph-entry', 'bundle.serves-client-js', 'handshake.applied-boot', 'catalog.schema', 'catalog.livery-hashes'],
+  },
+  {
+    criterion: 'zh-CN + en-US settings UI and previews complete',
+    checks: ['settings.livery-section', 'settings.section-label', 'gallery.cards', 'search.name', 'keyboard.arrow-right', 'fonts.en-latin', 'locale.en-gallery', 'preview.previewing'],
+  },
+  {
+    criterion: 'At least 10 double-mode liveries',
+    checks: ['catalog.gallery-size', 'gallery.cards', 'previews.assets-served'],
+  },
+  {
+    criterion: 'Colour + host-level font-family actually effective (not just the settings page)',
+    checks: ['theme.light-tokens', 'theme.dark-tokens', 'fonts.zh-cjk', 'css.token-scoping'],
+  },
+  {
+    criterion: 'At least one safe layout capability actually effective',
+    checks: [],
+    note: 'HONEST GAP: DSH 0.2.0-rc.2 exposes no public density / transcript-width / message-flow hook. Livery degrades layout to host/stock and lists the unavailable capabilities in the self-check; no fake compensation is shipped. Wallpaper is removed from schema v1.',
+  },
+  {
+    criterion: 'Follows host light/dark without changing host preference',
+    checks: ['theme.dark-tokens', 'theme.light-restored', 'theme.host-preference', 'theme.host-preference-file'],
+  },
+  {
+    criterion: 'Startup filmstrip has no stock-style frame / no takeover flash',
+    checks: ['firstpaint.no-stock-frame', 'firstpaint.first-colour', 'handshake.body-hash-catalog'],
+  },
+  {
+    criterion: '0 !important, 0 hash-class selectors, 0 whole-document observers',
+    checks: ['css.no-important', 'css.no-hash-selectors', 'css.no-whole-document-observers', 'selfcheck.css-safety'],
+  },
+  {
+    criterion: 'All contrast gates pass',
+    checks: ['catalog.contrast-zero-failures', 'selfcheck.contrast'],
+  },
+  {
+    criterion: 'Preview is transient; Apply is one durable mutation; restore stock works',
+    checks: ['preview.cancel', 'apply.one-mutation', 'apply.persists', 'restore.stock', 'restore.persists'],
+  },
+  {
+    criterion: 'Browser trust / Origin / CSRF fence',
+    checks: ['boot.token-exchange', 'trust.bad-host-api-403', 'trust.cross-origin-403', 'trust.cross-site-403'],
+  },
+  {
+    criterion: 'Hard reload, multi-tab and service restart consistency',
+    checks: ['apply.persists', 'web.multi-tab', 'lifecycle.sigterm', 'lifecycle.final-stop'],
+  },
+  {
+    criterion: 'Uninstall leaves no runtime residue after restart',
+    checks: ['residue.no-boot-row', 'residue.no-dom', 'residue.no-boot-payload', 'residue.catalog-route', 'residue.old-bundle-url'],
+  },
+  {
+    criterion: 'Web layout at 1023px / 767px widths',
+    checks: ['web.no-overflow-1023', 'web.no-overflow-767'],
+  },
+  {
+    criterion: 'Performance budgets (bundle gzip, active CSS bytes, first paint)',
+    checks: ['bundle.gzip-budget', 'css.size-budget', 'firstpaint.paint-timings'],
+  },
+  {
+    criterion: 'Desktop / Windows / native chrome / wallpaper',
+    checks: [],
+    note: 'Out of scope: the Web harness has no Electron surface. Desktop/Windows certification belongs to the desktop rows of §18.9/§20.',
+  },
+]
+
+function plan20RowStatus(checkById, row) {
+  if (!row.checks.length) return { icon: '—', text: row.note ?? 'out of scope' }
+  const states = row.checks.map((id) => checkById.get(id)?.status)
+  if (states.some((status) => status === 'fail')) return { icon: '❌', text: row.note ?? 'failed checks present' }
+  if (states.some((status) => status === 'undefined' || status === 'skip')) {
+    return { icon: '⏭', text: row.note ?? 'not fully exercised in this run' }
+  }
+  return { icon: '✅', text: row.note ?? 'all mapped checks passed' }
+}
+
 /** Render the Markdown evidence report written into docs/verification/. */
 export function renderMarkdown(report, { title } = {}) {
   const { summary, environment, target } = report
@@ -248,7 +341,19 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push('')
   lines.push(`- boot ready: ${formatDuration(report.boot.readyMs)}; install via official profile package manager: ${formatDuration(report.boot.installMs)}`)
   lines.push('')
+  lines.push('## IMPLEMENTATION_PLAN.md §20 coverage (Web profile)')
+  lines.push('')
+  const checkById = new Map(report.checks.map((check) => [check.id, check]))
+  lines.push('| §20 criterion | result | mapped checks |')
+  lines.push('|---|---|---|')
+  for (const row of PLAN20_ROWS) {
+    const status = plan20RowStatus(checkById, row)
+    const mapped = row.checks.length ? row.checks.map((id) => `\`${id}\``).join(', ') : '—'
+    lines.push(`| ${escapeCell(row.criterion)} | ${status.icon} ${escapeCell(status.text)} | ${mapped} |`)
+  }
+  lines.push('')
   lines.push('## Checks')
+  lines.push('')
   lines.push('')
   const areas = groupedChecks(report)
   for (const [area, checks] of areas) {
@@ -281,6 +386,23 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push(`- filmstrip frames: \`${relativeToWorkspace(report.artifacts.filmstrip.dir)}\` (${report.artifacts.filmstrip.frames.length} frames)`)
   lines.push(`- HTML snapshots: \`${relativeToWorkspace(report.artifacts.htmlDir)}\``)
   lines.push('')
+  const lifecycle = report.evidence.lifecycle
+  if (lifecycle) {
+    lines.push('## Lifecycle')
+    lines.push('')
+    const stop1 = lifecycle.stopBeforeUninstall ?? {}
+    const uninstall = lifecycle.uninstall ?? {}
+    const boot2 = lifecycle.postUninstallBoot ?? {}
+    const stop2 = lifecycle.stopAfterResidue ?? {}
+    lines.push('| step | result |')
+    lines.push('|---|---|')
+    lines.push(`| SIGTERM stop before uninstall | exit ${stop1.exitCode ?? '?'}, port closed: ${stop1.portClosed}, ${formatDuration(stop1.shutdownMs)} |`)
+    lines.push(`| official \`dsh plugin remove\` | exit ${uninstall.exitCode ?? '?'}, dependency removed: ${uninstall.dependencyPresent === false}, bundle deselected: ${uninstall.bundleSelected === false}, ${formatDuration(uninstall.durationMs)} |`)
+    lines.push(`| fresh boot after uninstall | ready in ${formatDuration(boot2.readyMs)}, port ${boot2.port ?? '?'} |`)
+    lines.push(`| residue sweep (boot graph / DOM / routes / tokens) | see residue checks above |`)
+    lines.push(`| final SIGTERM | exit ${stop2.exitCode ?? '?'}, port closed: ${stop2.portClosed} |`)
+    lines.push('')
+  }
   const knownLimitations = report.evidence.knownLimitations ?? []
   if (knownLimitations.length) {
     lines.push('## Deviations / known limitations')

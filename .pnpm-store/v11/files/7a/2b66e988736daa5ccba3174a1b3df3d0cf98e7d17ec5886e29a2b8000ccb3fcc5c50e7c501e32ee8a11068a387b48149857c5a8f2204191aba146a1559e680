@@ -1,3 +1,0 @@
-import { type ToolDefinition } from '@deepseek-ai/dsh-tools';
-import type { CharterService } from './service.js';
-export declare function defineCharterReadTool(charter: CharterService): ToolDefinition;
