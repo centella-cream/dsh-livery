@@ -143,6 +143,9 @@ export interface LiveryVariantInput {
   readonly tokens?: TokenMap
 }
 
+/** Stable tag id shared by manifests and the tag dictionary. */
+export type TagId = string
+
 export interface TagDefinition {
   readonly id: TagId
   readonly label: LocalizedText

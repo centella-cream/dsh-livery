@@ -300,7 +300,7 @@ export async function scanTokenConsumers(packagesRoot: string): Promise<Map<stri
 
 export async function extractTokenContract(packagesRoot: string): Promise<TokenContract> {
   const sheets = await readThemeSheets(packagesRoot)
-  const { tokens: declared, dshVariables } = parseCssDeclarations(sheets)
+  const { tokens: declared } = parseCssDeclarations(sheets)
   const consumers = await scanTokenConsumers(packagesRoot)
 
   const values = new Map<string, string>()
@@ -384,17 +384,6 @@ export function extractPlatformModules(shellJs: string): string[] {
     if (name !== undefined) modules.push(name)
   }
   return modules
-}
-
-async function extractShellHtmlEvidence(packagesRoot: string): Promise<FileHash> {
-  return sha256File(join(packagesRoot, 'dsh-web-frontend', 'dist', 'index.html'))
-}
-
-async function extractThemeHostEvidence(packagesRoot: string): Promise<FileHash[]> {
-  return [
-    await sha256File(join(packagesRoot, 'dsh-client-ui-theme', 'lib', 'index.js')),
-    await sha256File(join(packagesRoot, 'dsh-client-ui-theme', 'lib', 'client.js')),
-  ]
 }
 
 async function collectLoaderAbi(packagesRoot: string): Promise<LoaderAbiContract> {
@@ -596,7 +585,11 @@ async function collectLayoutContract(
   const documentedAttributes = readmeSetDocumentedAttributes(readmes)
   const allReadmes = readmes.join('\n')
   const rootVariables = [...dshVariables.keys()].sort()
+  const tokenNames = new Set(tokenContract.tokens.map((token) => token.name))
   const capabilityFacts = {
+    themeCss: tokenContract.count > 0,
+    hostFontFamily: tokenNames.has('--dsw-font-family'),
+    surfaceMaterial: tokenNames.has('--dsw-elevation-panel') && tokenNames.has('--dsw-alias-bg-layer-1'),
     hostDensityTokens:
       allReadmes.includes('--dsh-density') ||
       allReadmes.includes('--dsh-chat-flow-gap') ||
@@ -605,15 +598,6 @@ async function collectLayoutContract(
     hostMessageFlow: allReadmes.includes('--dsh-chat-flow-gap'),
     documentedDarkAttribute: documentedAttributes.includes('data-ds-dark-theme'),
     themeSourceAttribute: documentedAttributes.includes('data-ds-theme-source'),
-  }
-  const tokens = new Set(tokenContract.tokens.map((token) => token.name))
-  const capabilities: ContractCapabilities = {
-    themeCss: tokens.size > 0,
-    hostFontFamily: tokens.has('--dsw-font-family'),
-    surfaceMaterial: tokens.has('--dsw-elevation-panel') && tokens.has('--dsw-alias-bg-layer-1'),
-    hostDensityTokens: capabilityFacts.hostDensityTokens,
-    hostTranscriptWidth: capabilityFacts.hostTranscriptWidth,
-    hostMessageFlow: capabilityFacts.hostMessageFlow,
   }
   const evidence = await Promise.all(
     readmePaths.map((path) => sha256File(join(packagesRoot, path))),
@@ -678,6 +662,7 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
   }
 
   const sheets = await readThemeSheets(install.packagesRoot)
+  // Layout root variables are part of the layout contract; re-derive from the same sheets.
   const { dshVariables } = parseCssDeclarations(sheets)
   const tokens = await extractTokenContract(install.packagesRoot)
   const loaderAbi = await collectLoaderAbi(install.packagesRoot)
@@ -687,9 +672,9 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
   const profileSchema = await collectProfileSchema(install.packagesRoot)
 
   const capabilities: ContractCapabilities = {
-    themeCss: tokens.count > 0,
-    hostFontFamily: tokens.tokens.some((token) => token.name === '--dsw-font-family'),
-    surfaceMaterial: tokens.tokens.some((token) => token.name === '--dsw-elevation-panel'),
+    themeCss: layout.capabilityFacts.themeCss === true,
+    hostFontFamily: layout.capabilityFacts.hostFontFamily === true,
+    surfaceMaterial: layout.capabilityFacts.surfaceMaterial === true,
     hostDensityTokens: layout.capabilityFacts.hostDensityTokens === true,
     hostTranscriptWidth: layout.capabilityFacts.hostTranscriptWidth === true,
     hostMessageFlow: layout.capabilityFacts.hostMessageFlow === true,

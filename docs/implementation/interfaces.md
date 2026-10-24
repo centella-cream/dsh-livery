@@ -97,12 +97,22 @@ another plugin's client module for values; collaborate through Cordis services.
 
 ## 4. Host ↔ Client handshake
 
+**Hash equality (frozen):** `renderBootCss(catalog, skinId).css` MUST be byte-identical
+to `renderStyleText(findLivery(catalog, skinId), catalog.capabilities)` for the same
+compiled livery, and `.hash` MUST equal `hashCss(css)`. No host-side wrapper, banner,
+comment, indentation or newline may be added. The client compares
+`hashCss(renderStyleText(livery, capabilities))` with `BootPayload.cssHash` and
+`body[data-dsh-livery-hash]`; equality triggers the zero-write adoption path.
+When `skinId === 'stock'` the host emits NO boot style and `cssHash = ''`.
+
 Host (`src/host/boot.ts`) contributes three `webserver/index-inject` rows when the
 pre-loader gate accepts the host:
 
-1. `{ kind: 'style', text: bootCss }` — `body[data-dsh-livery]` light/dark token pair,
-   `:root:lang()` font bindings and `@layer dsh-livery.compat` layout rules for the
-   active livery, all scoped under `body[data-dsh-livery="<id>"]`.
+1. `{ kind: 'html', placement: 'head', html: '<style id="dsh-livery-boot" data-plugin="dsh-livery" data-dsh-livery-hash="<hash>">' + bootCss + '</style>' }`
+   — `body[data-dsh-livery]` light/dark token pair, `:root:lang()` font bindings and
+   `@layer dsh-livery.compat` layout rules for the active livery, all scoped under
+   `body[data-dsh-livery="<id>"]`. The element carries the stable id + plugin marker so
+   the client can adopt it (rename, zero CSS-text writes) or remove it.
 2. `{ kind: 'global', name: '__DSH_LIVERY_BOOT__', value: BootPayload }`.
 3. `{ kind: 'html', placement: 'body', html: '<script>…setAttribute…</script>' }` —
    sets `body[data-dsh-livery]` and `body[data-dsh-livery-hash]` before app scripts.
@@ -120,6 +130,8 @@ Client (`src/client/runtime.ts`) reads `globalThis.__DSH_LIVERY_BOOT__`, fetches
   `bootPayload.cssHash`. Equal → adopt boot style (rename id) with zero CSS text
   writes. Different/invalid → one synchronous batch: replace style text, set body
   attributes, mark ready.
+- Unknown/deleted configured skin id: render stock visually (no automatic config
+  write), report the reason in self-check and offer an explicit "restore stock" action.
 - `previewing`: separate style element with the preview livery; body attribute set to
   the preview id; `cancelPreview()` removes it; `commitPreview()` performs one
   `configForms.mutate([{ op: 'set', path: ['skinId'], value: id }])`; failure rolls
@@ -134,11 +146,15 @@ Client (`src/client/runtime.ts`) reads `globalThis.__DSH_LIVERY_BOOT__`, fetches
   same-origin GET only; 405 otherwise. Read-only, no secrets.
 - `GET /livery/assets/previews/<file>.svg` → `image/svg+xml`, path is a whitelist
   lookup against `lib/previews/index.json` (no filesystem traversal). 404 on unknown.
+  File-name convention (frozen): `<id>-<zh|en>-<light|dark>.svg`, e.g.
+  `fjord-zh-light.svg`. The client derives the URL from this convention and falls back
+  to a token-swatch mockup on image error; `lib/previews/index.json` is the host's
+  authoritative whitelist.
 - Anything else: not handled by Livery.
 
 ## 6. Settings page contract (Client)
 
-Registered into slot `settings.section` with `id: 'livery'`, `order: 40`,
+Registered into slot `settings.section` with `id: 'livery'`, `order: 25`,
 `locale: LOCALE_NS`. Component receives `{ close }` owner props. States required:
 `loading`, stock, normal gallery, search-empty, thumbnail-error, incompatible livery,
 checking/self-check partial failure, previewing, write-failure, diagnostics-copied.
