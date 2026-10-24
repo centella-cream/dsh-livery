@@ -1,0 +1,9 @@
+node_modules/
+lib/
+artifacts/
+.tmp/
+*.tgz
+.DS_Store
+coverage/
+test-results/
+!generated/.gitkeep

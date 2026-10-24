@@ -1,0 +1,5 @@
+import { type CharterLimits } from './limits.js';
+import type { CharterItem, CharterObjective, CharterSnapshot } from './schemas.js';
+export { canonicalItems, compareCodeUnits, compareOrderedItems as compareItems, isDeliverable, isInvariant, isStandingItem, } from './items.js';
+export declare function validateState(revision: number, objective: CharterObjective | undefined, items: readonly CharterItem[]): void;
+export declare function assertStateQuota(snapshot: CharterSnapshot, limits: CharterLimits): void;

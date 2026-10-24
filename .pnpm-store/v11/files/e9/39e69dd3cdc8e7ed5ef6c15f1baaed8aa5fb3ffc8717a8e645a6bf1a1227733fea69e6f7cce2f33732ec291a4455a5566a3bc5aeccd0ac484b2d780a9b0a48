@@ -1,0 +1,43 @@
+import { CharterError } from './errors.js';
+import { type CharterLimits } from './limits.js';
+import type { CharterActor, CharterEditRequest, CharterRecord, CharterSnapshot, MutationReceipt } from './schemas.js';
+export interface CharterIdentity {
+    readonly createdAt: number;
+    readonly cwd?: string | undefined;
+    readonly parentSession?: string | undefined;
+}
+export interface CommitRecordInput {
+    readonly record: CharterRecord;
+    readonly request: CharterEditRequest;
+    readonly requestDigest: `sha256:${string}`;
+    readonly ids: Readonly<Record<string, string>>;
+    readonly actor: CharterActor;
+    readonly at: number;
+    readonly limits: CharterLimits;
+}
+export declare class MutationReplay extends Error {
+    readonly receipt: MutationReceipt;
+    constructor(receipt: MutationReceipt);
+}
+export declare class RevisionConflict extends Error {
+    readonly currentRevision: number;
+    constructor(currentRevision: number);
+}
+export declare function createEmptyRecord(identity: CharterIdentity, limits: CharterLimits): CharterRecord;
+export declare function requestDigestOf(request: CharterEditRequest, identity: CharterIdentity, actor: CharterActor): `sha256:${string}`;
+/**
+ * Validate record structure once per immutable record object.
+ *
+ * Quotas are deliberately excluded: they are admission policy for the next
+ * write, not an invariant of the stored data. `limits` stays in the signature
+ * for callers and future structure checks.
+ */
+export declare function assertRecordConsistency(record: CharterRecord, limits: CharterLimits): void;
+/** Admission policy for one new snapshot relative to the previous one. */
+export declare function assertSnapshotAdmission(previous: CharterSnapshot | undefined, next: CharterSnapshot, limits: CharterLimits): void;
+/** Admission policy for one new record relative to the previous one. */
+export declare function assertRecordAdmission(previous: CharterRecord | undefined, next: CharterRecord, limits: CharterLimits): void;
+/** Read-only policy state: the record is structurally valid but over budget. */
+export declare function isRecordOverBudget(record: CharterRecord, limits: CharterLimits): boolean;
+export declare function commitRecord(input: CommitRecordInput): CharterRecord;
+export declare function isExpectedControlError(error: unknown): error is CharterError | MutationReplay | RevisionConflict;

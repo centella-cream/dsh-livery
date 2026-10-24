@@ -1,0 +1,13 @@
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
+export declare const inject: string[];
+/**
+ * Stable high order for the Charter conversation view.
+ *
+ * Chat uses order 0 and Trajectory 10; common plugin tabs use 20/30. A fixed
+ * high order naturally follows them without ever re-registering the view, so
+ * two plugins that both try to stay "last" cannot reorder each other forever.
+ */
+export declare const CHARTER_VIEW_ORDER = 1000;
+export declare function apply(ctx: ClientContext): void;
+export { CharterPane } from './client/CharterPane.js';
+export { CharterClientController, CharterSessionSource } from './client/store.js';

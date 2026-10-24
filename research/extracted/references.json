@@ -1,0 +1,3635 @@
+{
+  "scanned": {
+    "packages": 285,
+    "files": 500,
+    "frontend": [
+      "index-BPHePDI_.css",
+      "vendor-BNsW4eBh.css"
+    ]
+  },
+  "dswReads": {
+    "--dsw-alias-label-tertiary": {
+      "count": 351,
+      "byPackage": {
+        "dsh-web-frontend": 40,
+        "dsh-client-ui-schedule": 32,
+        "dsh-client-ui-primitives": 29,
+        "dsh-client-ui-chat": 27,
+        "dsh-client-ui-trajectory": 21,
+        "dsh-client-ui-conversation": 16,
+        "dsh-client-ui-plugin-manager": 13,
+        "dsh-client-ui-deliverables": 12,
+        "dsh-client-ui-settings-account": 11,
+        "dsh-client-ui-shortcuts": 11,
+        "dsh-client-ui-workspace": 11,
+        "dsh-client-ui-settings-plugin-inventory": 10,
+        "dsh-client-ui-tool": 10,
+        "dsh-client-ui-cordis": 9,
+        "dsh-client-ui-jobs": 8,
+        "dsh-client-ui-subagent": 8,
+        "dsh-client-ui-agent-preset": 7,
+        "dsh-client-ui-settings-models": 7,
+        "dsh-experimental-client-ui-agent-team": 6,
+        "dsh-client-ui-input-trigger": 5,
+        "dsh-client-ui-sidebar-browser": 5,
+        "dsh-client-ui-user-questions": 5,
+        "dsh-experimental-client-ui-voice-input": 5,
+        "dsh-client-ui-directory-picker-browse": 4,
+        "dsh-client-ui-settings-subagent": 4,
+        "dsh-client-ui-sidebar-right": 4,
+        "dsh-client-ui-attachment": 3,
+        "dsh-client-ui-commands": 3,
+        "dsh-client-ui-message-feedback": 3,
+        "dsh-client-ui-settings-plugins": 3,
+        "dsh-client-ui-sidebar-files": 3,
+        "dsh-client-ui-goal": 2,
+        "dsh-client-ui-model-selection": 2,
+        "dsh-client-ui-permission-presets": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-sidebar-terminal": 2,
+        "dsh-client-ui-workflow-run": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-label-primary": {
+      "count": 344,
+      "byPackage": {
+        "dsh-web-frontend": 44,
+        "dsh-client-ui-trajectory": 31,
+        "dsh-client-ui-primitives": 30,
+        "dsh-client-ui-schedule": 22,
+        "dsh-client-ui-conversation": 16,
+        "dsh-client-ui-plugin-manager": 16,
+        "dsh-client-ui-agent-preset": 13,
+        "dsh-client-ui-settings-account": 12,
+        "dsh-client-ui-chat": 10,
+        "dsh-client-ui-directory-picker-browse": 10,
+        "dsh-client-ui-settings-models": 10,
+        "dsh-client-ui-user-questions": 9,
+        "dsh-client-ui-workspace": 8,
+        "dsh-client-ui-sidebar": 7,
+        "dsh-client-ui-sidebar-documentpreview": 7,
+        "dsh-client-ui-settings-plugin-inventory": 6,
+        "dsh-client-ui-shortcuts": 6,
+        "dsh-client-ui-subagent": 6,
+        "dsh-client-ui-theme": 6,
+        "dsh-client-ui-cordis": 5,
+        "dsh-client-ui-deliverables": 5,
+        "dsh-client-ui-settings-general": 5,
+        "dsh-client-ui-tool": 5,
+        "dsh-client-ui-commands": 4,
+        "dsh-client-ui-input-trigger": 4,
+        "dsh-client-ui-settings-plugins": 4,
+        "dsh-client-ui-settings-subagent": 4,
+        "dsh-client-ui-sidebar-browser": 4,
+        "dsh-client-ui-sidebar-terminal": 4,
+        "dsh-experimental-client-ui-agent-team": 4,
+        "dsh-client-ui-goal": 3,
+        "dsh-client-ui-jobs": 3,
+        "dsh-client-ui-message-feedback": 3,
+        "dsh-client-ui-model-selection": 3,
+        "dsh-client-ui-plan": 3,
+        "dsh-client-locale": 2,
+        "dsh-client-ui-attachment": 2,
+        "dsh-client-ui-permission-presets": 2,
+        "dsh-client-ui-sidebar-files": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-skill": 1
+      }
+    },
+    "--dsw-alias-label-secondary": {
+      "count": 261,
+      "byPackage": {
+        "dsh-web-frontend": 36,
+        "dsh-client-ui-trajectory": 28,
+        "dsh-client-ui-primitives": 24,
+        "dsh-client-ui-plugin-manager": 21,
+        "dsh-client-ui-chat": 19,
+        "dsh-client-ui-sidebar-documentpreview": 12,
+        "dsh-client-ui-user-questions": 11,
+        "dsh-client-ui-cordis": 9,
+        "dsh-client-ui-schedule": 9,
+        "dsh-client-ui-settings-models": 8,
+        "dsh-client-ui-tool": 7,
+        "dsh-client-ui-workspace": 7,
+        "dsh-client-ui-conversation": 6,
+        "dsh-client-ui-deliverables": 5,
+        "dsh-client-ui-shortcuts": 5,
+        "dsh-client-ui-agent-preset": 4,
+        "dsh-client-ui-jobs": 4,
+        "dsh-client-ui-settings-account": 4,
+        "dsh-experimental-client-ui-voice-input": 4,
+        "dsh-client-ui-directory-picker-browse": 3,
+        "dsh-client-ui-sidebar": 3,
+        "dsh-client-ui-sidebar-browser": 3,
+        "dsh-client-ui-sidebar-right": 3,
+        "dsh-client-ui-skill": 3,
+        "dsh-client-ui-workflow-run": 3,
+        "dsh-client-ui-model-selection": 2,
+        "dsh-client-ui-plan": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-sidebar-files": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-settings-session-log": 1,
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-client-ui-sidebar-terminal": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-experimental-client-ui-agent-team": 1,
+        "dsh-session-log-export": 1
+      }
+    },
+    "--dsw-alias-state-business-primary": {
+      "count": 183,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 33,
+        "dsh-web-frontend": 21,
+        "dsh-client-ui-schedule": 17,
+        "dsh-client-ui-primitives": 16,
+        "dsh-client-ui-conversation": 11,
+        "dsh-client-ui-plugin-manager": 10,
+        "dsh-client-ui-cordis": 9,
+        "dsh-client-ui-workspace": 8,
+        "dsh-client-ui-settings-account": 6,
+        "dsh-client-ui-settings-plugin-inventory": 6,
+        "dsh-client-ui-plan": 5,
+        "dsh-client-ui-shortcuts": 5,
+        "dsh-client-ui-user-questions": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-deliverables": 3,
+        "dsh-client-ui-workflow-run": 3,
+        "dsh-client-ui-directory-picker-browse": 2,
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-settings-models": 2,
+        "dsh-client-ui-sidebar": 2,
+        "dsh-client-ui-tool": 2,
+        "dsh-experimental-client-ui-agent-team": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-settings-plugins": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-experimental-client-ui-voice-input": 1
+      }
+    },
+    "--dsw-alias-interactive-bg-hover": {
+      "count": 155,
+      "byPackage": {
+        "dsh-client-ui-schedule": 16,
+        "dsh-web-frontend": 14,
+        "dsh-client-ui-trajectory": 11,
+        "dsh-client-ui-conversation": 9,
+        "dsh-client-ui-primitives": 9,
+        "dsh-client-ui-chat": 7,
+        "dsh-client-ui-workspace": 7,
+        "dsh-client-ui-deliverables": 6,
+        "dsh-client-ui-settings-account": 6,
+        "dsh-client-ui-cordis": 5,
+        "dsh-client-ui-sidebar": 5,
+        "dsh-client-ui-input-trigger": 4,
+        "dsh-client-ui-model-selection": 4,
+        "dsh-client-ui-plugin-manager": 4,
+        "dsh-client-ui-settings-models": 4,
+        "dsh-client-ui-shortcuts": 4,
+        "dsh-client-ui-user-questions": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-attachment": 3,
+        "dsh-client-ui-sidebar-documentpreview": 3,
+        "dsh-client-ui-subagent": 3,
+        "dsh-client-ui-theme": 3,
+        "dsh-client-ui-directory-picker-browse": 2,
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-open-in-app": 2,
+        "dsh-client-ui-permission-presets": 2,
+        "dsh-client-ui-settings-general": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-sidebar-files": 2,
+        "dsh-client-ui-sidebar-right": 2,
+        "dsh-client-locale": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-experimental-client-ui-voice-input": 1
+      }
+    },
+    "--dsw-alias-state-error-primary": {
+      "count": 130,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 15,
+        "dsh-client-ui-primitives": 13,
+        "dsh-web-frontend": 13,
+        "dsh-client-ui-plugin-manager": 12,
+        "dsh-client-ui-cordis": 7,
+        "dsh-client-ui-jobs": 7,
+        "dsh-client-ui-settings-models": 7,
+        "dsh-client-ui-tool": 7,
+        "dsh-client-ui-deliverables": 5,
+        "dsh-client-ui-settings-plugin-inventory": 5,
+        "dsh-client-ui-schedule": 4,
+        "dsh-client-ui-sidebar-browser": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-attachment": 3,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-workspace": 3,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-settings-subagent": 2,
+        "dsh-client-ui-skill": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-experimental-client-ui-agent-team": 1,
+        "dsh-experimental-client-ui-voice-input": 1
+      }
+    },
+    "--dsw-radius-sm": {
+      "count": 115,
+      "byPackage": {
+        "dsh-web-frontend": 19,
+        "dsh-client-ui-primitives": 11,
+        "dsh-client-ui-chat": 7,
+        "dsh-client-ui-conversation": 7,
+        "dsh-client-ui-workspace": 6,
+        "dsh-client-ui-jobs": 5,
+        "dsh-client-ui-plugin-manager": 5,
+        "dsh-client-ui-settings-models": 5,
+        "dsh-client-ui-agent-preset": 4,
+        "dsh-client-ui-sidebar-documentpreview": 4,
+        "dsh-client-ui-trajectory": 4,
+        "dsh-client-ui-deliverables": 3,
+        "dsh-client-ui-subagent": 3,
+        "dsh-client-ui-tool": 3,
+        "dsh-client-ui-directory-picker-browse": 2,
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-plan": 2,
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-settings-general": 2,
+        "dsh-client-ui-sidebar": 2,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-client-ui-workflow-run": 2,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-settings-plugin-inventory": 1,
+        "dsh-client-ui-sidebar-files": 1,
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-sidebar-terminal": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-focus-ring-color": {
+      "count": 108,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 17,
+        "dsh-web-frontend": 15,
+        "dsh-client-ui-schedule": 12,
+        "dsh-client-ui-primitives": 10,
+        "dsh-client-ui-plugin-manager": 6,
+        "dsh-client-ui-settings-account": 6,
+        "dsh-client-ui-settings-plugin-inventory": 5,
+        "dsh-client-ui-shortcuts": 5,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-deliverables": 3,
+        "dsh-client-ui-plan": 3,
+        "dsh-client-ui-workflow-run": 3,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-directory-picker-browse": 2,
+        "dsh-client-ui-sidebar": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-settings-plugins": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-tool": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-alias-label-caption": {
+      "count": 93,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 14,
+        "dsh-client-ui-cordis": 12,
+        "dsh-client-ui-chat": 11,
+        "dsh-client-ui-tool": 10,
+        "dsh-web-frontend": 7,
+        "dsh-client-ui-conversation": 5,
+        "dsh-client-ui-workspace": 5,
+        "dsh-client-ui-plugin-manager": 4,
+        "dsh-client-ui-schedule": 4,
+        "dsh-client-ui-directory-picker-browse": 3,
+        "dsh-client-ui-model-selection": 3,
+        "dsh-client-ui-agent-preset": 2,
+        "dsh-client-ui-input-trigger": 2,
+        "dsh-client-ui-skill": 2,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-alias-border-l2": {
+      "count": 86,
+      "byPackage": {
+        "dsh-web-frontend": 10,
+        "dsh-client-ui-trajectory": 9,
+        "dsh-client-ui-chat": 6,
+        "dsh-client-ui-schedule": 6,
+        "dsh-client-ui-tool": 6,
+        "dsh-client-ui-settings-account": 4,
+        "dsh-client-ui-sidebar-documentpreview": 4,
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-shortcuts": 3,
+        "dsh-client-ui-theme": 3,
+        "dsh-client-ui-user-questions": 3,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-jobs": 2,
+        "dsh-client-ui-settings-models": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-settings-subagent": 2,
+        "dsh-client-ui-subagent": 2,
+        "dsh-experimental-client-ui-agent-team": 2,
+        "dsh-client-locale": 1,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-settings-plugins": 1,
+        "dsh-client-ui-settings-session-log": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-client-ui-skill": 1
+      }
+    },
+    "--dsw-radius-md": {
+      "count": 86,
+      "byPackage": {
+        "dsh-web-frontend": 12,
+        "dsh-client-ui-plugin-manager": 10,
+        "dsh-client-ui-primitives": 8,
+        "dsh-client-ui-workspace": 6,
+        "dsh-client-ui-conversation": 5,
+        "dsh-client-ui-settings-account": 5,
+        "dsh-client-ui-model-selection": 4,
+        "dsh-client-ui-settings-models": 4,
+        "dsh-client-ui-sidebar": 3,
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-commands": 2,
+        "dsh-client-ui-settings-general": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-shortcuts": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-client-ui-workflow-run": 2,
+        "dsh-client-locale": 1,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-client-ui-sidebar-files": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-font-family": {
+      "count": 73,
+      "byPackage": {
+        "dsh-client-ui-theme": 55,
+        "dsh-client-ui-trajectory": 6,
+        "dsh-client-ui-conversation": 3,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-deliverables": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1
+      }
+    },
+    "--dsw-radius-lg": {
+      "count": 70,
+      "byPackage": {
+        "dsh-web-frontend": 13,
+        "dsh-client-ui-primitives": 10,
+        "dsh-client-ui-conversation": 5,
+        "dsh-client-ui-plugin-manager": 5,
+        "dsh-client-ui-settings-models": 5,
+        "dsh-client-ui-subagent": 4,
+        "dsh-client-ui-tool": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-deliverables": 3,
+        "dsh-client-ui-attachment": 2,
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-workspace": 2,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-settings-plugin-inventory": 1,
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-alias-border-l3": {
+      "count": 58,
+      "byPackage": {
+        "dsh-client-ui-schedule": 9,
+        "dsh-client-ui-settings-models": 5,
+        "dsh-client-ui-plugin-manager": 4,
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-deliverables": 3,
+        "dsh-client-ui-directory-picker-browse": 3,
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-cordis": 2,
+        "dsh-client-ui-layout": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-sidebar-terminal": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-sidebar-files": 1,
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-tool": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-alias-bg-layer-1": {
+      "count": 54,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 27,
+        "dsh-client-ui-primitives": 4,
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-schedule": 3,
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-settings-plugin-inventory": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1,
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-sidebar-terminal": 1,
+        "dsh-client-ui-subagent": 1
+      }
+    },
+    "--dsw-alias-border-l1": {
+      "count": 54,
+      "byPackage": {
+        "dsh-client-ui-conversation": 6,
+        "dsh-client-ui-tool": 6,
+        "dsh-client-ui-trajectory": 5,
+        "dsh-client-ui-chat": 4,
+        "dsh-client-ui-deliverables": 4,
+        "dsh-client-ui-schedule": 4,
+        "dsh-experimental-client-ui-voice-input": 3,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-cordis": 2,
+        "dsh-client-ui-input-trigger": 2,
+        "dsh-client-ui-jobs": 2,
+        "dsh-client-ui-plan": 2,
+        "dsh-client-ui-plugin-manager": 2,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-focus-ring-width": {
+      "count": 49,
+      "byPackage": {
+        "dsh-web-frontend": 10,
+        "dsh-client-ui-primitives": 7,
+        "dsh-client-ui-plugin-manager": 5,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-plan": 3,
+        "dsh-client-ui-settings-plugin-inventory": 3,
+        "dsh-client-ui-workflow-run": 3,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-directory-picker-browse": 2,
+        "dsh-client-ui-sidebar": 2,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-plugins": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-tool": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-alias-border-l4": {
+      "count": 47,
+      "byPackage": {
+        "dsh-web-frontend": 6,
+        "dsh-client-ui-cordis": 4,
+        "dsh-client-ui-plugin-manager": 4,
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-theme": 3,
+        "dsh-client-ui-workspace": 3,
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-open-in-app": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-schedule": 2,
+        "dsh-client-ui-settings-models": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-plugin-inventory": 1,
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-client-ui-tool": 1,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-alias-bg-base": {
+      "count": 45,
+      "byPackage": {
+        "dsh-web-frontend": 8,
+        "dsh-client-ui-schedule": 7,
+        "dsh-client-ui-conversation": 6,
+        "dsh-client-ui-layout": 4,
+        "dsh-client-ui-tool": 3,
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-cordis": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-client-ui-sidebar-terminal": 2,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-font-xs-13": {
+      "count": 37,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 13,
+        "dsh-client-ui-primitives": 7,
+        "dsh-web-frontend": 7,
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-tool": 3,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-scrollbar-bg-l2": {
+      "count": 36,
+      "byPackage": {
+        "dsh-client-ui-schedule": 4,
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-agent-preset": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-alias-scrollbar-hover-l2": {
+      "count": 36,
+      "byPackage": {
+        "dsh-client-ui-schedule": 4,
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-agent-preset": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-alias-state-success-primary": {
+      "count": 33,
+      "byPackage": {
+        "dsh-client-ui-primitives": 11,
+        "dsh-web-frontend": 10,
+        "dsh-client-ui-tool": 3,
+        "dsh-client-ui-trajectory": 3,
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-settings-models": 2,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-plugin-manager": 1
+      }
+    },
+    "--dsw-alias-bg-module-platform": {
+      "count": 29,
+      "byPackage": {
+        "dsh-client-ui-shortcuts": 4,
+        "dsh-client-ui-trajectory": 4,
+        "dsh-client-ui-settings-plugin-inventory": 3,
+        "dsh-client-ui-agent-preset": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-settings-models": 2,
+        "dsh-client-ui-theme": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-locale": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-client-ui-workflow-run": 1
+      }
+    },
+    "--dsw-alias-bg-layer-2": {
+      "count": 27,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 8,
+        "dsh-client-ui-sidebar-documentpreview": 4,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-plugin-manager": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-sidebar-browser": 2,
+        "dsh-experimental-client-ui-agent-team": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-markdown-code-block": {
+      "count": 27,
+      "byPackage": {
+        "dsh-web-frontend": 8,
+        "dsh-client-ui-primitives": 6,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-tool": 3,
+        "dsh-client-ui-cordis": 2,
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-shortcuts": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-radius-xl": {
+      "count": 26,
+      "byPackage": {
+        "dsh-client-ui-user-questions": 5,
+        "dsh-client-ui-attachment": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-chat": 3,
+        "dsh-client-ui-plugin-manager": 2,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-elevation-prominent": {
+      "count": 23,
+      "byPackage": {
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-schedule": 3,
+        "dsh-client-ui-sidebar-documentpreview": 2,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-general": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-radius-xs": {
+      "count": 22,
+      "byPackage": {
+        "dsh-client-ui-input-trigger": 3,
+        "dsh-client-ui-user-questions": 3,
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-workspace": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-open-in-app": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-state-warn-label": {
+      "count": 20,
+      "byPackage": {
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-sidebar-documentpreview": 3,
+        "dsh-client-ui-trajectory": 3,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-tool": 2,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-skill": 1
+      }
+    },
+    "--dsw-alias-state-warn-primary": {
+      "count": 19,
+      "byPackage": {
+        "dsh-client-ui-primitives": 7,
+        "dsh-web-frontend": 6,
+        "dsh-client-ui-plugin-manager": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-tool": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-alias-state-warn-tertiary": {
+      "count": 18,
+      "byPackage": {
+        "dsh-client-ui-plugin-manager": 3,
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-sidebar-documentpreview": 3,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-sidebar-browser": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-specific-menu": {
+      "count": 18,
+      "byPackage": {
+        "dsh-client-ui-jobs": 4,
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-schedule": 3,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-experimental-client-ui-agent-team": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-bg-layer-3": {
+      "count": 17,
+      "byPackage": {
+        "dsh-client-ui-plugin-manager": 6,
+        "dsh-web-frontend": 4,
+        "dsh-client-ui-agent-preset": 3,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-sidebar-documentpreview": 2
+      }
+    },
+    "--dsw-static-neutral-bluish-00": {
+      "count": 17,
+      "byPackage": {
+        "dsh-client-ui-theme": 15,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-menu-backdrop-filter": {
+      "count": 16,
+      "byPackage": {
+        "dsh-client-ui-conversation": 3,
+        "dsh-client-ui-schedule": 3,
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-subagent": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-font-xxs-12": {
+      "count": 15,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 8,
+        "dsh-client-ui-chat": 4,
+        "dsh-client-ui-sidebar-browser": 3
+      }
+    },
+    "--dsw-font-markdown-code-block": {
+      "count": 15,
+      "byPackage": {
+        "dsh-web-frontend": 7,
+        "dsh-client-ui-primitives": 6,
+        "dsh-client-ui-deliverables": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1
+      }
+    },
+    "--dsw-alias-brand-primary-new-colorprimary-new-color": {
+      "count": 14,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 6,
+        "dsh-client-ui-settings-general": 4,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-alias-interactive-bg-hover-danger": {
+      "count": 13,
+      "byPackage": {
+        "dsh-client-ui-settings-models": 3,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-schedule": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1
+      }
+    },
+    "--dsw-elevation-panel": {
+      "count": 13,
+      "byPackage": {
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-experimental-client-ui-agent-team": 1
+      }
+    },
+    "--dsw-specific-input-major": {
+      "count": 12,
+      "byPackage": {
+        "dsh-client-ui-attachment": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-alias-brand-primary": {
+      "count": 12,
+      "byPackage": {
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-subagent": 1
+      }
+    },
+    "--dsw-alias-link": {
+      "count": 12,
+      "byPackage": {
+        "dsh-web-frontend": 6,
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-client-ui-workflow-run": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-static-deepseek-500": {
+      "count": 12,
+      "byPackage": {
+        "dsh-client-ui-theme": 6,
+        "dsh-client-ui-primitives": 3,
+        "dsh-web-frontend": 3
+      }
+    },
+    "--dsw-static-neutral-bluish-800": {
+      "count": 12,
+      "byPackage": {
+        "dsh-client-ui-theme": 12
+      }
+    },
+    "--dsw-alias-border-l2-darkmode-thin": {
+      "count": 11,
+      "byPackage": {
+        "dsh-client-ui-attachment": 5,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-label-primary-inverted": {
+      "count": 11,
+      "byPackage": {
+        "dsh-client-ui-primitives": 7,
+        "dsh-client-ui-attachment": 3,
+        "dsh-client-ui-sidebar": 1
+      }
+    },
+    "--dsw-alias-label-primary-foreground": {
+      "count": 11,
+      "byPackage": {
+        "dsh-client-ui-primitives": 3,
+        "dsh-web-frontend": 3,
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-alias-interactive-bg-hover-solid": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-tool": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-skill": 1,
+        "dsh-experimental-client-ui-voice-input": 1
+      }
+    },
+    "--dsw-font-markdown-code-block-small": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-tool": 4,
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-cordis": 2,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-skill": 1
+      }
+    },
+    "--dsw-alias-label-dimmed": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-model-selection": 2,
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-permission-presets": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-client-ui-user-questions": 1,
+        "dsh-client-ui-workspace": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-radius-panel": {
+      "count": 10,
+      "byPackage": {
+        "dsh-web-frontend": 5,
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-message-feedback": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-general": 1
+      }
+    },
+    "--dsw-specific-sidebar-fill": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-layout": 6,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-50": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-theme": 10
+      }
+    },
+    "--dsw-static-neutral-bluish-850": {
+      "count": 10,
+      "byPackage": {
+        "dsh-client-ui-theme": 10
+      }
+    },
+    "--dsw-static-neutral-bluish-750": {
+      "count": 9,
+      "byPackage": {
+        "dsh-client-ui-theme": 9
+      }
+    },
+    "--dsw-static-neutral-00": {
+      "count": 8,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 4,
+        "dsh-client-ui-primitives": 3,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-button-primary-fill": {
+      "count": 8,
+      "byPackage": {
+        "dsh-client-ui-message-feedback": 2,
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-models": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-400": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-theme": 5,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-conversation": 1
+      }
+    },
+    "--dsw-alias-menu-icon": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-input-trigger": 3,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-bg-skeleton": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 2,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-settings-plugin-inventory": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-static-deepseek-400": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-theme": 5,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-sidebar-documentpreview": 7
+      }
+    },
+    "--dsw-static-neutral-bluish-100": {
+      "count": 7,
+      "byPackage": {
+        "dsh-client-ui-theme": 7
+      }
+    },
+    "--dsw-font-mono": {
+      "count": 6,
+      "byPackage": {
+        "dsh-client-ui-agent-preset": 2,
+        "dsh-client-ui-plugin-manager": 2,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-sidebar-documentpreview": 1
+      }
+    },
+    "--dsw-mask-blur": {
+      "count": 6,
+      "byPackage": {
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-general": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-1000": {
+      "count": 6,
+      "byPackage": {
+        "dsh-client-ui-theme": 6
+      }
+    },
+    "--dsw-alias-settings-card-stroke": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-models": 1
+      }
+    },
+    "--dsw-alias-settings-card-fill": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-settings-plugin-inventory": 2,
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-models": 1
+      }
+    },
+    "--dsw-alias-state-business-tertiary": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-plan": 2,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-alias-button-ghost-active-fill": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-schedule": 2,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-neutral-50": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-850": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-800": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-schedule": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-interactive-bg-active": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-client-ui-trajectory": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-bg-mask-1": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-settings-general": 1
+      }
+    },
+    "--dsw-static-blue-500": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-primitives": 1
+      }
+    },
+    "--dsw-font-xxxs-11": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-sidebar-browser": 4,
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-700": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-theme": 5
+      }
+    },
+    "--dsw-static-neutral-bluish-60": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-theme": 5
+      }
+    },
+    "--dsw-static-neutral-bluish-75": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-theme": 5
+      }
+    },
+    "--dsw-elevation-stroke": {
+      "count": 5,
+      "byPackage": {
+        "dsh-client-ui-theme": 3,
+        "dsh-experimental-client-ui-agent-team": 2
+      }
+    },
+    "--dsw-font-xs-strong-13": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 3,
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-label-primary-dimmed": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-100": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 2,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-schedule": 1
+      }
+    },
+    "--dsw-alias-button-primary-hover": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-settings-account": 1,
+        "dsh-client-ui-settings-models": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-state-success-tertiary": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-green-500": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-amber-400": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-300": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-amber-500": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-deepseek-450": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-shadow-lv3": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2
+      }
+    },
+    "--dsw-menu-surface-fill": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-button-ghost-active-border": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-schedule": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-markdown-code-block-banner": {
+      "count": 4,
+      "byPackage": {
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-skill": 1
+      }
+    },
+    "--dsw-alias-tooltip-key-bg": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-primitives": 2,
+        "dsh-web-frontend": 2
+      }
+    },
+    "--dsw-alias-tooltip-bg": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-state-error-secondary": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 3,
+        "dsh-client-ui-primitives": 1
+      }
+    },
+    "--dsw-font-family-brand": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 4
+      }
+    },
+    "--dsw-static-neutral-bluish-900": {
+      "count": 4,
+      "byPackage": {
+        "dsh-client-ui-theme": 4
+      }
+    },
+    "--dsw-alias-state-warn-secondary": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-approval": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-shortcuts": 1
+      }
+    },
+    "--dsw-alias-button-contrast-fill": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-attachment": 3
+      }
+    },
+    "--dsw-specific-bubble": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-alias-button-floating-fill": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-plan": 1,
+        "dsh-client-ui-tool": 1
+      }
+    },
+    "--dsw-alias-button-floating-hover": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-chat": 1,
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-tool": 1
+      }
+    },
+    "--dsw-alias-scrollbar-bg-l1": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-conversation": 2,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-elevation-soft": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-button-info-fill": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1,
+        "dsh-client-ui-directory-picker-browse": 1,
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-alias-state-success-secondary": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-shortcuts": 1
+      }
+    },
+    "--dsw-static-red-600": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-theme": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-static-neutral-200": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-sidebar-right": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-950": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 3
+      }
+    },
+    "--dsw-static-neutral-bluish-600": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 3
+      }
+    },
+    "--dsw-static-neutral-300": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 3
+      }
+    },
+    "--dsw-static-red-400": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 3
+      }
+    },
+    "--dsw-static-neutral-600": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 3
+      }
+    },
+    "--dsw-alias-label-quaternary": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-agent-preset": 1,
+        "dsh-client-ui-sidebar-browser": 1
+      }
+    },
+    "--dsw-alias-border-inverted": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-specific-selector": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1,
+        "dsh-experimental-client-ui-voice-input": 1
+      }
+    },
+    "--dsw-alias-fill-l1": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-jobs": 2
+      }
+    },
+    "--dsw-alias-fill-l2": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-jobs": 2
+      }
+    },
+    "--dsw-alias-button-tool-bar-fill": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-button-tool-bar-hover": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-code-diff-deleted": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-code-diff-added": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-hovercard-bg": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-menu-group-header-fill": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-state-idle-primary": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-switch-thumb": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-label-shimmer": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-toast-bg": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-toast-label": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-code-font-family": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-onboarding-secondary-fill": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 2
+      }
+    },
+    "--dsw-alias-onboarding-accent": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 2
+      }
+    },
+    "--dsw-alias-bg-layer-4": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-settings-subagent": 1,
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-button-elevated-fill": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-sidebar": 1,
+        "dsh-client-ui-workspace": 1
+      }
+    },
+    "--dsw-alias-bg-document-preview": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-sidebar-documentpreview": 2
+      }
+    },
+    "--dsw-static-neutral-700": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-sidebar-right": 1,
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-bg-l2": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-sidebar-terminal": 2
+      }
+    },
+    "--dsw-static-neutral-bluish-150": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-theme": 2
+      }
+    },
+    "--dsw-static-blue-950": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-theme": 2
+      }
+    },
+    "--dsw-static-deepseek-100": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-theme": 2
+      }
+    },
+    "--dsw-static-green-400": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-theme": 2
+      }
+    },
+    "--dsw-static-amber-600": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-theme": 2
+      }
+    },
+    "--dsw-alias-fill-tsp-secondary": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-agent-preset": 1
+      }
+    },
+    "--dsw-shadow-lv2": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-approval": 1
+      }
+    },
+    "--dsw-alias-bg-mask-drop": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-attachment": 1
+      }
+    },
+    "--dsw-font-l-20": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-attachment": 1
+      }
+    },
+    "--dsw-font-s-14": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-attachment": 1
+      }
+    },
+    "--dsw-alias-fill-tertiary": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-attachment": 1
+      }
+    },
+    "--dsw-alias-label-deep-diving-shimmer": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-label-deep-diving": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-turn-trigger-bg": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-turn-trigger-bg-hover": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-separator-primary": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-label-primary-bluish": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1
+      }
+    },
+    "--dsw-static-blue-450": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1
+      }
+    },
+    "--dsw-alias-button-info-hover": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-conversation": 1
+      }
+    },
+    "--dsw-alias-file-diff-added-gutter": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-file-diff-added-marker": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-file-diff-added-bg": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-file-diff-deleted-gutter": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-file-diff-deleted-marker": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-alias-file-diff-deleted-bg": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-deliverables": 1
+      }
+    },
+    "--dsw-static-neutral-400": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1
+      }
+    },
+    "--dsw-static-blue-400": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1
+      }
+    },
+    "--dsw-static-blue-600": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1
+      }
+    },
+    "--dsw-gradient-onboarding-blue-stops": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-alias-onboarding-card-fill": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-gradient-onboarding-violet-stops": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-gradient-onboarding-cyan-stops": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-alias-onboarding-checkbox-border": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-account": 1
+      }
+    },
+    "--dsw-specific-sidebar-nav-item-hover": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-general": 1
+      }
+    },
+    "--dsw-specific-sidebar-nav-item-active": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-settings-general": 1
+      }
+    },
+    "--dsw-alias-bg-document-selection": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-sidebar-documentpreview": 1
+      }
+    },
+    "--dsw-alias-label-document-preview": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-sidebar-documentpreview": 1
+      }
+    },
+    "--dsw-alias-bg-l1": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-sidebar-terminal": 1
+      }
+    },
+    "--dsw-corner-shape": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-500": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-200": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-blue-900": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-1000": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-green-500-a08": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-red-600-a08": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-green-100": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-amber-100": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-deepseek-200": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-deepseek-50": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-bluish-875": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-blue-300": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-neutral-550": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-deepseek-800": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-green-500-a12": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-red-400-a12": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-green-900": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-static-amber-900": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-alias-scrollbar-hover-l1": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-elevation-stroke-color": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-theme": 1
+      }
+    },
+    "--dsw-font-sm-13": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-tool": 1
+      }
+    },
+    "--dsw-alias-markdown-citation": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-trajectory": 1
+      }
+    },
+    "--dsw-alias-bg-overlay": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-specific-sidebar-nav-item-active-accent": {
+      "count": 1,
+      "byPackage": {
+        "dsh-client-ui-user-questions": 1
+      }
+    },
+    "--dsw-font-markdown-base": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-h1": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-h2": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-h3": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-h4": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-base-strong": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-code": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-markdown-inline-code": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-table-head": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-font-markdown-table": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-label-error": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    },
+    "--dsw-alias-markdown-tag": {
+      "count": 1,
+      "byPackage": {
+        "dsh-web-frontend": 1
+      }
+    }
+  },
+  "dswDeclaresOutsideTheme": {
+    "--dsw-elevation-stroke-color": {
+      "count": 29,
+      "byPackage": {
+        "dsh-client-ui-conversation": 4,
+        "dsh-experimental-client-ui-agent-team": 4,
+        "dsh-client-ui-schedule": 3,
+        "dsh-client-ui-chat": 2,
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-user-questions": 2,
+        "dsh-web-frontend": 2,
+        "dsh-client-ui-attachment": 1,
+        "dsh-client-ui-commands": 1,
+        "dsh-client-ui-cordis": 1,
+        "dsh-client-ui-goal": 1,
+        "dsh-client-ui-input-trigger": 1,
+        "dsh-client-ui-jobs": 1,
+        "dsh-client-ui-model-selection": 1,
+        "dsh-client-ui-plugin-manager": 1,
+        "dsh-client-ui-primitives": 1,
+        "dsh-client-ui-subagent": 1
+      }
+    },
+    "--dsw-alias-label-shimmer": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-chat": 1
+      }
+    },
+    "--dsw-alias-interactive-bg-hover": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-plugin-manager": 1
+      }
+    },
+    "--dsw-alias-button-primary-fill": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-plugin-manager": 1
+      }
+    },
+    "--dsw-alias-button-primary-hover": {
+      "count": 3,
+      "byPackage": {
+        "dsh-client-ui-theme": 2,
+        "dsh-client-ui-plugin-manager": 1
+      }
+    },
+    "--dsw-hovercard-bg": {
+      "count": 2,
+      "byPackage": {
+        "dsh-client-ui-primitives": 1,
+        "dsh-web-frontend": 1
+      }
+    }
+  },
+  "dshDeclarations": [
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-agent-preset",
+      "file": "dsh-client-ui-agent-preset/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-agent-preset",
+      "file": "dsh-client-ui-agent-preset/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-agent-preset",
+      "file": "dsh-client-ui-agent-preset/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-agent-preset",
+      "file": "dsh-client-ui-agent-preset/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-approval",
+      "file": "dsh-client-ui-approval/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-approval",
+      "file": "dsh-client-ui-approval/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-attachment",
+      "file": "dsh-client-ui-attachment/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-attachment",
+      "file": "dsh-client-ui-attachment/lib/client.js"
+    },
+    {
+      "name": "--dsh-compaction-header-height",
+      "value": "calc(24px + var(--dsh-content-font-delta,0px))",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-flow-gap",
+      "value": "12px",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-flow-gap",
+      "value": "16px",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-flow-gap",
+      "value": "12px",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-flow-gap",
+      "value": "6px",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-table-spare",
+      "value": "max(0px, calc((100cqw - var(--dsh-chat-content-width)) / 2))",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-table-lead",
+      "value": "calc(var(--dsh-table-spare) + min(var(--dsh-chat-content-width), 100cqw) - 100%)",
+      "pkg": "dsh-client-ui-chat",
+      "file": "dsh-client-ui-chat/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-commands",
+      "file": "dsh-client-ui-commands/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-commands",
+      "file": "dsh-client-ui-commands/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-stack-gap",
+      "value": "6px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-text-max-height",
+      "value": "336px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-content-width",
+      "value": "var(--dsh-chat-user-width,clamp(680px, calc(var(--dsh-conversation-column-width,0px) * .64), 920px))",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-card-max-width",
+      "value": "calc(var(--dsh-chat-content-width) + 32px)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-side-clearance",
+      "value": "16px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-dock-inset",
+      "value": "8px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-content-width",
+      "value": "min(calc(100% - 32px), 920px)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-card-max-width",
+      "value": "min(calc(100% - 16px), 952px)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-side-clearance",
+      "value": "8px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-dock-inset",
+      "value": "8px",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-model-text-display",
+      "value": "none",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-model-icon-display",
+      "value": "block",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-cordis",
+      "file": "dsh-client-ui-cordis/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-cordis",
+      "file": "dsh-client-ui-cordis/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-directory-picker-browse",
+      "file": "dsh-client-ui-directory-picker-browse/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-directory-picker-browse",
+      "file": "dsh-client-ui-directory-picker-browse/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-input-trigger",
+      "file": "dsh-client-ui-input-trigger/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-input-trigger",
+      "file": "dsh-client-ui-input-trigger/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-width",
+      "value": "6px",
+      "pkg": "dsh-client-ui-input-trigger",
+      "file": "dsh-client-ui-input-trigger/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-border",
+      "value": "2px",
+      "pkg": "dsh-client-ui-input-trigger",
+      "file": "dsh-client-ui-input-trigger/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-track-margin",
+      "value": "12px",
+      "pkg": "dsh-client-ui-input-trigger",
+      "file": "dsh-client-ui-input-trigger/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-jobs",
+      "file": "dsh-client-ui-jobs/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-jobs",
+      "file": "dsh-client-ui-jobs/lib/client.js"
+    },
+    {
+      "name": "--dsh-windows-content-radius",
+      "value": "16px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-top-clearance",
+      "value": "48px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-top-clearance",
+      "value": "var(--dsh-windows-titlebar-height)",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-chrome-top",
+      "value": "var(--dsh-windows-titlebar-height)",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-overlay-top",
+      "value": "calc(var(--dsh-frame-top-clearance) + 20px)",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-overlay-top",
+      "value": "20px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-chrome-top",
+      "value": "0px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-leading-clearance",
+      "value": "160px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-frame-leading-clearance",
+      "value": "84px",
+      "pkg": "dsh-client-ui-layout",
+      "file": "dsh-client-ui-layout/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-model-selection",
+      "file": "dsh-client-ui-model-selection/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-model-selection",
+      "file": "dsh-client-ui-model-selection/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-plugin-manager",
+      "file": "dsh-client-ui-plugin-manager/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-plugin-manager",
+      "file": "dsh-client-ui-plugin-manager/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-size-secondary",
+      "value": "one step under the body — setting −1 at\n   ≤14, setting −2 above), and the row height, leading box, and glyph edge\n   sh",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/DisclosureRow.module.css"
+    },
+    {
+      "name": "--dsh-file-type-violet",
+      "value": "rgb(139, 118, 246)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-green-500)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-amber-400)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsh-file-type-violet)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-neutral-bluish-300)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-red-600)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-amber-500)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsh-file-type-violet)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-450)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/FileTypeIcon.module.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/HoverCard.module.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/HoverCard.module.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/Menu.module.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-primitives",
+      "file": "dsh-client-ui-primitives/lib/Menu.module.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-width",
+      "value": "9px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-border",
+      "value": "2px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-width",
+      "value": "9px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-border",
+      "value": "2px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-width",
+      "value": "9px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-border",
+      "value": "2px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-track-margin",
+      "value": "12px",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-schedule",
+      "file": "dsh-client-ui-schedule/lib/client.js"
+    },
+    {
+      "name": "--dsh-onboarding-border-angle",
+      "value": "90deg",
+      "pkg": "dsh-client-ui-settings-account",
+      "file": "dsh-client-ui-settings-account/lib/client.js"
+    },
+    {
+      "name": "--dsh-onboarding-border-angle",
+      "value": "450deg",
+      "pkg": "dsh-client-ui-settings-account",
+      "file": "dsh-client-ui-settings-account/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-settings-general",
+      "file": "dsh-client-ui-settings-general/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-settings-general",
+      "file": "dsh-client-ui-settings-general/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-settings-models",
+      "file": "dsh-client-ui-settings-models/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-settings-models",
+      "file": "dsh-client-ui-settings-models/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-shortcuts",
+      "file": "dsh-client-ui-shortcuts/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-shortcuts",
+      "file": "dsh-client-ui-shortcuts/lib/client.js"
+    },
+    {
+      "name": "--dsh-sidebar-inline-padding",
+      "value": "12px",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-windows-menu-start",
+      "value": "84px",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "transparent",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "transparent",
+      "pkg": "dsh-client-ui-sidebar",
+      "file": "dsh-client-ui-sidebar/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-sidebar-browser",
+      "file": "dsh-client-ui-sidebar-browser/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-sidebar-browser",
+      "file": "dsh-client-ui-sidebar-browser/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-sidebar-documentpreview",
+      "file": "dsh-client-ui-sidebar-documentpreview/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-sidebar-documentpreview",
+      "file": "dsh-client-ui-sidebar-documentpreview/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-sidebar-documentpreview",
+      "file": "dsh-client-ui-sidebar-documentpreview/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-sidebar-documentpreview",
+      "file": "dsh-client-ui-sidebar-documentpreview/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-dock-layer",
+      "value": "10",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-float-layer",
+      "value": "60",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-dock-layer",
+      "value": "40",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-strip-inline-start",
+      "value": "88px",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-strip-inline-start",
+      "value": "10px",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-dockkit-strip-inline-start",
+      "value": "10px",
+      "pkg": "dsh-client-ui-sidebar-right",
+      "file": "dsh-client-ui-sidebar-right/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-subagent",
+      "file": "dsh-client-ui-subagent/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-subagent",
+      "file": "dsh-client-ui-subagent/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l1)",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l1)",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-border",
+      "value": "0px",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-track-margin",
+      "value": "0px",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-width",
+      "value": "5px",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-delta",
+      "value": "calc(var(--dsh-content-font-size,14px) - 14px)",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-size-secondary",
+      "value": "min(calc(var(--dsh-content-font-size,14px) - 1px), max(13px, calc(var(--dsh-content-font-size,14px) - 2px)))",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-delta-secondary",
+      "value": "calc(var(--dsh-content-font-size-secondary) - 13px)",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/client.js"
+    },
+    {
+      "name": "--dsh-boot-bg",
+      "value": "$",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/index.js"
+    },
+    {
+      "name": "--dsh-boot-bg",
+      "value": "$",
+      "pkg": "dsh-client-ui-theme",
+      "file": "dsh-client-ui-theme/lib/index.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "transparent",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "transparent",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-size-secondary",
+      "value": "13px",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-content-font-delta-secondary",
+      "value": "0px",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-trajectory-toolbar-height",
+      "value": "32px",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-trajectory-bottom-clearance",
+      "value": "calc(var(--dsh-composer-height,152px) + 16px)",
+      "pkg": "dsh-client-ui-trajectory",
+      "file": "dsh-client-ui-trajectory/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-client-ui-user-questions",
+      "file": "dsh-client-ui-user-questions/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-client-ui-user-questions",
+      "file": "dsh-client-ui-user-questions/lib/client.js"
+    },
+    {
+      "name": "--dsh-answer-field-padding",
+      "value": "0",
+      "pkg": "dsh-client-ui-user-questions",
+      "file": "dsh-client-ui-user-questions/lib/client.js"
+    },
+    {
+      "name": "--dsh-answer-field-padding",
+      "value": "8px 12px",
+      "pkg": "dsh-client-ui-user-questions",
+      "file": "dsh-client-ui-user-questions/lib/client.js"
+    },
+    {
+      "name": "--dsh-session-list-edge-inset",
+      "value": "var(--dsh-sidebar-inline-padding)",
+      "pkg": "dsh-client-ui-workspace",
+      "file": "dsh-client-ui-workspace/lib/client.js"
+    },
+    {
+      "name": "--dsh-session-list-scrollbar-width",
+      "value": "5px",
+      "pkg": "dsh-client-ui-workspace",
+      "file": "dsh-client-ui-workspace/lib/client.js"
+    },
+    {
+      "name": "--dsh-session-list-scrollbar-offset",
+      "value": "2px",
+      "pkg": "dsh-client-ui-workspace",
+      "file": "dsh-client-ui-workspace/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-experimental-client-ui-agent-team",
+      "file": "dsh-experimental-client-ui-agent-team/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-experimental-client-ui-agent-team",
+      "file": "dsh-experimental-client-ui-agent-team/lib/client.js"
+    },
+    {
+      "name": "--dsh-scrollbar-track-margin",
+      "value": "8px",
+      "pkg": "dsh-experimental-client-ui-agent-team",
+      "file": "dsh-experimental-client-ui-agent-team/lib/client.js"
+    },
+    {
+      "name": "--dsh-boot-label-primary",
+      "value": "#0f1115",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-label-secondary",
+      "value": "#61666b",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-label-tertiary",
+      "value": "#81858c",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-border",
+      "value": "rgb(0 0 0 / 10%)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-brand",
+      "value": "#0f1115",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-label-primary",
+      "value": "#f9fafb",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-label-secondary",
+      "value": "#cfd3d6",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-label-tertiary",
+      "value": "#adb2b8",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-border",
+      "value": "rgb(255 255 255 / 12%)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-boot-brand",
+      "value": "#f9fafb",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-violet",
+      "value": "rgb(139, 118, 246)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-green-500)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-amber-400)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsh-file-type-violet)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-500)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-neutral-bluish-300)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-red-600)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-amber-500)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsh-file-type-violet)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-file-type-default-color",
+      "value": "var(--dsw-static-deepseek-450)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-dockkit-float-top",
+      "value": "calc(var(--dsh-windows-titlebar-height) + 20px)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-dockkit-float-top",
+      "value": "20px",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb",
+      "value": "var(--dsw-alias-scrollbar-bg-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    },
+    {
+      "name": "--dsh-scrollbar-thumb-hover",
+      "value": "var(--dsw-alias-scrollbar-hover-l2)",
+      "pkg": "dsh-web-frontend",
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css"
+    }
+  ],
+  "dshSetProperty": [
+    {
+      "name": "--dsh-width-handle-pointer-y",
+      "value": "`${event.clientY - box.top}px`",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-conversation-column-width",
+      "value": "`${column}px`",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-user-width",
+      "value": "`${resolveContentWidth(column, preference",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-chat-user-width",
+      "value": "`${resolveContentWidth(container.offsetWidth, width",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-composer-height",
+      "value": "`${seat.offsetHeight}px`",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-conversation-viewport-height",
+      "value": "`${scroller.clientHeight}px`",
+      "pkg": "dsh-client-ui-conversation",
+      "file": "dsh-client-ui-conversation/lib/client.js"
+    },
+    {
+      "name": "--dsh-workspace-indent",
+      "value": "getComputedStyle(row.element",
+      "pkg": "dsh-client-ui-workspace",
+      "file": "dsh-client-ui-workspace/lib/client.js"
+    }
+  ],
+  "hardcodedColors": {
+    "dsh-client-ui-sidebar-documentpreview": {
+      "hex": 1095,
+      "rgb": 13,
+      "named": 0,
+      "samples": [
+        "#2ec7c9",
+        "#000",
+        "#fc5c5c",
+        "#CCF3F4",
+        "#97b552",
+        "#5ab1ef",
+        "#ffb980",
+        "#999"
+      ]
+    },
+    "dsh-client-ui-primitives": {
+      "hex": 212,
+      "rgb": 8,
+      "named": 0,
+      "samples": [
+        "rgb(139, 118, 246)",
+        "#2C2C2E",
+        "#FFFFFF",
+        "#881391",
+        "#c41a16",
+        "#1c00cf",
+        "#202124",
+        "#5f6368"
+      ]
+    },
+    "dsh-client-ui-sidebar-terminal": {
+      "hex": 38,
+      "rgb": 3,
+      "named": 0,
+      "samples": [
+        "#2e3436",
+        "#cc0000",
+        "#4e9a06",
+        "#c4a000",
+        "#3465a4",
+        "#75507b",
+        "#06989a",
+        "#d3d7cf"
+      ]
+    },
+    "dsh-web-frontend": {
+      "hex": 27,
+      "rgb": 9,
+      "named": 0,
+      "samples": [
+        "#0f1115",
+        "#61666b",
+        "#81858c",
+        "rgb(0 0 0 / 10%)",
+        "#f9fafb",
+        "#cfd3d6",
+        "#adb2b8",
+        "rgb(255 255 255 / 12%)"
+      ]
+    },
+    "dsh-client-ui-chat": {
+      "hex": 18,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000001f",
+        "#00000073",
+        "#0000",
+        "#000"
+      ]
+    },
+    "dsh-client-ui-attachment": {
+      "hex": 17,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#9CE5ED",
+        "#679EFE",
+        "#3964FE",
+        "#979DA6",
+        "#F59E0B",
+        "#0000001f",
+        "#d54941",
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-workspace": {
+      "hex": 12,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000",
+        "#000",
+        "#fff",
+        "#cfd3d6",
+        "#adb2b8"
+      ]
+    },
+    "dsh-client-ui-layout": {
+      "hex": 9,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#7a9bf01a",
+        "#7a9bf000",
+        "#8f89b800",
+        "#8f89b817",
+        "#7a9bf0",
+        "#7a9bf014",
+        "#8f89b812"
+      ]
+    },
+    "dsh-client-ui-sidebar": {
+      "hex": 7,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#ffffff8c",
+        "#ffffff4d",
+        "#ffffff26",
+        "#fff3",
+        "#0000",
+        "#000"
+      ]
+    },
+    "dsh-client-ui-schedule": {
+      "hex": 6,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000",
+        "#cfd3d6",
+        "#fff",
+        "#adb2b8"
+      ]
+    },
+    "dsh-client-ui-trajectory": {
+      "hex": 5,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000001f",
+        "#0000",
+        "#000",
+        "#00000024"
+      ]
+    },
+    "dsh-client-ui-settings-account": {
+      "hex": 4,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000000d",
+        "#0000",
+        "#fff"
+      ]
+    },
+    "dsh-client-ui-conversation": {
+      "hex": 3,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#a78bfa",
+        "#0000",
+        "#fff"
+      ]
+    },
+    "dsh-client-ui-shortcuts": {
+      "hex": 3,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0003",
+        "#00000005",
+        "#00000014"
+      ]
+    },
+    "dsh-client-ui-model-selection": {
+      "hex": 2,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-plugin-manager": {
+      "hex": 2,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-tool": {
+      "hex": 2,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-user-questions": {
+      "hex": 2,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-approval": {
+      "hex": 1,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-commands": {
+      "hex": 1,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-directory-picker-browse": {
+      "hex": 1,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    },
+    "dsh-client-ui-skill": {
+      "hex": 1,
+      "rgb": 0,
+      "named": 0,
+      "samples": [
+        "#0000"
+      ]
+    }
+  }
+}

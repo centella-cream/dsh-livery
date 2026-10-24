@@ -1,0 +1,40 @@
+{
+  "probe": "index-cascade",
+  "dshVersion": "0.2.0-rc.2",
+  "method": "static inspection of shipped artifacts; counts are regex over file text",
+  "facts": {
+    "indexInjectSplicePoint": "immediately after the opening <head> tag (dsh-host-webserver/lib/index.js:85-87)",
+    "shellHeadOrder": [
+      "meta",
+      "link manifest",
+      "link icon x2",
+      "title",
+      "script type=module src=./assets/index-*.js",
+      "link modulepreload vendor",
+      "link stylesheet vendor",
+      "link stylesheet index"
+    ],
+    "singleEmitter": "dsh-host-webserver/lib/index.js:352"
+  },
+  "artifacts": [
+    {
+      "file": "dsh-web-frontend/dist/assets/index-BPHePDI_.css",
+      "bytes": 76336,
+      "dsw_token_declarations": 2,
+      "dsw_var_uses": 436
+    },
+    {
+      "file": "dsh-web-frontend/dist/assets/vendor-BNsW4eBh.css",
+      "bytes": 29288,
+      "dsw_token_declarations": 0,
+      "dsw_var_uses": 0
+    },
+    {
+      "file": "dsh-client-ui-theme/lib/client.js",
+      "bytes": 101801,
+      "dsw_token_declarations": 403,
+      "dsw_var_uses": 270
+    }
+  ],
+  "conclusion": "The static shell stylesheet consumes --dsw-* tokens (436 uses) but declares almost none (2), while ui-theme's client bundle declares 403. Client-plugin sheets are appended to document.head at materialization (dsh-client-ui-theme/lib/client.js:1183-1192), i.e. after any webserver/index-inject head row, so a first-paint :root{--dsw-*} override loses the cascade and must be scoped to a body attribute."
+}

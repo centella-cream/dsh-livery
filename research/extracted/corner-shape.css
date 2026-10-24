@@ -1,0 +1,15 @@
+/* corner-shape.css
+ * source: /home/runner/work/deepseek-harness/deepseek-harness/packages/client/ui-theme/src/styles/corner-shape.css.mjs
+ * compiled: @deepseek-ai/dsh-client-ui-theme/lib/client.js:1145
+ */
+@supports (corner-shape:superellipse(1.5)) {
+:root {
+  --dsw-corner-shape:superellipse(1.5);
+}
+}
+
+@supports (corner-shape:superellipse(1.5)) {
+*,:before,:after {
+  corner-shape:var(--dsw-corner-shape);
+}
+}

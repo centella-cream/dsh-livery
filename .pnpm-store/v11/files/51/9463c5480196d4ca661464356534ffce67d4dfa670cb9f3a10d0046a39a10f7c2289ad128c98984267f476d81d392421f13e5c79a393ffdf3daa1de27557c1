@@ -1,0 +1,72 @@
+import type { CharterOp } from '../core/schemas.js';
+import { type UserTextIssue } from '../core/normalize.js';
+import type { CharterBootstrapProposal, CharterBootstrapResult, CharterView } from '../host/types.js';
+/** One editable candidate extracted from a compaction summary. */
+export interface BootstrapDraftItem {
+    readonly id: string;
+    readonly kind: 'invariant' | 'deliverable';
+    readonly text: string;
+    readonly selected: boolean;
+}
+/** The model-visible part of a history import plus its deferred proposals. */
+export interface BootstrapPlan {
+    readonly ops: CharterOp[];
+    readonly active: number;
+    readonly pending: number;
+    readonly pendingInvariants: number;
+    readonly pendingDeliverables: number;
+    /** Per-candidate outcome for the review UI. */
+    readonly outcomes: Readonly<Record<string, 'active' | 'pending'>>;
+    /** True only when the incremental estimate disagreed with the exact render. */
+    readonly usedExactFallback: boolean;
+    /** Full `previewPrompt` renders used by this plan (diagnostic). */
+    readonly exactRenders: number;
+}
+/**
+ * Split a reviewed history draft into the part that fits the real context
+ * budget and the part preserved as pending proposals.
+ *
+ * The plan never drops a selected candidate. Items are tried in draft order;
+ * once one does not fit, later shorter items may still become active. This is
+ * deliberate: a long low-priority candidate must not consume the remaining
+ * budget for everything after it.
+ *
+ * Each candidate is measured with O(1) incremental byte accounting that
+ * mirrors `renderCharterPrompt` exactly (objective token + joined
+ * invariant/deliverable tokens). The exact full render is kept only as a
+ * final verification: if it ever disagrees, the quadratic fallback recomputes
+ * the plan, so correctness never depends on the estimate.
+ */
+export declare function buildBootstrapPlan(view: CharterView, objective: string, items: readonly BootstrapDraftItem[]): BootstrapPlan;
+export interface DraftTextIssue {
+    readonly issue: UserTextIssue;
+    readonly where: 'objective' | 'candidate';
+    readonly index?: number;
+}
+/** First invalid reviewed value in the draft, validated like the Host does. */
+export declare function firstDraftTextIssue(objective: string, items: readonly BootstrapDraftItem[]): DraftTextIssue | undefined;
+/** What the pane should do with a bootstrap response. */
+export type BootstrapOutcome = {
+    readonly kind: 'draft';
+    readonly proposal: CharterBootstrapProposal;
+} | {
+    readonly kind: 'unavailable';
+    readonly reason: 'not-live' | 'no-summary' | 'unavailable';
+    readonly message: string | undefined;
+} | {
+    readonly kind: 'stale';
+} | {
+    readonly kind: 'discard';
+};
+/**
+ * Decide whether a bootstrap response is still relevant.
+ *
+ * The response is discarded silently when the user already committed a charter
+ * or staged edits while it was in flight: showing "stale" there would punish a
+ * user who simply started working. A response that is still empty but whose
+ * revision moved is genuinely stale and may be retried.
+ */
+export declare function classifyBootstrapOutcome(result: CharterBootstrapResult, current: {
+    readonly status: 'connecting' | 'ready' | 'error';
+    readonly view: CharterView | null;
+}, requestedRevision: number, stagedOps: number): BootstrapOutcome;

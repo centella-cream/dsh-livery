@@ -1,0 +1,10 @@
+import { chromium } from '/Users/ryanzhang/.npm/_npx/dd6c45a6a1785775/node_modules/playwright-core/index.mjs';
+const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-first-run','--no-default-browser-check'] });
+const page = await browser.newPage();
+const errors = [];
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+await page.setContent('<body style="background:#123"><h1 id="t">probe</h1></body>');
+const result = await page.evaluate(() => ({ ua: navigator.userAgent, bg: getComputedStyle(document.body).backgroundColor, text: document.querySelector('#t').textContent }));
+await page.screenshot({ path: 'pw-smoke.png' });
+console.log(JSON.stringify({ result, errors, version: browser.version() }, null, 2));
+await browser.close();

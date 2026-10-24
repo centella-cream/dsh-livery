@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-24T15:36:17.177Z",
+  "entries": [
+    {
+      "hostVersion": "0.2.0-rc.2",
+      "adapterId": "dsh-0.2.0-rc.2-r1",
+      "contractHash": "sha256:07588f7e671ea4c406b62ddd7dfcf3b63c7ee9fdd1f989d0db28f52b8ced5c66",
+      "status": "draft",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "pending"
+        }
+      },
+      "browserSupport": [
+        {
+          "family": "chrome",
+          "minVersion": 120
+        },
+        {
+          "family": "edge",
+          "minVersion": 120
+        }
+      ],
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "Phase 0 draft: static contract snapshot only until G0-G6 evidence is attached."
+      ]
+    }
+  ]
+}

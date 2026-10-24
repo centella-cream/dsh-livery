@@ -1,0 +1,16 @@
+- insert:
+    - id: charter
+      name: dsh-charter
+      config:
+        maxPromptBytes: 8192
+        maxObjectiveBytes: 4096
+        maxItemBytes: 1024
+        maxItems: 512
+        maxPendingItems: 512
+        maxOps: 1024
+        maxRecordBytes: 1048576
+        historyLimit: 64
+        maxHistoryBytes: 131072
+        mutationLimit: 128
+    - id: charter-remote
+      name: dsh-charter/remote

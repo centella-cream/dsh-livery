@@ -1,0 +1,106 @@
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
+import type { SessionId } from '@deepseek-ai/dsh-session/types';
+import type { TypertRemoteNamespaceMap } from '@deepseek-ai/dsh-typert-protocol';
+import type { CharterEditRequest } from '../core/schemas.js';
+import type { CharterBootstrapResult, CharterEditResult, CharterView } from '../host/types.js';
+import { CharterDraft } from './draft-store.js';
+export interface CharterClientState {
+    readonly status: 'connecting' | 'ready' | 'error';
+    readonly view: CharterView | null;
+    readonly error: string | null;
+}
+export interface CharterSource {
+    readonly getSnapshot: () => CharterClientState;
+    readonly subscribe: (listener: () => void) => () => void;
+    readonly edit: (request: CharterEditRequest) => Promise<CharterEditResult>;
+    /** Extract a review-only draft from the latest compaction summary. */
+    readonly bootstrap: () => Promise<CharterBootstrapResult>;
+    /** Apply a committed view returned by edit immediately, without waiting for the stream. */
+    readonly accept: (view: CharterView) => void;
+    readonly retry: () => void;
+}
+type CharterRemote = TypertRemoteNamespaceMap['charter'];
+export declare class CharterSessionSource implements CharterSource {
+    private readonly ctx;
+    readonly sessionId: SessionId;
+    private state;
+    private readonly listeners;
+    private stream;
+    private snapshotStream;
+    private remote;
+    /** Attach that has been requested but does not own the stream yet (an earlier dispose is pending). */
+    private pendingRemote;
+    private attachGeneration;
+    private connection;
+    private readonly connectionListeners;
+    private watchdog;
+    constructor(ctx: ClientContext, sessionId: SessionId, options?: {
+        readonly attachTimeoutMs?: number;
+    });
+    private readonly attachTimeoutMs;
+    /** Monotonic connection epoch: attach/detach/retry each start a new one. */
+    get connectionGeneration(): number;
+    /**
+     * Observe connection-epoch changes so in-flight draft requests sent through
+     * a previous connection cannot mutate the current draft.
+     */
+    onConnectionChange(listener: () => void): () => void;
+    readonly getSnapshot: () => CharterClientState;
+    readonly subscribe: (listener: () => void) => (() => void);
+    readonly bootstrap: () => Promise<CharterBootstrapResult>;
+    readonly edit: (request: CharterEditRequest) => Promise<CharterEditResult>;
+    readonly accept: (view: CharterView) => void;
+    readonly retry: () => void;
+    attach(remote: CharterRemote): void;
+    detach(remote: CharterRemote): void;
+    dispose(): Promise<void>;
+    private bumpConnection;
+    private publishIfNewer;
+    private publish;
+    private armWatchdog;
+    private clearWatchdog;
+    /** A snapshot stream ended or failed: it is terminal and must be recreated. */
+    private terminateStream;
+    private stop;
+}
+/** One view binding's claim on a shared per-Session source. */
+export interface CharterSourceLease {
+    readonly source: CharterSessionSource;
+    /** Idempotent: only this lease counts, and only the last lease disposes the source. */
+    readonly release: () => void;
+}
+export interface CharterViewLease {
+    readonly source: CharterSessionSource;
+    readonly draft: CharterDraft;
+    readonly release: () => void;
+}
+export declare class CharterClientController {
+    private readonly ctx;
+    private remote;
+    private readonly sources;
+    private readonly drafts;
+    private readonly draftTouched;
+    private static readonly MAX_DRAFTS;
+    private static readonly DRAFT_IDLE_MS;
+    constructor(ctx: ClientContext);
+    /**
+     * Reclaim only empty drafts. Staged ops, editor text, and reviewed history
+     * drafts are user work and are never silently evicted by idle time or LRU;
+     * the map may therefore exceed MAX_DRAFTS while those drafts exist.
+     */
+    private collectIdleDrafts;
+    draftFor(sessionId: SessionId): CharterDraft;
+    /**
+     * Acquire the source for one view binding.
+     *
+     * Several bindings (two panes, a re-created slot, a session switch) may
+     * share one Session. A bare session id is not a safe release credential:
+     * only the owning lease may release, and disposal happens when the last lease
+     * is gone.
+     */
+    acquire(sessionId: SessionId): CharterViewLease;
+    attach(remote: CharterRemote): void;
+    detach(remote: CharterRemote): void;
+    dispose(): Promise<void>;
+}
+export {};

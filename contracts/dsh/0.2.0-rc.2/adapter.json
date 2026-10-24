@@ -1,0 +1,32 @@
+{
+  "hostVersion": "0.2.0-rc.2",
+  "adapterId": "dsh-0.2.0-rc.2-r1",
+  "loaderAbi": "sha256:5c76bff1b599be25d9194e209a8caaefc5d73d6d91e5b5a52078fa1c0948ca67",
+  "hostApiContract": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
+  "clientApiContract": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+  "tokenContract": "sha256:7f6bd7901e23003faa24839b7eb61c7acf20d641f0d1627596e1b51824514b64",
+  "layoutContract": "sha256:211505db73094ce64e6b5a9f69d9335ea87f98494e794eac7fb7e088c3b7e199",
+  "profileSchema": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
+  "contractHash": "sha256:07588f7e671ea4c406b62ddd7dfcf3b63c7ee9fdd1f989d0db28f52b8ced5c66",
+  "nodeRange": "",
+  "clientTarget": "chrome120",
+  "verifiedProfiles": [
+    "desktop",
+    "web"
+  ],
+  "verifiedPlatforms": [
+    "darwin",
+    "win32",
+    "web"
+  ],
+  "verifiedBrowsers": [
+    {
+      "family": "chrome",
+      "minVersion": 120
+    },
+    {
+      "family": "edge",
+      "minVersion": 120
+    }
+  ]
+}

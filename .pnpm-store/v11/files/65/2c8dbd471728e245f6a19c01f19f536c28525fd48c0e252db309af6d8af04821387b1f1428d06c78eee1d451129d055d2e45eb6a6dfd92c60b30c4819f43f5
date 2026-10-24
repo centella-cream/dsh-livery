@@ -1,0 +1,31 @@
+import type { CharterView } from '../host/types.js';
+import type { CharterFrame } from './wire.js';
+/** Keeps only the newest view; a slow consumer never replays intermediate states. */
+export declare class LatestViewQueue {
+    private pending;
+    private waiter;
+    private closed;
+    push(view: CharterView): void;
+    take(): CharterView | undefined;
+    wait(signal: AbortSignal): Promise<void>;
+    get isClosed(): boolean;
+    close(): void;
+}
+export declare function sameCharterView(left: CharterView, right: CharterView): boolean;
+export interface CharterWatchSource {
+    /** Read the committed view. Must be synchronous and side-effect free. */
+    readonly read: () => CharterView;
+    /** Register a change listener before the opening snapshot is read. */
+    readonly subscribe: (listener: (view: CharterView | null) => void) => () => void;
+}
+/**
+ * Stream every committed view, beginning with one opening snapshot per
+ * physical generation.
+ *
+ * The listener is registered before the opening read, so a write that races
+ * with the read is queued rather than lost. Each later frame carries the full
+ * current view; intermediate views may be coalesced. A revision with the same
+ * status, digest and message as the last sent frame is skipped by consumers on
+ * both sides.
+ */
+export declare function watchCharter(source: CharterWatchSource, signal: AbortSignal): AsyncGenerator<CharterFrame>;

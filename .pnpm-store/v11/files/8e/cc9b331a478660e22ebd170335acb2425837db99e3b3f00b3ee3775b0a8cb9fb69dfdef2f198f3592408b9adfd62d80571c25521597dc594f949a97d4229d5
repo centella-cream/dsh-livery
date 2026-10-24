@@ -1,0 +1,15 @@
+import type { CharterItem, DeliverableItem, InvariantItem } from './schemas.js';
+export declare function compareCodeUnits(left: string, right: string): number;
+export interface OrderedItem {
+    readonly id: string;
+    readonly order: number;
+}
+export declare function compareOrderedItems(left: OrderedItem, right: OrderedItem): number;
+export declare function canonicalItems<T extends OrderedItem>(items: Iterable<T>): readonly T[];
+export interface StandingItem {
+    readonly review: CharterItem['review'];
+    readonly lifecycle: CharterItem['lifecycle'];
+}
+export declare function isStandingItem(item: StandingItem): boolean;
+export declare function isInvariant(item: CharterItem): item is InvariantItem;
+export declare function isDeliverable(item: CharterItem): item is DeliverableItem;

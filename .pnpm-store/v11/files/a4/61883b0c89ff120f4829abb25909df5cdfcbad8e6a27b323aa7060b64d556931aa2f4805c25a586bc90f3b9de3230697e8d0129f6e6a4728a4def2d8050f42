@@ -1,0 +1,13 @@
+import type { SessionId } from '@deepseek-ai/dsh-session/types';
+export declare const CHARTER_DOMAIN_NAME = "dsh_charter_v1";
+export declare const CHARTER_DOMAIN_VERSION = 1;
+export declare const CHARTER_SESSIONS_TABLE = "sessions";
+export declare const charterDomainSpec: {
+    name: string;
+    version: number;
+    layout: "per-record";
+    tables: {
+        sessions: import("@deepseek-ai/dsh-storage-domain").DomainTableSpec<SessionId, unknown>;
+    };
+};
+export type CharterDomainSpec = typeof charterDomainSpec;

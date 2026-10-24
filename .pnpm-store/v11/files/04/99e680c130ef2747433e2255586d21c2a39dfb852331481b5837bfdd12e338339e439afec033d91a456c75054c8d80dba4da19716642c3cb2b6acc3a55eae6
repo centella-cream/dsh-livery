@@ -1,0 +1,459 @@
+import { F as charterEditRequestSchema, I as charterItemSchema, R as charterObjectiveSchema, ft as CharterError } from "./fork-0PNSfiML.js";
+import { i as resolveActor } from "./service-szrVCb8p.js";
+import "@deepseek-ai/cordis";
+import { z } from "zod";
+import { Remote, TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
+//#region .build-ts/remote/compat.js
+/**
+* Only the documented "unknown decorator options" rejection may select the
+* legacy path. Any other exception is a real failure: swallowing it would mark
+* the runtime as having no Peer principals and re-open the owner fallback.
+*/
+function isUnsupportedRemoteOptions(error) {
+	return error instanceof TypeError && /Remote options must (?:contain|be) exactly .*mode/u.test(error.message);
+}
+/**
+* Build the decorator factory around any `Remote` implementation.
+*
+* Exported for tests: a fake implementation can stand in for either DSH API
+* generation without installing that DSH version.
+*/
+function createRemoteMethodFactory(remote, capabilities = { resourceScopes: void 0 }) {
+	const modern = remote;
+	const legacyStream = remote;
+	const legacyDirect = remote;
+	return (options) => {
+		if (options.mode !== void 0 || options.resources !== void 0) try {
+			const decorator = modern(options);
+			if (options.resources !== void 0) capabilities.resourceScopes = true;
+			return decorator;
+		} catch (error) {
+			if (!isUnsupportedRemoteOptions(error)) throw error;
+			if (options.resources !== void 0) capabilities.resourceScopes = false;
+		}
+		if (options.mode === "stream") return legacyStream({ mode: "stream" });
+		return legacyDirect;
+	};
+}
+const capabilities = { resourceScopes: void 0 };
+const remoteMethod = createRemoteMethodFactory(Remote, capabilities);
+/**
+* Whether a Remote call must carry a `PeerScope.principal`.
+*
+* A confirmed legacy runtime (0.1.7/0.2.0) has no principal field and treats
+* the local operator as the owner. Every other state fails closed, including
+* the window before any Remote service has been decorated.
+*/
+function peerPrincipalRequired() {
+	return capabilities.resourceScopes !== false;
+}
+//#endregion
+//#region .build-ts/remote/actor.js
+/**
+* Resolve the actor of the current Remote call.
+*
+* DSH 0.2.1+ carries a required Peer principal and fails closed if it is
+* missing; only a runtime that rejected resource declarations (0.1.7/0.2.0)
+* falls back to the in-process owner identity.
+*/
+function resolveRemoteActor(ctx, requirePrincipal = peerPrincipalRequired()) {
+	return resolveActor(ctx, { requirePrincipal });
+}
+//#endregion
+//#region .build-ts/remote/watch.js
+/** Keeps only the newest view; a slow consumer never replays intermediate states. */
+var LatestViewQueue = class {
+	pending;
+	waiter;
+	closed = false;
+	push(view) {
+		if (this.closed) return;
+		this.pending = view;
+		this.waiter?.resolve();
+		this.waiter = void 0;
+	}
+	take() {
+		const view = this.pending;
+		this.pending = void 0;
+		return view;
+	}
+	async wait(signal) {
+		if (this.pending !== void 0 || this.closed) return;
+		signal.throwIfAborted();
+		await new Promise((resolve, reject) => {
+			const onAbort = () => {
+				signal.removeEventListener("abort", onAbort);
+				if (this.waiter?.resolve === settleResolve) this.waiter = void 0;
+				reject(signal.reason ?? /* @__PURE__ */ new Error("charter watch aborted"));
+			};
+			const settleResolve = () => {
+				signal.removeEventListener("abort", onAbort);
+				resolve();
+			};
+			this.waiter = {
+				resolve: settleResolve,
+				reject
+			};
+			signal.addEventListener("abort", onAbort, { once: true });
+			if (signal.aborted) onAbort();
+			else if (this.pending !== void 0 || this.closed) {
+				this.waiter = void 0;
+				settleResolve();
+			}
+		});
+	}
+	get isClosed() {
+		return this.closed;
+	}
+	close() {
+		if (this.closed) return;
+		this.closed = true;
+		this.pending = void 0;
+		this.waiter?.resolve();
+		this.waiter = void 0;
+	}
+};
+function sameCharterView(left, right) {
+	return left.status === right.status && left.revision === right.revision && left.promptDigest === right.promptDigest && left.message === right.message && left.lifecycle === right.lifecycle;
+}
+/**
+* Stream every committed view, beginning with one opening snapshot per
+* physical generation.
+*
+* The listener is registered before the opening read, so a write that races
+* with the read is queued rather than lost. Each later frame carries the full
+* current view; intermediate views may be coalesced. A revision with the same
+* status, digest and message as the last sent frame is skipped by consumers on
+* both sides.
+*/
+async function* watchCharter(source, signal) {
+	signal.throwIfAborted();
+	const queue = new LatestViewQueue();
+	const unsubscribe = source.subscribe((view) => {
+		if (view === null) queue.close();
+		else queue.push(view);
+	});
+	try {
+		let published = source.read();
+		yield {
+			type: "snapshot",
+			value: published
+		};
+		const duringOpening = queue.take();
+		if (duringOpening !== void 0 && !sameCharterView(duringOpening, published)) {
+			published = duringOpening;
+			yield {
+				type: "changed",
+				value: published
+			};
+		}
+		while (!signal.aborted) {
+			await queue.wait(signal);
+			if (queue.isClosed) return;
+			const next = queue.take();
+			if (next === void 0 || sameCharterView(next, published)) continue;
+			published = next;
+			yield {
+				type: "changed",
+				value: next
+			};
+		}
+	} finally {
+		unsubscribe();
+		queue.close();
+	}
+}
+//#endregion
+//#region .build-ts/remote/service.js
+var __runInitializers = function(thisArg, initializers, value) {
+	var useValue = arguments.length > 2;
+	for (var i = 0; i < initializers.length; i++) value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+	return useValue ? value : void 0;
+};
+var __esDecorate = function(ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+	function accept(f) {
+		if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected");
+		return f;
+	}
+	var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+	var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+	var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+	var _, done = false;
+	for (var i = decorators.length - 1; i >= 0; i--) {
+		var context = {};
+		for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+		for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+		context.addInitializer = function(f) {
+			if (done) throw new TypeError("Cannot add initializers after decoration has completed");
+			extraInitializers.push(accept(f || null));
+		};
+		var result = (0, decorators[i])(kind === "accessor" ? {
+			get: descriptor.get,
+			set: descriptor.set
+		} : descriptor[key], context);
+		if (kind === "accessor") {
+			if (result === void 0) continue;
+			if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+			if (_ = accept(result.get)) descriptor.get = _;
+			if (_ = accept(result.set)) descriptor.set = _;
+			if (_ = accept(result.init)) initializers.unshift(_);
+		} else if (_ = accept(result)) if (kind === "field") initializers.unshift(_);
+		else descriptor[key] = _;
+	}
+	if (target) Object.defineProperty(target, contextIn.name, descriptor);
+	done = true;
+};
+let CharterRemoteService = (() => {
+	let _classSuper = TypertRemoteService;
+	let _instanceExtraInitializers = [];
+	let _watch_decorators;
+	let _bootstrap_decorators;
+	let _edit_decorators;
+	return class CharterRemoteService extends _classSuper {
+		static {
+			const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+			_watch_decorators = [remoteMethod({
+				mode: "stream",
+				resources: { session: (sessionId, _signal) => sessionId }
+			})];
+			_bootstrap_decorators = [remoteMethod({ resources: { session: (sessionId) => sessionId } })];
+			_edit_decorators = [remoteMethod({ resources: { session: (request) => request.sessionId } })];
+			__esDecorate(this, null, _watch_decorators, {
+				kind: "method",
+				name: "watch",
+				static: false,
+				private: false,
+				access: {
+					has: (obj) => "watch" in obj,
+					get: (obj) => obj.watch
+				},
+				metadata: _metadata
+			}, null, _instanceExtraInitializers);
+			__esDecorate(this, null, _bootstrap_decorators, {
+				kind: "method",
+				name: "bootstrap",
+				static: false,
+				private: false,
+				access: {
+					has: (obj) => "bootstrap" in obj,
+					get: (obj) => obj.bootstrap
+				},
+				metadata: _metadata
+			}, null, _instanceExtraInitializers);
+			__esDecorate(this, null, _edit_decorators, {
+				kind: "method",
+				name: "edit",
+				static: false,
+				private: false,
+				access: {
+					has: (obj) => "edit" in obj,
+					get: (obj) => obj.edit
+				},
+				metadata: _metadata
+			}, null, _instanceExtraInitializers);
+			if (_metadata) Object.defineProperty(this, Symbol.metadata, {
+				enumerable: true,
+				configurable: true,
+				writable: true,
+				value: _metadata
+			});
+		}
+		static inject = ["charter", "sessions"];
+		constructor(ctx) {
+			super(ctx, "charterRemote", { namespace: "charter" });
+			__runInitializers(this, _instanceExtraInitializers);
+		}
+		watch(sessionId, signal) {
+			return this.openWatch(sessionId, signal);
+		}
+		bootstrap(sessionId) {
+			return Promise.resolve(this.ctx.charter.bootstrap(sessionId));
+		}
+		edit(request) {
+			let actor;
+			try {
+				actor = resolveRemoteActor(this.ctx);
+			} catch (error) {
+				if (error instanceof CharterError) return Promise.resolve({
+					ok: false,
+					code: error.code,
+					message: error.message
+				});
+				throw error;
+			}
+			return this.ctx.charter.edit(request, actor);
+		}
+		async *openWatch(sessionId, signal) {
+			signal.throwIfAborted();
+			yield* watchCharter({
+				read: () => this.ctx.charter.viewById(sessionId),
+				subscribe: (listener) => this.ctx.charter.subscribe(sessionId, listener)
+			}, signal);
+		}
+	};
+})();
+//#endregion
+//#region .build-ts/remote/wire.js
+const charterErrorCodeSchema = z.enum([
+	"INVALID_ARGUMENT",
+	"FORBIDDEN",
+	"NOT_FOUND",
+	"LIFECYCLE_MISMATCH",
+	"REVISION_CONFLICT",
+	"MUTATION_ID_REUSED",
+	"INVALID_REFERENCE",
+	"INVALID_TRANSITION",
+	"IMMUTABLE_FIELD",
+	"QUOTA_EXCEEDED",
+	"CORRUPT_STATE",
+	"UNAVAILABLE"
+]);
+const charterViewSchema = z.object({
+	status: z.enum([
+		"ready",
+		"initializing",
+		"unavailable"
+	]),
+	sessionId: z.string().min(1),
+	revision: z.number().int().nonnegative(),
+	objective: charterObjectiveSchema.nullable(),
+	items: z.array(charterItemSchema),
+	promptText: z.string(),
+	promptDigest: z.string(),
+	limits: z.object({
+		maxPromptBytes: z.number().int().positive(),
+		maxObjectiveBytes: z.number().int().positive(),
+		maxItemBytes: z.number().int().positive(),
+		maxItems: z.number().int().positive().default(512),
+		maxPendingItems: z.number().int().nonnegative().default(512),
+		maxOps: z.number().int().positive(),
+		maxRecordBytes: z.number().int().positive().default(1048576),
+		maxActiveInvariants: z.number().int().positive().optional(),
+		maxActiveDeliverables: z.number().int().positive().optional()
+	}).strict(),
+	/** The stored record is valid but exceeds the current budget configuration. */
+	overBudget: z.boolean().default(false),
+	/** Optional Session lifecycle fingerprint for client draft binding. */
+	lifecycle: z.string().optional(),
+	message: z.string().optional()
+}).strict();
+const charterEditResultSchema = z.discriminatedUnion("ok", [z.object({
+	ok: z.literal(true),
+	replayed: z.boolean(),
+	committedRevision: z.number().int().positive(),
+	ids: z.record(z.string(), z.string()),
+	view: charterViewSchema
+}).strict(), z.object({
+	ok: z.literal(false),
+	code: charterErrorCodeSchema,
+	message: z.string(),
+	currentRevision: z.number().int().nonnegative().optional(),
+	view: charterViewSchema.optional()
+}).strict()]);
+const charterBootstrapProposalSchema = z.object({
+	objective: z.string().nullable(),
+	invariants: z.array(z.string()),
+	deliverables: z.array(z.string()),
+	source: z.object({
+		summarySeq: z.number().int().nonnegative(),
+		at: z.number().int().nonnegative(),
+		shadowedTokens: z.number().int().nonnegative().optional()
+	}).strict()
+}).strict();
+const charterBootstrapResultSchema = z.discriminatedUnion("available", [z.object({
+	available: z.literal(true),
+	proposal: charterBootstrapProposalSchema
+}).strict(), z.object({
+	available: z.literal(false),
+	reason: z.enum([
+		"not-live",
+		"no-summary",
+		"unavailable"
+	]),
+	message: z.string().optional()
+}).strict()]);
+const charterFrameSchema = z.discriminatedUnion("type", [z.object({
+	type: z.literal("snapshot"),
+	value: charterViewSchema
+}).strict(), z.object({
+	type: z.literal("changed"),
+	value: charterViewSchema
+}).strict()]);
+//#endregion
+//#region .build-ts/remote/contribution.js
+const sessionIdSchema = z.string().min(1);
+const charterRemoteContribution = {
+	package: "dsh-charter",
+	descriptors: [
+		{
+			id: "dsh-charter#charter/watch",
+			service: "charterRemote",
+			namespace: "charter",
+			method: "watch",
+			mode: "stream",
+			invocation: { kind: "direct" },
+			parameters: [{
+				name: "sessionId",
+				wire: "sessionId",
+				source: "json",
+				codec: {
+					mode: "strict",
+					typeSymbol: "dsh-charter/SessionId",
+					create: () => sessionIdSchema
+				}
+			}],
+			cancellation: { parameter: "signal" },
+			result: {
+				mode: "strict",
+				typeSymbol: "dsh-charter/CharterFrame",
+				create: () => charterFrameSchema
+			}
+		},
+		{
+			id: "dsh-charter#charter/bootstrap",
+			service: "charterRemote",
+			namespace: "charter",
+			method: "bootstrap",
+			invocation: { kind: "direct" },
+			parameters: [{
+				name: "sessionId",
+				wire: "sessionId",
+				source: "json",
+				codec: {
+					mode: "strict",
+					typeSymbol: "dsh-charter/SessionId",
+					create: () => sessionIdSchema
+				}
+			}],
+			result: {
+				mode: "strict",
+				typeSymbol: "dsh-charter/CharterBootstrapResult",
+				create: () => charterBootstrapResultSchema
+			}
+		},
+		{
+			id: "dsh-charter#charter/edit",
+			service: "charterRemote",
+			namespace: "charter",
+			method: "edit",
+			invocation: { kind: "direct" },
+			parameters: [{
+				name: "request",
+				wire: "request",
+				source: "json",
+				codec: {
+					mode: "strict",
+					typeSymbol: "dsh-charter/CharterEditRequest",
+					create: () => charterEditRequestSchema
+				}
+			}],
+			result: {
+				mode: "strict",
+				typeSymbol: "dsh-charter/CharterEditResult",
+				create: () => charterEditResultSchema
+			}
+		}
+	]
+};
+//#endregion
+export { CharterRemoteService, CharterRemoteService as default, charterBootstrapProposalSchema, charterBootstrapResultSchema, charterEditRequestSchema, charterEditResultSchema, charterFrameSchema, charterRemoteContribution, charterViewSchema };

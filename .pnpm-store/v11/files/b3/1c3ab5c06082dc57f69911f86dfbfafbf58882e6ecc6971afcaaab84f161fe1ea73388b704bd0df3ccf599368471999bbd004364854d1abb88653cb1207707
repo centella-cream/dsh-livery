@@ -1,0 +1,12 @@
+import { type CharterEditRequest, type CharterOp } from './schemas.js';
+export type UserTextIssue = 'empty' | 'control' | 'surrogate';
+export interface UserTextInspection {
+    /** NFC-normalized, CRLF-normalized, trimmed text. */
+    readonly value: string;
+    readonly issue: UserTextIssue | undefined;
+}
+/** Browser-safe validation shared by the Host normalizer and the client editor. */
+export declare function inspectUserText(input: string): UserTextInspection;
+export declare function normalizeUserText(input: string, field: string): string;
+export declare function normalizeEditRequest(input: unknown): CharterEditRequest;
+export declare function clientRefsOf(ops: readonly CharterOp[]): readonly string[];
