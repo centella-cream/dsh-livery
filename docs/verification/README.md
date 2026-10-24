@@ -1,5 +1,16 @@
 # Verification — Web profile acceptance
 
+> **Latest full run (shipped bytes): PASS — 110 passed / 0 failed / 3 skipped /
+> 2 warnings.** Tarball `dsh-livery-0.1.0.tgz` sha256
+> `3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb`; see
+> [web-acceptance.md](web-acceptance.md) for the auto-filled evidence.
+> Real-profile-equivalent clone run: 80 passed / 0 failed / 7 skipped /
+> 2 warnings in [web-acceptance-real-profile-clone.md](web-acceptance-real-profile-clone.md).
+> The 3 skips are the stock-boot handshake rows (host intentionally emits zero
+> rows for `skinId: stock`; re-asserted as `handshake.applied-boot` after Apply),
+> and the 2 warnings are the documented rc.2 grouped-bundle-URL deviation and
+> the 8,665 B active CSS (above the 8 KB target, under the 12 KB hard cap).
+
 This directory holds the evidence reports for the DSH Livery Web-profile
 acceptance harness. The harness is a **black-box** test: it installs the packed
 tarball through DSH's own profile package manager, boots the real
