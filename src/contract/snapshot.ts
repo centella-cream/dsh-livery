@@ -32,6 +32,13 @@ import type {
 const TARGET_VERSION = '0.2.0-rc.2'
 const ADAPTER_ID = 'dsh-0.2.0-rc.2-r1'
 const CLIENT_TARGET = 'chrome120'
+/**
+ * The target DSH package declares no `engines.node`, so the Node range cannot be
+ * copied from it. We record the runtime this adapter is certified on instead of
+ * inventing a wider claim.
+ */
+const CERTIFIED_NODE_RANGE = '^22.23.1'
+const NODE_RANGE_SOURCE = 'target-declares-none; certified on node v22.23.1'
 
 export interface ResolvedInstall {
   /** `.../node_modules/@deepseek-ai/dsh`, the CLI package root. */
@@ -61,7 +68,7 @@ export async function resolveDshInstall(input: string): Promise<ResolvedInstall>
     if (pkg.name !== '@deepseek-ai/dsh') continue
     const sibling = join(candidate, 'node_modules', '@deepseek-ai')
     const packagesRoot = existsSync(sibling) ? sibling : dirname(candidate)
-    return { dshRoot: candidate, packagesRoot, nodeRange: pkg.engines?.node ?? '' }
+    return { dshRoot: candidate, packagesRoot, nodeRange: pkg.engines?.node ?? CERTIFIED_NODE_RANGE }
   }
   throw new Error(
     `could not resolve an @deepseek-ai/dsh installation from ${input}; pass the dsh package root (the directory containing dsh/package.json)`,
@@ -665,11 +672,22 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
   // Layout root variables are part of the layout contract; re-derive from the same sheets.
   const { dshVariables } = parseCssDeclarations(sheets)
   const tokens = await extractTokenContract(install.packagesRoot)
-  const loaderAbi = await collectLoaderAbi(install.packagesRoot)
-  const hostApi = await collectHostApi(install.packagesRoot)
-  const clientApi = await collectClientApi(install.packagesRoot)
-  const layout = await collectLayoutContract(install.packagesRoot, tokens, dshVariables)
-  const profileSchema = await collectProfileSchema(install.packagesRoot)
+  const relativize = (files: readonly FileHash[]): FileHash[] =>
+    files.map((file) => ({ ...file, path: relative(install.packagesRoot, file.path).split(sep).join('/') }))
+  const rawLoaderAbi = await collectLoaderAbi(install.packagesRoot)
+  const loaderAbi: LoaderAbiContract = {
+    ...rawLoaderAbi,
+    evidence: relativize(rawLoaderAbi.evidence),
+    platformModules: { ...rawLoaderAbi.platformModules, evidence: relativize(rawLoaderAbi.platformModules.evidence) },
+  }
+  const rawHostApi = await collectHostApi(install.packagesRoot)
+  const hostApi: HostApiContract = { ...rawHostApi, evidence: relativize(rawHostApi.evidence) }
+  const rawClientApi = await collectClientApi(install.packagesRoot)
+  const clientApi: ClientApiContract = { ...rawClientApi, evidence: relativize(rawClientApi.evidence) }
+  const rawLayout = await collectLayoutContract(install.packagesRoot, tokens, dshVariables)
+  const layout: LayoutContract = { ...rawLayout, evidence: relativize(rawLayout.evidence) }
+  const rawProfileSchema = await collectProfileSchema(install.packagesRoot)
+  const profileSchema: ProfileSchemaContract = { ...rawProfileSchema, evidence: relativize(rawProfileSchema.evidence) }
 
   const capabilities: ContractCapabilities = {
     themeCss: layout.capabilityFacts.themeCss === true,
@@ -704,6 +722,7 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
       kind: 'installed-package',
       dshPackage: `@deepseek-ai/dsh@${version}`,
       nodeRange: install.nodeRange,
+      nodeRangeSource: install.nodeRange === CERTIFIED_NODE_RANGE ? NODE_RANGE_SOURCE : 'declared',
       clientTarget: CLIENT_TARGET,
     },
     loaderAbi,
@@ -797,7 +816,7 @@ export async function writeSnapshotArtifacts(
           ...snapshot.clientApi.evidence,
           ...snapshot.layout.evidence,
           ...snapshot.profileSchema.evidence,
-        ].map((file) => ({ ...file, path: relative(install.packagesRoot, file.path).split(sep).join('/') })),
+        ],
       },
       null,
       2,

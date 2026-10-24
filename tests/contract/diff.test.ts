@@ -34,7 +34,7 @@ function makeSnapshot(overrides: {
     adapterId: 'dsh-0.2.0-rc.2-r1',
     hostVersion: overrides.version ?? '0.2.0-rc.2',
     capturedAt: '2026-10-24T00:00:00.000Z',
-    source: { kind: 'installed-package', dshPackage: '@deepseek-ai/dsh@0.2.0-rc.2', nodeRange: '>=22', clientTarget: 'chrome120' },
+    source: { kind: 'installed-package', dshPackage: '@deepseek-ai/dsh@0.2.0-rc.2', nodeRange: '^22.23.1', nodeRangeSource: 'target-declares-none; certified on node v22.23.1', clientTarget: 'chrome120' },
     loaderAbi: {
       hash: hashes.loaderAbi,
       globals: ['__ModuleLoader__'],
@@ -129,7 +129,7 @@ function makeMatrix(status: SupportMatrix['entries'][number]['status']): Support
       {
         hostVersion: '0.2.0-rc.2',
         adapterId: 'dsh-0.2.0-rc.2-r1',
-        contractHash: 'sha256:07588f7e671ea4c406b62ddd7dfcf3b63c7ee9fdd1f989d0db28f52b8ced5c66',
+        contractHash: 'sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce',
         status,
         profiles: {
           desktop: { macos: status === 'draft' ? 'pending' : 'passed', win32: status === 'draft' ? 'pending' : 'passed' },

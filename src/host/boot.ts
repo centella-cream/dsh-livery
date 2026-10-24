@@ -3,15 +3,20 @@
  *
  * This is the only Host code that runs before the Client exists, so it carries
  * the plugin's fail-closed rule: unless the observed host identity matches the
- * certified contract *exactly* and the active livery renders, it contributes
- * zero rows. A closed gate leaves the page on the host's own stock appearance —
- * never a half-injected palette, never a partial row table that a later render
- * might finish.
+ * certified contract *exactly* and the active livery has a compiled stylesheet,
+ * it contributes zero rows. A closed gate leaves the page on the host's own
+ * stock appearance — never a half-injected palette, never a partial row table
+ * that a later render might finish.
+ *
+ * The runtime never renders or hashes CSS. `renderBootCssFromCatalog` reads the
+ * `css` fragments and `cssHash` the compiler already produced and gated, which
+ * is what makes the injected bytes provably identical to what the Client will
+ * derive from the catalog.
  *
  * Row shapes follow `@deepseek-ai/dsh-host-webserver`'s `IndexInjection` union:
- * `global` (the handshake payload), `html` (a head `<style>` with an id the
- * Client can adopt), `script` (body attribute stamping). All content is escaped
- * so no livery id or CSS comment can close its host element early.
+ * `html` (a head `<style>` with an id the Client can adopt), then `global` (the
+ * handshake payload), then `script` (body attribute stamping). All content is
+ * escaped so no livery id or CSS comment can close its host element early.
  */
 
 import type { IndexInjection } from '@deepseek-ai/dsh-host-webserver'
@@ -32,7 +37,7 @@ import {
   type CompiledLivery,
   type LiveryCatalog,
 } from '../core/types.js'
-import { findLivery, hashCss, renderBootCss, renderStyleText } from '../core/index.js'
+import { findLivery, renderBootCssFromCatalog } from '../core/catalog.js'
 import type { CatalogMeta } from '../generated/liveries.js'
 import { CONTRACT_HASH, type ContractFacts } from '../generated/contract.js'
 import { buildCatalog } from './catalog.js'
@@ -53,7 +58,10 @@ export type ProfileKind = 'web' | 'desktop'
  * so it can explain a closed gate without depending on the render layer.
  */
 export interface GateResult {
-  /** True only when every identity check passed and the boot CSS rendered. */
+  /**
+   * True only when every identity check passed. This is the gate verdict used
+   * for diagnostics: `stock` passes the gate but has no boot content to emit.
+   */
   readonly accepted: boolean
   /** Stable codes for every failed check; empty when accepted. */
   readonly codes: readonly string[]
@@ -249,15 +257,19 @@ export function computeBootState(input: BootStateInput): BootState {
     codes.push(GATE_CODE.contractMismatch)
   }
 
-  // 3. Resolve the requested skin. `stock` is a valid, accepted non-livery.
-  const requestedSkinId = (input.skinId ?? STOCK_ID).trim()
+  // 3. Resolve the requested skin. `stock` is a valid, accepted non-livery; any
+  // other id must be one this build ships — a deleted or newer-build id is a
+  // closed gate, never silently downgraded to stock (that would hide the
+  // mismatch instead of diagnosing it).
+  const requestedSkinId = (input.skinId ?? STOCK_ID).trim() === ''
+    ? STOCK_ID
+    : (input.skinId ?? STOCK_ID).trim()
   const knownIds = new Set(input.liveries.map((livery) => livery.id))
-  const normalizedSkinId = normalizeSkinId(requestedSkinId, knownIds)
-  const stockRequested = normalizedSkinId === STOCK_ID
-  if (!stockRequested && findLivery(catalog, normalizedSkinId) === undefined) {
-    codes.push(GATE_CODE.skinUnknown)
-  }
+  const stockRequested = requestedSkinId === STOCK_ID
+  const normalizedSkinId = stockRequested ? STOCK_ID : normalizeSkinId(requestedSkinId, knownIds)
   const activeLivery = stockRequested ? undefined : findLivery(catalog, normalizedSkinId)
+  const skinUnknown = !stockRequested && activeLivery === undefined
+  if (skinUnknown) codes.push(GATE_CODE.skinUnknown)
 
   // 4. Required capabilities of the active livery.
   const missingCapabilities: string[] = []
@@ -270,41 +282,28 @@ export function computeBootState(input: BootStateInput): BootState {
     for (const id of missingCapabilities) codes.push(`${CAPABILITY_MISSING_PREFIX}${id}`)
   }
 
-  // 5. Render the boot stylesheet — only once the identity checks are clean, so
-  // an incompatible host never even executes the renderer against its catalog.
-  //
-  // FROZEN: the injected bytes and their hash must be exactly the stylesheet the
-  // Client will independently produce from the catalog, i.e.
-  // `renderBootCss(catalog, id).css === renderStyleText(livery, capabilities)`
-  // and `.hash === hashCss(css)`. The boot element is adopted verbatim by the
-  // Client, so any drift here (a wrapper, a banner, a newline) is a first-frame
-  // correctness bug, not cosmetic — it closes the gate instead.
+  // 5. Read the compiled boot stylesheet — only once the identity checks are
+  // clean, so an incompatible host never touches the render path at all. There
+  // is no runtime rendering or hashing here: the compiler emitted the exact
+  // bytes (`livery.css.*`) and their hash (`livery.cssHash`) under its own
+  // gates, so the Host cannot drift from what the Client will derive.
   let bootCss = ''
   let bootHash = ''
   let renderError: string | null = null
-  if (codes.length === 0 && activeLivery !== undefined) {
+  if (codes.length === 0 && !stockRequested) {
     try {
-      const render = input.renderBoot ?? renderBootCss
-      const rendered = render(catalog, activeLivery.id)
-      if (typeof rendered.css !== 'string' || rendered.css.trim() === '') {
-        throw new Error('renderer produced empty boot CSS')
+      const render = input.renderBoot ?? renderBootCssFromCatalog
+      const rendered = render(catalog, normalizedSkinId)
+      if (typeof rendered.css !== 'string' || rendered.css === '') {
+        throw new Error('no compiled boot CSS for the active livery')
       }
-      if (typeof rendered.hash !== 'string' || rendered.hash.trim() === '') {
-        throw new Error('renderer produced no boot CSS hash')
+      if (typeof rendered.hash !== 'string' || rendered.hash === '') {
+        throw new Error('no compiled boot CSS hash for the active livery')
       }
       // A raw-text element ends at the first `</style`; such CSS cannot be
       // injected byte-identically, so it fails closed instead of being mangled.
       if (/<\/style/i.test(rendered.css)) {
         throw new Error('boot CSS contains a closing style tag')
-      }
-      if (input.renderBoot === undefined) {
-        const expectedCss = renderStyleText(activeLivery, input.capabilities)
-        if (rendered.css !== expectedCss) {
-          throw new Error('boot CSS drifted from renderStyleText (frozen hash equality)')
-        }
-        if (rendered.hash !== hashCss(expectedCss)) {
-          throw new Error('boot CSS hash drifted from hashCss (frozen hash equality)')
-        }
       }
       bootCss = rendered.css
       bootHash = rendered.hash
@@ -314,11 +313,14 @@ export function computeBootState(input: BootStateInput): BootState {
     }
   }
 
-  const accepted = codes.length === 0
+  // A gate pass is not the same as boot content: stock passes the gate and
+  // contributes nothing, so `accepted` here means "rows will be injected".
+  const gateAccepted = codes.length === 0
+  const accepted = gateAccepted && !stockRequested && bootCss !== ''
   const activeSkinId = accepted && activeLivery !== undefined ? activeLivery.id : STOCK_ID
 
   const gate: GateResult = {
-    accepted,
+    accepted: gateAccepted,
     codes,
     profileKind: input.profileKind,
     observedHostVersion: input.observedHostVersion,
@@ -349,13 +351,16 @@ export function computeBootState(input: BootStateInput): BootState {
   }
 
   const rows: IndexInjection[] = []
-  if (accepted && activeLivery !== undefined) {
-    rows.push({ kind: 'global', name: BOOT_GLOBAL, value: payload })
+  if (accepted) {
+    // Frozen row order: first-paint CSS first (head rows are spliced immediately
+    // after `<head>`, before the shell's own stylesheet — later would lose the
+    // cascade), then the handshake global, then the body attribute stamp.
     rows.push({ kind: 'html', placement: 'head', html: renderBootStyleHtml(bootCss, bootHash) })
+    rows.push({ kind: 'global', name: BOOT_GLOBAL, value: payload })
     rows.push({
       kind: 'script',
       placement: 'body',
-      text: renderBootAttributeScript(activeLivery.id, bootHash),
+      text: renderBootAttributeScript(normalizedSkinId, bootHash),
     })
   }
 

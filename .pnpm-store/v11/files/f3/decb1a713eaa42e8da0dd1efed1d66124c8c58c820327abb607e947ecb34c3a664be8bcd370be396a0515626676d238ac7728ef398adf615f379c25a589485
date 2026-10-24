@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "graphite",
+  "meta": {
+    "name": {
+      "zh-CN": "石墨",
+      "en-US": "Graphite"
+    },
+    "description": {
+      "zh-CN": "近乎中性的高对比石墨灰，边界清晰，信息层级一眼可辨。",
+      "en-US": "Near-neutral graphite with firm contrast and crisp edges, built for hierarchy you can scan."
+    },
+    "tags": [
+      "contrast",
+      "neutral"
+    ],
+    "order": 50
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#3c3c3e",
+        "secondary": "#6b6b70",
+        "surface": "#f5f5f6",
+        "text": "#111113"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#d4d4d8",
+        "secondary": "#9a9aa0",
+        "surface": "#121214",
+        "text": "#f7f7f8"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "compact",
+      "en-US": "latin-default"
+    }
+  },
+  "layout": {
+    "density": "compact",
+    "conversationWidth": "wide",
+    "messageFlow": "separated",
+    "surfaceStyle": "solid"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "host-message-flow",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

@@ -95,6 +95,7 @@ export const enUS = {
   'state.degradedTitle': 'Degraded livery',
   'state.degradedBody': 'Some capabilities are unavailable, so only the layers that can work safely are applied. Colors keep working.',
   'state.configUnavailable': 'The host is not serving livery settings right now.',
+  'state.readOnly': 'This deployment stores settings read-only, so liveries can be previewed but not saved.',
   'state.catalogEmpty': 'No liveries are installed.',
 
   // Self-check panel.
@@ -167,11 +168,22 @@ export const enUS = {
   'tag.classic': 'Classic',
   'tag.playful': 'Playful',
 
+  // Capability display names (stable ids live in the generated contract).
+  'capability.host-density-tokens': 'density',
+  'capability.host-transcript-width': 'conversation width',
+  'capability.host-message-flow': 'message flow',
+  'capability.theme-css': 'theme CSS',
+  'capability.host-font-family': 'font family',
+  'capability.surface-material': 'surface material',
+
+  // Optional-capability degradation note shown inside the self-check panel.
+  'check.optionalInfo': 'Optional layout capabilities are unavailable on this host: {items}. The host layout is used instead.',
+
   // Keyboard hint.
   'hint.keyboard': 'Use the arrow keys to move between liveries and Enter to preview.',
 
   // Diagnostics report (copied to the clipboard; technical but still localized).
-  'diag.header': 'DSH Livery diagnostics',
+  'diag.header': 'DSH Livery (dsh-livery) diagnostics',
   'diag.environment': 'Environment',
   'diag.boot': 'First-frame handshake',
   'diag.catalog': 'Catalog',

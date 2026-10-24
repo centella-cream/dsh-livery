@@ -282,9 +282,22 @@ async function commandLoaderAbi(context: CliContext): Promise<number> {
         materializedDuringEval = true
       },
     },
+    body: {
+      setAttribute: () => undefined,
+      removeAttribute: () => undefined,
+      getAttribute: () => null,
+      appendChild: () => {
+        materializedDuringEval = true
+      },
+      querySelector: () => null,
+    },
+    documentElement: { lang: 'zh-CN', setAttribute: () => undefined, style: { setProperty: () => undefined } },
     querySelector: () => null,
-    createElement: () => ({ dataset: {}, textContent: '' }),
+    createElement: () => ({ dataset: {}, style: {}, textContent: '', setAttribute: () => undefined }),
+    getElementById: () => null,
     readyState: 'loading',
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
   }
   const sandbox: Record<string, unknown> = {
     __ModuleLoader__: {
@@ -307,7 +320,13 @@ async function commandLoaderAbi(context: CliContext): Promise<number> {
   record('no-materialization-on-eval', materializedDuringEval === false, 'no plugin DOM writes before materialization')
   if (typeof capturedFactory === 'function') {
     try {
-      ;(capturedFactory as () => unknown)()
+      // Materialize exactly once with the seeded platform module table stubbed;
+      // the factory must not require anything outside that table.
+      const requireStub = (request: string) => {
+        if (!isPlatformModule(request)) throw new Error(`unexpected runtime require(${request})`)
+        return {}
+      }
+      ;(capturedFactory as (require: (request: string) => unknown) => unknown)(requireStub)
       record('factory-materializes', true, 'factory materialized without throwing')
     } catch (error) {
       record('factory-materializes', false, `factory threw: ${(error as Error).message}`)

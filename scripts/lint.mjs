@@ -34,13 +34,16 @@ for (const file of sourceFiles) {
   const rel = relative(root, file)
   if (rel.startsWith('docs/research/') || rel.startsWith('docs/verification/')) continue
   if (rel.startsWith('references/') || rel.startsWith('research/')) continue
-  if (/\/Users\/[^/\s"'`]+/u.test(text) && !rel.startsWith('docs/')) {
+  // Development-only helpers may probe a local DSH install path; shipped sources
+  // and packaging must never carry absolute host paths.
+  const localProbe = rel.startsWith('tests/') || rel.startsWith('scripts/probe/')
+  if (/\/Users\/[^/\s"'`]+/u.test(text) && !localProbe && !rel.startsWith('docs/')) {
     problems.push(`${rel}: contains an absolute user path`)
   }
   if (rel.startsWith('src/') && text.includes("from 'references/")) {
     problems.push(`${rel}: imports from references/ (must never ship)`)
   }
-  if (rel.startsWith('src/') && /{{INJECT|TODO:|FIXME:/u.test(text)) {
+  if (rel.startsWith('src/') && /\{\{INJECT|TODO:|FIXME:/u.test(text)) {
     problems.push(`${rel}: contains an unresolved TODO/FIXME/injection marker`)
   }
 }

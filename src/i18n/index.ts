@@ -113,6 +113,9 @@ function proseOf(value: string): string {
  */
 export const SHARED_VALUE_KEYS: readonly LiveryKey[] = [
   'about.plugin',
+  'current.idLabel',
+  'diag.line',
+  'diag.capabilityLine',
   'diag.ratio',
   'diag.count',
 ]

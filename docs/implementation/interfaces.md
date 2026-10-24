@@ -83,8 +83,34 @@ export function hashLivery(livery: Omit<CompiledLivery,'hash'>): string
 export function findLivery(catalog: LiveryCatalog, id: string): CompiledLivery | undefined
 export function isKnownSkinId(catalog: LiveryCatalog, id: string): boolean
 
-// src/core/index.ts re-exports all of the above.
+// src/core/catalog.ts (runtime-safe: types only, no derivation/stock imports)
+export function findLivery(source, id): CompiledLivery | undefined
+export function isKnownSkinId(source, id): boolean
+export function resolveActiveLivery(source, skinId): { livery?: CompiledLivery; normalizedId: string }
+export function normalizeSkinId(source, skinId): string
+export function resolveSkinForBoot(source, skinId): { livery?: CompiledLivery; css: string; hash: string }
+export function styleTextOf(livery): string                 // css.tokens + css.typography + css.layout
+export function liveryCssHash(livery): string               // livery.cssHash (frozen)
+export function renderBootCssFromCatalog(catalog, skinId): { css: string; hash: string }
+
+// src/core/render.ts (COMPILER-ONLY: may import generated/stock; never imported by client)
+export function renderLiveryCss(livery, capabilities): LiveryCss   // compact bytes by default; { pretty: true } audit-only
+export function styleTextFromFragments(css): string
+export function computeLiveryCssHash(css): string
+export function renderStyleText(livery, capabilities): string      // compile-time only
+export function renderBootCss(catalog, skinId): { css: string; hash: string }  // compile-time only
+export function hashCss(css: string): string                        // "sha256:<hex>"
+export function hashLivery(livery: Omit<CompiledLivery, 'hash'>): string
+
+// CompiledLivery extra field (frozen): cssHash = hashCss(styleTextOf(livery)).
+// src/core/index.ts re-exports all of the above for Node/test consumption only.
 ```
+
+**A-tier emission policy:** compiled token output contains every alias/specific/static
+token with at least one shipped-package `var()` consumer (`STOCK_TOKENS[name].referencedBy`
+non-empty). Unconsumed tokens stay inherited from stock and are listed as versioned
+exemptions in `artifacts/liveries/token-coverage.json`; `audit:tokens` fails only on a
+consumed-and-uncovered token with no exemption. Runtime bundles never filter or render.
 
 ## 3. Client platform modules (seeded, no `dsh.client.external` needed)
 
@@ -97,13 +123,18 @@ another plugin's client module for values; collaborate through Cordis services.
 
 ## 4. Host ↔ Client handshake
 
-**Hash equality (frozen):** `renderBootCss(catalog, skinId).css` MUST be byte-identical
-to `renderStyleText(findLivery(catalog, skinId), catalog.capabilities)` for the same
-compiled livery, and `.hash` MUST equal `hashCss(css)`. No host-side wrapper, banner,
-comment, indentation or newline may be added. The client compares
-`hashCss(renderStyleText(livery, capabilities))` with `BootPayload.cssHash` and
-`body[data-dsh-livery-hash]`; equality triggers the zero-write adoption path.
-When `skinId === 'stock'` the host emits NO boot style and `cssHash = ''`.
+**Hash equality (frozen):** the compiler stores the final stylesheet bytes on every
+compiled livery (`css.tokens`, `css.typography`, `css.layout`) plus
+`cssHash = hashCss(tokens + typography + layout)`. At runtime no component derives
+stylesheets: the Host and Client concatenate the stored fragments byte-for-byte
+(`styleTextOf(livery)`) and compare `livery.cssHash` with
+`BootPayload.cssHash` / `body[data-dsh-livery-hash]`. No wrapper, banner, comment,
+indentation or newline may be added at runtime. Equality triggers the zero-write
+adoption path. When `skinId === 'stock'` the Host emits NO boot style and
+`cssHash = ''`. Runtime modules MUST NOT import the derivation/stock modules; the
+compile-time renderer is compiler-only (`src/core/render.ts`), while
+`src/core/catalog.ts` exposes the pure runtime helpers (`styleTextOf`,
+`liveryCssHash`, `findLivery`).
 
 Host (`src/host/boot.ts`) contributes three `webserver/index-inject` rows when the
 pre-loader gate accepts the host:

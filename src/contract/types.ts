@@ -136,6 +136,8 @@ export interface ContractSnapshot {
     readonly kind: 'installed-package'
     readonly dshPackage: string
     readonly nodeRange: string
+    /** Where the range came from: `declared` by the target or `certified`. */
+    readonly nodeRangeSource: string
     readonly clientTarget: string
   }
   readonly loaderAbi: LoaderAbiContract

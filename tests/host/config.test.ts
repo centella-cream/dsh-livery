@@ -80,7 +80,7 @@ describe('normalizeSkinId', () => {
 
   it('accepts Set/Map lookups and never throws on a hostile iterable', () => {
     expect(normalizeSkinId('ocean-mist', new Set(known))).toBe('ocean-mist')
-    expect(normalizeSkinId('ivory-slate', new Map(known.map((id) => [id, true])))).toBe('ivory-slate')
+    expect(normalizeSkinId('ivory-slate', new Map(known.map((id) => [id, true])) as unknown as Iterable<string>)).toBe('ivory-slate')
     const hostile = {
       [Symbol.iterator](): Iterator<string> {
         throw new Error('broken iterable')

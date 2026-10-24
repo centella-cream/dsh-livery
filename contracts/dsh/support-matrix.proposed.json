@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-24T15:36:17.177Z",
+  "updatedAt": "2026-10-24T15:52:48.230Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
       "adapterId": "dsh-0.2.0-rc.2-r1",
-      "contractHash": "sha256:07588f7e671ea4c406b62ddd7dfcf3b63c7ee9fdd1f989d0db28f52b8ced5c66",
+      "contractHash": "sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce",
       "status": "draft",
       "profiles": {
         "desktop": {

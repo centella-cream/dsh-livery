@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "linen",
+  "meta": {
+    "name": {
+      "zh-CN": "亚麻",
+      "en-US": "Linen"
+    },
+    "description": {
+      "zh-CN": "亚麻布般的中性暖灰，不偏冷不偏黄，是最耐看的日常底色。",
+      "en-US": "A linen-neutral warm grey with no colour cast — the everyday background that ages well."
+    },
+    "tags": [
+      "neutral",
+      "calm"
+    ],
+    "order": 100
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#7a6a53",
+        "secondary": "#b3a48c",
+        "surface": "#f7f4ee",
+        "text": "#2a251d"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#c9b79a",
+        "secondary": "#a3937a",
+        "surface": "#1b1813",
+        "text": "#f6f1e7"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "cjk-comfortable",
+      "en-US": "latin-default"
+    }
+  },
+  "layout": {
+    "density": "comfortable",
+    "conversationWidth": "wide",
+    "messageFlow": "separated",
+    "surfaceStyle": "solid"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "host-message-flow",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

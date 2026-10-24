@@ -21,6 +21,10 @@ import type {
 import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../../src/generated/contract.js'
 import type { BootStateInput } from '../../src/host/boot.js'
 
+/** Boot CSS renderer stub: deterministic bytes and hash, no core dependency. */
+export const FIXTURE_BOOT_CSS = 'body[data-dsh-livery="ivory-slate"]{--dsw-alias-bg:#ffffff}'
+export const FIXTURE_BOOT_HASH = 'sha256:0123456789abcdef0123456789abcdef'
+
 /** Typography metrics fixture used by the compiled-livery fixture. */
 function metrics(id: MetricsDefinition['id'], lineHeight: number): MetricsDefinition {
   return { id, lineHeight, note: 'fixture' }
@@ -85,6 +89,7 @@ export function makeLivery(overrides: Partial<CompiledLivery> = {}): CompiledLiv
     light: variant,
     dark: variant,
     css: { tokens: '', typography: '', layout: '' },
+    cssHash: FIXTURE_BOOT_HASH,
     hash: 'sha256:fixture-livery',
     audit,
     ...overrides,
@@ -103,10 +108,6 @@ export function makeCatalogMeta(overrides: Partial<CatalogMeta> = {}): CatalogMe
     ...overrides,
   }
 }
-
-/** Boot CSS renderer stub: deterministic bytes and hash, no core dependency. */
-export const FIXTURE_BOOT_CSS = 'body[data-dsh-livery="ivory-slate"]{--dsw-alias-bg:#ffffff}'
-export const FIXTURE_BOOT_HASH = 'sha256:0123456789abcdef0123456789abcdef'
 
 /**
  * A full boot input that the gate must accept, before per-test overrides.

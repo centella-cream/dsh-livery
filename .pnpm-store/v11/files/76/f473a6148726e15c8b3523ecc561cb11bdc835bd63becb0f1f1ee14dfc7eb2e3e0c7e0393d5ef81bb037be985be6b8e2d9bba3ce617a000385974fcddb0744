@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400" role="img" aria-labelledby="title desc" data-livery="linen" data-locale="zh" data-mode="dark">
+<title id="title">亚麻 · 中文 · Dark</title>
+<desc id="desc">亚麻布般的中性暖灰，不偏冷不偏黄，是最耐看的日常底色。 [linen/zh/dark] Fixed contract preview rendered from compiled livery tokens.</desc>
+<rect x="0" y="0" width="640" height="400" fill="#1b1813"/>
+<rect x="0" y="0" width="240" height="400" fill="#211e18"/>
+<line x1="239.50" y1="0" x2="239.50" y2="400" stroke="#ffffff" stroke-width="1" stroke-opacity="0.12"/>
+<circle cx="28" cy="30" r="10" fill="#c9b79a"/>
+<rect x="23.50" y="26.50" width="9" height="2.20" rx="1.10" fill="#3b3731"/>
+<rect x="23.50" y="30.50" width="6" height="2.20" rx="1.10" fill="#3b3731"/>
+<text x="46" y="33" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="13" fill="#f6f1e7" font-weight="600">亚麻</text>
+<text x="46" y="44" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="8.50" fill="#b1aca4" letter-spacing="0.80">DSH LIVERY</text>
+<text x="14" y="68" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" letter-spacing="0.40">会话</text>
+<rect x="12" y="74" width="216" height="30" rx="8" fill="#49463f"/>
+<rect x="12" y="80" width="2.50" height="18" rx="1.25" fill="#c9b79a"/>
+<rect x="24" y="83" width="12" height="12" rx="3.50" fill="#c9b79a"/>
+<text x="44" y="94" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#f6f1e7" font-weight="600">新会话</text>
+<rect x="24" y="115" width="12" height="12" rx="3.50" fill="#b1aca4" opacity="0.75"/>
+<text x="44" y="126" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#d0ccc2" font-weight="400">设计评审</text>
+<rect x="24" y="147" width="12" height="12" rx="3.50" fill="#b1aca4" opacity="0.75"/>
+<text x="44" y="158" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#d0ccc2" font-weight="400">发布清单</text>
+<text x="14" y="190" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" letter-spacing="0.40">插件</text>
+<rect x="24" y="205" width="12" height="12" rx="3.50" fill="#b1aca4" opacity="0.60"/>
+<text x="44" y="216" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#d0ccc2">主题预览</text>
+<rect x="24" y="237" width="12" height="12" rx="3.50" fill="#b1aca4" opacity="0.60"/>
+<text x="44" y="248" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#d0ccc2">任务面板</text>
+<rect x="14" y="348" width="96" height="22" rx="11" fill="#292520" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<circle cx="26" cy="359" r="4.50" fill="#c9b79a"/>
+<text x="36" y="363" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#d0ccc2" font-weight="500">深色</text>
+<text x="226" y="363" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" text-anchor="end">简体中文</text>
+<text x="14" y="386" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="8.50" fill="#99958d">固定契约场景</text>
+<rect x="240" y="0" width="400" height="41" fill="#1b1813"/>
+<line x1="240" y1="40.50" x2="640" y2="40.50" stroke="#ffffff" stroke-width="1" stroke-opacity="0.06"/>
+<text x="256" y="26" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="13.50" fill="#f6f1e7" font-weight="600">新会话</text>
+<rect x="550" y="13" width="68" height="20" rx="10" fill="#292520" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<circle cx="561" cy="23" r="4" fill="#c9b79a"/>
+<text x="570" y="26.50" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#d0ccc2" font-weight="500">深色模式</text>
+<text x="618" y="53" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" text-anchor="end">你</text>
+<rect x="426" y="58" width="192" height="54" rx="11" fill="#312e28" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+<text x="438" y="80.25" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="12" fill="#f6f1e7">帮我看看这版配色在深色模式下</text>
+<text x="438" y="99.25" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="12" fill="#f6f1e7">够不够清楚，尤其是链接。</text>
+<circle cx="256" cy="137" r="8" fill="#c9b79a"/>
+<text x="271" y="140.50" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="10.50" fill="#f6f1e7" font-weight="600">助手</text>
+<text x="254" y="157" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="12" fill="#f6f1e7">对比度都过了：正文、链接和焦点环均达到 AA。</text>
+<text x="254" y="176" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="12" fill="#f6f1e7" opacity="0.92">明暗两套共用同一组中性色阶，切换很稳。</text>
+<rect x="254" y="213" width="364" height="100" rx="10" fill="#292520" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<rect x="266" y="225" width="18" height="18" rx="5" fill="#c9b79a"/>
+<rect x="270.50" y="230.50" width="9" height="2" rx="1" fill="#3b3731"/>
+<rect x="270.50" y="234.50" width="6" height="2" rx="1" fill="#3b3731"/>
+<text x="292" y="237" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11.50" fill="#f6f1e7" font-weight="600">任务面板</text>
+<rect x="346" y="224" width="29" height="15" rx="7.50" fill="#312e28"/>
+<text x="352" y="234.50" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="8.50" fill="#b1aca4">插件</text>
+<circle cx="560" cy="233" r="3.50" fill="#22c55e"/>
+<text x="604" y="236" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9" fill="#d0ccc2" text-anchor="end">运行中</text>
+<line x1="254" y1="247.50" x2="618" y2="247.50" stroke="#ffffff" stroke-width="1" stroke-opacity="0.06"/>
+<circle cx="272" cy="261" r="4.50" fill="#22c55e"/>
+<text x="274.50" y="263.60" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="6" fill="#3b3731" font-weight="700" text-anchor="middle">✓</text>
+<text x="284" y="264" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="10.50" fill="#f6f1e7">生成预览图</text>
+<text x="604" y="264" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" text-anchor="end">4 张</text>
+<circle cx="272" cy="282" r="4.50" fill="#d3c4ab"/>
+<text x="274.50" y="284.60" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="6" fill="#3b3731" font-weight="700" text-anchor="middle">✓</text>
+<text x="284" y="285" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="10.50" fill="#f6f1e7">审计对比度</text>
+<text x="604" y="285" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="9.50" fill="#b1aca4" text-anchor="end">AA 通过</text>
+<text x="284" y="302" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="10" fill="#d0ccc2">检查 token 覆盖</text>
+<rect x="404" y="297" width="164" height="5" rx="2.50" fill="#3b3731"/>
+<rect x="404" y="297" width="134" height="5" rx="2.50" fill="#c9b79a"/>
+<text x="604" y="302" font-family="&quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, &quot;Noto Sans Mono CJK SC&quot;, monospace" font-size="8.50" fill="#b1aca4" text-anchor="end">OK</text>
+<rect x="254" y="332" width="364" height="52" rx="12" fill="#312e28" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<line x1="266" y1="344" x2="266" y2="354" stroke="#ffffff" stroke-width="1" stroke-opacity="0.16"/>
+<text x="268" y="353" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="11" fill="#b1aca4">给 Livery 发一条消息…</text>
+<text x="268" y="369" font-family="&quot;PingFang SC&quot;, &quot;Microsoft YaHei UI&quot;, &quot;Noto Sans CJK SC&quot;, &quot;Source Han Sans SC&quot;, system-ui, sans-serif" font-size="8.50" fill="#99958d">Enter 发送 · Shift + Enter 换行</text>
+<circle cx="594" cy="358" r="13" fill="#c9b79a"/>
+<path d="M 594 353 L 599 358 L 594 363" fill="none" stroke="#3b3731" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

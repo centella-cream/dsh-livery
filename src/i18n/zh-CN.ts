@@ -93,6 +93,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'state.degradedTitle': '皮肤已降级',
   'state.degradedBody': '部分能力不可用，因此只应用能够安全生效的层；颜色仍会正常显示。',
   'state.configUnavailable': '宿主当前未提供皮肤设置。',
+  'state.readOnly': '当前部署以只读方式保存设置，可以预览皮肤但无法保存。',
   'state.catalogEmpty': '尚未安装任何皮肤。',
 
   // Self-check panel.
@@ -165,11 +166,22 @@ export const zhCN: Record<LiveryKey, string> = {
   'tag.classic': '古典',
   'tag.playful': '活泼',
 
+  // Capability display names (stable ids live in the generated contract).
+  'capability.host-density-tokens': '密度',
+  'capability.host-transcript-width': '会话宽度',
+  'capability.host-message-flow': '消息流',
+  'capability.theme-css': '主题样式',
+  'capability.host-font-family': '字体族',
+  'capability.surface-material': '表面材质',
+
+  // Optional-capability degradation note shown inside the self-check panel.
+  'check.optionalInfo': '可选布局能力在当前宿主不可用：{items}；已回退到宿主布局。',
+
   // Keyboard hint.
   'hint.keyboard': '使用方向键在皮肤之间移动，按回车预览。',
 
   // Diagnostics report.
-  'diag.header': 'DSH Livery 诊断信息',
+  'diag.header': 'DSH Livery（dsh-livery）诊断信息',
   'diag.environment': '环境',
   'diag.boot': '首帧握手',
   'diag.catalog': '目录',

@@ -2,11 +2,12 @@
   "schemaVersion": 1,
   "adapterId": "dsh-0.2.0-rc.2-r1",
   "hostVersion": "0.2.0-rc.2",
-  "capturedAt": "2026-10-24T15:36:17.177Z",
+  "capturedAt": "2026-10-24T15:52:48.230Z",
   "source": {
     "kind": "installed-package",
     "dshPackage": "@deepseek-ai/dsh@0.2.0-rc.2",
-    "nodeRange": "",
+    "nodeRange": "^22.23.1",
+    "nodeRangeSource": "target-declares-none; certified on node v22.23.1",
     "clientTarget": "chrome120"
   },
   "loaderAbi": {
@@ -40,7 +41,7 @@
       "chunkProtocol": "require.async(\"./client.<name>.js\")",
       "evidence": [
         {
-          "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-modules/lib/index.js",
+          "path": "dsh-client-modules/lib/index.js",
           "sha256": "sha256:03ea21df556256a61289bae762bd1831fff43d035d49b8926d6c0f0b30b0e073",
           "bytes": 41704
         }
@@ -48,17 +49,17 @@
     },
     "evidence": [
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-modules/lib/client.js",
+        "path": "dsh-client-modules/lib/client.js",
         "sha256": "sha256:6fa57df9f12225ea0644ed22bc149eadf7c21e5b0b43a8683c4081567b96374f",
         "bytes": 40277
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-modules/lib/index.js",
+        "path": "dsh-client-modules/lib/index.js",
         "sha256": "sha256:03ea21df556256a61289bae762bd1831fff43d035d49b8926d6c0f0b30b0e073",
         "bytes": 41704
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/assets/index-5SrrfWpU.js",
+        "path": "dsh-web-frontend/dist/assets/index-5SrrfWpU.js",
         "sha256": "sha256:af3ff948cf3f132edbddebea93e2f9f02233b390a94bd4c9842182300be811bb",
         "bytes": 633282
       }
@@ -101,17 +102,17 @@
     },
     "evidence": [
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-host-webserver/lib/index.js",
+        "path": "dsh-host-webserver/lib/index.js",
         "sha256": "sha256:6efea1375eadeff62d5cfb6d1f515ff75a939d40405a62e5d138e8e7a6b18df5",
         "bytes": 13284
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-settings/lib/index.js",
+        "path": "dsh-settings/lib/index.js",
         "sha256": "sha256:9432b872597b7a31473072eb38a55979ab23375c76bd1d86d751388a692a0136",
         "bytes": 22636
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-config-editor/lib/index.js",
+        "path": "dsh-config-editor/lib/index.js",
         "sha256": "sha256:373e05c8250d25dda983ccf6e214a55e3792a211d1a7b883affcd66de47b5bf8",
         "bytes": 7411
       }
@@ -151,27 +152,27 @@
     },
     "evidence": [
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-settings/lib/client.js",
+        "path": "dsh-client-ui-settings/lib/client.js",
         "sha256": "sha256:2ac7f186165c5a8ec2cd90045cf74693e5d3518ec90cd429951360d79754aa94",
         "bytes": 59142
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-slots/lib/index.js",
+        "path": "dsh-client-ui-slots/lib/index.js",
         "sha256": "sha256:57e1314e31a2015f30231e1e7596da658f1bb5cb64c103c4cf13381647412c99",
         "bytes": 23461
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-locale/lib/client.js",
+        "path": "dsh-client-locale/lib/client.js",
         "sha256": "sha256:bad8fe9bfb07af2a60c80933be65ceafdaab5386f404fb264401c7e540a36e16",
         "bytes": 62953
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-theme/lib/client.js",
+        "path": "dsh-client-ui-theme/lib/client.js",
         "sha256": "sha256:b1c1d19438c15717dec571032a3c911eed4038d4dab8b4975ca797b7b7afd6ab",
         "bytes": 101885
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-layout/lib/client.js",
+        "path": "dsh-client-ui-layout/lib/client.js",
         "sha256": "sha256:587d109681891295aed5bf0a4b1ca7c005113124be5b043246f09fccce47f492",
         "bytes": 31749
       }
@@ -5096,7 +5097,7 @@
     ]
   },
   "layout": {
-    "hash": "sha256:211505db73094ce64e6b5a9f69d9335ea87f98494e794eac7fb7e088c3b7e199",
+    "hash": "sha256:6e655bc5dab78e3466e4fdf1188c8e5e2494ec3d7c87586dbdd50a7a85439d7c",
     "darkAttribute": "data-ds-dark-theme",
     "documentedAttributes": [
       "data-animating",
@@ -5118,6 +5119,9 @@
       "--dsh-scrollbar-width"
     ],
     "capabilityFacts": {
+      "themeCss": true,
+      "hostFontFamily": true,
+      "surfaceMaterial": true,
       "hostDensityTokens": false,
       "hostTranscriptWidth": false,
       "hostMessageFlow": false,
@@ -5126,32 +5130,32 @@
     },
     "evidence": [
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-layout/README.md",
+        "path": "dsh-client-ui-layout/README.md",
         "sha256": "sha256:4750f70b0e69f1dd6025697a467b3bf7a99abf6abac42d0d5a96433dbe7bd9e3",
         "bytes": 9892
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-theme/README.md",
+        "path": "dsh-client-ui-theme/README.md",
         "sha256": "sha256:1be11d05bc7f3ca79fec5686935f73a1fbb050e0095c93e496ea465e92996ce5",
         "bytes": 14926
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-locale/README.md",
+        "path": "dsh-client-locale/README.md",
         "sha256": "sha256:057aa7a0468d5726e827c1d95059ddde8488d90f439a9b02476da3685206514a",
         "bytes": 9473
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-sidebar/README.md",
+        "path": "dsh-client-ui-sidebar/README.md",
         "sha256": "sha256:b7d23797b7cdfea9935d9409490c2cc364d558690098e0e80b96408f1b72922f",
         "bytes": 10049
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-sidebar-right/README.md",
+        "path": "dsh-client-ui-sidebar-right/README.md",
         "sha256": "sha256:4db0d3726b9e860a6d216a00e4d55ea3f6bf731038604c6e345437c68efdc0f6",
         "bytes": 26278
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-client-ui-slots/README.md",
+        "path": "dsh-client-ui-slots/README.md",
         "sha256": "sha256:b85b6150f8225fb8b29454a0a411f76743e88c4c2b0f437806b8f112b71a992d",
         "bytes": 7784
       }
@@ -5175,12 +5179,12 @@
     "peerGate": "peerDependencies checked against the running DSH version before import",
     "evidence": [
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-app-boot/lib/index.js",
+        "path": "dsh-app-boot/lib/index.js",
         "sha256": "sha256:234db45e1b3f8c683b5bc1f551948b2a2ec52a6468c7b6937725a23f1c0e0d96",
         "bytes": 181850
       },
       {
-        "path": "/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-package-manifest/lib/types/types.d.ts",
+        "path": "dsh-package-manifest/lib/types/types.d.ts",
         "sha256": "sha256:8ce89a258667e473a40b2e96ceb0ec529a4c52bed7fbeda03d336e8c42a3e4f2",
         "bytes": 4169
       }
@@ -5199,8 +5203,8 @@
     "hostApi": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
     "clientApi": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
     "token": "sha256:7f6bd7901e23003faa24839b7eb61c7acf20d641f0d1627596e1b51824514b64",
-    "layout": "sha256:211505db73094ce64e6b5a9f69d9335ea87f98494e794eac7fb7e088c3b7e199",
+    "layout": "sha256:6e655bc5dab78e3466e4fdf1188c8e5e2494ec3d7c87586dbdd50a7a85439d7c",
     "profileSchema": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72"
   },
-  "contractHash": "sha256:07588f7e671ea4c406b62ddd7dfcf3b63c7ee9fdd1f989d0db28f52b8ced5c66"
+  "contractHash": "sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce"
 }

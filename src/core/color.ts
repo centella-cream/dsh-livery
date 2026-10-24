@@ -43,7 +43,6 @@ export interface RgbaColor {
 
 const HEX_RE = /^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/
 const RGB_FN_RE = /^rgba?\(\s*([^)]*)\)$/i
-const HEX_PART_RE = /^[0-9a-fA-F]+$/
 
 function clamp(value: number, min: number, max: number): number {
   return value < min ? min : value > max ? max : value
@@ -164,6 +163,176 @@ export function formatCssColor(rgb: Rgb, alpha?: number): string {
 export function withAlpha(color: string, alpha: number): string {
   const parsed = parseColorWithAlpha(color)
   return formatCssColor(parsed.rgb, clamp01(alpha))
+}
+
+// ---------------------------------------------------------------------------
+// CSS expression helpers (used by derivation and the contrast auditor)
+// ---------------------------------------------------------------------------
+
+/** Resolver for `var(--token)` references; returns `null` when unreachable. */
+export type VarResolver = (name: string) => string | null
+
+function findMatchingParen(input: string, openIndex: number): number {
+  let depth = 0
+  for (let index = openIndex; index < input.length; index += 1) {
+    const char = input[index]
+    if (char === '(') depth += 1
+    else if (char === ')') {
+      depth -= 1
+      if (depth === 0) return index
+    }
+  }
+  return -1
+}
+
+function findTopLevelComma(input: string): number {
+  let depth = 0
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index]
+    if (char === '(') depth += 1
+    else if (char === ')') depth -= 1
+    else if (char === ',' && depth === 0) return index
+  }
+  return -1
+}
+
+/** Split a comma separated CSS list, ignoring commas nested in parentheses. */
+export function splitTopLevelList(input: string, separator = ','): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let start = 0
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index]
+    if (char === '(') depth += 1
+    else if (char === ')') depth -= 1
+    else if (char === separator && depth === 0) {
+      parts.push(input.slice(start, index))
+      start = index + 1
+    }
+  }
+  parts.push(input.slice(start))
+  return parts
+}
+
+/** Substitute every `var(--token[, fallback])`; `null` if a reference fails. */
+export function substituteVars(input: string, resolveRef: VarResolver): string | null {
+  return substituteVarsAt(input, resolveRef, 0)
+}
+
+function substituteVarsAt(input: string, resolveRef: VarResolver, depth: number): string | null {
+  if (depth > 32) return null
+  let output = ''
+  let index = 0
+  while (index < input.length) {
+    const varIndex = input.indexOf('var(', index)
+    if (varIndex === -1) {
+      output += input.slice(index)
+      break
+    }
+    output += input.slice(index, varIndex)
+    const openIndex = varIndex + 3
+    const closeIndex = findMatchingParen(input, openIndex)
+    if (closeIndex === -1) return null
+    const inner = input.slice(openIndex + 1, closeIndex)
+    const commaIndex = findTopLevelComma(inner)
+    const name = (commaIndex === -1 ? inner : inner.slice(0, commaIndex)).trim()
+    const fallback = commaIndex === -1 ? null : inner.slice(commaIndex + 1).trim()
+    let replacement: string | null = resolveRef(name)
+    if (replacement === null && fallback !== null && fallback.length > 0) {
+      replacement = substituteVarsAt(fallback, resolveRef, depth + 1)
+    }
+    if (replacement === null) return null
+    if (replacement.includes('var(')) {
+      replacement = substituteVarsAt(replacement, resolveRef, depth + 1)
+      if (replacement === null) return null
+    }
+    output += replacement
+    index = closeIndex + 1
+  }
+  return output
+}
+
+/** Named colours the host token sheets use inside `color-mix()`. */
+const NAMED_COLORS: Readonly<Record<string, string>> = {
+  transparent: 'rgba(0, 0, 0, 0)',
+  white: '#ffffff',
+  black: '#000000',
+}
+
+interface MixOperand {
+  readonly rgb: Rgb
+  readonly alpha: number
+  readonly percent: number | null
+}
+
+function parseMixOperand(part: string): MixOperand | null {
+  const trimmed = part.trim()
+  const percentMatch = /^(.+?)\s+([0-9.]+)%$/.exec(trimmed)
+  const colorExpression = percentMatch === null ? trimmed : (percentMatch[1] as string).trim()
+  const percent = percentMatch === null ? null : Number.parseFloat(percentMatch[2] as string)
+  const named = NAMED_COLORS[colorExpression.toLowerCase()]
+  let canonical: string
+  if (named !== undefined) {
+    canonical = named
+  } else {
+    try {
+      const parsed = parseColorWithAlpha(colorExpression)
+      canonical = formatCssColor(parsed.rgb, parsed.alpha)
+    } catch {
+      return null
+    }
+  }
+  try {
+    const parsed = parseColorWithAlpha(canonical)
+    return { rgb: parsed.rgb, alpha: parsed.alpha, percent }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Evaluate `color-mix(in srgb, <colour> <pct>?, <colour> <pct>?)` with the CSS
+ * premultiplied-alpha rules. Returns a concrete CSS colour or `null`.
+ */
+export function evaluateColorMix(expression: string): string | null {
+  const prefix = 'color-mix('
+  if (!expression.startsWith(prefix)) return null
+  const closeIndex = findMatchingParen(expression, prefix.length - 1)
+  if (closeIndex !== expression.length - 1) return null
+  const parts = splitTopLevelList(expression.slice(prefix.length, closeIndex)).map((part) => part.trim())
+  if (parts.length !== 3) return null
+  if ((parts[0] as string).toLowerCase() !== 'in srgb') return null
+  const first = parseMixOperand(parts[1] as string)
+  const second = parseMixOperand(parts[2] as string)
+  if (first === null || second === null) return null
+
+  let weightFirst: number
+  let weightSecond: number
+  let alphaScale = 1
+  if (first.percent === null && second.percent === null) {
+    weightFirst = 0.5
+    weightSecond = 0.5
+  } else if (first.percent === null) {
+    weightSecond = (second.percent as number) / 100
+    weightFirst = 1 - weightSecond
+  } else if (second.percent === null) {
+    weightFirst = first.percent / 100
+    weightSecond = 1 - weightFirst
+  } else {
+    const sum = first.percent + second.percent
+    if (sum <= 0) return null
+    weightFirst = first.percent / sum
+    weightSecond = second.percent / sum
+    alphaScale = Math.min(sum, 100) / 100
+  }
+  const alpha = (weightFirst * first.alpha + weightSecond * second.alpha) * alphaScale
+  if (alpha <= 1e-9) return 'rgba(0, 0, 0, 0)'
+  const premultipliedFirst = weightFirst * first.alpha
+  const premultipliedSecond = weightSecond * second.alpha
+  const mixChannel = (channel: 'r' | 'g' | 'b'): number =>
+    (first.rgb[channel] * premultipliedFirst + second.rgb[channel] * premultipliedSecond) /
+    (premultipliedFirst + premultipliedSecond)
+  return formatCssColor({ r: mixChannel('r'), g: mixChannel('g'), b: mixChannel('b') }, alpha)
 }
 
 // ---------------------------------------------------------------------------

@@ -283,7 +283,7 @@ function seedFallback(role: keyof PreviewPalette, seeds: { readonly accent: stri
     case 'labelCaption':
       return mix(text, surface, 0.5)
     case 'labelInverted':
-      return mix(surface, '#ffffff', 0.9)
+      return mix(surface, { r: 255, g: 255, b: 255, a: 1 }, 0.9)
     case 'brand':
       return accent
     case 'link':
@@ -481,7 +481,8 @@ function renderSidebar(ctx: Ctx): string[] {
   parts.push(line(PREVIEW_SIDEBAR_WIDTH - 0.5, 0, PREVIEW_SIDEBAR_WIDTH - 0.5, PREVIEW_HEIGHT, p.borderL2))
 
   if (ctx.surfaceStyle === 'glass') {
-    parts.push(box(0, 0, PREVIEW_SIDEBAR_WIDTH, 150, { fill: p.brand, opacity: 0.08 }))
+    // Translucent material hint on the sidebar, fading out instead of a hard edge.
+    parts.push(`<rect x="0" y="0" width="${PREVIEW_SIDEBAR_WIDTH}" height="320" fill="url(#glassGlow)" opacity="0.75"/>`)
   }
 
   // Brand block: mark + localized livery name.
@@ -638,7 +639,7 @@ function renderTranscript(ctx: Ctx): string[] {
   })
 
   // Third row: safe progress demo (no fixed z-index, no animation).
-  const progressY = cardTop + 84
+  const progressY = cardTop + 86
   parts.push(text(cardX + 30, progressY + 3, copy.panelProgress, { fill: p.labelSecondary, family: uiFont, size: 10 }))
   const barX = cardX + 150
   const barWidth = cardWidth - 150 - 50
@@ -678,7 +679,8 @@ function materialDefs(ctx: Ctx): string[] {
   return [
     '<defs>',
     '<linearGradient id="glassGlow" x1="0" y1="0" x2="0" y2="1">',
-    `<stop offset="0" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.16"/>`,
+    `<stop offset="0" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.2"/>`,
+    `<stop offset="0.55" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.08"/>`,
     `<stop offset="1" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0"/>`,
     '</linearGradient>',
     '</defs>',
@@ -689,8 +691,7 @@ function materialBackdrop(ctx: Ctx): string[] {
   if (ctx.surfaceStyle === 'solid') return []
   if (ctx.surfaceStyle === 'glass') {
     return [
-      box(PREVIEW_SIDEBAR_WIDTH, 0, PREVIEW_WIDTH - PREVIEW_SIDEBAR_WIDTH, 168, { fill: ctx.palette.brand, opacity: 0.1 }),
-      `<rect x="${PREVIEW_SIDEBAR_WIDTH}" y="0" width="${PREVIEW_WIDTH - PREVIEW_SIDEBAR_WIDTH}" height="168" fill="url(#glassGlow)"/>`,
+      `<rect x="${PREVIEW_SIDEBAR_WIDTH}" y="0" width="${PREVIEW_WIDTH - PREVIEW_SIDEBAR_WIDTH}" height="220" fill="url(#glassGlow)"/>`,
     ]
   }
   return [box(248, 46, 384, 276, { fill: ctx.palette.layer1, rx: 18, opacity: 0.55 })]

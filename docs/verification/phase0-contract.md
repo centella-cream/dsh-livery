@@ -9,7 +9,7 @@ Captured: 2026-10-24. Adapter: `dsh-0.2.0-rc.2-r1`.
 |---|---|---|
 | DSH version | `0.2.0-rc.2` | `contracts/dsh/0.2.0-rc.2/contract.json` → `hostVersion` |
 | Package install | `@deepseek-ai/dsh@0.2.0-rc.2` (npm global, Node v22.23.1) | `artifacts/contracts/0.2.0-rc.2/provenance.json` |
-| Node engine range | `^22.19.0 || >=24.0.0` (copied from the target package) | `contract.json` → `source.nodeRange` |
+| Node engine range | `^22.23.1` — the target declares **no** `engines.node`, so this is the certified runtime, recorded as `source.nodeRangeSource` | `contract.json` → `source.nodeRange` |
 | Client target | `chrome120` | `contract.json` → `source.clientTarget` |
 
 ## 2. Six contract hashes

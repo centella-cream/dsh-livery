@@ -27,7 +27,7 @@
     "./lib/client.js"
   ],
   "engines": {
-    "node": "^22.19.0 || >=24.0.0",
+    "node": "^22.23.1",
     "dsh": "0.2.0-rc.2"
   },
   "keywords": [
@@ -83,7 +83,9 @@
     "gate:support-matrix": "node scripts/cli.mjs gate:support-matrix",
     "gate:release": "node scripts/cli.mjs gate:release",
     "acceptance:web": "node scripts/acceptance-web.mjs",
-    "verify": "pnpm typecheck && pnpm test && pnpm liveries:check && pnpm audit:css && pnpm audit:contrast && pnpm build && pnpm pack:check"
+    "verify": "pnpm typecheck && pnpm test && pnpm liveries:check && pnpm audit:css && pnpm audit:contrast && pnpm build && pnpm pack:check",
+    "test:client": "vitest run tests/client",
+    "test:host": "vitest run tests/host"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",

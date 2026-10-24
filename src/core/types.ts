@@ -260,7 +260,14 @@ export interface CompiledLivery {
   readonly light: CompiledVariant
   readonly dark: CompiledVariant
   readonly css: LiveryCss
-  /** Content hash over id + css + layout + typography. */
+  /**
+   * Hash of the exact concatenated stylesheet bytes (`hashCss(css.tokens +
+   * css.typography + css.layout)`). This is the value the Host injects, the
+   * Client compares against `BootPayload.cssHash` / `body[data-dsh-livery-hash]`,
+   * and the only hash any runtime needs; no runtime re-render is required.
+   */
+  readonly cssHash: string
+  /** Content hash over id + css + layout + typography (catalog identity). */
   readonly hash: string
   readonly audit: LiveryAuditReport
 }
