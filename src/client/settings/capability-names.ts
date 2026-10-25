@@ -12,6 +12,7 @@ import type { LiveryTranslate } from '../platform.js'
 const CAPABILITY_KEYS: Readonly<Record<string, LiveryKey>> = {
   'theme-css': 'capability.theme-css',
   'host-font-family': 'capability.host-font-family',
+  'host-font-role-hooks': 'capability.host-font-role-hooks',
   'surface-material': 'capability.surface-material',
   'host-density-tokens': 'capability.host-density-tokens',
   'host-transcript-width': 'capability.host-transcript-width',

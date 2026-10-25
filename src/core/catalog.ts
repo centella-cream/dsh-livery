@@ -2,8 +2,9 @@
  * DSH Livery — catalog resolution (RUNTIME: Host + Client).
  *
  * This module is reachable from the Host and Client bundles, so it must never
- * import `../generated/stock.js`, `derive.ts` or `render.ts`: the compiler has
- * already rendered and hashed the exact stylesheet bytes. The runtime only reads
+ * import `../generated/stock.js`, `../generated/liveries.js`, `derive.ts` or
+ * `render.ts`: the compiler has already rendered and hashed the exact
+ * stylesheet bytes for every catalog profile. The runtime only reads
  * `CompiledLivery.css` and `CompiledLivery.cssHash`.
  *
  * `stock` is a first-class known skin id: it always resolves to "no livery" and
@@ -33,33 +34,22 @@ export function isKnownSkinId(source: LiverySource, id: string): boolean {
   return findLivery(source, id) !== undefined
 }
 
-/**
- * Resolve the livery the persisted `skinId` points at. Returns `undefined`
- * (meaning: stay on stock) for the stock id and for ids that disappeared from
- * the catalog (e.g. a livery was deleted between releases).
- */
-export function resolveActiveLivery(
-  source: LiverySource,
-  skinId: string,
-): CompiledLivery | undefined {
-  return findLivery(source, skinId)
-}
-
 /** Normalised skin id: stock/unknown → `stock`. */
 export function normalizeSkinId(source: LiverySource, skinId: string): string {
   return findLivery(source, skinId)?.id ?? STOCK_ID
 }
 
 /**
- * Resolve both the livery and the normalised skin id used for the boot
- * attributes (`body[data-dsh-livery]` is only written for a real livery).
+ * Resolve the livery the persisted `skinId` points at together with the
+ * normalised id that should be persisted/booted. Unknown and deleted ids
+ * normalize to `stock` (the host appearance stays untouched).
  */
-export function resolveSkinForBoot(
+export function resolveActiveLivery(
   source: LiverySource,
   skinId: string,
-): { readonly livery: CompiledLivery | undefined; readonly skinId: string | StockId } {
+): { readonly livery?: CompiledLivery; readonly normalizedId: string } {
   const livery = findLivery(source, skinId)
-  return livery === undefined ? { livery: undefined, skinId: STOCK_ID } : { livery, skinId: livery.id }
+  return livery === undefined ? { normalizedId: STOCK_ID } : { livery, normalizedId: livery.id }
 }
 
 /** Exact production stylesheet bytes for one compiled livery (no wrappers). */
@@ -73,16 +63,41 @@ export function liveryCssHash(livery: Pick<CompiledLivery, 'cssHash'>): string {
 }
 
 /**
+ * Resolve everything a boot path needs for one skin id: the livery (when the id
+ * is a real catalog entry), its compiled stylesheet bytes and their hash. Stock,
+ * unknown or missing ids yield no livery and empty css/hash so the Host injects
+ * no boot rows. No rendering and no hashing happens at runtime.
+ */
+export function resolveSkinForBoot(
+  source: LiverySource,
+  skinId: string,
+): { readonly livery?: CompiledLivery; readonly css: string; readonly hash: string } {
+  const livery = findLivery(source, skinId)
+  if (livery === undefined) return { css: '', hash: '' }
+  return { livery, css: styleTextOf(livery), hash: liveryCssHash(livery) }
+}
+
+/**
  * Boot stylesheet for one skin id, read straight from the compiled catalog.
  * `stock`, unknown or missing liveries contribute nothing (stock appearance).
- * No rendering and no hashing happens at runtime; both values are compiled.
  */
 export function renderBootCssFromCatalog(
   catalog: LiveryCatalog,
   skinId: string,
 ): { readonly css: string; readonly hash: string } {
-  if (skinId === STOCK_ID) return { css: '', hash: '' }
-  const livery = findLivery(catalog, skinId)
-  if (livery === undefined) return { css: '', hash: '' }
-  return { css: styleTextOf(livery), hash: liveryCssHash(livery) }
+  const resolved = resolveSkinForBoot(catalog, skinId)
+  return { css: resolved.css, hash: resolved.hash }
 }
+
+/** Convenience: the catalog profile id the served catalog was compiled for. */
+export function catalogProfileOf(catalog: Pick<LiveryCatalog, 'catalogProfile'>): string {
+  return catalog.catalogProfile
+}
+
+/** Convenience: the preview asset base URL carried by the served catalog. */
+export function previewsBaseOf(catalog: Pick<LiveryCatalog, 'previewsBase'>): string {
+  return catalog.previewsBase
+}
+
+/** Skin id union helper used by config restoration. */
+export type ResolvedSkinId = string | StockId

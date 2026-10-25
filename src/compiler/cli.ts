@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
- * DSH Livery compiler CLI.
+ * DSH Livery compiler CLI — multi-version.
  *
  * Commands (also reachable through `pnpm liveries:compile`, `pnpm liveries:check`,
  * `pnpm audit:tokens|css|contrast`):
  *
- *   compile         validate → compile → emit catalog + previews + audits
+ *   compile         validate → compile every catalog profile → emit catalog,
+ *                   per-profile previews + audits, cross-profile summary
  *   check           recompile in memory and fail on any drift in generated files
- *   audit:tokens    token-coverage gate over the compiled catalog
- *   audit:css       CSS safety + size-budget gate over every rendered sheet + boot CSS
- *   audit:contrast  WCAG contrast gate over both modes of every livery
+ *   audit:tokens    token-coverage gate per profile/token contract
+ *   audit:css       CSS safety + size-budget gate per profile
+ *   audit:contrast  WCAG contrast gate per profile × both modes × every livery
  *
  * Exit codes: 0 = pass, 1 = gate failure, 2 = usage error. Flags such as
  * `--version <v>` / `--dsh-install <path>` are accepted and ignored so the fixed
@@ -18,17 +19,19 @@
  * `main(argv, ctx)` is the stable entry point used by `scripts/cli.mjs` and by
  * `node lib/cli/compiler.js <command>` after `scripts/build.mjs` bundles this file.
  */
-import { existsSync, readdirSync, unlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { CompileResult } from './compile.js'
+import type { CompileProblem } from './audit.js'
+import type { CompileResult, ProfileCompileResult } from './compile.js'
 import {
   ARTIFACT_DIR,
   PREVIEW_DIR,
+  SUMMARY_PATH,
   compareGeneratedFiles,
   compileFromDisk,
   describeCompileResult,
   findRepoRoot,
+  pruneGeneratedDirs,
   serializeJson,
   writeGeneratedFiles,
 } from './compile.js'
@@ -66,8 +69,8 @@ interface ParsedArguments {
 
 /**
  * Locate the command token. Flags and their values are ignored (`--version`,
- * `--dsh-install`, `--check`, …), and everything after a literal `--` is accepted
- * as the command position too.
+ * `--dsh-install`, …), and everything after a literal `--` is accepted as the
+ * command position too.
  */
 export function parseCommand(argv: readonly string[]): ParsedArguments {
   const candidates: string[] = []
@@ -88,42 +91,42 @@ export function parseCommand(argv: readonly string[]): ParsedArguments {
   return { command: null, unknownCommand: candidates[0] ?? null }
 }
 
-function describeProblems(error: (line: string) => void, prefix: string, problems: readonly { code: string; path: string; message: string }[]): void {
+function describeProblems(error: (line: string) => void, prefix: string, problems: readonly CompileProblem[]): void {
   for (const problem of problems) {
     error(`${prefix} FAIL ${problem.code} ${problem.path}: ${problem.message}`)
   }
 }
 
-function reportCatalogGates(prefix: string, result: CompileResult, log: (line: string) => void): void {
-  if (result.report !== null) {
-    const gates = result.report.gates
-    log(
-      `${prefix} gates validation=${gates.validation} contrast=${gates.contrast} ` +
-        `tokens=${gates.tokenCoverage} css=${gates.cssSafety} size=${gates.sizeBudget} capabilities=${gates.capabilities}`,
-    )
-  }
+function profileGateLine(profile: ProfileCompileResult): string {
+  const gates = profile.report.gates
+  const short = profile.profile.profileId.slice('sha256:'.length, 'sha256:'.length + 12)
+  return (
+    `profile ${short} gates validation=${gates.validation} contrast=${gates.contrast} tokens=${gates.tokenCoverage} ` +
+    `css=${gates.cssSafety} size=${gates.sizeBudget} capabilities=${gates.capabilities} adapterIdentity=${gates.adapterRenderIdentity}`
+  )
 }
 
-function expectedPreviewNames(result: CompileResult): string[] {
-  return [...result.files.keys()]
-    .filter((file) => file.startsWith(`${PREVIEW_DIR}/`) && file.endsWith('.svg'))
-    .map((file) => file.slice(PREVIEW_DIR.length + 1))
-}
-
-/** Remove stale preview SVGs left by an older catalog (never touches index.json). */
-function prunePreviewDirectory(rootDir: string, result: CompileResult, log: (line: string) => void): number {
-  const directory = resolve(rootDir, PREVIEW_DIR)
-  if (!existsSync(directory)) return 0
-  const expected = new Set(expectedPreviewNames(result))
-  let removed = 0
-  for (const name of readdirSync(directory)) {
-    if (!name.endsWith('.svg')) continue
-    if (expected.has(name)) continue
-    unlinkSync(resolve(directory, name))
-    removed += 1
+function writePerProfileArtifact(
+  result: CompileResult,
+  rootDir: string,
+  command: 'audit:tokens' | 'audit:css' | 'audit:contrast',
+): string[] {
+  const written: string[] = []
+  for (const profile of result.profiles) {
+    const profileId = profile.profile.profileId
+    const directory = `${ARTIFACT_DIR}/${profileId}`
+    const artifact =
+      command === 'audit:tokens'
+        ? profile.tokenCoverage
+        : command === 'audit:css'
+          ? profile.cssSafety
+          : profile.contrast
+    const name = command === 'audit:tokens' ? 'token-coverage.json' : command === 'audit:css' ? 'css-safety.json' : 'contrast.json'
+    const file = `${directory}/${name}`
+    writeGeneratedFiles(rootDir, new Map([[file, serializeJson(artifact)]]))
+    written.push(file)
   }
-  if (removed > 0) log(`${PREFIX.compile} pruned ${removed} stale preview file(s)`)
-  return removed
+  return written
 }
 
 async function runCompile(rootDir: string, log: (line: string) => void, error: (line: string) => void): Promise<number> {
@@ -135,11 +138,18 @@ async function runCompile(rootDir: string, log: (line: string) => void, error: (
     return 1
   }
   writeGeneratedFiles(rootDir, result.files)
-  prunePreviewDirectory(rootDir, result, log)
-  log(`${prefix} validated ${result.report?.counts.liveries ?? 0} manifests`)
+  const removed = pruneGeneratedDirs(rootDir, result.files)
+  if (removed.length > 0) log(`${prefix} pruned ${removed.length} stale generated file(s)`)
+  log(`${prefix} validated ${result.profiles[0]?.report.counts.liveries ?? 0} manifests × ${result.profileCount} catalog profile(s) / ${result.adapterCount} adapter(s)`)
   for (const line of describeCompileResult(result)) log(`${prefix} ${line}`)
-  log(`${prefix} wrote ${result.files.size} files (catalog + ${result.previewCount} previews + audits)`)
-  reportCatalogGates(prefix, result, log)
+  for (const profile of result.profiles) log(`${prefix} ${profileGateLine(profile)}`)
+  log(
+    `${prefix} wrote ${result.files.size} files (catalog + ${result.previewCount} previews + per-profile audits + summary)`,
+  )
+  if (result.summary !== null && !result.summary.pass) {
+    error(`${prefix} FAIL cross-profile summary gate failed (${SUMMARY_PATH})`)
+    return 1
+  }
   log(`${prefix} ok`)
   return 0
 }
@@ -154,7 +164,7 @@ function runCheck(rootDir: string, log: (line: string) => void, error: (line: st
   }
   const drift = compareGeneratedFiles(rootDir, result.files)
   if (drift.length === 0) {
-    log(`${prefix} ok — ${result.files.size} generated files match the manifests`)
+    log(`${prefix} ok — ${result.files.size} generated files across ${result.profileCount} profile(s) match the manifests`)
     return 0
   }
   for (const entry of drift) error(`${prefix} DRIFT ${entry.kind} ${entry.file}`)
@@ -164,64 +174,46 @@ function runCheck(rootDir: string, log: (line: string) => void, error: (line: st
 
 function compileForAudit(rootDir: string, prefix: string, error: (line: string) => void): CompileResult | null {
   const result = compileFromDisk(rootDir, { enforceGates: false })
-  if (result.catalog === null) {
+  if (result.profiles.length === 0) {
     describeProblems(error, prefix, result.problems)
-    error(`${prefix} FAIL manifests did not validate`)
+    error(`${prefix} FAIL manifests did not validate for the certified host versions`)
     return null
   }
   return result
 }
 
-function writeAuditArtifact(rootDir: string, name: string, content: string): string {
-  const file = `${ARTIFACT_DIR}/${name}`
-  writeGeneratedFiles(rootDir, new Map([[file, content]]))
-  return file
-}
-
 function runAuditTokens(rootDir: string, log: (line: string) => void, error: (line: string) => void): number {
   const prefix = PREFIX['audit:tokens']
   const result = compileForAudit(rootDir, prefix, error)
-  if (result === null || result.tokenCoverage === null) return 1
-  const artifact = result.tokenCoverage
-  const file = writeAuditArtifact(rootDir, 'token-coverage.json', serializeJson(artifact))
-  log(`${prefix} required ${artifact.counts.required} host-consumed alias/specific tokens`)
-  log(`${prefix} covered ${artifact.counts.covered}, inherited ${artifact.counts.inherited}, missing ${artifact.counts.missing}`)
-  if (artifact.inherited.length > 0) log(`${prefix} inherited (documented): ${artifact.inherited.join(', ')}`)
-  log(`${prefix} wrote ${file}`)
-  if (!artifact.pass) {
-    for (const token of artifact.missing) error(`${prefix} FAIL required token uncovered: ${token}`)
-    return 1
+  if (result === null) return 1
+  const written = writePerProfileArtifact(result, rootDir, 'audit:tokens')
+  for (const profile of result.profiles) {
+    const artifact = profile.tokenCoverage
+    const short = profile.profile.profileId.slice('sha256:'.length, 'sha256:'.length + 12)
+    log(
+      `${prefix} profile ${short} (${profile.adapters.map((adapter) => adapter.hostVersion).join(', ')}): ` +
+        `consumed ${artifact.counts.consumed}, required ${artifact.counts.required}, covered ${artifact.counts.covered}, ` +
+        `inherited ${artifact.counts.inherited}, missing ${artifact.counts.missing}`,
+    )
+    if (!artifact.pass) {
+      for (const token of artifact.missing) error(`${prefix} FAIL profile ${short}: required token uncovered: ${token}`)
+    }
   }
+  for (const file of written) log(`${prefix} wrote ${file}`)
+  const pass = result.profiles.every((profile) => profile.tokenCoverage.pass)
+  if (!pass) return 1
   log(`${prefix} ok`)
   return 0
 }
 
-function runAuditCss(rootDir: string, log: (line: string) => void, error: (line: string) => void): number {
-  const prefix = PREFIX['audit:css']
-  const result = compileForAudit(rootDir, prefix, error)
-  if (result === null || result.cssSafety === null || result.catalog === null) return 1
-  const artifact = result.cssSafety
-  const file = writeAuditArtifact(rootDir, 'css-safety.json', serializeJson(artifact))
-  const liveryCss = artifact.liveries
-  const maxBytes = Math.max(0, ...liveryCss.map((entry) => entry.bytes.total))
-  const maxBoot = Math.max(0, ...artifact.boot.map((entry) => entry.bytes))
-  log(`${prefix} ${liveryCss.length} livery CSS sheets + ${artifact.boot.length} boot CSS snapshots`)
-  log(`${prefix} budgets max livery ${maxBytes}B / ${artifact.budgets.liveryBytes}B, max boot ${maxBoot}B / ${artifact.budgets.bootBytes}B`)
-  log(`${prefix} wrote ${file}`)
-  if (artifact.pass) {
-    log(`${prefix} ok`)
-    return 0
-  }
-  for (const entry of liveryCss) {
-    for (const violation of entry.details.violations) error(`${prefix} FAIL ${entry.id}: ${violation}`)
-  }
-  for (const entry of artifact.boot) {
-    for (const violation of cssViolations(entry.safety)) error(`${prefix} FAIL boot ${entry.id}: ${violation}`)
-  }
-  return 1
-}
-
-function cssViolations(report: { readonly important: number; readonly hashSelectors: number; readonly elementSelectors: readonly string[]; readonly remoteUrls: number; readonly unscopedTokens: number; readonly fixedZIndexes: readonly number[] }): string[] {
+function cssViolations(report: {
+  readonly important: number
+  readonly hashSelectors: number
+  readonly elementSelectors: readonly string[]
+  readonly remoteUrls: number
+  readonly unscopedTokens: number
+  readonly fixedZIndexes: readonly number[]
+}): string[] {
   const violations: string[] = []
   if (report.important > 0) violations.push(`${report.important} !important`)
   if (report.hashSelectors > 0) violations.push(`${report.hashSelectors} hash selector(s)`)
@@ -232,32 +224,63 @@ function cssViolations(report: { readonly important: number; readonly hashSelect
   return violations
 }
 
+function runAuditCss(rootDir: string, log: (line: string) => void, error: (line: string) => void): number {
+  const prefix = PREFIX['audit:css']
+  const result = compileForAudit(rootDir, prefix, error)
+  if (result === null) return 1
+  const written = writePerProfileArtifact(result, rootDir, 'audit:css')
+  for (const profile of result.profiles) {
+    const artifact = profile.cssSafety
+    const short = profile.profile.profileId.slice('sha256:'.length, 'sha256:'.length + 12)
+    const maxBytes = Math.max(0, ...artifact.liveries.map((entry) => entry.bytes.total))
+    const maxBoot = Math.max(0, ...artifact.boot.map((entry) => entry.bytes))
+    log(
+      `${prefix} profile ${short}: ${artifact.liveries.length} livery sheets + ${artifact.boot.length} boot snapshots, ` +
+        `max livery ${maxBytes}B / ${artifact.budgets.liveryBytes}B, max boot ${maxBoot}B / ${artifact.budgets.bootBytes}B`,
+    )
+    if (!artifact.pass) {
+      for (const entry of artifact.liveries) {
+        for (const violation of entry.details.violations) error(`${prefix} FAIL profile ${short} ${entry.id}: ${violation}`)
+      }
+      for (const entry of artifact.boot) {
+        for (const violation of cssViolations(entry.safety)) error(`${prefix} FAIL profile ${short} boot ${entry.id}: ${violation}`)
+      }
+    }
+  }
+  for (const file of written) log(`${prefix} wrote ${file}`)
+  const pass = result.profiles.every((profile) => profile.cssSafety.pass)
+  if (!pass) return 1
+  log(`${prefix} ok`)
+  return 0
+}
+
 function runAuditContrast(rootDir: string, log: (line: string) => void, error: (line: string) => void): number {
   const prefix = PREFIX['audit:contrast']
   const result = compileForAudit(rootDir, prefix, error)
-  if (result === null || result.contrast === null) return 1
-  const artifact = result.contrast
-  const file = writeAuditArtifact(rootDir, 'contrast.json', serializeJson(artifact))
-  log(
-    `${prefix} ${artifact.liveries.length} liveries × 2 modes, ${artifact.summary.total} WCAG assertions, ` +
-      `${artifact.summary.failures} failure(s)`,
-  )
-  log(
-    `${prefix} light ${artifact.summary.byMode.light.failures}/${artifact.summary.byMode.light.total} failed, ` +
-      `dark ${artifact.summary.byMode.dark.failures}/${artifact.summary.byMode.dark.total} failed`,
-  )
-  log(`${prefix} wrote ${file}`)
-  if (artifact.pass) {
-    log(`${prefix} ok`)
-    return 0
-  }
-  for (const failure of artifact.failures.slice(0, 40)) {
-    error(
-      `${prefix} FAIL ${failure.id} ${failure.mode} ${failure.entry.role}: ` +
-        `${failure.entry.foreground} on ${failure.entry.background} = ${failure.entry.ratio} < ${failure.entry.min}`,
+  if (result === null) return 1
+  const written = writePerProfileArtifact(result, rootDir, 'audit:contrast')
+  for (const profile of result.profiles) {
+    const artifact = profile.contrast
+    const short = profile.profile.profileId.slice('sha256:'.length, 'sha256:'.length + 12)
+    log(
+      `${prefix} profile ${short}: ${artifact.liveries.length} liveries × 2 modes, ${artifact.summary.total} assertions, ` +
+        `${artifact.summary.failures} failure(s) (light ${artifact.summary.byMode.light.failures}/${artifact.summary.byMode.light.total}, ` +
+        `dark ${artifact.summary.byMode.dark.failures}/${artifact.summary.byMode.dark.total})`,
     )
+    if (!artifact.pass) {
+      for (const failure of artifact.failures.slice(0, 40)) {
+        error(
+          `${prefix} FAIL profile ${short} ${failure.id} ${failure.mode} ${failure.entry.role}: ` +
+            `${failure.entry.foreground} on ${failure.entry.background} = ${failure.entry.ratio} < ${failure.entry.min}`,
+        )
+      }
+    }
   }
-  return 1
+  for (const file of written) log(`${prefix} wrote ${file}`)
+  const pass = result.profiles.every((profile) => profile.contrast.pass)
+  if (!pass) return 1
+  log(`${prefix} ok`)
+  return 0
 }
 
 /**
@@ -309,3 +332,5 @@ if (isDirectExecution()) {
   const code = await main(process.argv.slice(2))
   process.exitCode = code
 }
+
+export { ARTIFACT_DIR, PREVIEW_DIR }

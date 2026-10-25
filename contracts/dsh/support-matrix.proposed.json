@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-25T00:16:00.000Z",
+  "updatedAt": "2026-10-25T03:55:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
@@ -21,10 +21,6 @@
         {
           "family": "chrome",
           "minVersion": 120
-        },
-        {
-          "family": "edge",
-          "minVersion": 120
         }
       ],
       "clientTarget": "chrome120",
@@ -32,25 +28,97 @@
         "artifacts/acceptance/probe.json",
         "artifacts/acceptance/screens/web-chrome-dsh-livery/",
         "artifacts/acceptance/filmstrip/web-chrome-dsh-livery/",
-        "artifacts/acceptance/real-profile-clone/probe.json",
         "artifacts/abi/0.2.0-rc.2/loader.json",
         "artifacts/contracts/0.2.0-rc.2/hashes.json",
         "artifacts/contracts/0.2.0-rc.2/provenance.json",
-        "artifacts/liveries/report.json",
-        "artifacts/liveries/contrast.json",
-        "artifacts/liveries/token-coverage.json",
-        "artifacts/liveries/css-safety.json",
+        "artifacts/liveries/sha256:4c5ee1a20f2974a53037a2ee4d2daa71f9f4600c9f004f0b35592b1ff413d602/report.json",
         "docs/verification/phase0-contract.md",
-        "docs/verification/web-acceptance.md",
-        "docs/verification/web-acceptance-real-profile-clone.md"
+        "docs/verification/web-acceptance.md"
       ],
       "notes": [
-        "G0-G2 passed: contract snapshot frozen (six hashes), adapter check, loader-ABI bundle test, unit/compiler/host/client suites, all CSS/token/contrast/build/pack gates.",
-        "G3 passed for the Web Profile lifecycle (official install -> boot -> disable/enable coverage in unit/runtime harness -> uninstall -> restart residue) using an isolated DSH_HOME and the official dsh plugin manager path.",
-        "G4/G5 Web/Chrome passed: 110/115 isolated acceptance checks pass, 0 fail, 3 expected skips, 2 documented warnings; real-profile-equivalent (byte-clone of the user's ~/.dsh/profiles/web with dsh-charter + dsh-context installed) reuse pass: 80 pass / 0 fail / 7 skips / 2 warnings on tarball sha256:3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb.",
-        "G6 is NOT claimed: desktop/macos and desktop/win32 are pending (native chrome/runtime not certified in this environment) and web/edge is pending. The formal support-matrix.json is intentionally absent until Phase 6.",
-        "Known \u00a720 gap: no host-level safe layout capability exists in DSH 0.2.0-rc.2 (density/transcript-width/message-flow degrade to host; self-check reports unavailable; no fake compensation). Wallpaper/custom import are out of schemaVersion 1.",
-        "Final tarball: dsh-livery-0.1.0.tgz sha256:3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb (162,024 B, 62 files, no dev CLIs, no host paths)."
+        "Round 2 evidence: isolated full Web acceptance 110/0/3/2 plus real-web-profile clone 80/0/7/2 on the previous single-version package.",
+        "Round 3: contract unchanged; re-verified by unit/compiler/host/client suites and the multi-version build (0.2.0 catalog profile rendered byte-identically for 8/10 liveries; plum/rice-paper changed only to honour their explicit manifest token overrides).",
+        "G6 not claimed: desktop targets pending, web/edge pending. Formal support-matrix.json absent until Phase 6."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.2",
+      "adapterId": "dsh-0.2.1-rc.2-r1",
+      "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
+      "status": "g0-g5-passed",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "passed",
+          "edge": "pending"
+        }
+      },
+      "browserSupport": [
+        {
+          "family": "chrome",
+          "minVersion": 120
+        }
+      ],
+      "clientTarget": "chrome120",
+      "evidence": [
+        "artifacts/acceptance/0.2.1-rc.2-web/probe.json",
+        "artifacts/acceptance/0.2.1-rc.2-web/screens/",
+        "artifacts/acceptance/0.2.1-rc.2-web/filmstrip/",
+        "artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone/probe.json",
+        "artifacts/abi/0.2.0-rc.2/loader.json",
+        "artifacts/contracts/0.2.1-rc.2/hashes.json",
+        "artifacts/contracts/0.2.1-rc.2/provenance.json",
+        "artifacts/liveries/summary.json",
+        "docs/verification/web-acceptance-0.2.1-rc.2.md",
+        "docs/verification/web-acceptance-0.2.1-rc.2-real-profile-clone.md"
+      ],
+      "notes": [
+        "Certified on tarball sha256 99fa98c7ee9c08d2eecda3b1c43aa3e51a42d32b373974231d365a8023c00e18 (pre-certification package; a release repack follows the matrix promotion).",
+        "Isolated full Web acceptance: 121 pass / 0 fail / 3 expected skips / 1 warning; user Web Profile clone: 121 pass / 0 fail / 3 expected skips / 3 warnings (clone repaired the pre-existing broken dsh-charter tarball reference; one unrelated plugin entry did not activate).",
+        "Contract: adapter dsh-0.2.1-rc.2-r1, contractHash sha256:fc5ccff8\u2026; loader ABI table 11 modules; font ladder via documented host role hooks; catalog profile sha256:060e80ef\u2026 shared byte-identically with 0.2.1-rc.3.",
+        "G6 not claimed: desktop targets and web/edge pending."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.3",
+      "adapterId": "dsh-0.2.1-rc.3-r1",
+      "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
+      "status": "draft",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "pending"
+        }
+      },
+      "browserSupport": [
+        {
+          "family": "chrome",
+          "minVersion": 120
+        }
+      ],
+      "clientTarget": "chrome120",
+      "evidence": [
+        "artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/probe.json",
+        "artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/screens/",
+        "artifacts/contracts/0.2.1-rc.3/hashes.json",
+        "artifacts/contracts/0.2.1-rc.3/provenance.json",
+        "contracts/dsh/0.2.1-rc.3/contract.json",
+        "contracts/dsh/0.2.1-rc.3/adapter.json",
+        "docs/verification/web-acceptance-0.2.1-rc.3-runtime-carrier.md"
+      ],
+      "notes": [
+        "Contract certified from the packaged Electron app.asar (DSH 0.2.1-rc.3, Electron 44.7.0, bundled Node 24.21.0); missing type documents supplemented from the same published npm version and recorded in source.prepared.",
+        "Official plugin-manager install acceptance in an isolated Desktop DSH_HOME: exit 0 without version exemption, bundle selected, both catalog profiles installed.",
+        "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning \u2014 boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
+        "NOT verified / not claimed: actual Electron window rendering, native caption/traffic lights, frame clearance, DPI and vibrancy. desktop.macos stays pending; no G6/release claim.",
+        "G6 not claimed."
       ]
     }
   ]

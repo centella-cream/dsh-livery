@@ -98,6 +98,7 @@ export function formatDiagnostics(
     line(t, t('check.adapter'), snapshot.identity.adapterId),
     line(t, t('check.contract'), shortHash(snapshot.identity.contractHash)),
     line(t, t('check.host'), snapshot.identity.hostVersion),
+    line(t, t('check.profile'), snapshot.catalogProfile ?? t('diag.none')),
     line(t, t('check.locale'), snapshot.locale),
     line(t, t('check.mode'), snapshot.themeMode === 'dark' ? t('mode.dark') : t('mode.light')),
   ]))

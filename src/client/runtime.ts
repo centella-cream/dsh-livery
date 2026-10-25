@@ -137,6 +137,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       status: deps.boot.kind,
       reason: deps.boot.reasons[0],
       diagnostics: deps.boot.payload?.diagnostics ?? [],
+      catalogProfile: deps.boot.payload?.catalogProfile,
     })
   }
 
@@ -471,10 +472,20 @@ export class LiveryRuntime implements LiveryRuntimeApi {
         notes: withNote(this.snapshot.notes, 'catalog route unavailable'),
       })
     } else {
+      // The catalog is the live host's own identity record: surface its
+      // version/adapter/contract/profile in the snapshot (self-check + about)
+      // so the UI never has to infer them.
       this.patch({
         catalogStatus: 'ready',
         catalog,
         capabilities: catalog.capabilities,
+        catalogProfile: catalog.catalogProfile,
+        identity: {
+          adapterId: catalog.adapterId,
+          contractHash: catalog.contractHash,
+          pluginVersion: this.snapshot.identity.pluginVersion,
+          hostVersion: catalog.hostVersion,
+        },
         notes: this.snapshot.notes.filter(note => !note.includes('catalog route')),
       })
     }

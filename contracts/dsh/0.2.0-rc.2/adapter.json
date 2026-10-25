@@ -11,21 +11,14 @@
   "nodeRange": "^22.23.1",
   "clientTarget": "chrome120",
   "verifiedProfiles": [
-    "desktop",
     "web"
   ],
   "verifiedPlatforms": [
-    "darwin",
-    "win32",
     "web"
   ],
   "verifiedBrowsers": [
     {
       "family": "chrome",
-      "minVersion": 120
-    },
-    {
-      "family": "edge",
       "minVersion": 120
     }
   ]

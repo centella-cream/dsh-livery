@@ -4,13 +4,13 @@ import type { DiagnosticsTranslate } from '../../src/client/diagnostics.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
 import type { LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { dictionaries, enUS, zhCN } from '../../src/i18n/index.js'
-import { makeCatalog, TEST_CONTRACT_HASH } from './fixtures.js'
+import { makeCatalog, TEST_ADAPTER } from './fixtures.js'
 
 const IDENTITY = {
-  adapterId: 'dsh-0.2.0-rc.2-r1',
-  contractHash: TEST_CONTRACT_HASH,
+  adapterId: TEST_ADAPTER.adapterId,
+  contractHash: TEST_ADAPTER.contractHash,
   pluginVersion: '0.1.0',
-  hostVersion: '0.2.0-rc.2',
+  hostVersion: TEST_ADAPTER.hostVersion,
 }
 
 /** Dictionary-backed translate with `{name}` template substitution. */
@@ -23,7 +23,12 @@ function makeT(dict: Record<string, string>): DiagnosticsTranslate {
 }
 
 const catalog = makeCatalog()
-const base = createInitialSnapshot(IDENTITY, { status: 'valid', reason: undefined, diagnostics: ['host note'] })
+const base = createInitialSnapshot(IDENTITY, {
+  status: 'valid',
+  reason: undefined,
+  diagnostics: ['host note'],
+  catalogProfile: TEST_ADAPTER.catalogProfile,
+})
 const READY: LiveryRuntimeSnapshot = {
   ...base,
   phase: 'ready',
@@ -32,6 +37,7 @@ const READY: LiveryRuntimeSnapshot = {
   catalogStatus: 'ready',
   catalog,
   capabilities: catalog.capabilities,
+  catalogProfile: catalog.catalogProfile,
   configStatus: 'ready',
   writable: true,
   confirmedId: 'fjord',
@@ -47,6 +53,8 @@ describe('formatDiagnostics', () => {
     expect(text).toContain('theme-css')
     expect(text).toContain(enUS['check.contrast'])
     expect(text).toContain(enUS['check.coverage'])
+    expect(text).toContain(enUS['check.profile'])
+    expect(text).toContain(TEST_ADAPTER.catalogProfile)
     expect(text).toContain('host note')
     // No unresolved dictionary keys leaked into the report.
     expect(text).not.toMatch(/![a-z]+\.[a-z]/i)

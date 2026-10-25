@@ -24,7 +24,7 @@ import {
   relativeLuminance,
   rgbToOklch,
 } from './color.js'
-import { STOCK_TOKENS } from '../generated/stock.js'
+import type { StockSnapshot } from '../generated/stock.js'
 
 /** Interaction states asserted by the matrix (§18.2). */
 export type ContrastState = 'default' | 'hover' | 'active' | 'selected' | 'focus' | 'disabled'
@@ -228,12 +228,17 @@ function parseConcrete(value: string | null | undefined): RgbaColor | null {
 
 /**
  * Resolve a token to a concrete colour for auditing: derived value first, then
- * the frozen stock declaration for that mode.
+ * the frozen stock declaration for that mode from the explicit host snapshot.
  */
-export function resolveTokenColor(tokens: TokenMap, name: string, mode: Mode): RgbaColor | null {
+export function resolveTokenColor(
+  tokens: TokenMap,
+  name: string,
+  mode: Mode,
+  stock: StockSnapshot,
+): RgbaColor | null {
   const derived = parseConcrete(tokens[name])
   if (derived !== null) return derived
-  const declaration = STOCK_TOKENS[name]
+  const declaration = stock.tokens[name]
   if (declaration === undefined) return null
   const resolved = mode === 'light' ? declaration.resolvedLight : declaration.resolvedDark
   const fromResolved = parseConcrete(resolved)
@@ -253,11 +258,11 @@ export function compositeOver(foreground: RgbaColor, background: Rgb): Rgb {
   }
 }
 
-function opaqueTokenColor(tokens: TokenMap, name: string, mode: Mode): Rgb | null {
-  const resolved = resolveTokenColor(tokens, name, mode)
+function opaqueTokenColor(tokens: TokenMap, name: string, mode: Mode, stock: StockSnapshot): Rgb | null {
+  const resolved = resolveTokenColor(tokens, name, mode, stock)
   if (resolved === null) return null
   if (resolved.alpha >= 1) return resolved.rgb
-  const base = resolveTokenColor(tokens, CONTRAST_SURFACES.base, mode)
+  const base = resolveTokenColor(tokens, CONTRAST_SURFACES.base, mode, stock)
   if (base === null) return null
   return compositeOver(resolved, base.rgb)
 }
@@ -270,18 +275,19 @@ export function resolveCheckColors(
   tokens: TokenMap,
   spec: ContrastCheck,
   mode: Mode,
+  stock: StockSnapshot,
 ): { readonly foreground: Rgb; readonly background: Rgb } | null {
-  const rawBackground = resolveTokenColor(tokens, spec.backgroundToken, mode)
+  const rawBackground = resolveTokenColor(tokens, spec.backgroundToken, mode, stock)
   if (rawBackground === null) return null
   let background: Rgb
   if (rawBackground.alpha < 1) {
-    const over = opaqueTokenColor(tokens, spec.backgroundOverToken ?? CONTRAST_SURFACES.base, mode)
+    const over = opaqueTokenColor(tokens, spec.backgroundOverToken ?? CONTRAST_SURFACES.base, mode, stock)
     if (over === null) return null
     background = compositeOver(rawBackground, over)
   } else {
     background = rawBackground.rgb
   }
-  const rawForeground = resolveTokenColor(tokens, spec.foregroundToken, mode)
+  const rawForeground = resolveTokenColor(tokens, spec.foregroundToken, mode, stock)
   if (rawForeground === null) return null
   const foreground = rawForeground.alpha < 1 ? compositeOver(rawForeground, background) : rawForeground.rgb
   return { foreground, background }
@@ -296,10 +302,14 @@ function entryRole(spec: ContrastCheck): string {
  * are emitted in `CONTRAST_CHECKS` order; unresolvable token pairs are skipped
  * (they cannot paint a colour and are covered by the token-coverage report).
  */
-export function auditContrast(variant: CompiledVariant, mode: Mode): readonly ContrastEntry[] {
+export function auditContrast(
+  variant: CompiledVariant,
+  mode: Mode,
+  stock: StockSnapshot,
+): readonly ContrastEntry[] {
   const entries: ContrastEntry[] = []
   for (const spec of CONTRAST_CHECKS) {
-    const resolved = resolveCheckColors(variant.tokens, spec, mode)
+    const resolved = resolveCheckColors(variant.tokens, spec, mode, stock)
     if (resolved === null) continue
     const raw = contrastRatio(resolved.foreground, resolved.background)
     const ratio = Math.round(raw * 1000) / 1000

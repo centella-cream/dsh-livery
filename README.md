@@ -1,7 +1,9 @@
 # DSH Livery
 
 Contract-bound color, typography, surface and safe-layout liveries for
-[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) **0.2.0-rc.2**.
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
+Certified host builds (exact versions, no wildcards): **0.2.0-rc.2**,
+**0.2.1-rc.2**, **0.2.1-rc.3**.
 
 DSH Livery is a style renderer, not a theme owner: it never registers a host
 theme, never calls `setTheme`, never touches `data-ds-*` attributes, and never
@@ -9,9 +11,18 @@ redraws window chrome. It injects one scoped semantic token pair per livery
 (`light`/`dark`) for the first frame, hands the same bytes to the client
 presenter, and restores stock immediately when disabled.
 
-* Target: DSH `0.2.0-rc.2` exactly (adapter `dsh-0.2.0-rc.2-r1`).
-* Profiles: Web Profile verified in this repository; Desktop certification is
-  tracked in `contracts/dsh/support-matrix.proposed.json` and is not claimed.
+* Targets: DSH `0.2.0-rc.2` (`dsh-0.2.0-rc.2-r1`), `0.2.1-rc.2`
+  (`dsh-0.2.1-rc.2-r1`), `0.2.1-rc.3` Desktop app runtime (`dsh-0.2.1-rc.3-r1`).
+  Compatibility is decided by exact version + adapter id + frozen contract hash;
+  unknown hosts fail closed to stock.
+* Profiles: Web Profile certified for Chrome on `0.2.0-rc.2` and `0.2.1-rc.2`.
+  The Desktop app runtime (`0.2.1-rc.3`) is adapted and passes the official
+  plugin-manager install acceptance; full Electron-rendered runtime certification
+  is tracked in `contracts/dsh/support-matrix.proposed.json` and not claimed.
+* Per-version rendering: `0.2.0-rc.2` overrides the `--dsw-*` semantic token
+  ladder; `0.2.1` uses the documented host font role hooks
+  (`--dsh-font-family-text/code`) and a separate compiled catalog profile, shared
+  byte-identically by the two 0.2.1 builds.
 * Languages: `zh` / `en`.
 * 10 built-in dual-mode liveries; the compiler derives full light/dark token
   pairs from four seed colors and gates every palette on a contrast matrix.
@@ -20,9 +31,11 @@ presenter, and restores stock immediately when disabled.
 
 ```bash
 pnpm build
-npm pack                     # or: pnpm pack
-dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
+pnpm pack
+dsh plugin --profile web add ./dsh-livery-0.1.0.tgz   # Web Profile (0.2.0-rc.2 / 0.2.1-rc.2)
 dsh --profile web --no-open
+# Desktop Profile 0.2.1-rc.3: install through the Desktop app's plugin manager
+# (the app runtime enforces the exact engines.dsh allowlist at install time).
 ```
 
 Settings → Livery picks a livery (transactional preview, then one config
@@ -44,7 +57,11 @@ The Web-profile acceptance harness creates an isolated `DSH_HOME` under
 `.tmp/acceptance/`, installs the packed tarball through the official
 `dsh plugin --profile web add` path, boots an isolated server, drives Chrome via
 Playwright, and archives screenshots + `probe.json` under
-`artifacts/acceptance/`.
+`artifacts/acceptance/`. Desktop hosts are snapshotted from the packaged
+Electron `app.asar` via `scripts/prepare-desktop-contract.mjs` (runtime bytes)
+supplemented with the same published version's type documents, then certified
+adapter-by-adapter and exercised through the Desktop app's official plugin
+manager path.
 
 ## Contract
 

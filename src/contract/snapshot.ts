@@ -9,7 +9,7 @@
  * The CLI entry is built by scripts/build.mjs.
  */
 import { createHash } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import postcss from 'postcss'
@@ -29,16 +29,17 @@ import type {
   TokenDeclaration,
 } from './types.js'
 
-const TARGET_VERSION = '0.2.0-rc.2'
-const ADAPTER_ID = 'dsh-0.2.0-rc.2-r1'
 const CLIENT_TARGET = 'chrome120'
+
 /**
- * The target DSH package declares no `engines.node`, so the Node range cannot be
- * copied from it. We record the runtime this adapter is certified on instead of
- * inventing a wider claim.
+ * Adapter identity for one exact host version. The revision suffix is bumped
+ * whenever the six contract hashes are re-frozen for the same version string.
+ * @param version - exact DSH version.
+ * @returns the adapter id recorded in adapter.json and the runtime registry.
  */
-const CERTIFIED_NODE_RANGE = '^22.23.1'
-const NODE_RANGE_SOURCE = 'target-declares-none; certified on node v22.23.1'
+export function adapterIdFor(version: string): string {
+  return `dsh-${version}-r1`
+}
 
 export interface ResolvedInstall {
   /** `.../node_modules/@deepseek-ai/dsh`, the CLI package root. */
@@ -47,6 +48,8 @@ export interface ResolvedInstall {
   readonly packagesRoot: string
   /** Node engine range exactly as declared by the target package. */
   readonly nodeRange: string
+  /** Runtime Node version this adapter is certified on (e.g. `v22.23.1`). */
+  readonly certifiedNodeVersion: string
 }
 
 export interface SnapshotOptions {
@@ -68,7 +71,15 @@ export async function resolveDshInstall(input: string): Promise<ResolvedInstall>
     if (pkg.name !== '@deepseek-ai/dsh') continue
     const sibling = join(candidate, 'node_modules', '@deepseek-ai')
     const packagesRoot = existsSync(sibling) ? sibling : dirname(candidate)
-    return { dshRoot: candidate, packagesRoot, nodeRange: pkg.engines?.node ?? CERTIFIED_NODE_RANGE }
+    const prepared = readPreparedMarkerSync(candidate)
+    const certifiedNodeVersion = prepared?.runtime?.node ?? process.version
+    const fallbackRange = `^${certifiedNodeVersion.replace(/^v/u, '')}`
+    return {
+      dshRoot: candidate,
+      packagesRoot,
+      nodeRange: pkg.engines?.node ?? fallbackRange,
+      certifiedNodeVersion,
+    }
   }
   throw new Error(
     `could not resolve an @deepseek-ai/dsh installation from ${input}; pass the dsh package root (the directory containing dsh/package.json)`,
@@ -503,17 +514,40 @@ async function collectHostApi(packagesRoot: string): Promise<HostApiContract> {
 
 async function collectClientApi(packagesRoot: string): Promise<ClientApiContract> {
   const configFormTypes = 'dsh-client-ui-settings/lib/types/client/config-form.d.ts'
-  const slotsTypes = 'dsh-client-ui-slots/lib/types/index.d.ts'
   const settingsSlots = 'dsh-client-ui-settings/lib/types/client/contract/slots.d.ts'
   const localeTypes = 'dsh-client-locale/lib/types/client/index.d.ts'
   const themeTypes = 'dsh-client-ui-theme/lib/types/client/index.d.ts'
   const layoutTypes = 'dsh-client-ui-layout/lib/types/client/theme-presenter.d.ts'
 
+  // `ctx.slots` is a shell-seeded module. Up to 0.2.0-rc.2 its type contract
+  // ships as the slots package; from 0.2.1 the package is no longer part of the
+  // install and the SlotRegistry contract in the renderer package is canonical.
+  // Registration and declaration-injection are verified independently because
+  // 0.2.1 split them: `register` still lives on SlotCore (slots package types),
+  // while `inject` moved onto the renderer-owned SlotRegistry.
+  const registerSources = [
+    { file: 'dsh-client-ui-slots/lib/types/index.d.ts', needle: 'register<K extends keyof SlotMap' },
+    { file: 'dsh-client-ui-renderer/lib/types/client/registry.d.ts', needle: "readonly register: SlotCore['register']" },
+  ]
+  const injectSources = [
+    { file: 'dsh-client-ui-renderer/lib/types/client/registry.d.ts', needle: 'inject(key: keyof SlotMap & string' },
+    { file: 'dsh-client-ui-slots/lib/types/index.d.ts', needle: 'inject(' },
+  ]
+  const slotContractSources: string[] = []
+  for (const source of [...registerSources, ...injectSources]) {
+    if (await fileContains(packagesRoot, source.file, source.needle)) slotContractSources.push(source.file)
+  }
+  const registerOk = slotContractSources.some((file) => registerSources.some((source) => source.file === file))
+  const injectOk = slotContractSources.some((file) => injectSources.some((source) => source.file === file))
+  if (!registerOk || !injectOk) {
+    throw new Error(
+      `client contract check failed: slots register=${String(registerOk)} inject=${String(injectOk)} types missing`,
+    )
+  }
   const checks: Array<[string, string]> = [
     [configFormTypes, 'get<T>(entryId: string): ConfigForm<T>'],
     [configFormTypes, 'whileServed('],
     [configFormTypes, 'configForms: ConfigForms'],
-    [slotsTypes, 'register<K extends keyof SlotMap'],
     [settingsSlots, "'settings.section'"],
     [localeTypes, "'locale/change'"],
     [themeTypes, "'theme/change'"],
@@ -550,11 +584,15 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   }
   const evidenceCandidates = [
     ['dsh-client-ui-settings/lib/client.js', 'dsh-client-ui-settings/lib/index.js'],
-    ['dsh-client-ui-slots/lib/client.js', 'dsh-client-ui-slots/lib/index.js'],
+    ['dsh-client-slots-never/lib/client.js', 'dsh-client-ui-slots/lib/client.js', 'dsh-client-ui-slots/lib/index.js'],
+    ['dsh-client-ui-renderer/lib/client.js', 'dsh-client-ui-renderer/lib/index.js'],
     ['dsh-client-locale/lib/client.js', 'dsh-client-locale/lib/index.js'],
     ['dsh-client-ui-theme/lib/client.js', 'dsh-client-ui-theme/lib/index.js'],
     ['dsh-client-ui-layout/lib/client.js', 'dsh-client-ui-layout/lib/index.js'],
   ]
+  for (const file of slotContractSources) {
+    evidenceCandidates.push([file])
+  }
   const evidence: FileHash[] = []
   for (const candidates of evidenceCandidates) {
     for (const candidate of candidates) {
@@ -588,7 +626,16 @@ async function collectLayoutContract(
     'dsh-client-ui-sidebar-right/README.md',
     'dsh-client-ui-slots/README.md',
   ]
-  const readmes = await Promise.all(readmePaths.map((path) => readFile(join(packagesRoot, path), 'utf8')))
+  const readmes: string[] = []
+  const missingReadmes: string[] = []
+  for (const path of readmePaths) {
+    try {
+      readmes.push(await readFile(join(packagesRoot, path), 'utf8'))
+    } catch {
+      missingReadmes.push(path)
+    }
+  }
+  if (readmes.length === 0) throw new Error('layout contract check failed: no client READMEs available in the install')
   const documentedAttributes = readmeSetDocumentedAttributes(readmes)
   const allReadmes = readmes.join('\n')
   const rootVariables = [...dshVariables.keys()].sort()
@@ -596,6 +643,13 @@ async function collectLayoutContract(
   const capabilityFacts = {
     themeCss: tokenContract.count > 0,
     hostFontFamily: tokenNames.has('--dsw-font-family'),
+    // 0.2.1 moved the public font override points to two documented role hooks;
+    // their default-stack variables appear at document level in the layout contract.
+    fontRoleHooks:
+      [...dshVariables.keys()].some((name) => name === '--dsh-font-family-text-default') ||
+      allReadmes.includes('--dsh-font-family-text'),
+    hostCodeFontHooks:
+      [...dshVariables.keys()].some((name) => name === '--dsh-font-family-code-default'),
     surfaceMaterial: tokenNames.has('--dsw-elevation-panel') && tokenNames.has('--dsw-alias-bg-layer-1'),
     hostDensityTokens:
       allReadmes.includes('--dsh-density') ||
@@ -606,10 +660,15 @@ async function collectLayoutContract(
     documentedDarkAttribute: documentedAttributes.includes('data-ds-dark-theme'),
     themeSourceAttribute: documentedAttributes.includes('data-ds-theme-source'),
   }
-  const evidence = await Promise.all(
-    readmePaths.map((path) => sha256File(join(packagesRoot, path))),
-  )
-  const payload = { documentedAttributes, rootVariables, capabilityFacts }
+  const evidence: FileHash[] = []
+  for (const path of readmePaths) {
+    try {
+      evidence.push(await sha256File(join(packagesRoot, path)))
+    } catch {
+      // README absent in this packaging (e.g. Electron app.asar); recorded in payload.
+    }
+  }
+  const payload = { documentedAttributes, rootVariables, capabilityFacts, missingReadmes }
   return {
     hash: hashCanonical(payload),
     darkAttribute: 'data-ds-dark-theme',
@@ -664,8 +723,8 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
     version: string
   }
   const version = options.version ?? dshPkg.version
-  if (version !== TARGET_VERSION) {
-    throw new Error(`snapshot target mismatch: requested ${version}, installed package is ${dshPkg.version}`)
+  if (options.version !== undefined && options.version !== dshPkg.version) {
+    throw new Error(`snapshot target mismatch: requested ${options.version}, installed package is ${dshPkg.version}`)
   }
 
   const sheets = await readThemeSheets(install.packagesRoot)
@@ -696,6 +755,7 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
     hostDensityTokens: layout.capabilityFacts.hostDensityTokens === true,
     hostTranscriptWidth: layout.capabilityFacts.hostTranscriptWidth === true,
     hostMessageFlow: layout.capabilityFacts.hostMessageFlow === true,
+    fontRoleHooks: layout.capabilityFacts.fontRoleHooks === true,
   }
 
   const hashes = {
@@ -713,17 +773,23 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
     clientTarget: CLIENT_TARGET,
   })
 
+  const prepared = await readPreparedSource(install)
+
   return {
     schemaVersion: 1,
-    adapterId: ADAPTER_ID,
+    adapterId: adapterIdFor(version),
     hostVersion: version,
     capturedAt: options.capturedAt ?? new Date().toISOString(),
     source: {
-      kind: 'installed-package',
+      kind: prepared?.kind === 'packaged-app' ? 'packaged-app' : 'installed-package',
       dshPackage: `@deepseek-ai/dsh@${version}`,
       nodeRange: install.nodeRange,
-      nodeRangeSource: install.nodeRange === CERTIFIED_NODE_RANGE ? NODE_RANGE_SOURCE : 'declared',
+      nodeRangeSource:
+        (await readFile(join(install.dshRoot, 'package.json'), 'utf8')).includes('"engines"')
+          ? 'declared'
+          : `target-declares-none; certified on node ${install.certifiedNodeVersion}`,
       clientTarget: CLIENT_TARGET,
+      ...(prepared === undefined ? {} : { prepared: prepared.source }),
     },
     loaderAbi,
     hostApi,
@@ -738,14 +804,111 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
 }
 
 /* ------------------------------------------------------------------ *
+ * Prepared (packaged-app) source metadata
+ * ------------------------------------------------------------------ */
+
+interface PreparedSource {
+  readonly kind: 'packaged-app' | 'installed-package'
+  readonly source: {
+    readonly archiveSha256?: string
+    readonly extractor: string
+    readonly supplements: readonly string[]
+    readonly notes: string
+  }
+  readonly runtime?: {
+    readonly node?: string
+    readonly electron?: string
+    readonly chromium?: string
+  }
+}
+
+/** Synchronous prepared-marker read used during install discovery. */
+function readPreparedMarkerSync(dshRoot: string): PreparedSource | undefined {
+  const marker = join(dshRoot, '..', '..', 'dsh-livery-prepared.json')
+  if (!existsSync(marker)) return undefined
+  try {
+    return JSON.parse(readFileSync(marker, 'utf8')) as PreparedSource
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Desktop DSH ships inside Electron's `app.asar`, which strips `.d.ts` files and
+ * some READMEs. `scripts/prepare-desktop-contract.mjs` extracts the runtime bytes
+ * and supplements the missing type documents from the same published version,
+ * writing this marker into the prepared tree. Snapshots record the mixture so the
+ * evidence never pretends the packaged app contains type declarations.
+ */
+async function readPreparedSource(install: ResolvedInstall): Promise<PreparedSource | undefined> {
+  const marker = join(install.dshRoot, '..', '..', 'dsh-livery-prepared.json')
+  if (!existsSync(marker)) return undefined
+  const parsed = JSON.parse(await readFile(marker, 'utf8')) as PreparedSource
+  return { kind: parsed.kind, source: parsed.source }
+}
+
+/* ------------------------------------------------------------------ *
  * Writers
  * ------------------------------------------------------------------ */
+
+interface MatrixMergeResult {
+  readonly matrix: SupportMatrix
+  readonly path: string
+}
+
+async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, adapter: AdapterManifest): Promise<MatrixMergeResult> {
+  const path = join(workspace, 'contracts', 'dsh', 'support-matrix.proposed.json')
+  let matrix: SupportMatrix = { schemaVersion: 1, updatedAt: snapshot.capturedAt, entries: [] }
+  if (existsSync(path)) {
+    try {
+      matrix = JSON.parse(await readFile(path, 'utf8')) as SupportMatrix
+    } catch {
+      // A corrupt matrix is rebuilt from the committed contracts below.
+    }
+  }
+  const previous = matrix.entries.find((entry) => entry.hostVersion === snapshot.hostVersion)
+  const entry = {
+    hostVersion: snapshot.hostVersion,
+    adapterId: snapshot.adapterId,
+    contractHash: snapshot.contractHash,
+    status: previous?.status ?? ('draft' as const),
+    profiles: previous?.profiles ?? {
+      desktop: { macos: 'pending' as const, win32: 'pending' as const },
+      web: { chrome: 'pending' as const, edge: 'pending' as const },
+    },
+    browserSupport: previous?.browserSupport ?? adapter.verifiedBrowsers,
+    clientTarget: adapter.clientTarget,
+    evidence: previous?.evidence ?? [],
+    notes: previous?.notes ?? ['Contract snapshot frozen; waiting for certification evidence.'],
+  }
+  const others = matrix.entries.filter((candidate) => candidate.hostVersion !== snapshot.hostVersion)
+  const entries = [...others, entry].sort((a, b) => compareVersions(a.hostVersion, b.hostVersion))
+  const merged: SupportMatrix = { schemaVersion: 1, updatedAt: snapshot.capturedAt, entries }
+  await writeFile(path, `${JSON.stringify(merged, null, 2)}\n`)
+  return { matrix: merged, path }
+}
+
+/** Ascending semantic-ish version order for display and registry stability. */
+export function compareVersions(a: string, b: string): number {
+  const parse = (value: string): number[] => {
+    const match = /^(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?$/u.exec(value)
+    if (match === null) return [0, 0, 0, 0]
+    return [Number(match[1]), Number(match[2]), Number(match[3]), Number(match[4] ?? 0)]
+  }
+  const left = parse(a)
+  const right = parse(b)
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) return left[i]! - right[i]!
+    void i
+  }
+  return 0
+}
 
 export async function writeSnapshotArtifacts(
   workspace: string,
   snapshot: ContractSnapshot,
   install: ResolvedInstall,
-): Promise<{ contractPath: string; adapterPath: string; matrixPath: string; generatedPath: string }> {
+): Promise<{ contractPath: string; adapterPath: string; matrixPath: string; generatedPath: string; generatedStockPath: string }> {
   const version = snapshot.hostVersion
   const contractDir = join(workspace, 'contracts', 'dsh', version)
   const artifactsDir = join(workspace, 'artifacts', 'contracts', version)
@@ -755,6 +918,7 @@ export async function writeSnapshotArtifacts(
   const contractPath = join(contractDir, 'contract.json')
   await writeFile(contractPath, `${JSON.stringify(snapshot, null, 2)}\n`)
 
+  const prepared = await readPreparedSource(install)
   const adapter: AdapterManifest = {
     hostVersion: version,
     adapterId: snapshot.adapterId,
@@ -777,28 +941,7 @@ export async function writeSnapshotArtifacts(
   const adapterPath = join(contractDir, 'adapter.json')
   await writeFile(adapterPath, `${JSON.stringify(adapter, null, 2)}\n`)
 
-  const matrixPath = join(workspace, 'contracts', 'dsh', 'support-matrix.proposed.json')
-  const matrix: SupportMatrix = {
-    schemaVersion: 1,
-    updatedAt: snapshot.capturedAt,
-    entries: [
-      {
-        hostVersion: version,
-        adapterId: snapshot.adapterId,
-        contractHash: snapshot.contractHash,
-        status: 'draft',
-        profiles: {
-          desktop: { macos: 'pending', win32: 'pending' },
-          web: { chrome: 'pending', edge: 'pending' },
-        },
-        browserSupport: adapter.verifiedBrowsers,
-        clientTarget: adapter.clientTarget,
-        evidence: [],
-        notes: ['Phase 0 draft: static contract snapshot only until G0-G6 evidence is attached.'],
-      },
-    ],
-  }
-  await writeFile(matrixPath, `${JSON.stringify(matrix, null, 2)}\n`)
+  const { matrix, path: matrixPath } = await writeMatrixEntry(workspace, snapshot, adapter)
 
   // Evidence artifacts may record the local install path; they are never packaged.
   await writeFile(
@@ -810,6 +953,8 @@ export async function writeSnapshotArtifacts(
         packagesRoot: install.packagesRoot,
         hostVersion: snapshot.hostVersion,
         nodeRange: snapshot.source.nodeRange,
+        source: snapshot.source,
+        prepared: prepared === undefined ? null : { kind: prepared.kind, ...prepared.source },
         files: [
           ...snapshot.loaderAbi.evidence,
           ...snapshot.hostApi.evidence,
@@ -837,21 +982,94 @@ export async function writeSnapshotArtifacts(
         platformModules: snapshot.loaderAbi.platformModules.modules,
         capabilities: snapshot.capabilities,
         documentedAttributes: snapshot.layout.documentedAttributes,
+        defaultState: matrix.entries.find((entry) => entry.hostVersion === version)?.status ?? 'missing',
       },
       null,
       2,
     )}\n`,
   )
 
-  const generatedPath = join(workspace, 'src', 'generated', 'contract.ts')
-  await writeFile(generatedPath, renderGeneratedContract(snapshot))
-  await writeFile(join(workspace, 'src', 'generated', 'stock.ts'), renderGeneratedStock(snapshot))
-  return { contractPath, adapterPath, matrixPath, generatedPath }
+  const generated = await regenerateGeneratedContracts(workspace)
+  return {
+    contractPath,
+    adapterPath,
+    matrixPath,
+    generatedPath: generated.contractPath,
+    generatedStockPath: generated.stockPath,
+  }
 }
 
-export function renderGeneratedContract(snapshot: ContractSnapshot): string {
-  const facts = {
-    dshVersion: snapshot.hostVersion,
+/* ------------------------------------------------------------------ *
+ * Generated multi-version registry
+ * ------------------------------------------------------------------ */
+
+export interface GeneratedRegistryPaths {
+  readonly contractPath: string
+  readonly stockPath: string
+  readonly versions: readonly string[]
+}
+
+/** Load every committed contract snapshot, ascending by version. */
+export async function readCommittedSnapshots(workspace: string): Promise<ContractSnapshot[]> {
+  const root = join(workspace, 'contracts', 'dsh')
+  if (!existsSync(root)) return []
+  const snapshots: ContractSnapshot[] = []
+  for (const name of await readdir(root, { withFileTypes: true })) {
+    if (!name.isDirectory()) continue
+    const path = join(root, name.name, 'contract.json')
+    if (!existsSync(path)) continue
+    snapshots.push(JSON.parse(await readFile(path, 'utf8')) as ContractSnapshot)
+  }
+  return snapshots.sort((a, b) => compareVersions(a.hostVersion, b.hostVersion))
+}
+
+/**
+ * Regenerate `src/generated/contract.ts` (adapter registry) and
+ * `src/generated/stock.ts` (per-version stock token snapshots) from the committed
+ * contract files. Deterministic: no wall clock, stable key order.
+ */
+export async function regenerateGeneratedContracts(workspace: string): Promise<GeneratedRegistryPaths> {
+  const snapshots = await readCommittedSnapshots(workspace)
+  const generatedDir = join(workspace, 'src', 'generated')
+  await mkdir(generatedDir, { recursive: true })
+  const contractPath = join(generatedDir, 'contract.ts')
+  const stockPath = join(generatedDir, 'stock.ts')
+  await writeFile(contractPath, renderGeneratedRegistry(snapshots))
+  await writeFile(stockPath, renderGeneratedStockRegistry(snapshots))
+  return { contractPath, stockPath, versions: snapshots.map((snapshot) => snapshot.hostVersion) }
+}
+
+/** Detection format of a compiled catalog profile; bump with schema/compiler changes. */
+const CATALOG_COMPILER_VERSION = '0.1.0'
+
+/**
+ * Render-affecting contract facts. Two host versions with the same profile can
+ * share one compiled catalog (they render byte-identical stylesheets); the
+ * node/loader differences alone do not fork the catalog.
+ */
+export function catalogProfileId(snapshot: ContractSnapshot): string {
+  return hashCanonical({
+    schemaVersion: 1,
+    compilerVersion: CATALOG_COMPILER_VERSION,
+    tokenHash: snapshot.hashes.token,
+    capabilities: {
+      themeCss: snapshot.capabilities.themeCss === true,
+      hostFontFamily: snapshot.capabilities.hostFontFamily === true,
+      fontRoleHooks: snapshot.capabilities.fontRoleHooks === true,
+      surfaceMaterial: snapshot.capabilities.surfaceMaterial === true,
+      hostDensityTokens: snapshot.capabilities.hostDensityTokens === true,
+      hostTranscriptWidth: snapshot.capabilities.hostTranscriptWidth === true,
+      hostMessageFlow: snapshot.capabilities.hostMessageFlow === true,
+      reducedTransparency: true,
+      forcedColors: true,
+      reducedMotion: true,
+    },
+  })
+}
+
+export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]): string {
+  const adapters = snapshots.map((snapshot) => ({
+    hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
     contractHash: snapshot.contractHash,
     loaderAbiHash: snapshot.hashes.loaderAbi,
@@ -861,40 +1079,200 @@ export function renderGeneratedContract(snapshot: ContractSnapshot): string {
     layoutHash: snapshot.hashes.layout,
     profileSchemaHash: snapshot.hashes.profileSchema,
     nodeRange: snapshot.source.nodeRange,
+    nodeRangeSource: snapshot.source.nodeRangeSource,
     clientTarget: snapshot.source.clientTarget,
-    evidence: snapshot.loaderAbi.evidence.map((file) => file.path),
+    platformModules: snapshot.loaderAbi.platformModules.modules,
+    capabilities: buildCapabilityMap(snapshot),
+    /** Render-affecting contract facts; versions sharing one profile share one catalog. */
+    catalogProfile: catalogProfileId(snapshot),
+    sourceKind: snapshot.source.kind,
+    sourceEvidence: snapshot.loaderAbi.evidence.map((file) => file.path),
+    capturedAt: snapshot.capturedAt,
+  }))
+  const lines: string[] = []
+  lines.push('/**')
+  lines.push(' * GENERATED — do not edit by hand.')
+  lines.push(' *')
+  lines.push(' * Frozen adapter registry for every certified DSH host build. Compatibility')
+  lines.push(' * is decided by exact version + adapter id + contract hash; unknown versions')
+  lines.push(' * fail closed to stock. Regenerate with')
+  lines.push(' * `pnpm contract:regenerate` after adding or refreshing a contract snapshot.')
+  lines.push(' */')
+  lines.push("import type { CapabilityMap } from '../core/types.js'")
+  lines.push('')
+  lines.push('/** One certified host build. */')
+  lines.push('export interface AdapterRecord {')
+  lines.push('  /** Exact DSH version (no range, no wildcard). */')
+  lines.push('  readonly hostVersion: string')
+  lines.push('  /** Adapter identity: `dsh-<version>-r<rev>`. */')
+  lines.push('  readonly adapterId: string')
+  lines.push('  /** sha256 over the six class hashes + node range + client target. */')
+  lines.push('  readonly contractHash: string')
+  lines.push('  readonly loaderAbiHash: string')
+  lines.push('  readonly hostApiHash: string')
+  lines.push('  readonly clientApiHash: string')
+  lines.push('  readonly tokenHash: string')
+  lines.push('  readonly layoutHash: string')
+  lines.push('  readonly profileSchemaHash: string')
+  lines.push('  readonly nodeRange: string')
+  lines.push('  readonly nodeRangeSource: string')
+  lines.push('  readonly clientTarget: string')
+  lines.push('  /** Exact module table seeded by this host build. */')
+  lines.push('  readonly platformModules: readonly string[]')
+  lines.push('  /** Capability facts for this host build. */')
+  lines.push('  readonly capabilities: CapabilityMap')
+  lines.push('  /** Catalog profile id: versions sharing it render byte-identical CSS. */')
+  lines.push('  readonly catalogProfile: string')
+  lines.push('  /** `installed-package` (npm/CLI) or `packaged-app` (Electron app.asar). */')
+  lines.push('  readonly sourceKind: \'installed-package\' | \'packaged-app\'')
+  lines.push('  readonly sourceEvidence: readonly string[]')
+  lines.push('  readonly capturedAt: string')
+  lines.push('}')
+  lines.push('')
+  lines.push('/** Every certified host build, ascending by version. */')
+  lines.push(`export const ADAPTERS: readonly AdapterRecord[] = ${JSON.stringify(adapters, null, 2)}`)
+  lines.push('')
+  lines.push('/**')
+  lines.push(' * Client-safe identity subset: the only four fields a browser bundle needs to')
+  lines.push(' * whitelist a boot payload/catalog. Kept separate so the client does not ship')
+  lines.push(' * capability prose, source evidence or class hashes.')
+  lines.push(' */')
+  lines.push('export interface AdapterIdentity {')
+  lines.push('  readonly hostVersion: string')
+  lines.push('  readonly adapterId: string')
+  lines.push('  readonly contractHash: string')
+  lines.push('  readonly catalogProfile: string')
+  lines.push('}')
+  lines.push('')
+  // Standalone literal (not derived from ADAPTERS) so a browser bundle importing
+  // only the identities never pulls capability prose/source evidence/hashes into
+  // the initializer graph and the full records can be tree-shaken away.
+  const identities = adapters.map((adapter) => ({
+    hostVersion: adapter.hostVersion,
+    adapterId: adapter.adapterId,
+    contractHash: adapter.contractHash,
+    catalogProfile: adapter.catalogProfile,
+  }))
+  lines.push(`export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = ${JSON.stringify(identities, null, 2)}`)
+  lines.push('')
+  lines.push('/** Exact allowlist of host versions this build may style (lite form). */')
+  lines.push(`export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ${JSON.stringify(identities.map((identity) => identity.hostVersion))}`)
+  lines.push('')
+  lines.push('/** Registry by exact host version. */')
+  lines.push('export const ADAPTER_BY_VERSION: Readonly<Record<string, AdapterRecord>> = Object.fromEntries(')
+  lines.push('  ADAPTERS.map((adapter) => [adapter.hostVersion, adapter]),')
+  lines.push(')')
+  lines.push('')
+  lines.push('/** Registry by certified contract hash. */')
+  lines.push('export const ADAPTER_BY_CONTRACT_HASH: Readonly<Record<string, AdapterRecord>> = Object.fromEntries(')
+  lines.push('  ADAPTERS.map((adapter) => [adapter.contractHash, adapter]),')
+  lines.push(')')
+  lines.push('')
+  lines.push('/** Exact allowlist of host versions this build may style. */')
+  lines.push('export const SUPPORTED_HOST_VERSIONS: readonly string[] = ADAPTERS.map((adapter) => adapter.hostVersion)')
+  lines.push('')
+  lines.push('/** Newest certified adapter (used by build-time tooling defaults only). */')
+  lines.push('export const DEFAULT_ADAPTER: AdapterRecord = ADAPTERS[ADAPTERS.length - 1]!')
+  lines.push('')
+  lines.push('/** Resolve an exact host version, or undefined when uncertified. */')
+  lines.push('export function adapterForVersion(version: string | undefined): AdapterRecord | undefined {')
+  lines.push('  return version === undefined ? undefined : ADAPTER_BY_VERSION[version]')
+  lines.push('}')
+  lines.push('')
+  lines.push('/** Resolve a certified contract hash, or undefined when uncertified. */')
+  lines.push('export function adapterForContractHash(hash: string | undefined): AdapterRecord | undefined {')
+  lines.push('  return hash === undefined ? undefined : ADAPTER_BY_CONTRACT_HASH[hash]')
+  lines.push('}')
+  lines.push('')
+  return lines.join('\n')
+}
+
+export function renderGeneratedStockRegistry(snapshots: readonly ContractSnapshot[]): string {
+  const byVersion: Record<string, unknown> = {}
+  for (const snapshot of snapshots) {
+    const values = new Map<string, string>()
+    for (const token of snapshot.tokens.tokens) values.set(token.name, token.light)
+    const tokens: Record<string, unknown> = {}
+    for (const token of snapshot.tokens.tokens) {
+      tokens[token.name] = {
+        category: token.category,
+        light: token.light,
+        dark: token.dark,
+        resolvedLight: resolveTokenValue(token.light, values),
+        resolvedDark: resolveTokenValue(token.dark, values),
+        selector: token.selector,
+        darkSelector: token.darkSelector,
+        themeInvariant: token.dark === token.light,
+        referencedBy: token.referencedBy,
+      }
+    }
+    const dshVariables: Record<string, unknown> = {}
+    for (const name of snapshot.layout.rootVariables) {
+      dshVariables[name] = { light: null, dark: null, notes: 'declared by host sheets', declared: true }
+    }
+    byVersion[snapshot.hostVersion] = {
+      version: snapshot.hostVersion,
+      tokenContractHash: snapshot.hashes.token,
+      tokens,
+      dshVariables,
+    }
   }
-  const capabilities = buildCapabilityMap(snapshot)
   return `/**
  * GENERATED — do not edit by hand.
  *
- * Frozen capability + hash facts for DSH ${snapshot.hostVersion}
- * (adapter ${snapshot.adapterId}). Regenerate with
- * \`pnpm contract:snapshot -- --dsh-install <dsh package root>\`.
+ * Per-host-version stock token snapshots. Each Livery catalog is compiled against
+ * the stock tokens of the exact host version it targets, so a token added or
+ * changed by the host can never silently inherit a different palette.
+ * Regenerate with \`pnpm contract:regenerate\`.
  */
-import type { CapabilityMap } from '../core/types.js'
+import type { TokenMap } from "../core/types.js";
 
-export interface ContractFacts {
-  readonly dshVersion: string
-  readonly adapterId: string
-  readonly contractHash: string
-  readonly loaderAbiHash: string
-  readonly hostApiHash: string
-  readonly clientApiHash: string
-  readonly tokenHash: string
-  readonly layoutHash: string
-  readonly profileSchemaHash: string
-  readonly nodeRange: string
-  readonly clientTarget: string
-  readonly evidence: readonly string[]
+export interface StockTokenDeclaration {
+  readonly category: string;
+  /** Raw light-mode declaration value. */
+  readonly light: string;
+  /** Raw dark-mode declaration value (theme-invariant tokens repeat light). */
+  readonly dark: string;
+  /** Value after resolving \`var()\` chains, when resolvable. */
+  readonly resolvedLight: string | null;
+  readonly resolvedDark: string | null;
+  readonly selector: string | null;
+  readonly darkSelector: string | null;
+  readonly themeInvariant: boolean;
+  readonly referencedBy: readonly string[];
 }
 
-export const CONTRACT_HASH = ${JSON.stringify(snapshot.contractHash)}
+export interface StockSnapshot {
+  readonly version: string;
+  readonly tokenContractHash: string;
+  readonly tokens: Readonly<Record<string, StockTokenDeclaration>>;
+  readonly dshVariables: Readonly<Record<string, Readonly<{ light: string | null; dark: string | null; notes: string | null; declared: boolean }>>>;
+}
 
-export const CONTRACT_FACTS: ContractFacts = ${JSON.stringify(facts, null, 2)}
+/** Stock token snapshots keyed by exact host version, ascending. */
+export const STOCK_BY_VERSION: Readonly<Record<string, StockSnapshot>> = ${JSON.stringify(byVersion, null, 2)};
 
-/** Capability availability for the certified host build. */
-export const HOST_CAPABILITIES: CapabilityMap = ${JSON.stringify(capabilities, null, 2)}
+/** Exact host versions with a stock snapshot, ascending. */
+export const STOCK_VERSIONS: readonly string[] = Object.keys(STOCK_BY_VERSION);
+
+/** Resolve the stock snapshot for an exact host version. */
+export function stockForVersion(version: string): StockSnapshot | undefined {
+  return STOCK_BY_VERSION[version];
+}
+
+/** Light-mode raw token map for one host version. */
+export function stockLightFor(version: string): TokenMap {
+  const snapshot = STOCK_BY_VERSION[version];
+  if (snapshot === undefined) return {};
+  return Object.fromEntries(Object.entries(snapshot.tokens).map(([name, token]) => [name, token.light]));
+}
+
+/** Dark-mode raw token map for one host version. */
+export function stockDarkFor(version: string): TokenMap {
+  const snapshot = STOCK_BY_VERSION[version];
+  if (snapshot === undefined) return {};
+  return Object.fromEntries(Object.entries(snapshot.tokens).map(([name, token]) => [name, token.dark]));
+}
 `
 }
 
@@ -914,6 +1292,15 @@ function buildCapabilityMap(snapshot: ContractSnapshot): Record<string, unknown>
       provenance: flag(snapshot.capabilities.hostFontFamily),
       required: true,
       detail: 'Host design tokens expose --dsw-font-family and the --dsw-font-markdown-* ladder; body-scoped declarations override stock.',
+    },
+    'host-font-role-hooks': {
+      id: 'host-font-role-hooks',
+      available: snapshot.capabilities.fontRoleHooks === true,
+      provenance: flag(snapshot.capabilities.fontRoleHooks === true),
+      required: false,
+      detail: snapshot.capabilities.fontRoleHooks
+        ? 'Documented host font role hooks (--dsh-font-family-text, --dsh-font-family-code) are present; themes set the hook, never the composite ladder.'
+        : 'No documented font role hooks; host fonts are changed through the --dsw-font-family token pair.',
     },
     'surface-material': {
       id: 'surface-material',
@@ -971,67 +1358,4 @@ function buildCapabilityMap(snapshot: ContractSnapshot): Record<string, unknown>
       detail: 'CSS media query supported by the certified browser set.',
     },
   }
-}
-
-export function renderGeneratedStock(snapshot: ContractSnapshot): string {
-  const values = new Map<string, string>()
-  for (const token of snapshot.tokens.tokens) values.set(token.name, token.light)
-  const tokens: Record<string, Record<string, unknown>> = {}
-  for (const token of snapshot.tokens.tokens) {
-    tokens[token.name] = {
-      category: token.category,
-      light: token.light,
-      dark: token.dark,
-      resolvedLight: resolveTokenValue(token.light, values),
-      resolvedDark: resolveTokenValue(token.dark, values),
-      selector: token.selector,
-      darkSelector: token.darkSelector,
-      themeInvariant: token.dark === token.light,
-      referencedBy: token.referencedBy,
-    }
-  }
-  const dshVariables: Record<string, unknown> = {}
-  for (const name of snapshot.layout.rootVariables) {
-    dshVariables[name] = { light: null, dark: null, notes: 'declared by host sheets', declared: true }
-  }
-  return `/**
- * GENERATED — do not edit by hand.
- *
- * Frozen stock token snapshot for DSH ${snapshot.hostVersion}, extracted from
- * @deepseek-ai/dsh-client-ui-theme by \`pnpm contract:snapshot\`. Regenerate only
- * when the support matrix adds a new certified host version.
- */
-import type { TokenMap } from "../core/types.js";
-
-export interface StockTokenDeclaration {
-  readonly category: string;
-  /** Raw light-mode declaration value. */
-  readonly light: string;
-  /** Raw dark-mode declaration value (theme-invariant tokens repeat light). */
-  readonly dark: string;
-  /** Value after resolving \`var()\` chains, when resolvable. */
-  readonly resolvedLight: string | null;
-  readonly resolvedDark: string | null;
-  readonly selector: string | null;
-  readonly darkSelector: string | null;
-  readonly themeInvariant: boolean;
-  readonly referencedBy: readonly string[];
-}
-
-export const STOCK_DSH_VERSION = ${JSON.stringify(snapshot.hostVersion)};
-export const STOCK_THEME_VERSION = ${JSON.stringify(snapshot.hostVersion)};
-
-/** Every \`--dsw-*\` token declared by the frozen host token sheets. */
-export const STOCK_TOKENS: Readonly<Record<string, StockTokenDeclaration>> = ${JSON.stringify(tokens, null, 2)};
-
-export const STOCK_TOKEN_NAMES: readonly string[] = Object.keys(STOCK_TOKENS);
-
-/** Light-mode stock token map (raw declarations). */
-export const STOCK_LIGHT: TokenMap = Object.fromEntries(STOCK_TOKEN_NAMES.map((name) => [name, STOCK_TOKENS[name]!.light]));
-/** Dark-mode stock token map (raw declarations). */
-export const STOCK_DARK: TokenMap = Object.fromEntries(STOCK_TOKEN_NAMES.map((name) => [name, STOCK_TOKENS[name]!.dark]));
-
-/** Public \`--dsh-*\` layout/content hooks observed in the frozen host. */
-export const STOCK_DSH_VARIABLES: Readonly<Record<string, Readonly<{ light: string | null; dark: string | null; notes: string | null; declared: boolean }>>> = ${JSON.stringify(dshVariables, null, 2)};
-`
 }

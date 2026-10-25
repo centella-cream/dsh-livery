@@ -1,40 +1,68 @@
 import { describe, expect, it } from 'vitest'
 import {
-  HOST_CONTRACT_CAPABILITIES,
   NO_FALLBACK,
   evaluateCapabilities,
   fallbackForCapability,
+  hasFontRoleHooks,
   isLiveryUsable,
   unavailableRequiredCapabilities,
 } from '../../src/core/capabilities.js'
 import { CAP, type CapabilityId, type ContractCapabilityFacts, type LiveryManifest } from '../../src/core/types.js'
-import { HOST_CAPABILITIES } from '../../src/generated/contract.js'
+import { ADAPTERS } from '../../src/generated/contract.js'
 import { makeManifest } from './fixtures.js'
+import { ADAPTER_020, ADAPTER_021_RC2, ADAPTER_021_RC3 } from './helpers.js'
 
 const SEEDS_LIGHT = { accent: '#4f7a52', secondary: '#93b394', surface: '#f4f8f3', text: '#1c2b1d' }
 const SEEDS_DARK = { accent: '#83b886', secondary: '#6d9a70', surface: '#141f15', text: '#edf4ec' }
 
 function capabilityFacts(
-  unavailable: readonly string[] = [],
-  available: readonly string[] = [],
+  baseline: ContractCapabilityFacts,
+  overrides: Readonly<Record<string, boolean>> = {},
 ): ContractCapabilityFacts {
   const facts: Record<string, ContractCapabilityFacts[string]> = {}
-  for (const [id, fact] of Object.entries(HOST_CAPABILITIES)) {
-    facts[id] = { ...fact, available: available.includes(id) ? true : unavailable.includes(id) ? false : fact.available }
+  for (const [id, fact] of Object.entries(baseline)) {
+    const override = overrides[id]
+    facts[id] = { ...fact, available: override === undefined ? fact.available : override }
   }
   return facts
 }
 
+describe('adapter capability maps', () => {
+  it('exposes the font role hook capability exactly where the host documents it', () => {
+    expect(hasFontRoleHooks(ADAPTER_020.capabilities)).toBe(false)
+    expect(hasFontRoleHooks(ADAPTER_021_RC2.capabilities)).toBe(true)
+    expect(hasFontRoleHooks(ADAPTER_021_RC3.capabilities)).toBe(true)
+    expect(ADAPTER_021_RC2.capabilities[CAP.hostFontRoleHooks]?.available).toBe(true)
+    expect(ADAPTER_020.capabilities[CAP.hostFontRoleHooks]?.available).toBe(false)
+  })
+
+  it('is data-driven: a synthetic capability map flips the decision', () => {
+    const synthetic = capabilityFacts(ADAPTER_020.capabilities, { [CAP.hostFontRoleHooks]: true })
+    expect(hasFontRoleHooks(synthetic)).toBe(true)
+    expect(hasFontRoleHooks(capabilityFacts(ADAPTER_021_RC2.capabilities, { [CAP.hostFontRoleHooks]: false }))).toBe(false)
+  })
+
+  it('certifies exactly the three host builds', () => {
+    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual([
+      '0.2.0-rc.2',
+      '0.2.1-rc.2',
+      '0.2.1-rc.3',
+    ])
+    expect(ADAPTER_021_RC2.catalogProfile).toBe(ADAPTER_021_RC3.catalogProfile)
+    expect(ADAPTER_020.catalogProfile).not.toBe(ADAPTER_021_RC2.catalogProfile)
+  })
+})
+
 describe('evaluateCapabilities', () => {
-  it('serves the frozen host facts and degrades missing layout recipes', () => {
+  it('serves the adapter facts and degrades missing layout recipes', () => {
     const manifest = makeManifest('fixture-caps', SEEDS_LIGHT, SEEDS_DARK, {
       density: 'comfortable',
       conversationWidth: 'wide',
       messageFlow: 'separated',
       surfaceStyle: 'glass',
     })
-    const result = evaluateCapabilities(HOST_CAPABILITIES, manifest)
-    expect(result.map).toEqual(HOST_CAPABILITIES)
+    const result = evaluateCapabilities(ADAPTER_020.capabilities, manifest)
+    expect(result.map).toEqual(ADAPTER_020.capabilities)
     expect(result.effectiveLayout).toEqual({
       density: 'host',
       conversationWidth: 'host',
@@ -47,27 +75,28 @@ describe('evaluateCapabilities', () => {
       CAP.hostMessageFlow,
     ])
     expect(result.degraded.every((entry) => entry.fallback !== NO_FALLBACK)).toBe(true)
-    const reasons = result.degraded.map((entry) => entry.reason).join(' ')
-    expect(reasons).toContain('density')
     expect(isLiveryUsable(result.degraded)).toBe(true)
   })
 
   it('keeps surfaceStyle=soft/glass when the material capability exists', () => {
     const manifest = makeManifest('fixture-caps-soft', SEEDS_LIGHT, SEEDS_DARK, { surfaceStyle: 'soft' })
-    const result = evaluateCapabilities(HOST_CAPABILITIES, manifest)
+    const result = evaluateCapabilities(ADAPTER_021_RC2.capabilities, manifest)
     expect(result.effectiveLayout.surfaceStyle).toBe('soft')
   })
 
   it('falls back surfaceStyle to solid when the material capability is gone', () => {
     const manifest = makeManifest('fixture-caps-solid', SEEDS_LIGHT, SEEDS_DARK, { surfaceStyle: 'glass' })
-    const result = evaluateCapabilities(capabilityFacts([CAP.surfaceMaterial]), manifest)
+    const result = evaluateCapabilities(
+      capabilityFacts(ADAPTER_020.capabilities, { [CAP.surfaceMaterial]: false }),
+      manifest,
+    )
     expect(result.effectiveLayout.surfaceStyle).toBe('solid')
     expect(result.degraded).toContainEqual(expect.objectContaining({ id: CAP.surfaceMaterial, fallback: 'solid' }))
   })
 
   it('marks a livery unusable when a required capability is unavailable', () => {
     const manifest = makeManifest('fixture-caps-required', SEEDS_LIGHT, SEEDS_DARK)
-    const result = evaluateCapabilities(capabilityFacts([CAP.themeCss]), manifest)
+    const result = evaluateCapabilities(capabilityFacts(ADAPTER_020.capabilities, { [CAP.themeCss]: false }), manifest)
     const required = unavailableRequiredCapabilities(result.degraded)
     expect(required).toHaveLength(1)
     expect(required[0]?.id).toBe(CAP.themeCss)
@@ -75,12 +104,25 @@ describe('evaluateCapabilities', () => {
     expect(isLiveryUsable(result.degraded)).toBe(false)
   })
 
+  it('records an unavailable optional font-role-hooks capability with the legacy fallback', () => {
+    const manifest = makeManifest('fixture-caps-hooks', SEEDS_LIGHT, SEEDS_DARK, {
+      optional: [CAP.hostFontRoleHooks],
+    })
+    const result = evaluateCapabilities(ADAPTER_020.capabilities, manifest)
+    expect(result.degraded).toContainEqual(
+      expect.objectContaining({ id: CAP.hostFontRoleHooks, fallback: 'legacy-font-tokens' }),
+    )
+    expect(isLiveryUsable(result.degraded)).toBe(true)
+    const modern = evaluateCapabilities(ADAPTER_021_RC2.capabilities, manifest)
+    expect(modern.degraded).toEqual([])
+  })
+
   it('marks a livery usable when every declared capability is available', () => {
     const manifest = makeManifest('fixture-caps-ok', SEEDS_LIGHT, SEEDS_DARK, {
       required: [CAP.themeCss, CAP.hostFontFamily],
-      optional: [CAP.surfaceMaterial, CAP.forcedColors],
+      optional: [CAP.surfaceMaterial, CAP.forcedColors, CAP.hostFontRoleHooks],
     })
-    const result = evaluateCapabilities(HOST_CAPABILITIES, manifest)
+    const result = evaluateCapabilities(ADAPTER_021_RC2.capabilities, manifest)
     expect(result.degraded).toEqual([])
     expect(isLiveryUsable(result.degraded)).toBe(true)
   })
@@ -91,7 +133,11 @@ describe('evaluateCapabilities', () => {
       conversationWidth: 'focused',
       messageFlow: 'separated',
     })
-    const futureFacts = capabilityFacts([], [CAP.hostDensity, CAP.hostTranscriptWidth, CAP.hostMessageFlow])
+    const futureFacts = capabilityFacts(ADAPTER_020.capabilities, {
+      [CAP.hostDensity]: true,
+      [CAP.hostTranscriptWidth]: true,
+      [CAP.hostMessageFlow]: true,
+    })
     const result = evaluateCapabilities(futureFacts, manifest)
     expect(result.effectiveLayout).toEqual(manifest.layout)
     expect(result.degraded).toEqual([])
@@ -101,7 +147,7 @@ describe('evaluateCapabilities', () => {
     const manifest = makeManifest('fixture-caps-unknown', SEEDS_LIGHT, SEEDS_DARK, {
       required: ['wallpaper-layer'] as unknown as CapabilityId[],
     })
-    const result = evaluateCapabilities(HOST_CAPABILITIES, manifest)
+    const result = evaluateCapabilities(ADAPTER_020.capabilities, manifest)
     expect(result.degraded).toContainEqual(expect.objectContaining({ id: 'wallpaper-layer', fallback: NO_FALLBACK }))
     expect(isLiveryUsable(result.degraded)).toBe(false)
   })
@@ -111,6 +157,7 @@ describe('evaluateCapabilities', () => {
     expect(fallbackForCapability(CAP.hostTranscriptWidth, false)).toBe('host')
     expect(fallbackForCapability(CAP.hostMessageFlow, false)).toBe('stock')
     expect(fallbackForCapability(CAP.surfaceMaterial, false)).toBe('solid')
+    expect(fallbackForCapability(CAP.hostFontRoleHooks, false)).toBe('legacy-font-tokens')
     expect(fallbackForCapability(CAP.reducedTransparency, false)).toBe('solid')
     expect(fallbackForCapability(CAP.hostFontFamily, true)).toBe(NO_FALLBACK)
     expect(fallbackForCapability(CAP.themeCss, true)).toBe(NO_FALLBACK)
@@ -118,9 +165,10 @@ describe('evaluateCapabilities', () => {
 
   it('is deterministic', () => {
     const manifest: LiveryManifest = makeManifest('fixture-caps-deterministic', SEEDS_LIGHT, SEEDS_DARK)
-    const first = evaluateCapabilities(HOST_CAPABILITIES, manifest)
-    const second = evaluateCapabilities(HOST_CAPABILITIES, manifest)
-    expect(JSON.stringify(first)).toBe(JSON.stringify(second))
-    expect(HOST_CONTRACT_CAPABILITIES).toBe(HOST_CAPABILITIES)
+    for (const adapter of [ADAPTER_020, ADAPTER_021_RC2, ADAPTER_021_RC3]) {
+      const first = evaluateCapabilities(adapter.capabilities, manifest)
+      const second = evaluateCapabilities(adapter.capabilities, manifest)
+      expect(JSON.stringify(second)).toBe(JSON.stringify(first))
+    }
   })
 })

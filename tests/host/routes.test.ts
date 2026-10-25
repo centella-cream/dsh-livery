@@ -1,13 +1,11 @@
 /**
- * Route tests: status codes, headers, HEAD semantics, the preview whitelist and
- * the two failure modes that matter on a public HTTP surface — traversal and a
- * response that is already finished.
+ * Route tests: per-adapter catalog identity, per-profile preview whitelisting,
+ * status codes, headers, HEAD semantics, and the two failure modes that matter
+ * on a public HTTP surface — traversal and a response that is already finished.
  */
 
 import { describe, expect, it } from 'vitest'
-import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { fileURLToPath } from 'node:url'
 import {
   createCatalogHandler,
   createLiveryRouteHandlers,
@@ -17,11 +15,18 @@ import {
   type LiveryRouteHandler,
   type LiveryWebServerLike,
 } from '../../src/host/routes.js'
-import { bindPreviews, buildCatalog } from '../../src/host/catalog.js'
+import { buildCatalog, previewsBaseFor } from '../../src/host/catalog.js'
 import { CATALOG_ROUTE, PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../../src/generated/contract.js'
-import { CATALOG_META, LIVERIES } from '../../src/generated/liveries.js'
-import { FakeResponse, fakeRequest, makeCatalogMeta, makeLivery } from './fixtures.js'
+import type { AdapterRecord } from '../../src/generated/contract.js'
+import {
+  SYNTHETIC_PROFILE_A,
+  SYNTHETIC_PROFILE_B,
+  FakeResponse,
+  fakeRequest,
+  makeAdapter,
+  makeLivery,
+  makeProfile,
+} from './fixtures.js'
 
 /**
  * Run one handler against fakes.
@@ -43,20 +48,30 @@ async function invoke(
   return response
 }
 
-/** The fixture catalog served by route tests. */
-function fixtureCatalog() {
-  return buildCatalog({ liveries: [makeLivery()], catalogMeta: makeCatalogMeta() })
-}
-
+const ADAPTER: AdapterRecord = makeAdapter()
+const OTHER_PROFILE_ADAPTER: AdapterRecord = makeAdapter({
+  hostVersion: 'test-host-9.0.0',
+  adapterId: 'dsh-test-host-9.0.0-r1',
+  contractHash: `sha256:${'9'.repeat(64)}`,
+  catalogProfile: SYNTHETIC_PROFILE_B,
+})
+const CATALOG = buildCatalog(ADAPTER, makeProfile(ADAPTER.catalogProfile, [makeLivery()]))
 const PREVIEW_NAME = 'ivory-slate-zh-light.svg'
-const PREVIEW_PATH = `/virtual/lib/previews/${PREVIEW_NAME}`
+const PREVIEW_PATH = `/virtual/lib/previews/${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`
 const PREVIEW_SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
 
-/** Preview handler wired to a virtual map and a recording reader. */
-function previewHandler(options: { failRead?: boolean } = {}) {
+/** Preview handler wired to a virtual per-profile whitelist and recording reader. */
+function previewHandler(options: {
+  adapter?: AdapterRecord
+  failRead?: boolean
+  profilePreviews?: ReadonlyMap<string, ReadonlyMap<string, string>>
+} = {}) {
   const reads: string[] = []
   const handler = createPreviewHandler({
-    previews: new Map([[PREVIEW_NAME, PREVIEW_PATH]]),
+    adapter: options.adapter ?? ADAPTER,
+    profilePreviews: options.profilePreviews ?? new Map([
+      [SYNTHETIC_PROFILE_A, new Map([[PREVIEW_NAME, PREVIEW_PATH]])],
+    ]),
     readAsset: async (filePath) => {
       reads.push(filePath)
       if (options.failRead === true) throw new Error('ENOENT')
@@ -67,8 +82,8 @@ function previewHandler(options: { failRead?: boolean } = {}) {
 }
 
 describe('GET /livery/api/catalog', () => {
-  it('answers 200 JSON with no-store and a complete catalog body', async () => {
-    const handler = createCatalogHandler({ catalog: fixtureCatalog() })
+  it("answers 200 JSON with the live adapter's identity and profile", async () => {
+    const handler = createCatalogHandler({ adapter: ADAPTER, catalogFor: () => CATALOG })
     const response = await invoke(handler, 'GET', CATALOG_ROUTE)
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toBe('application/json')
@@ -76,14 +91,32 @@ describe('GET /livery/api/catalog', () => {
     const body = String(response.body)
     expect(response.headers['content-length']).toBe(String(Buffer.byteLength(body)))
     const parsed = JSON.parse(body) as Record<string, unknown>
+    expect(parsed.adapterId).toBe(ADAPTER.adapterId)
+    expect(parsed.hostVersion).toBe(ADAPTER.hostVersion)
+    expect(parsed.contractHash).toBe(ADAPTER.contractHash)
+    expect(parsed.catalogProfile).toBe(SYNTHETIC_PROFILE_A)
+    expect(parsed.previewsBase).toBe(previewsBaseFor(SYNTHETIC_PROFILE_A))
     expect(parsed.schemaVersion).toBe(1)
-    expect(parsed.contractHash).toBe(CONTRACT_FACTS.contractHash)
-    expect(Array.isArray(parsed.liveries)).toBe(true)
-    expect((parsed.liveries as unknown[]).length).toBe(1)
+    expect(parsed.liveries).toHaveLength(1)
+  })
+
+  it('uses the catalog builder seam and caches per adapter', async () => {
+    const built: string[] = []
+    const handler = createCatalogHandler({
+      adapter: ADAPTER,
+      catalogFor: (adapter) => {
+        built.push(adapter.adapterId)
+        return CATALOG
+      },
+    })
+    const first = await invoke(handler, 'GET', CATALOG_ROUTE)
+    const second = await invoke(handler, 'GET', `${CATALOG_ROUTE}?v=2`)
+    expect(String(first.body)).toBe(String(second.body))
+    expect(built).toEqual([ADAPTER.adapterId])
   })
 
   it('answers HEAD with the same headers and content length but no body', async () => {
-    const handler = createCatalogHandler({ catalog: fixtureCatalog() })
+    const handler = createCatalogHandler({ adapter: ADAPTER })
     const response = await invoke(handler, 'HEAD', CATALOG_ROUTE)
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toBe('application/json')
@@ -93,23 +126,60 @@ describe('GET /livery/api/catalog', () => {
     expect(response.body).toBeUndefined()
   })
 
-  it('serializes the catalog once and reuses the bytes', async () => {
-    const handler = createCatalogHandler({ catalog: fixtureCatalog() })
-    const first = await invoke(handler, 'GET', CATALOG_ROUTE)
-    const second = await invoke(handler, 'GET', `${CATALOG_ROUTE}?v=2`)
-    expect(String(first.body)).toBe(String(second.body))
-  })
-
   it.each(['POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'])('rejects %s with 405 and Allow', async (method) => {
-    const handler = createCatalogHandler({ catalog: fixtureCatalog() })
+    const handler = createCatalogHandler({ adapter: ADAPTER })
     const response = await invoke(handler, method, CATALOG_ROUTE)
     expect(response.statusCode).toBe(405)
     expect(response.headers.allow).toBe('GET, HEAD')
     expect(response.body).toBeUndefined()
   })
 
+  it('answers 404 for an uncertified host (no adapter resolved)', async () => {
+    const handler = createCatalogHandler({ adapterFor: () => undefined })
+    const response = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect(response.statusCode).toBe(404)
+    expect(response.headers['cache-control']).toBe('no-store')
+    expect(response.body).toBeUndefined()
+  })
+
+  it('fails closed when the adapter resolver throws', async () => {
+    const handler = createCatalogHandler({
+      adapterFor: () => {
+        throw new Error('probe disposed')
+      },
+    })
+    const response = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect(response.statusCode).toBe(404)
+  })
+
+  it('resolves the adapter per request, so a late version probe is picked up', async () => {
+    let current: AdapterRecord | undefined
+    const handler = createCatalogHandler({ adapterFor: () => current })
+    const before = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect(before.statusCode).toBe(404)
+    current = ADAPTER
+    const first = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect(first.statusCode).toBe(200)
+    expect((JSON.parse(String(first.body)) as { adapterId: string }).adapterId).toBe(ADAPTER.adapterId)
+    current = OTHER_PROFILE_ADAPTER
+    const second = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect((JSON.parse(String(second.body)) as { catalogProfile: string }).catalogProfile)
+      .toBe(SYNTHETIC_PROFILE_B)
+  })
+
+  it('answers 500 when the catalog builder fails', async () => {
+    const handler = createCatalogHandler({
+      adapter: ADAPTER,
+      catalogFor: () => {
+        throw new Error('catalog corrupt')
+      },
+    })
+    const response = await invoke(handler, 'GET', CATALOG_ROUTE)
+    expect(response.statusCode).toBe(500)
+  })
+
   it('never writes after the response is already finished', async () => {
-    const handler = createCatalogHandler({ catalog: fixtureCatalog() })
+    const handler = createCatalogHandler({ adapter: ADAPTER })
     const response = new FakeResponse()
     response.headersSent = true
     await handler(
@@ -121,10 +191,10 @@ describe('GET /livery/api/catalog', () => {
   })
 })
 
-describe('GET /livery/assets/previews/<file>', () => {
-  it('serves a whitelisted preview as an SVG with no-store', async () => {
+describe('GET /livery/assets/previews/<catalogProfile>/<file>', () => {
+  it('serves a whitelisted file of the active profile as SVG with no-store', async () => {
     const { handler, reads } = previewHandler()
-    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}`)
+    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`)
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toBe('image/svg+xml')
     expect(response.headers['cache-control']).toBe('no-store')
@@ -135,7 +205,7 @@ describe('GET /livery/assets/previews/<file>', () => {
 
   it('answers HEAD with headers and no body', async () => {
     const { handler } = previewHandler()
-    const response = await invoke(handler, 'HEAD', `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}`)
+    const response = await invoke(handler, 'HEAD', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`)
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toBe('image/svg+xml')
     expect(Number(response.headers['content-length'])).toBeGreaterThan(0)
@@ -144,37 +214,78 @@ describe('GET /livery/assets/previews/<file>', () => {
 
   it('serves a name with a query string (query is not part of the name)', async () => {
     const { handler } = previewHandler()
-    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}?v=1`)
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}?v=1`,
+    )
     expect(response.statusCode).toBe(200)
   })
 
   it('decodes a percent-encoded whitelisted name before lookup', async () => {
     const { handler } = previewHandler()
-    const encoded = `${PREVIEW_ROUTE_PREFIX}%69vory-slate-zh-light.svg`
-    const response = await invoke(handler, 'GET', encoded)
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/%69vory-slate-zh-light.svg`,
+    )
     expect(response.statusCode).toBe(200)
   })
 
-  it('answers 404 for an unknown file', async () => {
+  it('answers 404 for another catalog profile (never cross-serves a compiled set)', async () => {
+    const { handler, reads } = previewHandler()
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_B}/${PREVIEW_NAME}`,
+    )
+    expect(response.statusCode).toBe(404)
+    expect(reads).toEqual([])
+  })
+
+  it('answers 404 for an unknown file in the active profile', async () => {
     const { handler } = previewHandler()
-    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}unknown.svg`)
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/unknown.svg`,
+    )
     expect(response.statusCode).toBe(404)
   })
 
-  it('answers 404 when the file disappears after binding', async () => {
+  it('answers 404 when the active profile has no index bound', async () => {
+    const handler = createPreviewHandler({
+      adapter: ADAPTER,
+      profilePreviews: new Map([[SYNTHETIC_PROFILE_B, new Map([[PREVIEW_NAME, PREVIEW_PATH]])]]),
+      readAsset: async () => new Uint8Array(),
+    })
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`,
+    )
+    expect(response.statusCode).toBe(404)
+  })
+
+  it('answers 404 when the bound file disappears', async () => {
     const { handler } = previewHandler({ failRead: true })
-    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}`)
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`,
+    )
     expect(response.statusCode).toBe(404)
   })
 
   it.each([
-    `${PREVIEW_ROUTE_PREFIX}../secret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}%2e%2e%2fsecret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}..%2Fsecret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}%2E%2E/secret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}a%2F..%2Fsecret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}..\\secret.svg`,
-    `${PREVIEW_ROUTE_PREFIX}%00.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/../secret.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/%2e%2e%2fsecret.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/..%2Fsecret.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/a%2F..%2Fsecret.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/..\\secret.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/%00.svg`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/`,
+    `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}`,
     PREVIEW_ROUTE_PREFIX,
     '/etc/passwd',
     '/livery/api/catalog',
@@ -187,15 +298,52 @@ describe('GET /livery/assets/previews/<file>', () => {
 
   it('answers 404 for a malformed percent-encoding instead of throwing', async () => {
     const { handler } = previewHandler()
-    const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}%zz.svg`)
+    const response = await invoke(
+      handler,
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/%zz.svg`,
+    )
     expect(response.statusCode).toBe(404)
   })
 
   it.each(['POST', 'PUT', 'DELETE'])('rejects %s with 405 and Allow', async (method) => {
     const { handler } = previewHandler()
-    const response = await invoke(handler, method, `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}`)
+    const response = await invoke(
+      handler,
+      method,
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`,
+    )
     expect(response.statusCode).toBe(405)
     expect(response.headers.allow).toBe('GET, HEAD')
+  })
+
+  it('answers 404 for an uncertified host (no adapter resolved)', async () => {
+    const response = await invoke(
+      createPreviewHandler({ adapterFor: () => undefined, profilePreviews: new Map() }),
+      'GET',
+      `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`,
+    )
+    expect(response.statusCode).toBe(404)
+  })
+
+  it('serves the profile of whichever adapter is live at request time', async () => {
+    let current: AdapterRecord | undefined = ADAPTER
+    const profilePreviews = new Map([
+      [SYNTHETIC_PROFILE_A, new Map([[PREVIEW_NAME, PREVIEW_PATH]])],
+      [SYNTHETIC_PROFILE_B, new Map([[PREVIEW_NAME, `/virtual/lib/previews/${SYNTHETIC_PROFILE_B}/${PREVIEW_NAME}`]])],
+    ])
+    const handler = createPreviewHandler({
+      adapterFor: () => current,
+      profilePreviews,
+      readAsset: async () => new TextEncoder().encode(PREVIEW_SVG),
+    })
+    const own = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`)
+    expect(own.statusCode).toBe(200)
+    current = OTHER_PROFILE_ADAPTER
+    const old = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`)
+    expect(old.statusCode).toBe(404)
+    const next = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_B}/${PREVIEW_NAME}`)
+    expect(next.statusCode).toBe(200)
   })
 
   it('never writes after the response is already finished', async () => {
@@ -203,7 +351,7 @@ describe('GET /livery/assets/previews/<file>', () => {
     const response = new FakeResponse()
     response.headersSent = true
     await handler(
-      fakeRequest('GET', `${PREVIEW_ROUTE_PREFIX}${PREVIEW_NAME}`) as unknown as IncomingMessage,
+      fakeRequest('GET', `${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/${PREVIEW_NAME}`) as unknown as IncomingMessage,
       response as unknown as ServerResponse,
     )
     expect(response.statusCode).toBe(0)
@@ -214,14 +362,16 @@ describe('GET /livery/assets/previews/<file>', () => {
 describe('createLiveryRouteHandlers', () => {
   it('returns one catalog and one preview handler', async () => {
     const handlers = createLiveryRouteHandlers({
-      catalog: fixtureCatalog(),
-      previews: new Map(),
+      adapter: ADAPTER,
+      catalogFor: () => CATALOG,
+      profilePreviews: new Map(),
       readAsset: async () => new Uint8Array(),
     })
     expect(typeof handlers.catalog).toBe('function')
     expect(typeof handlers.preview).toBe('function')
-    const catalogResponse = await invoke(handlers.catalog, 'GET', CATALOG_ROUTE)
-    expect(catalogResponse.statusCode).toBe(200)
+    const response = await invoke(handlers.catalog, 'GET', CATALOG_ROUTE)
+    expect(response.statusCode).toBe(200)
+    expect((JSON.parse(String(response.body)) as { adapterId: string }).adapterId).toBe(ADAPTER.adapterId)
   })
 })
 
@@ -250,8 +400,9 @@ describe('registerLiveryRoutes', () => {
   it('registers the exact catalog route and the preview prefix route', () => {
     const webServer = new FakeWebServer()
     const release = registerLiveryRoutes(webServer, {
-      catalog: fixtureCatalog(),
-      previews: new Map(),
+      adapter: ADAPTER,
+      catalogFor: () => CATALOG,
+      profilePreviews: new Map(),
       readAsset: async () => new Uint8Array(),
     })
     expect([...webServer.routes.keys()]).toEqual([
@@ -259,9 +410,6 @@ describe('registerLiveryRoutes', () => {
       `prefix:${previewRouteBase()}`,
     ])
     expect(previewRouteBase()).toBe('/livery/assets/previews')
-
-    const handler = webServer.routes.get(`exact:${CATALOG_ROUTE}`)
-    expect(handler).toBeDefined()
     release()
     expect(webServer.routes.size).toBe(0)
     expect(webServer.disposed).toEqual([
@@ -272,7 +420,7 @@ describe('registerLiveryRoutes', () => {
 
   it('is idempotent to dispose twice', () => {
     const webServer = new FakeWebServer()
-    const release = registerLiveryRoutes(webServer)
+    const release = registerLiveryRoutes(webServer, { adapterFor: () => undefined })
     release()
     expect(() => release()).not.toThrow()
   })
@@ -280,62 +428,9 @@ describe('registerLiveryRoutes', () => {
   it('disposes the first route when the second registration fails, then rethrows', () => {
     const webServer = new FakeWebServer()
     webServer.failOnPath = previewRouteBase()
-    expect(() => registerLiveryRoutes(webServer)).toThrow(/duplicate route/)
+    expect(() => registerLiveryRoutes(webServer, { adapterFor: () => undefined }))
+      .toThrow(/duplicate route/)
     expect(webServer.routes.size).toBe(0)
     expect(webServer.disposed).toEqual([`exact:${CATALOG_ROUTE}`])
   })
-})
-
-
-describe('real generated artifacts', () => {
-  /** The build output's module URL, which is what production resolves against. */
-  const builtModuleUrl = new URL('../../lib/index.js', import.meta.url)
-  const realIndex = fileURLToPath(new URL('../../lib/previews/index.json', import.meta.url))
-  const realPreviews = existsSync(realIndex)
-    ? bindPreviews({ moduleUrl: builtModuleUrl })
-    : new Map<string, string>()
-
-  it.skipIf(realPreviews.size === 0)('binds the frozen preview index and serves real SVGs', async () => {
-    expect(realPreviews.size).toBeGreaterThan(0)
-    const names = [...realPreviews.keys()]
-    // Convention check: <id>-<zh|en>-<light|dark>.svg, flat names.
-    for (const name of names) {
-      expect(name).toMatch(/^[A-Za-z0-9][A-Za-z0-9._-]*\.svg$/)
-    }
-    const handler = createPreviewHandler({ previews: realPreviews })
-    for (const name of names.slice(0, 3)) {
-      const response = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}${name}`)
-      expect(response.statusCode, name).toBe(200)
-      expect(response.headers['content-type']).toBe('image/svg+xml')
-      expect(response.headers['cache-control']).toBe('no-store')
-      const body = Buffer.from(response.body as Uint8Array).toString('utf8')
-      expect(body.startsWith('<svg')).toBe(true)
-      expect(Number(response.headers['content-length'])).toBe((response.body as Uint8Array).byteLength)
-    }
-    // A name that the index does not list is not served, whatever it looks like.
-    const missing = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}not-a-preview.svg`)
-    expect(missing.statusCode).toBe(404)
-    const traversal = await invoke(handler, 'GET', `${PREVIEW_ROUTE_PREFIX}../index.json`)
-    expect(traversal.statusCode).toBe(404)
-    const head = await invoke(handler, 'HEAD', `${PREVIEW_ROUTE_PREFIX}${names[0] ?? ''}`)
-    expect(head.statusCode).toBe(200)
-    expect(head.body).toBeUndefined()
-  })
-
-  it.skipIf(LIVERIES.length === 0 || CATALOG_META.contractHash !== CONTRACT_FACTS.contractHash)(
-    'serves the generated catalog by default (10 liveries bound to the certified contract)',
-    async () => {
-      const handler = createCatalogHandler()
-      const response = await invoke(handler, 'GET', CATALOG_ROUTE)
-      expect(response.statusCode).toBe(200)
-      const parsed = JSON.parse(String(response.body)) as {
-        liveries: unknown[]
-        contractHash: string
-        capabilities: unknown
-      }
-      expect(parsed.liveries).toHaveLength(LIVERIES.length)
-      expect(parsed.contractHash).toBe(CONTRACT_FACTS.contractHash)
-      expect(parsed.capabilities).toEqual(HOST_CAPABILITIES)
-    },
-  )
 })

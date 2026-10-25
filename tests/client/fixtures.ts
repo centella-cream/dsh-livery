@@ -11,12 +11,47 @@ import type {
   CompiledLivery,
   LiveryCatalog,
 } from '../../src/core/types.js'
-import { ADAPTER_ID, DSH_VERSION, LIVERY_VERSION, SCHEMA_VERSION } from '../../src/core/types.js'
+import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../../src/core/types.js'
+import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
+import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
 import type { ConfigFormLike, ConfigFormSnapshotLike, CoreApi, LocaleSource, ThemeSource } from '../../src/client/runtime.js'
 import type { Presenter, PresenterSnapshot, SkinCss } from '../../src/client/presenter.js'
 
-/** Contract hash used by these tests (not the generated placeholder). */
-export const TEST_CONTRACT_HASH = 'sha256:test-contract'
+/**
+ * The three certified host builds as the browser bundle sees them: the lite
+ * `AdapterIdentity` registry (the client never imports the full records, whose
+ * capability prose/source evidence must stay out of the browser bundle).
+ */
+export const ADAPTER_020: AdapterIdentity = ADAPTER_IDENTITIES[0]!
+export const ADAPTER_021_2: AdapterIdentity = ADAPTER_IDENTITIES[1]!
+export const ADAPTER_021_3: AdapterIdentity = ADAPTER_IDENTITIES[2]!
+
+/** Default adapter used by fixtures: the already-accepted 0.2.0-rc.2 build. */
+export const TEST_ADAPTER: AdapterIdentity = ADAPTER_020
+
+/** Full generated records (tests only, for capability maps/platform modules). */
+export const ADAPTER_RECORD_020: AdapterRecord = ADAPTERS[0]!
+export const ADAPTER_RECORD_021_2: AdapterRecord = ADAPTERS[1]!
+export const ADAPTER_RECORD_021_3: AdapterRecord = ADAPTERS[2]!
+
+/**
+ * Full generated record for one lite identity (tests that need its capability
+ * map; the browser bundle has no such lookup).
+ * @param identity - certified adapter identity.
+ * @returns the matching full adapter record.
+ */
+export function adapterRecordOf(identity: AdapterIdentity): AdapterRecord {
+  const record = ADAPTERS.find(candidate => candidate.adapterId === identity.adapterId)
+  if (record === undefined) throw new Error(`no full adapter record for ${identity.adapterId}`)
+  return record
+}
+
+/** Contract hash the default fixtures describe (from the certified adapter). */
+export const TEST_CONTRACT_HASH = TEST_ADAPTER.contractHash
+
+/** Catalog profile + preview base for the default fixtures. */
+export const TEST_PROFILE = TEST_ADAPTER.catalogProfile
+export const TEST_PREVIEWS_BASE = `${PREVIEW_ROUTE_PREFIX}${TEST_PROFILE}/`
 
 /** Fake `Document` surface used by the presenter and the adoption check. */
 export class FakeElement {
@@ -401,18 +436,21 @@ export function makeLivery(
   }
 }
 
-/** Build one catalog fixture with the two default liveries. */
+/** Build one catalog fixture for a certified adapter (default: 0.2.0-rc.2). */
 export function makeCatalog(
   liveries: readonly CompiledLivery[] = [makeLivery('fjord', { order: 10 }), makeLivery('midnight', { order: 20, tags: ['deep', 'elegant'] })],
   capabilities: CapabilityMap = TEST_CAPABILITIES,
+  adapter: AdapterIdentity = TEST_ADAPTER,
 ): LiveryCatalog {
   return {
     schemaVersion: SCHEMA_VERSION,
     compilerVersion: LIVERY_VERSION,
-    adapterId: ADAPTER_ID,
-    hostVersion: DSH_VERSION,
-    contractHash: TEST_CONTRACT_HASH,
+    adapterId: adapter.adapterId,
+    hostVersion: adapter.hostVersion,
+    contractHash: adapter.contractHash,
+    catalogProfile: adapter.catalogProfile,
     capabilities,
+    previewsBase: `${PREVIEW_ROUTE_PREFIX}${adapter.catalogProfile}/`,
     liveries: [...liveries],
   }
 }
@@ -421,9 +459,10 @@ export function makeCatalog(
 export function makeBootPayload(overrides: Partial<Record<keyof BootPayload, unknown>> = {}): BootPayload {
   const base = {
     pluginVersion: LIVERY_VERSION,
-    adapterId: ADAPTER_ID,
-    hostVersion: DSH_VERSION,
-    contractHash: TEST_CONTRACT_HASH,
+    adapterId: TEST_ADAPTER.adapterId,
+    hostVersion: TEST_ADAPTER.hostVersion,
+    contractHash: TEST_ADAPTER.contractHash,
+    catalogProfile: TEST_ADAPTER.catalogProfile,
     profileKind: 'web',
     accepted: true,
     skinId: 'fjord',

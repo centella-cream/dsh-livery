@@ -12,10 +12,11 @@ export const SCHEMA_VERSION = 1 as const
 /** DSH Livery release line. */
 export const LIVERY_VERSION = '0.1.0' as const
 
-/** Release line this build was compiled and certified against. */
-export const DSH_VERSION = '0.2.0-rc.2' as const
-
-/** Adapter identity frozen by Phase 0 for this DSH build. */
+/**
+ * Adapter identity of the oldest certified host build. Runtime selection always
+ * goes through the generated adapter registry, never through this constant; it
+ * only exists for fixtures and build-time defaults.
+ */
 export const ADAPTER_ID = 'dsh-0.2.0-rc.2-r1' as const
 
 /** Browser build target promised by the Web profile support statement. */
@@ -46,7 +47,7 @@ export const ENTRY_ID = 'livery' as const
 export const LOCALE_NS = 'dsh-livery' as const
 /** Read-only catalog route served by the Host. */
 export const CATALOG_ROUTE = '/livery/api/catalog' as const
-/** Read-only preview asset route prefix served by the Host. */
+/** Read-only preview asset route prefix; the Host serves `<prefix><catalogProfile>/<file>`. */
 export const PREVIEW_ROUTE_PREFIX = '/livery/assets/previews/' as const
 /** CSS cascade layer holding host-node compensation rules only. */
 export const COMPAT_LAYER = 'dsh-livery.compat' as const
@@ -83,6 +84,8 @@ export type SurfaceStyleId = 'solid' | 'soft' | 'glass'
 export const CAP = {
   themeCss: 'theme-css',
   hostFontFamily: 'host-font-family',
+  /** Documented per-role font-family hooks (`--dsh-font-family-text|code`), 0.2.1+. */
+  hostFontRoleHooks: 'host-font-role-hooks',
   hostDensity: 'host-density-tokens',
   hostTranscriptWidth: 'host-transcript-width',
   hostMessageFlow: 'host-message-flow',
@@ -272,23 +275,44 @@ export interface CompiledLivery {
   readonly audit: LiveryAuditReport
 }
 
+/**
+ * One compiled catalog profile. Every adapter that shares a profile renders
+ * byte-identical stylesheets (same token contract + render-affecting
+ * capabilities), so the CSS/previews are compiled once and served under this
+ * profile id.
+ */
+export interface CatalogProfileData {
+  readonly profileId: string
+  readonly compiledAt: string
+  readonly sourceHash: string
+  /** Exact host versions that share this profile. */
+  readonly sourceAdapters: readonly string[]
+  readonly liveries: readonly CompiledLivery[]
+}
+
 /** Versioned catalog served by the Host and read by the Client. */
 export interface LiveryCatalog {
   readonly schemaVersion: typeof SCHEMA_VERSION
   readonly compilerVersion: typeof LIVERY_VERSION
-  readonly adapterId: typeof ADAPTER_ID
-  readonly hostVersion: typeof DSH_VERSION
+  readonly adapterId: string
+  readonly hostVersion: string
   readonly contractHash: string
+  /** Catalog profile id shared by render-equivalent host versions. */
+  readonly catalogProfile: string
   readonly capabilities: CapabilityMap
+  /** Base URL for preview assets, e.g. `/livery/assets/previews/<profileId>/`. */
+  readonly previewsBase: string
   readonly liveries: readonly CompiledLivery[]
 }
 
 /** First-frame handshake payload injected as a global before app scripts. */
 export interface BootPayload {
   readonly pluginVersion: typeof LIVERY_VERSION
-  readonly adapterId: typeof ADAPTER_ID
+  readonly adapterId: string
   readonly hostVersion: string
   readonly contractHash: string
+  /** Catalog profile id this host's compiled CSS/previews belong to. */
+  readonly catalogProfile: string
   readonly profileKind: 'web' | 'desktop'
   /** Whether the pre-loader gate accepted the host; false = no boot rows. */
   readonly accepted: boolean

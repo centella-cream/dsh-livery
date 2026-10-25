@@ -140,6 +140,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'check.configured': '配置中的皮肤',
   'check.effective': '实际应用的皮肤',
   'check.catalog': '目录',
+  'check.profile': '目录分组',
   'check.catalogLoaded': '已加载',
   'check.catalogUnavailable': '不可用',
 
@@ -172,6 +173,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'capability.host-message-flow': '消息流',
   'capability.theme-css': '主题样式',
   'capability.host-font-family': '字体族',
+  'capability.host-font-role-hooks': '字体角色钩子',
   'capability.surface-material': '表面材质',
 
   // Optional-capability degradation note shown inside the self-check panel.

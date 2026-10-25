@@ -99,8 +99,12 @@ export function mergeLabels(locale, override) {
   return { ...base, ...(override[locale] ?? override) }
 }
 
-/** The self-check capability availability this acceptance run expects. */
-export const EXPECTED_CAPABILITIES = {
+/**
+ * Baseline capability availability shared by every certified host build.
+ * `host-font-role-hooks` is version-dependent and comes from the certified
+ * adapter matrix in `certified-adapters.mjs`; checks merge the two.
+ */
+export const BASE_CAPABILITIES = {
   'theme-css': true,
   'host-font-family': true,
   'surface-material': true,

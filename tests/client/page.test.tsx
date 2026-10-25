@@ -29,15 +29,16 @@ import { LiverySettingsPage } from '../../src/client/settings/LiverySettingsPage
 import { SelfCheck } from '../../src/client/settings/SelfCheck.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
+import { LIVERY_VERSION } from '../../src/core/types.js'
 import type { LiveryPageProps } from '../../src/client/platform.js'
 import { enUS, zhCN } from '../../src/i18n/index.js'
-import { makeCatalog, makeLivery, TEST_CONTRACT_HASH } from './fixtures.js'
+import { ADAPTER_021_2, adapterRecordOf, makeCatalog, makeLivery, TEST_ADAPTER, TEST_PREVIEWS_BASE } from './fixtures.js'
 
 const IDENTITY = {
-  adapterId: 'dsh-0.2.0-rc.2-r1',
-  contractHash: TEST_CONTRACT_HASH,
+  adapterId: TEST_ADAPTER.adapterId,
+  contractHash: TEST_ADAPTER.contractHash,
   pluginVersion: '0.1.0',
-  hostVersion: '0.2.0-rc.2',
+  hostVersion: TEST_ADAPTER.hostVersion,
 }
 
 function translate(dict: Record<string, string>): LiveryPageProps['t'] {
@@ -72,7 +73,12 @@ function render(snapshot: LiveryRuntimeSnapshot, locale: 'zh' | 'en' = 'en'): st
   )
 }
 
-const base = createInitialSnapshot(IDENTITY, { status: 'valid', reason: undefined, diagnostics: [] })
+const base = createInitialSnapshot(IDENTITY, {
+  status: 'valid',
+  reason: undefined,
+  diagnostics: [],
+  catalogProfile: TEST_ADAPTER.catalogProfile,
+})
 const catalog = makeCatalog()
 
 const READY: LiveryRuntimeSnapshot = {
@@ -82,6 +88,7 @@ const READY: LiveryRuntimeSnapshot = {
   catalogStatus: 'ready',
   catalog,
   capabilities: catalog.capabilities,
+  catalogProfile: catalog.catalogProfile,
   configStatus: 'ready',
   writable: true,
   confirmedId: 'fjord',
@@ -113,7 +120,7 @@ describe('settings page server render', () => {
     expect(html).toContain('data-livery-id="midnight"')
     expect(html).toContain('data-state="active"')
     expect(html).toContain('data-testid="livery-thumb"')
-    expect(html).toContain('/livery/assets/previews/fjord-en-light.svg')
+    expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
     expect(html).toContain('aria-label="Livery fjord"')
     expect(html).toContain('data-testid="livery-search"')
     expect(html).toContain('data-testid="livery-tag"')
@@ -163,7 +170,7 @@ describe('settings page server render', () => {
   it('localizes card names, thumbnails and labels for zh', () => {
     const html = render({ ...READY, locale: 'zh' }, 'zh')
     expect(html).toContain('aria-label="皮肤-fjord"')
-    expect(html).toContain('/livery/assets/previews/fjord-zh-light.svg')
+    expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-zh-light.svg`)
     expect(html).toContain(zhCN['gallery.title'])
     expect(html).not.toContain(enUS['gallery.title'])
   })
@@ -226,6 +233,57 @@ describe('settings page server render', () => {
     expect(html).toContain('message flow')
     // Required-capability alert must not appear for the normal host fallbacks.
     expect(render(snapshot)).not.toContain('data-testid="livery-degraded"')
+  })
+
+  it('renders capability rows from the profile catalog (0.2.1 font role hooks)', () => {
+    const profileCatalog = makeCatalog(undefined, adapterRecordOf(ADAPTER_021_2).capabilities, ADAPTER_021_2)
+    const snapshot = {
+      ...READY,
+      catalog: profileCatalog,
+      capabilities: profileCatalog.capabilities,
+      catalogProfile: profileCatalog.catalogProfile,
+      identity: {
+        adapterId: ADAPTER_021_2.adapterId,
+        contractHash: ADAPTER_021_2.contractHash,
+        pluginVersion: LIVERY_VERSION,
+        hostVersion: ADAPTER_021_2.hostVersion,
+      },
+    }
+    const html = renderToStaticMarkup(
+      <SelfCheck
+        t={translate(enUS)}
+        snapshot={snapshot}
+        onCopyResult={() => undefined}
+        copyFailed={false}
+        defaultOpen
+      />,
+    )
+    expect(html).toContain(enUS['check.profile'])
+    expect(html).toContain(ADAPTER_021_2.catalogProfile)
+    expect(html).toMatch(/data-capability="host-font-role-hooks" data-available="true"/)
+    expect(html).toContain(ADAPTER_021_2.adapterId)
+    expect(html).toContain(ADAPTER_021_2.hostVersion)
+  })
+
+  it('reports font role hooks as unavailable on the 0.2.0-rc.2 profile', () => {
+    const profileCatalog = makeCatalog(undefined, adapterRecordOf(TEST_ADAPTER).capabilities, TEST_ADAPTER)
+    const snapshot = {
+      ...READY,
+      catalog: profileCatalog,
+      capabilities: profileCatalog.capabilities,
+      catalogProfile: profileCatalog.catalogProfile,
+    }
+    const html = renderToStaticMarkup(
+      <SelfCheck
+        t={translate(enUS)}
+        snapshot={snapshot}
+        onCopyResult={() => undefined}
+        copyFailed={false}
+        defaultOpen
+      />,
+    )
+    expect(html).toMatch(/data-capability="host-font-role-hooks" data-available="false"/)
+    expect(html).toContain(TEST_ADAPTER.catalogProfile)
   })
 
   it('renders no unresolved dictionary keys', () => {

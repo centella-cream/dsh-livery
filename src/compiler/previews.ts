@@ -11,7 +11,7 @@
  */
 import type { LiveryManifest, Mode, ResolvedTypography, TokenMap } from '../core/types.js'
 import type { DshLocaleId, LocaleId } from '../core/types.js'
-import { STOCK_TOKENS } from '../generated/stock.js'
+import type { StockSnapshot } from '../generated/stock.js'
 
 export const PREVIEW_WIDTH = 640
 export const PREVIEW_HEIGHT = 400
@@ -249,8 +249,8 @@ const ROLE_TOKENS: Readonly<Record<keyof PreviewPalette, readonly string[]>> = {
   business: ['--dsw-alias-state-business-primary'],
 }
 
-function stockColor(name: string, mode: Mode): Rgba | null {
-  const declaration = STOCK_TOKENS[name]
+function stockColor(name: string, mode: Mode, stock: StockSnapshot): Rgba | null {
+  const declaration = stock.tokens[name]
   if (declaration === undefined) return null
   const raw = mode === 'light' ? declaration.resolvedLight : declaration.resolvedDark
   if (raw === null) return null
@@ -313,7 +313,7 @@ function seedFallback(role: keyof PreviewPalette, seeds: { readonly accent: stri
   }
 }
 
-function buildPalette(livery: PreviewLivery, mode: Mode): PreviewPalette {
+function buildPalette(livery: PreviewLivery, mode: Mode, stock: StockSnapshot): PreviewPalette {
   const tokens = mode === 'light' ? livery.light.tokens : livery.dark.tokens
   const seed = liverySeeds(livery, mode)
   const palette: Record<string, Rgba> = {}
@@ -325,7 +325,7 @@ function buildPalette(livery: PreviewLivery, mode: Mode): PreviewPalette {
         resolved = parsePreviewColor(override)
         if (resolved !== null) break
       }
-      resolved = stockColor(name, mode)
+      resolved = stockColor(name, mode, stock)
       if (resolved !== null) break
     }
     palette[role] = resolved ?? seedFallback(role, seed)
@@ -697,13 +697,13 @@ function materialBackdrop(ctx: Ctx): string[] {
   return [box(248, 46, 384, 276, { fill: ctx.palette.layer1, rx: 18, opacity: 0.55 })]
 }
 
-function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode): string {
+function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, stock: StockSnapshot): string {
   const tag = LOCALE_TAG[locale]
   const copy = COPY[locale]
   const name = livery.meta.name[tag]
   const typography = livery.typography
   const metrics = typography.metrics[tag]
-  const palette = buildPalette(livery, mode)
+  const palette = buildPalette(livery, mode, stock)
   const contentLine = Math.round(12 * metrics.lineHeight)
   const ctx: Ctx = {
     palette,
@@ -743,14 +743,18 @@ export function previewFileName(id: string, locale: DshLocaleId, mode: Mode): st
   return `${id}${PREVIEW_SEPARATOR}${locale}${PREVIEW_SEPARATOR}${mode}.svg`
 }
 
-/** All four deterministic previews for one livery, in stable order. */
-export function renderPreviewSet(livery: PreviewLivery): { readonly file: string; readonly content: string }[] {
+/**
+ * All four deterministic previews for one livery, in stable order. `stock` is the
+ * profile's host-version snapshot: inherited tokens (not in `livery.*.tokens`)
+ * resolve to that exact version's values, never a global table.
+ */
+export function renderPreviewSet(livery: PreviewLivery, stock: StockSnapshot): { readonly file: string; readonly content: string }[] {
   const files: { file: string; content: string }[] = []
   for (const locale of PREVIEW_LOCALES) {
     for (const mode of PREVIEW_MODES) {
       files.push({
         file: previewFileName(livery.id, locale, mode),
-        content: renderScene(livery, locale, mode),
+        content: renderScene(livery, locale, mode, stock),
       })
     }
   }
@@ -758,8 +762,8 @@ export function renderPreviewSet(livery: PreviewLivery): { readonly file: string
 }
 
 /** Render a single preview; exported for tests and ad-hoc inspection. */
-export function renderPreview(livery: PreviewLivery, locale: DshLocaleId, mode: Mode): string {
-  return renderScene(livery, locale, mode)
+export function renderPreview(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, stock: StockSnapshot): string {
+  return renderScene(livery, locale, mode, stock)
 }
 
 /** Localized fixture copy, exported for tests that assert real copy per locale. */

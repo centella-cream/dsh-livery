@@ -1,17 +1,20 @@
 /**
- * First-frame boot: the pre-loader gate and the index rows it contributes.
+ * First-frame boot: the multi-adapter pre-loader gate and the index rows it
+ * contributes.
  *
  * This is the only Host code that runs before the Client exists, so it carries
- * the plugin's fail-closed rule: unless the observed host identity matches the
- * certified contract *exactly* and the active livery has a compiled stylesheet,
- * it contributes zero rows. A closed gate leaves the page on the host's own
- * stock appearance — never a half-injected palette, never a partial row table
- * that a later render might finish.
+ * the plugin's fail-closed rule: the live DSH version is mapped through the
+ * generated adapter registry to exactly one certified adapter, and unless that
+ * adapter's identity, catalog and the active livery all check out, the Host
+ * contributes zero rows. A closed gate leaves the page on the host's own stock
+ * appearance — never a half-injected palette, never a partial row table that a
+ * later render might finish. Unknown/uncertified versions are a closed gate,
+ * not a "best effort".
  *
  * The runtime never renders or hashes CSS. `renderBootCssFromCatalog` reads the
- * `css` fragments and `cssHash` the compiler already produced and gated, which
- * is what makes the injected bytes provably identical to what the Client will
- * derive from the catalog.
+ * `css` fragments and `cssHash` the compiler already produced (once per catalog
+ * profile) and gated, which is what makes the injected bytes provably identical
+ * to what the Client will derive from the catalog.
  *
  * Row shapes follow `@deepseek-ai/dsh-host-webserver`'s `IndexInjection` union:
  * `html` (a head `<style>` with an id the Client can adopt), then `global` (the
@@ -21,7 +24,6 @@
 
 import type { IndexInjection } from '@deepseek-ai/dsh-host-webserver'
 import {
-  ADAPTER_ID,
   BOOT_GLOBAL,
   BOOT_STYLE_ID,
   BODY_ATTRIBUTE,
@@ -34,12 +36,14 @@ import {
   type BootAttributePayload,
   type BootPayload,
   type CapabilityMap,
-  type CompiledLivery,
   type LiveryCatalog,
 } from '../core/types.js'
 import { findLivery, renderBootCssFromCatalog } from '../core/catalog.js'
-import type { CatalogMeta } from '../generated/liveries.js'
-import { CONTRACT_HASH, type ContractFacts } from '../generated/contract.js'
+import {
+  SUPPORTED_HOST_VERSIONS,
+  adapterForVersion,
+  type AdapterRecord,
+} from '../generated/contract.js'
 import { buildCatalog } from './catalog.js'
 import { normalizeSkinId } from './config.js'
 import {
@@ -48,14 +52,19 @@ import {
   buildDiagnostics,
 } from './diagnostics.js'
 
-/** Deployment profile the Host is running in. */
+/** Deployment profile the Host is running in. Recorded for diagnostics only. */
 export type ProfileKind = 'web' | 'desktop'
+
+/** Map used when the host is uncertified and no adapter exists. */
+const NO_CAPABILITIES: CapabilityMap = Object.freeze({})
 
 /**
  * One gate evaluation, independent of the payload and rows it produced.
  *
  * The diagnostic layer consumes this shape (rather than the whole boot state)
- * so it can explain a closed gate without depending on the render layer.
+ * so it can explain a closed gate without depending on the render layer. Empty
+ * strings mean "the registry could not resolve an adapter", which is exactly
+ * what the diagnostics report.
  */
 export interface GateResult {
   /**
@@ -68,11 +77,14 @@ export interface GateResult {
   readonly profileKind: ProfileKind
   /** Version reported by the live harness, or `null` when it cannot be read. */
   readonly observedHostVersion: string | null
-  readonly expectedHostVersion: string
+  /** Exact certified host versions this build may style. */
+  readonly supportedHostVersions: readonly string[]
+  /** Resolved adapter identity; empty when the registry rejected the version. */
   readonly adapterId: string
-  readonly expectedAdapterId: string
+  readonly hostVersion: string
   readonly contractHash: string
-  readonly expectedContractHash: string
+  /** Catalog profile the adapter renders with (shared by render-equivalent versions). */
+  readonly catalogProfile: string
   /** Required capabilities of the active livery that this host lacks. */
   readonly missingCapabilities: readonly string[]
   /** Requested skin id before resolution (`stock` for an absent config). */
@@ -83,11 +95,16 @@ export interface GateResult {
 
 /** Everything one index-inject evaluation produces. */
 export interface BootState {
+  /** True only when boot rows will be injected (real livery + compiled CSS). */
   readonly accepted: boolean
   /** Rows to append, in final order. Empty whenever the gate closed or skin is stock. */
   readonly rows: readonly IndexInjection[]
   readonly payload: BootPayload
   readonly gate: GateResult
+  /** Adapter the observed host resolved to, `undefined` for uncertified builds. */
+  readonly adapter: AdapterRecord | undefined
+  /** Capability map the gate evaluated (the adapter's; empty when unresolved). */
+  readonly capabilities: CapabilityMap
   /** Same list as `payload.diagnostics`, exposed for direct assertions. */
   readonly diagnostics: readonly string[]
 }
@@ -96,22 +113,33 @@ export interface BootState {
 export interface BootStateInput {
   /** Raw configured skin id (already read from the volatile config). */
   readonly skinId: string | undefined
-  readonly capabilities: CapabilityMap
-  readonly liveries: readonly CompiledLivery[]
-  readonly catalogMeta: CatalogMeta
-  readonly contractFacts: ContractFacts
   readonly profileKind: ProfileKind
-  /** Runtime DSH version, or `null` when the harness could not report one. */
-  readonly observedHostVersion: string | null
-  /** Adapter id this build was compiled against; defaults to the frozen constant. */
-  readonly observedAdapterId?: string
-  /** Contract hash this build was compiled against; defaults to the frozen constant. */
-  readonly observedContractHash?: string
+  /** Runtime DSH version reported by the harness, `null` when unreadable. */
+  readonly observedHostVersion: string | null | undefined
   /**
-   * Render seam for tests. Production always uses the core renderer; the
-   * default is intentionally not configurable from the plugin config.
+   * Resolved adapter override. Production never passes this: the gate resolves
+   * through the generated registry, which is the point of the multi-adapter
+   * boundary. Tests use it to exercise each certified adapter deterministically.
+   */
+  readonly adapter?: AdapterRecord
+  /** Catalog override for tests; defaults to `buildCatalog(adapter)`. */
+  readonly catalog?: LiveryCatalog
+  /**
+   * Render seam for tests. Production always uses the compiled-catalog reader;
+   * the default is intentionally not configurable from the plugin config.
    */
   readonly renderBoot?: (catalog: LiveryCatalog, skinId: string) => { css: string; hash: string }
+}
+
+/**
+ * Normalize the observed version: absent/blank means "unknown", not "anything".
+ * @param version - version the harness reported.
+ * @returns trimmed version, or `null`.
+ */
+function normalizeObservedVersion(version: string | null | undefined): string | null {
+  if (typeof version !== 'string') return null
+  const trimmed = version.trim()
+  return trimmed === '' ? null : trimmed
 }
 
 /**
@@ -211,71 +239,80 @@ function errorMessage(error: unknown): string {
 }
 
 /**
- * Evaluate the pre-loader gate and, when it accepts, build the boot rows.
+ * Evaluate the multi-adapter gate and, when it accepts, build the boot rows.
  *
  * Acceptance requires all of:
- * 1. the observed DSH version equals the certified contract version exactly
- *    (an unreadable version is a closed gate, not a guess);
- * 2. the adapter id and contract hash this build carries and the generated
- *    catalog carries both equal the certified contract facts;
- * 3. a requested livery resolves through `findLivery`;
- * 4. every capability the livery declares as required is available;
- * 5. the boot CSS renders without throwing.
+ * 1. the observed DSH version resolves to exactly one certified adapter through
+ *    the generated registry (unreadable/uncertified versions are closed gates);
+ * 2. the served catalog repeats that adapter's identity and catalog profile;
+ * 3. a requested livery resolves through `findLivery` in that profile;
+ * 4. every capability the livery declares as required is available on this
+ *    adapter's capability map;
+ * 5. the compiled boot stylesheet exists for the active livery.
  *
  * A requested `stock` skin is always accepted when the identity checks pass,
  * and contributes no rows at all — the stock look is the absence of Livery.
- * @param input - host identity, catalog sources, profile and live config value.
- * @returns gate outcome, payload and rows (rows are empty on any failure).
+ * @param input - live config value, deployment profile and observed host version.
+ * @returns gate outcome, adapter, payload and rows (rows are empty on failure).
  */
 export function computeBootState(input: BootStateInput): BootState {
-  const facts = input.contractFacts
-  const observedAdapterId = input.observedAdapterId ?? ADAPTER_ID
-  const observedContractHash = input.observedContractHash ?? CONTRACT_HASH
-  const catalog = buildCatalog({
-    liveries: input.liveries,
-    catalogMeta: input.catalogMeta,
-    capabilities: input.capabilities,
-    contractFacts: facts,
-  })
+  const observedHostVersion = normalizeObservedVersion(input.observedHostVersion)
+  // Production path: registry lookup. The override exists only so adapter
+  // fixtures can be exercised without mutating the generated registry.
+  const adapter = input.adapter ?? adapterForVersion(observedHostVersion ?? undefined)
 
   const codes: string[] = []
 
-  // 1. Identity: the live host version must match the certified one exactly.
-  if (input.observedHostVersion === null || input.observedHostVersion.trim() === '') {
+  // 1. Identity: the live host must resolve to one certified adapter, and an
+  // explicitly supplied adapter must describe the version the harness reported.
+  if (observedHostVersion === null) {
     codes.push(GATE_CODE.versionUnknown)
-  } else if (input.observedHostVersion !== facts.dshVersion) {
+  } else if (adapter === undefined) {
     codes.push(GATE_CODE.versionMismatch)
-  }
-
-  // 2. Adapter and contract hashes: this build, and the generated catalog, must
-  // both describe the same certified contract as the frozen facts.
-  if (observedAdapterId !== facts.adapterId || input.catalogMeta.adapterId !== facts.adapterId) {
+  } else if (input.adapter !== undefined && adapter.hostVersion !== observedHostVersion) {
     codes.push(GATE_CODE.adapterMismatch)
   }
-  if (observedContractHash !== facts.contractHash
-    || input.catalogMeta.contractHash !== facts.contractHash) {
-    codes.push(GATE_CODE.contractMismatch)
+
+  // 2. Catalog identity for the resolved adapter. Built here (not passed in)
+  // in production; the checks also protect injected/foreign catalogs.
+  let catalog: LiveryCatalog | undefined
+  if (adapter !== undefined) {
+    catalog = input.catalog ?? buildCatalog(adapter)
+    if (codes.length === 0) {
+      if (catalog.adapterId !== adapter.adapterId || catalog.hostVersion !== adapter.hostVersion) {
+        codes.push(GATE_CODE.adapterMismatch)
+      }
+      if (catalog.contractHash !== adapter.contractHash) {
+        codes.push(GATE_CODE.contractMismatch)
+      }
+      if (catalog.catalogProfile !== adapter.catalogProfile) {
+        codes.push(GATE_CODE.catalogProfileMismatch)
+      }
+    }
   }
 
-  // 3. Resolve the requested skin. `stock` is a valid, accepted non-livery; any
-  // other id must be one this build ships — a deleted or newer-build id is a
-  // closed gate, never silently downgraded to stock (that would hide the
-  // mismatch instead of diagnosing it).
+  const capabilities = adapter?.capabilities ?? NO_CAPABILITIES
   const requestedSkinId = (input.skinId ?? STOCK_ID).trim() === ''
     ? STOCK_ID
     : (input.skinId ?? STOCK_ID).trim()
-  const knownIds = new Set(input.liveries.map((livery) => livery.id))
   const stockRequested = requestedSkinId === STOCK_ID
-  const normalizedSkinId = stockRequested ? STOCK_ID : normalizeSkinId(requestedSkinId, knownIds)
-  const activeLivery = stockRequested ? undefined : findLivery(catalog, normalizedSkinId)
-  const skinUnknown = !stockRequested && activeLivery === undefined
-  if (skinUnknown) codes.push(GATE_CODE.skinUnknown)
 
-  // 4. Required capabilities of the active livery.
+  // 3. Resolve the requested skin inside the active profile's catalog. A
+  // deleted/newer-build id is a closed gate, never silently downgraded to stock.
+  let normalizedSkinId: string = STOCK_ID
+  let activeLivery = undefined as ReturnType<typeof findLivery>
   const missingCapabilities: string[] = []
+  if (codes.length === 0 && catalog !== undefined && !stockRequested) {
+    const knownIds = new Set(catalog.liveries.map((livery) => livery.id))
+    normalizedSkinId = normalizeSkinId(requestedSkinId, knownIds)
+    activeLivery = findLivery(catalog, normalizedSkinId)
+    if (activeLivery === undefined) codes.push(GATE_CODE.skinUnknown)
+  }
+
+  // 4. Required capabilities of the active livery, against this adapter's map.
   if (activeLivery !== undefined) {
     for (const id of activeLivery.requiredCapabilities) {
-      if (input.capabilities[id]?.available !== true && !missingCapabilities.includes(id)) {
+      if (capabilities[id]?.available !== true && !missingCapabilities.includes(id)) {
         missingCapabilities.push(id)
       }
     }
@@ -285,12 +322,12 @@ export function computeBootState(input: BootStateInput): BootState {
   // 5. Read the compiled boot stylesheet — only once the identity checks are
   // clean, so an incompatible host never touches the render path at all. There
   // is no runtime rendering or hashing here: the compiler emitted the exact
-  // bytes (`livery.css.*`) and their hash (`livery.cssHash`) under its own
-  // gates, so the Host cannot drift from what the Client will derive.
+  // bytes (`livery.css.*`) and their hash (`livery.cssHash`) per catalog
+  // profile under its own gates, so the Host cannot drift from the Client.
   let bootCss = ''
   let bootHash = ''
   let renderError: string | null = null
-  if (codes.length === 0 && !stockRequested) {
+  if (codes.length === 0 && !stockRequested && catalog !== undefined) {
     try {
       const render = input.renderBoot ?? renderBootCssFromCatalog
       const rendered = render(catalog, normalizedSkinId)
@@ -323,23 +360,24 @@ export function computeBootState(input: BootStateInput): BootState {
     accepted: gateAccepted,
     codes,
     profileKind: input.profileKind,
-    observedHostVersion: input.observedHostVersion,
-    expectedHostVersion: facts.dshVersion,
-    adapterId: observedAdapterId,
-    expectedAdapterId: facts.adapterId,
-    contractHash: observedContractHash,
-    expectedContractHash: facts.contractHash,
+    observedHostVersion,
+    supportedHostVersions: SUPPORTED_HOST_VERSIONS,
+    adapterId: adapter?.adapterId ?? '',
+    hostVersion: adapter?.hostVersion ?? (observedHostVersion ?? ''),
+    contractHash: adapter?.contractHash ?? '',
+    catalogProfile: adapter?.catalogProfile ?? '',
     missingCapabilities,
-    activeSkinId: requestedSkinId === '' ? STOCK_ID : requestedSkinId,
+    activeSkinId: requestedSkinId,
     renderError,
   }
-  const diagnostics = buildDiagnostics(gate, input.capabilities, facts)
+  const diagnostics = buildDiagnostics(gate, capabilities)
 
   const payload: BootPayload = {
     pluginVersion: LIVERY_VERSION,
-    adapterId: ADAPTER_ID,
-    hostVersion: facts.dshVersion,
-    contractHash: facts.contractHash,
+    adapterId: gate.adapterId,
+    hostVersion: gate.hostVersion,
+    contractHash: gate.contractHash,
+    catalogProfile: gate.catalogProfile,
     profileKind: input.profileKind,
     accepted,
     skinId: activeSkinId,
@@ -364,5 +402,13 @@ export function computeBootState(input: BootStateInput): BootState {
     })
   }
 
-  return { accepted, rows, payload, gate, diagnostics }
+  return {
+    accepted,
+    rows,
+    payload,
+    gate,
+    adapter,
+    capabilities,
+    diagnostics,
+  }
 }

@@ -13,7 +13,7 @@ import type {
   CompiledLivery,
   LiveryCatalog,
 } from '../core/types.js'
-import { ADAPTER_ID, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, STOCK_ID } from '../core/types.js'
+import { LIVERY_VERSION, STOCK_ID } from '../core/types.js'
 
 /** Lifecycle states from plan §6.3. */
 export type LiveryPhase = 'boot' | 'loading' | 'ready' | 'previewing' | 'degraded' | 'disposed'
@@ -79,6 +79,8 @@ export interface LiveryRuntimeSnapshot {
   readonly locale: LiveryLocaleId
   readonly themeMode: LiveryMode
   readonly identity: RuntimeIdentity
+  /** Certified catalog profile the presented stylesheet/previews belong to. */
+  readonly catalogProfile: string | undefined
 }
 
 /** Actions the settings page may call on the runtime. */
@@ -101,12 +103,12 @@ export interface LiveryRuntimeApi {
   observeTheme(): () => void
 }
 
-/** Default build identity, derived from the frozen generated constants. */
+/** Placeholder identity used until a handshake/catalog names the live host. */
 export const DEFAULT_IDENTITY: RuntimeIdentity = {
-  adapterId: ADAPTER_ID,
-  contractHash: 'unknown',
+  adapterId: '',
+  contractHash: '',
   pluginVersion: LIVERY_VERSION,
-  hostVersion: 'unknown',
+  hostVersion: '',
 }
 
 /** Legal lifecycle transitions (plan §6.3). */
@@ -367,14 +369,34 @@ export function previewFileName(id: string, locale: LiveryLocaleId, mode: Previe
 }
 
 /**
+ * Join a catalog-declared preview base with one preview filename.
+ *
+ * The base comes from the fetched catalog (`catalog.previewsBase`), which is
+ * scoped per catalog profile; the client never reconstructs the host route
+ * itself (multi-version.md §6).
+ * @param previewsBase - catalog-provided base URL (trailing slash optional).
+ * @param fileName - preview file name.
+ * @returns the same-origin preview URL.
+ */
+export function previewAssetUrl(previewsBase: string, fileName: string): string {
+  return previewsBase.endsWith('/') ? `${previewsBase}${fileName}` : `${previewsBase}/${fileName}`
+}
+
+/**
  * Same-origin URL of one generated preview image.
+ * @param previewsBase - catalog-provided preview base URL.
  * @param id - livery id.
  * @param locale - DSH locale id.
  * @param mode - color mode.
- * @returns route-relative URL under {@link PREVIEW_ROUTE_PREFIX}.
+ * @returns the preview URL under the catalog's own base.
  */
-export function previewUrl(id: string, locale: LiveryLocaleId, mode: PreviewMode): string {
-  return PREVIEW_ROUTE_PREFIX + previewFileName(id, locale, mode)
+export function previewUrl(
+  previewsBase: string,
+  id: string,
+  locale: LiveryLocaleId,
+  mode: PreviewMode,
+): string {
+  return previewAssetUrl(previewsBase, previewFileName(id, locale, mode))
 }
 
 /** Four seed colors used by the fallback token-swatch mockup. */
@@ -423,7 +445,12 @@ export function countCapabilities(capabilities: CapabilityMap): CapabilityCounts
  */
 export function createInitialSnapshot(
   identity: RuntimeIdentity,
-  boot: { readonly status: BootStatus; readonly reason: string | undefined; readonly diagnostics: readonly string[] },
+  boot: {
+    readonly status: BootStatus
+    readonly reason: string | undefined
+    readonly diagnostics: readonly string[]
+    readonly catalogProfile?: string | undefined
+  },
 ): LiveryRuntimeSnapshot {
   return {
     revision: 0,
@@ -448,6 +475,7 @@ export function createInitialSnapshot(
     locale: 'en',
     themeMode: 'light',
     identity,
+    catalogProfile: boot.catalogProfile,
   }
 }
 

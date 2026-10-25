@@ -268,27 +268,55 @@ export async function waitForBootGraph(page, { timeoutMs = 30_000 } = {}) {
 /** Dismiss the first-run welcome notice / API-key onboarding overlays. */
 export async function dismissFirstRunDialogs(page, { maxRounds = 8 } = {}) {
   const dismissed = []
-  const words = ['继续', '稍后配置', '保存并继续', '关闭', '稍后', '跳过', 'Continue', 'Configure later', 'Save and continue', 'Later', 'Skip', 'Close', 'Got it']
+  const words = [
+    '继续', '稍后配置', '保存并继续', '关闭', '取消', '稍后', '跳过',
+    'Continue', 'Configure later', 'Save and continue', 'Later', 'Skip', 'Close', 'Cancel', 'Got it', 'Dismiss',
+  ]
+  const maskCount = () =>
+    page
+      .evaluate(() => {
+        const isVisible = (element) => {
+          const rect = element.getBoundingClientRect()
+          const style = getComputedStyle(element)
+          return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
+        }
+        return [...document.querySelectorAll('[aria-hidden="true"], [role="presentation"]')].filter((element) => {
+          if (!isVisible(element)) return false
+          return Boolean(element.querySelector('button, [role="button"]'))
+        }).length
+      })
+      .catch(() => 0)
   for (let round = 0; round < maxRounds; round += 1) {
+    if ((await maskCount()) === 0) break
+    // Escape is the least invasive dismissal for onboarding/notice modals; only
+    // fall back to clicking known dismiss labels when it does not work.
+    await page.keyboard.press('Escape').catch(() => {})
+    await sleep(250)
+    if ((await maskCount()) === 0) {
+      dismissed.push('Escape')
+      continue
+    }
     const clicked = await page.evaluate((candidateWords) => {
       const isVisible = (element) => {
         const rect = element.getBoundingClientRect()
         const style = getComputedStyle(element)
         return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
       }
-      // Only dismiss things rendered above an aria-hidden mask: never click
-      // application buttons that happen to share these words.
-      const masks = [...document.querySelectorAll('[aria-hidden="true"]')].filter((element) => /mask|overlay|backdrop/i.test(String(element.className)))
+      const matches = (element) => {
+        const texts = [
+          (element.textContent ?? '').trim(),
+          element.getAttribute('aria-label') ?? '',
+          element.getAttribute('title') ?? '',
+        ]
+        return texts.some((text) => candidateWords.includes(text.trim()))
+      }
+      const masks = [...document.querySelectorAll('[aria-hidden="true"], [role="presentation"]')].filter(isVisible)
       const scopes = masks.length ? masks.map((mask) => mask.parentElement).filter(Boolean) : [document]
       for (const scope of scopes) {
-        const button = [...scope.querySelectorAll('button, [role="button"]')].find((candidate) => {
-          if (!isVisible(candidate)) return false
-          const text = (candidate.textContent ?? '').trim()
-          return candidateWords.includes(text)
-        })
+        const button = [...scope.querySelectorAll('button, [role="button"]')].find((candidate) => isVisible(candidate) && matches(candidate))
         if (button) {
           button.click()
-          return (button.textContent ?? '').trim()
+          return (button.textContent ?? '').trim() || button.getAttribute('aria-label') || 'button'
         }
       }
       return null
@@ -341,28 +369,97 @@ async function clearOverlayDialogs(page) {
   }
 }
 
-/** Open the settings dialog; returns a locator for it. */
-export async function openSettings(page, { timeoutMs = 20_000 } = {}) {
+/**
+ * Keyboard shortcut recorded by the settings launcher (Alt+Meta+, on the shell).
+ * Kept as a last-resort path for shells that move Settings behind a menu.
+ */
+const SETTINGS_SHORTCUT_MAC = 'Meta+,';
+
+/**
+ * Open the settings dialog, trying the launcher shapes used across certified
+ * shell versions and recording which path succeeded.
+ *
+ * 0.2.0-rc.2 exposed a direct `settings.trigger` button (aria-label 设置/Settings).
+ * 0.2.1 moved Settings behind the sidebar account menu
+ * (`[data-slot="sidebar.settings"] button[aria-haspopup="menu"]`, aria-label 账号菜单).
+ */
+export async function openSettingsDetailed(page, { timeoutMs = 20_000 } = {}) {
   await dismissFirstRunDialogs(page)
   await clearOverlayDialogs(page)
   const existing = settingsDialog(page).first()
   if (await existing.count()) {
-    if (await existing.isVisible().catch(() => false)) return existing
+    if (await existing.isVisible().catch(() => false)) return { dialog: existing, via: 'already-open' }
   }
-  const trigger = settingsTrigger(page)
-  if (!(await trigger.count())) throw new Error('settings trigger button not found')
-  try {
-    await trigger.click({ timeout: Math.min(timeoutMs, 8_000) })
-  } catch {
-    // Some first-run overlays leave a pointer-events mask over the shell even
-    // after their dismiss button is gone; a JS-level activation still opens the
-    // settings dialog (and never submits anything).
+
+  const tryDirectTrigger = async () => {
+    const trigger = settingsTrigger(page)
+    if (!(await trigger.count())) return false
+    try {
+      await trigger.click({ timeout: Math.min(timeoutMs, 6_000) })
+    } catch {
+      await trigger.evaluate((element) => element.click()).catch(() => {})
+    }
+    return await waitForSettingsDialog(page, timeoutMs)
+  }
+
+  const accountMenuTrigger = page
+    .locator('[data-slot="sidebar.settings"] button[aria-haspopup="menu"], button[aria-label="账号菜单"], button[aria-label="Account menu"]')
+    .first()
+  const tryAccountMenu = async () => {
+    if (!(await accountMenuTrigger.count())) return false
+    try {
+      await accountMenuTrigger.click({ timeout: Math.min(timeoutMs, 6_000) })
+    } catch {
+      await accountMenuTrigger.evaluate((element) => element.click()).catch(() => {})
+    }
+    await sleep(400)
+    const menuItem = page
+      .getByRole('menuitem', { name: /设置|Settings/ })
+      .first()
+    const textItem = page.locator('[role="menu"] >> text=/设置|Settings/').first()
+    for (const candidate of [menuItem, textItem]) {
+      if (await candidate.count().catch(() => 0)) {
+        try {
+          await candidate.click({ timeout: Math.min(timeoutMs, 6_000) })
+        } catch {
+          await candidate.evaluate((element) => element.click()).catch(() => {})
+        }
+        if (await waitForSettingsDialog(page, timeoutMs)) return true
+      }
+    }
+    // Menu opened but no matching item: close it before the next strategy.
     await page.keyboard.press('Escape').catch(() => {})
-    await dismissFirstRunDialogs(page)
-    await trigger.evaluate((element) => element.click()).catch(() => {})
+    return false
   }
+
+  const tryKeyboardShortcut = async () => {
+    await page.keyboard.press(SETTINGS_SHORTCUT_MAC).catch(() => {})
+    return waitForSettingsDialog(page, Math.min(timeoutMs, 8_000))
+  }
+
+  for (const [via, attempt] of [
+    ['account-menu', tryAccountMenu],
+    ['direct-trigger', tryDirectTrigger],
+    ['keyboard-shortcut', tryKeyboardShortcut],
+  ]) {
+    if (await attempt()) return { dialog: settingsDialog(page).first(), via }
+  }
+  throw new Error('settings trigger button not found (tried account menu, direct settings trigger and keyboard shortcut)')
+}
+
+async function waitForSettingsDialog(page, timeoutMs) {
   const dialog = settingsDialog(page).first()
-  await dialog.waitFor({ state: 'visible', timeout: timeoutMs })
+  try {
+    await dialog.waitFor({ state: 'visible', timeout: Math.min(timeoutMs, 10_000) })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Open the settings dialog; returns a locator for it. */
+export async function openSettings(page, options = {}) {
+  const { dialog } = await openSettingsDetailed(page, options)
   return dialog
 }
 
@@ -614,6 +711,11 @@ export async function readThemeSnapshot(page) {
         borderL1Canonical: canonical(readVar('--dsw-alias-border-l1')),
         fontFamily: readVar('--dsw-font-family'),
         fontFamilyCanonical: canonical('inherit') === 'inherit' ? readVar('--dsw-font-family') : '',
+        // 0.2.1+ documented role hooks (host-font-role-hooks capability).
+        fontRoleText: readVar('--dsh-font-family-text'),
+        fontRoleCode: readVar('--dsh-font-family-code'),
+        // 0.2.1+ host-resolved code family on body; legacy hosts expose --ds-font-family-code too.
+        legacyCodeFamily: readVar('--ds-font-family-code'),
         contentFontSize: readVar('--dsh-content-font-size'),
       },
       bodyFontFamily: computed.fontFamily,
@@ -637,6 +739,19 @@ export async function readThemeSnapshot(page) {
         .filter((style) => !style.id)
         .map((style) => ({ bytes: (style.textContent ?? '').length, css: style.getAttribute('data-plugin-css') })),
       stockStyleCount: [...document.querySelectorAll('style')].length,
+      // Coexistence evidence: every other plugin-owned style element and every
+      // body data-* attribute that is neither host-known nor Livery-owned.
+      otherPluginStyles: [...document.querySelectorAll('style[data-plugin]')]
+        .filter((style) => style.getAttribute('data-plugin') !== 'dsh-livery')
+        .map((style) => ({
+          plugin: style.getAttribute('data-plugin'),
+          id: style.id || null,
+          bytes: (style.textContent ?? '').length,
+          firstRule: (style.textContent ?? '').slice(0, 160),
+        })),
+      otherBodyAttributes: [...document.body.attributes]
+        .map((attribute) => attribute.name)
+        .filter((name) => name.startsWith('data-') && name !== 'data-dsh-livery' && name !== 'data-dsh-livery-hash' && name !== 'data-ds-dark-theme' && name !== 'data-dsh-theme'),
       fonts: {
         cjkPingFang: document.fonts.check('14px "PingFang SC"'),
         cjkHiragino: document.fonts.check('14px "Hiragino Sans GB"'),

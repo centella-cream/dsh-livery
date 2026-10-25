@@ -1,26 +1,29 @@
 /**
- * Livery compiler orchestration.
+ * Livery compiler orchestration — multi-version host support.
  *
- * `compileCatalog` is the single code path that turns on-disk manifests into the
- * shipped artifacts:
+ * The same package styles three exact certified host builds. Host versions that
+ * share a `catalogProfile` render byte-identical stylesheets, so the compiler:
  *
- *   validate (schema + semantics)
- *     → deriveLivery light/dark
- *     → evaluateCapabilities (effective layout + degradation)
- *     → renderLiveryCss
- *     → audit (contrast, token coverage, CSS safety, size budgets)
- *     → hashLivery
- *     → emit src/generated/liveries.ts, lib/previews/**, artifacts/liveries/**
+ *   1. validates the manifests against *every* profile's capabilities + stock,
+ *   2. compiles each catalog profile **once** using its representative adapter's
+ *      stock snapshot (`stockForVersion`) and capability map,
+ *   3. re-derives + re-renders every livery against every other adapter in the
+ *      group and fails the build unless the CSS fragments and `cssHash` match
+ *      byte-for-byte,
+ *   4. emits per-profile previews and per-profile audit artifacts plus a
+ *      cross-profile `summary.json` that maps adapters to profiles.
  *
  * Nothing here reads the wall clock: `compiledAt` is derived from the canonical
- * source hash, so two compiles of the same sources are byte-identical. `--check`
- * uses the same in-memory output and compares it with the committed files.
+ * source hash (which includes the profile id, token-contract hash and registry),
+ * so two compiles of the same sources are byte-identical. `--check` regenerates
+ * every file in memory and compares it with the committed tree.
  */
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import type {
   CapabilityMap,
+  CatalogProfileData,
   CompiledLivery,
   CompiledVariant,
   ContractCapabilityFacts,
@@ -30,47 +33,66 @@ import type {
   LiveryManifest,
   ResolvedTypography,
 } from '../core/types.js'
-import { ADAPTER_ID, DSH_VERSION, LIVERY_VERSION, SCHEMA_VERSION } from '../core/types.js'
+import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../core/types.js'
 import { deriveLivery } from '../core/derive.js'
 import { evaluateCapabilities } from '../core/capabilities.js'
 import { computeLiveryCssHash, hashCss, hashLivery, renderBootCss, renderLiveryCss, styleTextFromFragments } from '../core/render.js'
-import { resolveTypography, FONT_STACKS, METRICS, TAGS } from '../core/registry.js'
-import type { ContractFacts } from '../generated/contract.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../generated/contract.js'
-import type { CatalogMeta } from '../generated/liveries.js'
+import { FONT_STACKS, METRICS, TAGS, resolveTypography } from '../core/registry.js'
+import type { AdapterRecord } from '../generated/contract.js'
+import { ADAPTERS } from '../generated/contract.js'
+import { stockForVersion } from '../generated/stock.js'
+import type { StockSnapshot } from '../generated/stock.js'
 import {
   auditLiveryCss,
   buildCatalogReport,
   buildContrastArtifact,
   buildCssSafetyArtifact,
+  buildSummaryArtifact,
   buildTokenCoverageArtifact,
   coverTokens,
+  inheritedUnconsumedTokens,
   liveryTokenNames,
   selectEmittedVariant,
   summarizeLiveryContrast,
+  tokenSetsFor,
+  type AdapterEntry,
   type ArtifactContext,
   type CatalogReport,
   type CompileProblem,
   type ContrastArtifact,
   type CssSafetyArtifact,
+  type StockTokenSets,
+  type SummaryArtifact,
+  type SummaryProfileSource,
   type TokenCoverageArtifact,
 } from './audit.js'
-import type { ManifestSource } from './validate.js'
+import type { Diagnostic, ManifestSource } from './validate.js'
 import { validateCatalog } from './validate.js'
 import type { PreviewLivery } from './previews.js'
-import { PREVIEW_HEIGHT, PREVIEW_LOCALES, PREVIEW_MODES, PREVIEW_WIDTH, previewFileName, renderPreviewSet } from './previews.js'
+import {
+  PREVIEW_HEIGHT,
+  PREVIEW_LOCALES,
+  PREVIEW_MODES,
+  PREVIEW_WIDTH,
+  previewFileName,
+  renderPreviewSet,
+} from './previews.js'
 
-/** Repo-relative path of the generated catalog module (host/client import this). */
+/** Repo-relative path of the generated multi-profile catalog module. */
 export const CATALOG_MODULE_PATH = 'src/generated/liveries.ts'
-/** Repo-relative preview directory. */
+/** Repo-relative preview directory root (one subdirectory per catalog profile). */
 export const PREVIEW_DIR = 'lib/previews'
-/** Repo-relative audit artifact directory. */
+/** Repo-relative audit artifact root (one subdirectory per catalog profile). */
 export const ARTIFACT_DIR = 'artifacts/liveries'
+/** Repo-relative cross-profile summary artifact. */
+export const SUMMARY_PATH = `${ARTIFACT_DIR}/summary.json`
+/** Directories whose contents are fully generated and may be pruned/reported on. */
+export const MANAGED_DIRS: readonly string[] = [PREVIEW_DIR, ARTIFACT_DIR]
 
 export interface CompileOptions {
   readonly manifests: readonly ManifestSource[]
-  readonly capabilities?: CapabilityMap
-  readonly contractFacts?: ContractFacts
+  /** Adapter registry to compile for (defaults to the frozen `ADAPTERS`). */
+  readonly adapters?: readonly AdapterRecord[]
   /**
    * When false, gate failures are reported in `problems` but do not make the
    * result fail — used by `audit:*` commands for their own artifact generation.
@@ -84,30 +106,47 @@ export interface DriftEntry {
   readonly kind: 'missing' | 'changed' | 'unexpected'
 }
 
-/**
- * `lib/previews/index.json` — FROZEN shape consumed by the Host preview-asset
- * route: exact whitelist of relative SVG filenames, sorted, plus the count.
- * Richer per-file metadata lives in `artifacts/liveries/report.json`.
- */
 export interface PreviewIndexFile {
   readonly files: readonly string[]
   readonly count: number
 }
 
+export interface ProfileCompileResult {
+  readonly profile: CatalogProfileData
+  readonly adapters: readonly AdapterRecord[]
+  readonly representative: AdapterRecord
+  readonly stock: StockSnapshot
+  readonly tokenSets: StockTokenSets
+  readonly report: CatalogReport
+  readonly contrast: ContrastArtifact
+  readonly tokenCoverage: TokenCoverageArtifact
+  readonly cssSafety: CssSafetyArtifact
+  readonly previewCount: number
+}
+
 export interface CompileResult {
   readonly ok: boolean
-  readonly sourceHash: string
-  readonly compiledAt: string
   readonly problems: readonly CompileProblem[]
-  readonly catalog: LiveryCatalog | null
-  readonly meta: CatalogMeta | null
-  readonly report: CatalogReport | null
-  readonly contrast: ContrastArtifact | null
-  readonly tokenCoverage: TokenCoverageArtifact | null
-  readonly cssSafety: CssSafetyArtifact | null
-  readonly previewCount: number
+  readonly profiles: readonly ProfileCompileResult[]
+  readonly summary: SummaryArtifact | null
   /** Repo-relative path → exact UTF-8 file content, only when `ok`. */
   readonly files: ReadonlyMap<string, string>
+  readonly previewCount: number
+  readonly profileCount: number
+  readonly adapterCount: number
+}
+
+/** One compiled livery plus the compile-time evidence the artifacts need. */
+interface CompiledCore {
+  readonly livery: CompiledLivery
+  readonly typography: ResolvedTypography
+  readonly css: LiveryCss
+  readonly light: CompiledVariant
+  readonly dark: CompiledVariant
+  readonly declaredLayout: LiveryManifest['layout']
+  readonly prettyBytes: { readonly tokens: number; readonly typography: number; readonly layout: number; readonly total: number }
+  readonly derivedTokenNames: readonly string[]
+  readonly problems: readonly CompileProblem[]
 }
 
 /* ------------------------------------------------------------------ */
@@ -151,16 +190,22 @@ export function deriveCompiledAt(sourceHash: string): string {
 }
 
 /**
- * Source hash over the canonical manifests plus the core registry snapshot. Any
- * manifest edit, registry id/label change or font/metrics change rehashes the
- * whole generated catalog.
+ * Per-profile source hash over the canonical manifests + core registry + profile
+ * identity (profile id and token-contract hash). Any manifest, registry or host
+ * token contract change rehashes that profile's generated catalog.
  */
-export function computeSourceHash(manifests: readonly LiveryManifest[]): string {
+export function computeSourceHash(
+  manifests: readonly LiveryManifest[],
+  profileId: string,
+  tokenContractHash: string,
+): string {
   const sorted = [...manifests].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
   return sha256(
     canonicalJson({
       schemaVersion: SCHEMA_VERSION,
       compilerVersion: LIVERY_VERSION,
+      profileId,
+      tokenContractHash,
       registry: {
         fonts: FONT_STACKS,
         metrics: METRICS,
@@ -207,82 +252,91 @@ export function findRepoRoot(startDir: string): string {
 }
 
 /* ------------------------------------------------------------------ */
-/* Compilation                                                         */
+/* Profile grouping                                                    */
 /* ------------------------------------------------------------------ */
 
-function previewSourceOf(livery: CompiledLivery): PreviewLivery {
+export interface AdapterGroup {
+  readonly profileId: string
+  readonly adapters: readonly AdapterRecord[]
+}
+
+/** Group adapters by `catalogProfile`, preserving registry (ascending) order. */
+export function groupAdaptersByProfile(adapters: readonly AdapterRecord[]): AdapterGroup[] {
+  const groups = new Map<string, AdapterRecord[]>()
+  for (const adapter of adapters) {
+    const group = groups.get(adapter.catalogProfile)
+    if (group === undefined) groups.set(adapter.catalogProfile, [adapter])
+    else group.push(adapter)
+  }
+  return [...groups.entries()].map(([profileId, group]) => ({
+    profileId,
+    adapters: [...group].sort((a, b) => (a.hostVersion < b.hostVersion ? -1 : a.hostVersion > b.hostVersion ? 1 : 0)),
+  }))
+}
+
+function adapterEntryOf(adapter: AdapterRecord, stock: StockSnapshot): AdapterEntry {
   return {
-    id: livery.id,
-    meta: livery.meta,
-    layout: livery.layout,
-    typography: livery.typography,
-    light: { tokens: livery.light.tokens },
-    dark: { tokens: livery.dark.tokens },
+    hostVersion: adapter.hostVersion,
+    adapterId: adapter.adapterId,
+    contractHash: adapter.contractHash,
+    tokenContractHash: stock.tokenContractHash,
+    sourceKind: adapter.sourceKind,
+    nodeRange: adapter.nodeRange,
+    catalogProfile: adapter.catalogProfile,
   }
 }
 
-interface CompiledCore {
-  readonly livery: CompiledLivery
-  readonly typography: ResolvedTypography
-  readonly css: LiveryCss
-  readonly light: CompiledVariant
-  readonly dark: CompiledVariant
-  readonly declaredLayout: LiveryManifest['layout']
-  /** Pretty-printed byte counts (artifacts only; the shipped CSS is compact). */
-  readonly prettyBytes: { readonly tokens: number; readonly typography: number; readonly layout: number; readonly total: number }
-  /** Union of light+dark token names produced by derive, before the emission policy. */
-  readonly derivedTokenNames: readonly string[]
-  readonly problems: readonly CompileProblem[]
+/* ------------------------------------------------------------------ */
+/* Per-livery compilation                                              */
+/* ------------------------------------------------------------------ */
+
+function byteLength(text: string): number {
+  return Buffer.byteLength(text, 'utf8')
 }
 
-function compileOne(manifest: LiveryManifest, capabilities: CapabilityMap): CompiledCore {
+/** Names explicitly overridden by the manifest author for one mode. */
+function explicitOverrideNames(manifest: LiveryManifest, mode: 'light' | 'dark'): ReadonlySet<string> {
+  return new Set(Object.keys(manifest.variants[mode].tokens ?? {}))
+}
+
+function compileOne(
+  manifest: LiveryManifest,
+  stock: StockSnapshot,
+  capabilities: CapabilityMap,
+  tokenSets: StockTokenSets,
+): CompiledCore {
   const problems: CompileProblem[] = []
   const typography = resolveTypography(manifest)
   const evaluation = evaluateCapabilities(capabilities as ContractCapabilityFacts, manifest)
   const effectiveManifest: LiveryManifest = { ...manifest, layout: evaluation.effectiveLayout }
-  const derived = deriveLivery(effectiveManifest)
-  // Emission policy (plan §8.2): ship only tokens a shipped package consumes;
-  // unconsumed derived tokens stay at their stock value and are reported.
+  const derived = deriveLivery(effectiveManifest, stock)
+  // Emission policy (plan §8.2 computed per stock snapshot): ship the consumed
+  // token set plus any explicit author override ("explicit overrides win").
   const variants = {
-    light: selectEmittedVariant(derived.light),
-    dark: selectEmittedVariant(derived.dark),
+    light: selectEmittedVariant(derived.light, tokenSets, explicitOverrideNames(manifest, 'light')),
+    dark: selectEmittedVariant(derived.dark, tokenSets, explicitOverrideNames(manifest, 'dark')),
   }
   const derivedTokenNames = [...new Set([...Object.keys(derived.light.tokens), ...Object.keys(derived.dark.tokens)])].sort()
-  const css = renderLiveryCss(
-    {
-      id: manifest.id,
-      light: variants.light,
-      dark: variants.dark,
-      typography,
-      layout: evaluation.effectiveLayout,
-      requiredCapabilities: manifest.compat.requiredCapabilities,
-      optionalCapabilities: manifest.compat.optionalCapabilities,
-    },
-    evaluation.map,
-  )
-
-  const prettyCss = renderLiveryCss(
-    {
-      id: manifest.id,
-      light: variants.light,
-      dark: variants.dark,
-      typography,
-      layout: evaluation.effectiveLayout,
-      requiredCapabilities: manifest.compat.requiredCapabilities,
-      optionalCapabilities: manifest.compat.optionalCapabilities,
-    },
-    evaluation.map,
-    { pretty: true },
-  )
-  const byteLength = (text: string): number => Buffer.byteLength(text, 'utf8')
+  const renderable = {
+    id: manifest.id,
+    light: variants.light,
+    dark: variants.dark,
+    typography,
+    layout: evaluation.effectiveLayout,
+    requiredCapabilities: manifest.compat.requiredCapabilities,
+    optionalCapabilities: manifest.compat.optionalCapabilities,
+  }
+  const css = renderLiveryCss(renderable, evaluation.map, stock)
+  const prettyCss = renderLiveryCss(renderable, evaluation.map, stock, { pretty: true })
   const prettyBytes = {
     tokens: byteLength(prettyCss.tokens),
     typography: byteLength(prettyCss.typography),
     layout: byteLength(prettyCss.layout),
     total: byteLength(prettyCss.tokens) + byteLength(prettyCss.typography) + byteLength(prettyCss.layout),
   }
+
   const cssAudit = auditLiveryCss({ id: manifest.id, css })
-  const coverage = coverTokens(liveryTokenNames(variants))
+  const coverage = coverTokens(liveryTokenNames(variants), tokenSets)
   const light = summarizeLiveryContrast({ id: manifest.id, light: variants.light, dark: variants.dark }).light
   const dark = summarizeLiveryContrast({ id: manifest.id, light: variants.light, dark: variants.dark }).dark
   const audit: LiveryAuditReport = {
@@ -294,7 +348,7 @@ function compileOne(manifest: LiveryManifest, capabilities: CapabilityMap): Comp
   }
 
   // The runtime never re-renders: Host injects `css.*` verbatim and compares the
-  // Client hash against this exact concatenation. Keep the byte-for-byte hash.
+  // Client hash against this exact concatenation.
   const cssHash = computeLiveryCssHash(css)
   const base: Omit<CompiledLivery, 'hash'> = {
     id: manifest.id,
@@ -327,11 +381,7 @@ function compileOne(manifest: LiveryManifest, capabilities: CapabilityMap): Comp
     })
   }
   if (!cssAudit.safety.pass) {
-    problems.push({
-      code: 'css.unsafe',
-      path: `liveries/${manifest.id}`,
-      message: cssAudit.details.violations.join('; '),
-    })
+    problems.push({ code: 'css.unsafe', path: `liveries/${manifest.id}`, message: cssAudit.details.violations.join('; ') })
   }
   if (cssAudit.overBudget) {
     problems.push({
@@ -349,16 +399,50 @@ function compileOne(manifest: LiveryManifest, capabilities: CapabilityMap): Comp
     })
   }
 
+  return { livery, typography, css, light: variants.light, dark: variants.dark, declaredLayout: manifest.layout, prettyBytes, derivedTokenNames, problems }
+}
+
+/** Render one livery for an arbitrary adapter (used for byte-identity checks). */
+function renderCssForAdapter(
+  manifest: LiveryManifest,
+  stock: StockSnapshot,
+  capabilities: CapabilityMap,
+  tokenSets: StockTokenSets,
+): { readonly css: LiveryCss; readonly cssHash: string } {
+  const evaluation = evaluateCapabilities(capabilities as ContractCapabilityFacts, manifest)
+  const derived = deriveLivery({ ...manifest, layout: evaluation.effectiveLayout }, stock)
+  const variants = {
+    light: selectEmittedVariant(derived.light, tokenSets, explicitOverrideNames(manifest, 'light')),
+    dark: selectEmittedVariant(derived.dark, tokenSets, explicitOverrideNames(manifest, 'dark')),
+  }
+  const css = renderLiveryCss(
+    {
+      id: manifest.id,
+      light: variants.light,
+      dark: variants.dark,
+      typography: resolveTypography(manifest),
+      layout: evaluation.effectiveLayout,
+      requiredCapabilities: manifest.compat.requiredCapabilities,
+      optionalCapabilities: manifest.compat.optionalCapabilities,
+    },
+    evaluation.map,
+    stock,
+  )
+  return { css, cssHash: computeLiveryCssHash(css) }
+}
+
+/* ------------------------------------------------------------------ */
+/* Preview generation                                                  */
+/* ------------------------------------------------------------------ */
+
+function previewSourceOf(livery: CompiledLivery): PreviewLivery {
   return {
-    livery,
-    typography,
-    css,
-    light: variants.light,
-    dark: variants.dark,
-    declaredLayout: manifest.layout,
-    prettyBytes,
-    derivedTokenNames,
-    problems,
+    id: livery.id,
+    meta: livery.meta,
+    layout: livery.layout,
+    typography: livery.typography,
+    light: { tokens: livery.light.tokens },
+    dark: { tokens: livery.dark.tokens },
   }
 }
 
@@ -369,230 +453,470 @@ function buildPreviewIndex(files: readonly string[]): PreviewIndexFile {
 
 function buildPreviewSvgs(
   liveries: readonly CompiledLivery[],
+  stock: StockSnapshot,
 ): readonly { readonly file: string; readonly content: string }[] {
   const svgs: { file: string; content: string }[] = []
   for (const livery of liveries) {
-    const previewSource = previewSourceOf(livery)
-    svgs.push(...renderPreviewSet(previewSource))
+    svgs.push(...renderPreviewSet(previewSourceOf(livery), stock))
   }
   return svgs
 }
 
+/* ------------------------------------------------------------------ */
+/* Generated module                                                    */
+/* ------------------------------------------------------------------ */
+
 /**
- * Deterministic TypeScript module for the built-in catalog. The banner is
- * assembled line by line and any literal block-comment terminator is escaped, so
- * manifest-driven text can never break the generated module.
+ * Deterministic TypeScript module for the built-in catalog profiles. The banner
+ * is assembled line by line and any literal block-comment terminator is escaped,
+ * so manifest-driven text can never break the generated module.
  */
-export function serializeCatalogModule(catalog: LiveryCatalog, meta: CatalogMeta): string {
+export function serializeCatalogModule(profiles: readonly CatalogProfileData[]): string {
   const bannerLines: readonly string[] = [
     'GENERATED — do not edit by hand.',
     '',
-    'Built-in livery catalog for DSH Livery, generated by `pnpm liveries:compile`',
-    'from `liveries/<id>/manifest.json` + the frozen DSH contract snapshot.',
+    'Built-in livery catalogs for DSH Livery, generated by `liveries:compile`.',
+    'One entry per catalog profile (render-equivalent host versions); every',
+    'adapter in `sourceAdapters` serves these exact CSS bytes and previews.',
+    'Source manifests: `liveries/<id>/manifest.json`.',
     '',
-    `sourceHash: ${meta.sourceHash}`,
-    `contractHash: ${meta.contractHash}`,
-    `compiledAt: ${meta.compiledAt} (derived from sourceHash, never wall clock)`,
+    `compilerVersion: ${LIVERY_VERSION}`,
+    `profiles: ${profiles.map((profile) => profile.profileId).join(', ')}`,
     '',
-    '`pnpm liveries:check` fails the build if this file drifts from the manifests.',
+    '`liveries:check` fails the build if this file drifts from the manifests.',
   ]
   const banner = bannerLines.map((line) => ` * ${line.replace(/\*\//g, '*\\/')}`).join('\n')
-  const header = `/**\n${banner}\n */\nimport type { CapabilityMap, CompiledLivery } from '../core/types.js'
+  const header = `/**
+${banner}
+ */
+import type { CatalogProfileData } from '../core/types.js'
 
-export interface CatalogMeta {
-  readonly compiledAt: string
-  readonly sourceHash: string
-  readonly contractHash: string
-  readonly adapterId: string
-  readonly hostVersion: string
-  readonly capabilities: CapabilityMap
-}
+/** One render-equivalent catalog profile (see docs/implementation/multi-version.md §4). */
+export type CatalogProfile = CatalogProfileData
 `
   return `${header}
-export const LIVERIES: readonly CompiledLivery[] = ${serializeJson(catalog.liveries)}
+export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = ${serializeJson(
+    Object.fromEntries(profiles.map((profile) => [profile.profileId, profile])),
+  )}
 
-export const CATALOG_META: CatalogMeta = ${serializeJson(meta)}
+export const CATALOG_PROFILE_IDS: readonly string[] = ${serializeJson(profiles.map((profile) => profile.profileId))}
 `
 }
 
-export function compileCatalog(options: CompileOptions): CompileResult {
-  const capabilities = options.capabilities ?? HOST_CAPABILITIES
-  const contractFacts = options.contractFacts ?? CONTRACT_FACTS
-  const enforceGates = options.enforceGates ?? true
+/* ------------------------------------------------------------------ */
+/* Compilation                                                         */
+/* ------------------------------------------------------------------ */
 
-  const validation = validateCatalog(options.manifests, { capabilities })
-  if (!validation.ok) {
+function dedupeProblems(problems: readonly CompileProblem[]): CompileProblem[] {
+  const seen = new Set<string>()
+  const out: CompileProblem[] = []
+  for (const problem of problems) {
+    const key = `${problem.code}|${problem.path}|${problem.message}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(problem)
+  }
+  return out
+}
+
+interface ProfileDraft {
+  readonly group: AdapterGroup
+  readonly representative: AdapterRecord
+  readonly stock: StockSnapshot
+  readonly tokenSets: StockTokenSets
+  readonly tokenCoverage: TokenCoverageArtifact
+  readonly contrast: ContrastArtifact
+  readonly cssSafety: CssSafetyArtifact
+  readonly report: CatalogReport
+  readonly cores: readonly CompiledCore[]
+  readonly adapterRenderIdentity: boolean
+  readonly problems: readonly CompileProblem[]
+  readonly catalog: LiveryCatalog
+  readonly previews: readonly { readonly file: string; readonly content: string }[]
+  readonly previewDirectory: string
+  readonly artifactDirectory: string
+}
+
+/**
+ * Compile every manifest once per catalog profile. Deterministic: identical
+ * inputs always produce byte-identical outputs.
+ */
+export function compileCatalog(options: CompileOptions): CompileResult {
+  const adapters = options.adapters ?? ADAPTERS
+  const enforceGates = options.enforceGates ?? true
+  const groups = groupAdaptersByProfile(adapters)
+
+  if (groups.length === 0) {
     return {
       ok: false,
-      sourceHash: '',
-      compiledAt: '',
-      problems: validation.diagnostics.map((diagnostic) => ({
-        code: `validation.${diagnostic.code}`,
-        path: diagnostic.path,
-        message: diagnostic.message,
-      })),
-      catalog: null,
-      meta: null,
-      report: null,
-      contrast: null,
-      tokenCoverage: null,
-      cssSafety: null,
-      previewCount: 0,
+      problems: [{ code: 'adapters.empty', path: 'src/generated/contract.ts', message: 'adapter registry is empty' }],
+      profiles: [],
+      summary: null,
       files: new Map<string, string>(),
+      previewCount: 0,
+      profileCount: 0,
+      adapterCount: 0,
     }
   }
 
-  const sortedManifests = [...validation.manifests].sort((a, b) =>
-    a.meta.order === b.meta.order ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : a.meta.order - b.meta.order,
-  )
-  const sourceHash = computeSourceHash(sortedManifests)
-  const compiledAt = deriveCompiledAt(sourceHash)
-
-  const problems: CompileProblem[] = []
-  const cores: CompiledCore[] = []
-  for (const manifest of sortedManifests) {
-    let compiled: CompiledCore
-    try {
-      compiled = compileOne(manifest, capabilities)
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      problems.push({
-        code: 'compile.failed',
-        path: `liveries/${manifest.id}/manifest.json`,
-        message: `compilation failed: ${reason}`,
+  // 1. Validate the manifests against every profile (multi-version safety).
+  const validationProblems: CompileProblem[] = []
+  let manifests: readonly LiveryManifest[] = []
+  let validationOk = true
+  for (const group of groups) {
+    const representative = group.adapters[0]
+    if (representative === undefined) continue
+    const stock = stockForVersion(representative.hostVersion)
+    if (stock === undefined) {
+      validationProblems.push({
+        code: 'adapter.stock-missing',
+        path: 'src/generated/stock.ts',
+        message: `no stock snapshot for certified host ${representative.hostVersion}`,
       })
+      validationOk = false
       continue
     }
-    cores.push(compiled)
-    problems.push(...compiled.problems)
-  }
-
-  const liveries = cores.map((core) => core.livery)
-  const meta: CatalogMeta = {
-    compiledAt,
-    sourceHash,
-    contractHash: contractFacts.contractHash,
-    adapterId: ADAPTER_ID,
-    hostVersion: DSH_VERSION,
-    capabilities,
-  }
-  const catalog: LiveryCatalog = {
-    schemaVersion: SCHEMA_VERSION,
-    compilerVersion: LIVERY_VERSION,
-    adapterId: ADAPTER_ID,
-    hostVersion: DSH_VERSION,
-    contractHash: contractFacts.contractHash,
-    capabilities,
-    liveries,
-  }
-  const context: ArtifactContext = {
-    sourceHash,
-    compiledAt,
-    contractHash: contractFacts.contractHash,
-    adapterId: ADAPTER_ID,
-    hostVersion: DSH_VERSION,
-  }
-
-  const bootCss = liveries.map((livery) => {
-    const boot = renderBootCss(catalog, livery.id)
-    return { id: livery.id, css: boot.css, hash: boot.hash }
-  })
-  // Frozen equality (docs/implementation/interfaces.md §2): the stored cssHash,
-  // the boot CSS bytes the Host injects and the text the Client compares must all
-  // be the same concatenation. Verify it at compile time so a renderer change can
-  // never silently desynchronise the first frame from the stored artifact.
-  for (const livery of liveries) {
-    const boot = bootCss.find((entry) => entry.id === livery.id)
-    if (boot === undefined) continue
-    const styleText = styleTextFromFragments(livery.css)
-    if (livery.cssHash !== hashCss(styleText) || boot.hash !== livery.cssHash || boot.css !== styleText) {
-      problems.push({
-        code: 'hash.mismatch',
-        path: `liveries/${livery.id}`,
-        message: 'stored css/cssHash does not equal renderBootCss(catalog, id) — host first frame would desynchronise from the compiled artifact',
+    const validation = validateCatalog(options.manifests, { capabilities: representative.capabilities, stock })
+    for (const diagnostic of validation.diagnostics) {
+      validationProblems.push({
+        code: `validation.${diagnostic.code}`,
+        path: `[${representative.hostVersion}] ${diagnostic.path}`,
+        message: diagnostic.message,
       })
     }
+    if (!validation.ok) validationOk = false
+    else manifests = validation.manifests
   }
-
-  const derivedTokenNames = [...new Set(cores.flatMap((core) => core.derivedTokenNames))].sort()
-  const tokenCoverage = buildTokenCoverageArtifact(liveries, context, derivedTokenNames)
-  const cssSafety = buildCssSafetyArtifact(
-    catalog,
-    bootCss,
-    context,
-    new Map(cores.map((core) => [core.livery.id, core.prettyBytes])),
-  )
-  const contrast = buildContrastArtifact(liveries, context)
-  const declaredLayouts = new Map(cores.map((core) => [core.livery.id, core.declaredLayout]))
-  const previews = buildPreviewSvgs(liveries)
-  const previewIndex = buildPreviewIndex(previews.map((preview) => preview.file))
-
-  const report = buildCatalogReport({
-    catalog,
-    context,
-    declaredLayouts,
-    previewFiles: previews.map((preview) => preview.file),
-    bootCss: bootCss.map((entry) => ({ id: entry.id, css: entry.css })),
-    maxLiveryCssBytes: Math.max(0, ...cssSafety.liveries.map((entry) => entry.bytes.total)),
-    derivedTokenNames,
-  })
-
-  // Aggregate gates. The catalog is only emitted when every gate passes; the
-  // individual problems above make failures actionable.
-  if (!contrast.pass) {
-    problems.push({ code: 'contrast.gate', path: 'artifacts/liveries/contrast.json', message: `${contrast.summary.failures} contrast assertion(s) failed across ${contrast.summary.total}` })
-  }
-  if (!tokenCoverage.pass) {
-    problems.push({ code: 'token.gate', path: 'artifacts/liveries/token-coverage.json', message: `${tokenCoverage.counts.missing} required token(s) uncovered: ${tokenCoverage.missing.join(', ')}` })
-  }
-  if (!cssSafety.pass) {
-    problems.push({ code: 'css.gate', path: 'artifacts/liveries/css-safety.json', message: 'CSS safety or size budget gate failed' })
-  }
-  const degradedRequired = liveries.some((livery) => livery.audit.degraded.some((entry) => entry.fallback === 'none'))
-  if (degradedRequired) {
-    problems.push({ code: 'capability.gate', path: 'liveries/', message: 'at least one livery declares a required capability the certified host does not provide' })
-  }
-
-  const ok = enforceGates ? problems.length === 0 : true
-  if (!ok) {
+  if (!validationOk) {
     return {
       ok: false,
-      sourceHash,
-      compiledAt,
-      problems,
-      catalog,
-      meta,
-      report,
-      contrast,
-      tokenCoverage,
-      cssSafety,
-      previewCount: previews.length,
+      problems: dedupeProblems(validationProblems),
+      profiles: [],
+      summary: null,
       files: new Map<string, string>(),
+      previewCount: 0,
+      profileCount: groups.length,
+      adapterCount: adapters.length,
+    }
+  }
+  if (manifests.length === 0) {
+    return {
+      ok: false,
+      problems: [{ code: 'catalog.empty', path: 'liveries/', message: 'no livery manifests found' }],
+      profiles: [],
+      summary: null,
+      files: new Map<string, string>(),
+      previewCount: 0,
+      profileCount: groups.length,
+      adapterCount: adapters.length,
     }
   }
 
-  const files = new Map<string, string>()
-  files.set(CATALOG_MODULE_PATH, serializeCatalogModule(catalog, meta))
-  for (const preview of previews) files.set(`${PREVIEW_DIR}/${preview.file}`, preview.content)
-  files.set(`${PREVIEW_DIR}/index.json`, serializeJson(previewIndex))
-  files.set(`${ARTIFACT_DIR}/report.json`, serializeJson(report))
-  files.set(`${ARTIFACT_DIR}/contrast.json`, serializeJson(contrast))
-  files.set(`${ARTIFACT_DIR}/token-coverage.json`, serializeJson(tokenCoverage))
-  files.set(`${ARTIFACT_DIR}/css-safety.json`, serializeJson(cssSafety))
+  const sortedManifests = [...manifests].sort((a, b) =>
+    a.meta.order === b.meta.order ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : a.meta.order - b.meta.order,
+  )
 
+  // 2. Compile each profile once + verify adapter-group byte identity.
+  const drafts: ProfileDraft[] = []
+  const problems: CompileProblem[] = []
+
+  for (const group of groups) {
+    const representative = group.adapters[0]
+    if (representative === undefined) continue
+    const stock = stockForVersion(representative.hostVersion)
+    if (stock === undefined) continue
+    const tokenSets = tokenSetsFor(stock)
+    const profileId = group.profileId
+    const capabilities = representative.capabilities
+    const previewDirectory = `${PREVIEW_DIR}/${profileId}`
+    const artifactDirectory = `${ARTIFACT_DIR}/${profileId}`
+    const sourceHash = computeSourceHash(sortedManifests, profileId, stock.tokenContractHash)
+    const compiledAt = deriveCompiledAt(sourceHash)
+    const context: ArtifactContext = {
+      profileId,
+      sourceHash,
+      compiledAt,
+      sourceAdapters: group.adapters.map((adapter) => adapter.hostVersion),
+      adapterIds: group.adapters.map((adapter) => adapter.adapterId),
+      contractHash: representative.contractHash,
+      hostVersion: representative.hostVersion,
+      adapterId: representative.adapterId,
+      tokenSets,
+    }
+    const adapterEntries = group.adapters.map((adapter) => {
+      const adapterStock = stockForVersion(adapter.hostVersion)
+      return adapterEntryOf(adapter, adapterStock ?? stock)
+    })
+
+    const cores: CompiledCore[] = []
+    const profileProblems: CompileProblem[] = []
+    for (const manifest of sortedManifests) {
+      let compiled: CompiledCore
+      try {
+        compiled = compileOne(manifest, stock, capabilities, tokenSets)
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        profileProblems.push({
+          code: 'compile.failed',
+          path: `[${profileId}] liveries/${manifest.id}/manifest.json`,
+          message: `compilation failed: ${reason}`,
+        })
+        continue
+      }
+      cores.push(compiled)
+      profileProblems.push(...compiled.problems.map((problem) => ({ ...problem, path: `[${profileId}] ${problem.path}` })))
+    }
+    const liveries = cores.map((core) => core.livery)
+    const catalog: LiveryCatalog = {
+      schemaVersion: SCHEMA_VERSION,
+      compilerVersion: LIVERY_VERSION,
+      adapterId: representative.adapterId,
+      hostVersion: representative.hostVersion,
+      contractHash: representative.contractHash,
+      catalogProfile: profileId,
+      capabilities,
+      previewsBase: `${PREVIEW_ROUTE_PREFIX}${profileId}/`,
+      liveries,
+    }
+
+    // Frozen equality: the stored cssHash, the boot bytes and the frozen
+    // `renderBootCss` helper must agree for every livery.
+    const bootCss = liveries.map((livery) => {
+      const boot = renderBootCss(catalog, livery.id, stock)
+      return { id: livery.id, css: boot.css, hash: boot.hash }
+    })
+    for (const livery of liveries) {
+      const boot = bootCss.find((entry) => entry.id === livery.id)
+      if (boot === undefined) continue
+      const styleText = styleTextFromFragments(livery.css)
+      if (livery.cssHash !== hashCss(styleText) || boot.hash !== livery.cssHash || boot.css !== styleText) {
+        profileProblems.push({
+          code: 'hash.mismatch',
+          path: `[${profileId}] liveries/${livery.id}`,
+          message: 'stored css/cssHash does not equal renderBootCss(catalog, id, stock) — the host first frame would desynchronise from the compiled artifact',
+        })
+      }
+    }
+
+    // Verify every adapter in the group renders the exact same bytes.
+    let adapterRenderIdentity = true
+    for (const adapter of group.adapters) {
+      if (adapter.hostVersion === representative.hostVersion) continue
+      const adapterStock = stockForVersion(adapter.hostVersion)
+      if (adapterStock === undefined) {
+        adapterRenderIdentity = false
+        profileProblems.push({
+          code: 'adapter.stock-missing',
+          path: `[${profileId}] ${adapter.hostVersion}`,
+          message: 'certified adapter has no stock snapshot',
+        })
+        continue
+      }
+      const adapterSets = tokenSetsFor(adapterStock)
+      for (const manifest of sortedManifests) {
+        const expected = cores.find((core) => core.livery.id === manifest.id)
+        if (expected === undefined) continue
+        let rendered: { css: LiveryCss; cssHash: string }
+        try {
+          rendered = renderCssForAdapter(manifest, adapterStock, adapter.capabilities, adapterSets)
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error)
+          adapterRenderIdentity = false
+          profileProblems.push({
+            code: 'profile.render-mismatch',
+            path: `[${profileId}] ${adapter.hostVersion}/${manifest.id}`,
+            message: `re-render failed: ${reason}`,
+          })
+          continue
+        }
+        const sameCss =
+          rendered.css.tokens === expected.css.tokens &&
+          rendered.css.typography === expected.css.typography &&
+          rendered.css.layout === expected.css.layout
+        if (!sameCss || rendered.cssHash !== expected.livery.cssHash) {
+          adapterRenderIdentity = false
+          profileProblems.push({
+            code: 'profile.render-mismatch',
+            path: `[${profileId}] ${adapter.hostVersion}/${manifest.id}`,
+            message: 'profile group is not render-equivalent: adapters produce different CSS bytes/hashes',
+          })
+        }
+      }
+    }
+
+    const tokenCoverage = buildTokenCoverageArtifact(
+      liveries,
+      context,
+      [...new Set(cores.flatMap((core) => core.derivedTokenNames))].sort(),
+    )
+    const cssSafety = buildCssSafetyArtifact(
+      catalog,
+      bootCss,
+      context,
+      new Map(cores.map((core) => [core.livery.id, core.prettyBytes])),
+    )
+    const contrast = buildContrastArtifact(liveries, context)
+    const declaredLayouts = new Map(cores.map((core) => [core.livery.id, core.declaredLayout]))
+    const previews = buildPreviewSvgs(liveries, stock)
+    const report = buildCatalogReport({
+      catalog,
+      context,
+      declaredLayouts,
+      previewFiles: previews.map((preview) => preview.file),
+      previewDirectory,
+      bootCss: bootCss.map((entry) => ({ id: entry.id, css: entry.css })),
+      maxLiveryCssBytes: Math.max(0, ...cssSafety.liveries.map((entry) => entry.bytes.total)),
+      adapterEntries,
+      derivedTokenNames: [...new Set(cores.flatMap((core) => core.derivedTokenNames))].sort(),
+      adapterRenderIdentity,
+    })
+
+    const derivedUnconsumed = inheritedUnconsumedTokens(
+      cores.flatMap((core) => core.derivedTokenNames),
+      tokenSets,
+    )
+    const mandatoryProblems: CompileProblem[] = []
+    if (!contrast.pass) {
+      mandatoryProblems.push({
+        code: 'contrast.gate',
+        path: `[${profileId}] ${ARTIFACT_DIR}/${profileId}/contrast.json`,
+        message: `${contrast.summary.failures} contrast assertion(s) failed across ${contrast.summary.total}`,
+      })
+    }
+    if (!tokenCoverage.pass) {
+      mandatoryProblems.push({
+        code: 'token.gate',
+        path: `[${profileId}] ${ARTIFACT_DIR}/${profileId}/token-coverage.json`,
+        message: `${tokenCoverage.counts.missing} required token(s) uncovered: ${tokenCoverage.missing.join(', ')}`,
+      })
+    }
+    if (!cssSafety.pass) {
+      mandatoryProblems.push({
+        code: 'css.gate',
+        path: `[${profileId}] ${ARTIFACT_DIR}/${profileId}/css-safety.json`,
+        message: 'CSS safety or size budget gate failed',
+      })
+    }
+    if (liveries.some((livery) => livery.audit.degraded.some((entry) => entry.fallback === 'none'))) {
+      mandatoryProblems.push({
+        code: 'capability.gate',
+        path: `[${profileId}] liveries/`,
+        message: 'at least one livery declares a required capability the certified host does not provide',
+      })
+    }
+    if (derivedUnconsumed.length === 0 && tokenCoverage.emissionPolicy.inheritedUnconsumedCount === 0) {
+      // Non-blocking diagnostic only: kept out of `problems` on purpose.
+    }
+    profileProblems.push(...mandatoryProblems)
+    problems.push(...profileProblems)
+
+    drafts.push({
+      group,
+      representative,
+      stock,
+      tokenSets,
+      tokenCoverage,
+      contrast,
+      cssSafety,
+      report,
+      cores,
+      adapterRenderIdentity,
+      problems: profileProblems,
+      catalog,
+      previews,
+      previewDirectory,
+      artifactDirectory,
+    })
+  }
+
+  const deduped = dedupeProblems(problems)
+  const ok = enforceGates ? deduped.length === 0 : true
+
+  // 3. Build the file map (only when the compile is accepted).
+  const files = new Map<string, string>()
+  const profileData: CatalogProfileData[] = drafts.map((draft) => ({
+    profileId: draft.group.profileId,
+    compiledAt: draft.report.compiledAt,
+    sourceHash: draft.report.sourceHash,
+    sourceAdapters: draft.group.adapters.map((adapter) => adapter.hostVersion),
+    liveries: draft.cores.map((core) => core.livery),
+  }))
+  const summarySources: SummaryProfileSource[] = drafts.map((draft, index) => ({
+    profile: profileData[index] as CatalogProfileData,
+    report: draft.report,
+    contrast: draft.contrast,
+    tokenCoverage: draft.tokenCoverage,
+    cssSafety: draft.cssSafety,
+    adapters: draft.report.adapters,
+    previewDirectory: draft.previewDirectory,
+  }))
+  const summary = buildSummaryArtifact(summarySources)
+
+  if (!ok) {
+    const summaryPass = summary.pass
+    if (enforceGates && !summaryPass && deduped.length === 0) {
+      deduped.push({ code: 'summary.gate', path: SUMMARY_PATH, message: 'cross-profile summary gate failed' })
+    }
+    return {
+      ok: false,
+      problems: deduped,
+      profiles: drafts.map(profileResultOf),
+      summary,
+      files: new Map<string, string>(),
+      previewCount: drafts.reduce((total, draft) => total + draft.previews.length, 0),
+      profileCount: drafts.length,
+      adapterCount: adapters.length,
+    }
+  }
+
+  files.set(CATALOG_MODULE_PATH, serializeCatalogModule(profileData))
+  for (const draft of drafts) {
+    for (const preview of draft.previews) {
+      files.set(`${draft.previewDirectory}/${preview.file}`, preview.content)
+    }
+    files.set(
+      `${draft.previewDirectory}/index.json`,
+      serializeJson(buildPreviewIndex(draft.previews.map((preview) => preview.file))),
+    )
+    files.set(`${draft.artifactDirectory}/report.json`, serializeJson(draft.report))
+    files.set(`${draft.artifactDirectory}/contrast.json`, serializeJson(draft.contrast))
+    files.set(`${draft.artifactDirectory}/token-coverage.json`, serializeJson(draft.tokenCoverage))
+    files.set(`${draft.artifactDirectory}/css-safety.json`, serializeJson(draft.cssSafety))
+  }
+  files.set(SUMMARY_PATH, serializeJson(summary))
+
+  const profilesFinal = drafts.map(profileResultOf)
+  const finalProblems = enforceGates ? [] : deduped
   return {
-    ok,
-    sourceHash,
-    compiledAt,
-    problems,
-    catalog,
-    meta,
-    report,
-    contrast,
-    tokenCoverage,
-    cssSafety,
-    previewCount: previews.length,
+    ok: finalProblems.length === 0,
+    problems: finalProblems,
+    profiles: profilesFinal,
+    summary,
     files,
+    previewCount: profilesFinal.reduce((total, profile) => total + profile.previewCount, 0),
+    profileCount: profilesFinal.length,
+    adapterCount: adapters.length,
+  }
+}
+
+function profileResultOf(draft: ProfileDraft): ProfileCompileResult {
+  return {
+    profile: {
+      profileId: draft.group.profileId,
+      compiledAt: draft.report.compiledAt,
+      sourceHash: draft.report.sourceHash,
+      sourceAdapters: draft.group.adapters.map((adapter) => adapter.hostVersion),
+      liveries: draft.cores.map((core) => core.livery),
+    },
+    adapters: draft.group.adapters,
+    representative: draft.representative,
+    stock: draft.stock,
+    tokenSets: draft.tokenSets,
+    report: draft.report,
+    contrast: draft.contrast,
+    tokenCoverage: draft.tokenCoverage,
+    cssSafety: draft.cssSafety,
+    previewCount: draft.previews.length,
   }
 }
 
@@ -602,7 +926,7 @@ export function compileFromDisk(rootDir: string, options: Omit<CompileOptions, '
 }
 
 /* ------------------------------------------------------------------ */
-/* Emit / check                                                         */
+/* Emit / check / prune                                                */
 /* ------------------------------------------------------------------ */
 
 /** Write every generated file (repo-relative paths under `rootDir`). */
@@ -614,7 +938,19 @@ export function writeGeneratedFiles(rootDir: string, files: ReadonlyMap<string, 
   }
 }
 
-/** Compare expected generated files against the working tree. */
+function walkFiles(rootDir: string, directory: string): string[] {
+  const absolute = join(rootDir, directory)
+  if (!existsSync(absolute)) return []
+  const out: string[] = []
+  for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+    const child = `${directory}/${entry.name}`
+    if (entry.isDirectory()) out.push(...walkFiles(rootDir, child))
+    else out.push(child)
+  }
+  return out
+}
+
+/** Compare expected generated files against the working tree (incl. stale files). */
 export function compareGeneratedFiles(rootDir: string, files: ReadonlyMap<string, string>): DriftEntry[] {
   const drift: DriftEntry[] = []
   for (const [file, expected] of files) {
@@ -623,64 +959,99 @@ export function compareGeneratedFiles(rootDir: string, files: ReadonlyMap<string
       drift.push({ file, kind: 'missing' })
       continue
     }
-    const actual = readFileSync(absolute, 'utf8')
-    if (actual !== expected) drift.push({ file, kind: 'changed' })
+    if (readFileSync(absolute, 'utf8') !== expected) drift.push({ file, kind: 'changed' })
   }
-  const previewDir = join(rootDir, PREVIEW_DIR)
-  if (existsSync(previewDir)) {
-    const expectedNames = new Set<string>()
-    for (const file of files.keys()) {
-      if (file.startsWith(`${PREVIEW_DIR}/`)) expectedNames.add(file.slice(PREVIEW_DIR.length + 1))
-    }
-    for (const name of readdirSync(previewDir)) {
-      if (!name.endsWith('.svg')) continue
-      if (!expectedNames.has(name)) drift.push({ file: `${PREVIEW_DIR}/${name}`, kind: 'unexpected' })
+  const expected = new Set(files.keys())
+  for (const directory of MANAGED_DIRS) {
+    for (const file of walkFiles(rootDir, directory)) {
+      if (!expected.has(file)) drift.push({ file, kind: 'unexpected' })
     }
   }
-  return drift.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0))
+  return drift
 }
 
-/** Convenience helper: all expected preview filenames for a catalog. */
-export function expectedPreviewFiles(liveries: readonly Pick<CompiledLivery, 'id'>[]): string[] {
+/**
+ * Remove generated files that the current compile no longer produces (e.g. the
+ * old single-profile `lib/previews/*.svg` layout) and empty directories. Only
+ * files under the managed generated directories are touched.
+ */
+export function pruneGeneratedDirs(rootDir: string, files: ReadonlyMap<string, string>): string[] {
+  const expected = new Set(files.keys())
+  const removed: string[] = []
+  for (const directory of MANAGED_DIRS) {
+    const existing = walkFiles(rootDir, directory)
+    for (const file of existing) {
+      if (expected.has(file)) continue
+      unlinkSync(join(rootDir, file))
+      removed.push(file)
+    }
+  }
+  const pruneEmpty = (directory: string): void => {
+    const absolute = join(rootDir, directory)
+    if (!existsSync(absolute)) return
+    for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue
+      const child = `${directory}/${entry.name}`
+      pruneEmpty(child)
+      const childAbsolute = join(rootDir, child)
+      if (existsSync(childAbsolute) && readdirSync(childAbsolute).length === 0) {
+        rmdirSync(childAbsolute)
+        removed.push(`${child}/`)
+      }
+    }
+  }
+  for (const directory of MANAGED_DIRS) pruneEmpty(directory)
+  return removed.sort()
+}
+
+/** Convenience helper: all expected preview paths for one profile. */
+export function expectedPreviewFiles(profileId: string, liveries: readonly Pick<CompiledLivery, 'id'>[]): string[] {
   const files: string[] = []
   for (const livery of liveries) {
     for (const locale of PREVIEW_LOCALES) {
-      for (const mode of PREVIEW_MODES) files.push(previewFileName(livery.id, locale, mode))
+      for (const mode of PREVIEW_MODES) files.push(`${PREVIEW_DIR}/${profileId}/${previewFileName(livery.id, locale, mode)}`)
     }
   }
   return files
 }
 
-/** Structured summary of a successful compile for CLI stdout. */
+/** Structured summary lines for CLI stdout. */
 export function describeCompileResult(result: CompileResult): string[] {
-  const report = result.report
-  const contrast = result.contrast
-  const coverage = result.tokenCoverage
   const lines: string[] = []
-  lines.push(`sourceHash ${result.sourceHash}`)
-  lines.push(`compiledAt ${result.compiledAt} (derived from sourceHash)`)
-  if (report !== null) {
+  for (const profile of result.profiles) {
+    const short = profile.profile.profileId.slice('sha256:'.length, 'sha256:'.length + 12)
     lines.push(
-      `${report.counts.liveries} liveries, ${report.counts.previews} previews (${PREVIEW_WIDTH}x${PREVIEW_HEIGHT}), ` +
-        `${report.counts.contrastEntries} contrast assertions, ${report.counts.contrastFailures} failures`,
+      `profile ${short} — ${profile.adapters.map((adapter) => adapter.hostVersion).join(', ')} ` +
+        `(representative ${profile.representative.hostVersion}, ${
+          profile.adapters.length > 1 ? 'byte-identical across adapters' : 'single adapter'
+        })`,
     )
     lines.push(
-      `tokens required ${report.counts.tokenRequired}, covered ${report.counts.tokenCovered}, ` +
-        `inherited ${report.counts.tokenInherited}, missing ${report.counts.tokenMissing}`,
+      `  ${profile.report.counts.liveries} liveries, ${profile.previewCount} previews (${PREVIEW_WIDTH}x${PREVIEW_HEIGHT}), ` +
+        `${profile.report.counts.contrastEntries} contrast assertions / ${profile.report.counts.contrastFailures} failures`,
     )
     lines.push(
-      `css total ${report.counts.cssBytes} bytes, max livery ${report.counts.maxLiveryCssBytes}, max boot ${report.counts.maxBootCssBytes}`,
+      `  tokens consumed ${profile.report.counts.tokenConsumed}, required ${profile.report.counts.tokenRequired}, ` +
+        `covered ${profile.report.counts.tokenCovered}, inherited ${profile.report.counts.tokenInherited}, ` +
+        `missing ${profile.report.counts.tokenMissing} (token contract ${profile.stock.tokenContractHash.slice(7, 19)}…)`,
+    )
+    lines.push(
+      `  css total ${profile.report.counts.cssBytes} bytes, max livery ${profile.report.counts.maxLiveryCssBytes}, ` +
+        `max boot ${profile.report.counts.maxBootCssBytes}, sourceHash ${profile.report.sourceHash.slice(0, 22)}…`,
     )
   }
-  if (contrast !== null) lines.push(`contrast smallest ratio ${minSmallestRatio(contrast)}`)
-  if (coverage !== null) lines.push(`token coverage ${coverage.counts.covered}/${coverage.counts.required} covered + ${coverage.counts.inherited} inherited`)
+  if (result.summary !== null) {
+    lines.push(
+      `profiles ${result.summary.counts.profiles}, adapters ${result.summary.counts.adapters}, ` +
+        `liveries ${result.summary.counts.liveries}, previews ${result.summary.counts.previews}`,
+    )
+  }
   return lines
 }
 
-function minSmallestRatio(artifact: ContrastArtifact): string {
-  let smallest = Number.POSITIVE_INFINITY
-  for (const livery of artifact.liveries) {
-    smallest = Math.min(smallest, livery.light.smallestRatio, livery.dark.smallestRatio)
-  }
-  return Number.isFinite(smallest) ? smallest.toFixed(2) : 'n/a'
+/** Relative path helper used by tests to assert emitted locations. */
+export function relativePath(rootDir: string, file: string): string {
+  return relative(rootDir, join(rootDir, file)).split(sep).join('/')
 }
+
+export type { Diagnostic }

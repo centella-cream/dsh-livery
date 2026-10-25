@@ -17,16 +17,19 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import {
+  adapterIdFor,
   buildContractSnapshot,
   canonicalJson,
   hashCanonical,
+  readCommittedSnapshots,
+  regenerateGeneratedContracts,
   resolveDshInstall,
   sha256Bytes,
   writeSnapshotArtifacts,
 } from './snapshot.js'
 import { diffContracts, renderDiffMarkdown } from './diff.js'
 import { gateRelease, gateSupportMatrix, readMatrix } from './matrix.js'
-import type { AdapterManifest, ContractSnapshot } from './types.js'
+import type { AdapterManifest, ContractSnapshot, SupportMatrix } from './types.js'
 
 export interface CliContext {
   readonly cwd: string
@@ -104,12 +107,19 @@ async function resolveInstallFlag(flags: ParsedArgs['flags']): Promise<string> {
 }
 
 async function loadCommittedSnapshot(workspace: string, version?: string): Promise<ContractSnapshot> {
-  const contractsRoot = join(workspace, 'contracts', 'dsh')
-  if (version !== undefined) return readJson<ContractSnapshot>(join(contractsRoot, version, 'contract.json'))
-  const matrix = await readJson<{ entries: Array<{ hostVersion: string }> }>(join(contractsRoot, 'support-matrix.proposed.json'))
-  const first = matrix.entries[0]
-  if (first === undefined) throw new Error('support-matrix.proposed.json has no entries')
-  return readJson<ContractSnapshot>(join(contractsRoot, first.hostVersion, 'contract.json'))
+  const snapshots = await readCommittedSnapshots(workspace)
+  if (version !== undefined) {
+    const found = snapshots.find((snapshot) => snapshot.hostVersion === version)
+    if (found === undefined) throw new Error(`no committed contract for host version ${version}`)
+    return found
+  }
+  const latest = snapshots[snapshots.length - 1]
+  if (latest === undefined) throw new Error('no committed contracts under contracts/dsh')
+  return latest
+}
+
+async function loadCommittedMatrix(workspace: string): Promise<SupportMatrix> {
+  return readJson<SupportMatrix>(join(workspace, 'contracts', 'dsh', 'support-matrix.proposed.json'))
 }
 
 /* ------------------------------------------------------------------ *
@@ -122,6 +132,7 @@ async function commandSnapshot(context: CliContext, parsed: ParsedArgs): Promise
   const snapshot = await buildContractSnapshot({ dshInstall, ...(version === undefined ? {} : { version }) })
   const install = await resolveDshInstall(dshInstall)
   const written = await writeSnapshotArtifacts(context.cwd, snapshot, install)
+  const versionList = (await readCommittedSnapshots(context.cwd)).map((entry) => entry.hostVersion).join(', ')
   context.log(`contract:snapshot: ${snapshot.hostVersion} (${snapshot.adapterId})`)
   context.log(`contract:snapshot: contractHash ${snapshot.contractHash}`)
   context.log(`contract:snapshot: ${snapshot.tokens.count} tokens (${snapshot.tokens.consumed.length} consumed)`)
@@ -130,13 +141,18 @@ async function commandSnapshot(context: CliContext, parsed: ParsedArgs): Promise
   context.log(`contract:snapshot: wrote ${written.contractPath}`)
   context.log(`contract:snapshot: wrote ${written.adapterPath}`)
   context.log(`contract:snapshot: wrote ${written.matrixPath}`)
+  context.log(`contract:snapshot: registry versions: ${versionList} (stock: ${written.generatedStockPath})`)
   return 0
 }
 
 async function commandVerify(context: CliContext, parsed: ParsedArgs): Promise<number> {
+  const all = parsed.flags.all === true
+  if (all) return commandRegenerate(context, parsed, true)
   const dshInstall = await resolveInstallFlag(parsed.flags)
-  const version = typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2'
-  const committed = await readJson<ContractSnapshot>(join(context.cwd, 'contracts', 'dsh', version, 'contract.json'))
+  const install = await resolveDshInstall(dshInstall)
+  const installedVersion = (await readJson<{ version: string }>(join(install.dshRoot, 'package.json'))).version
+  const version = typeof parsed.flags.version === 'string' ? parsed.flags.version : installedVersion
+  const committed = await loadCommittedSnapshot(context.cwd, version)
   const observed = await buildContractSnapshot({ dshInstall, version })
   const problems: string[] = []
   const compare = (label: string, before: string, after: string): void => {
@@ -150,17 +166,21 @@ async function commandVerify(context: CliContext, parsed: ParsedArgs): Promise<n
   compare('clientTarget', committed.source.clientTarget, observed.source.clientTarget)
   compare('platformModules', committed.loaderAbi.platformModules.modules.join(','), observed.loaderAbi.platformModules.modules.join(','))
   compare('locale ids', committed.clientApi.locale.ids.join(','), observed.clientApi.locale.ids.join(','))
+  compare('token contract', committed.hashes.token, observed.hashes.token)
   if (problems.length > 0) {
     for (const problem of problems) context.error(`contract:verify: FAIL ${problem}`)
     return 1
   }
-  context.log(`contract:verify: OK ${version} contractHash=${observed.contractHash}`)
+  context.log(`contract:verify: OK ${version} contractHash=${observed.contractHash} (adapter ${observed.adapterId})`)
   return 0
 }
 
 async function commandDiff(context: CliContext, parsed: ParsedArgs): Promise<number> {
-  const baseVersion = typeof parsed.flags.base === 'string' ? parsed.flags.base : '0.2.0-rc.2'
-  const candidateVersion = typeof parsed.flags.candidate === 'string' ? parsed.flags.candidate : baseVersion
+  const snapshots = await readCommittedSnapshots(context.cwd)
+  const firstVersion = snapshots[0]?.hostVersion
+  const lastVersion = snapshots[snapshots.length - 1]?.hostVersion
+  const baseVersion = typeof parsed.flags.base === 'string' ? parsed.flags.base : firstVersion ?? '0.2.0-rc.2'
+  const candidateVersion = typeof parsed.flags.candidate === 'string' ? parsed.flags.candidate : lastVersion ?? baseVersion
   const failOn = typeof parsed.flags['fail-on'] === 'string' ? parsed.flags['fail-on'] : 'required'
   const contractsRoot = join(context.cwd, 'contracts', 'dsh')
   const base = await readJson<ContractSnapshot>(join(contractsRoot, baseVersion, 'contract.json'))
@@ -181,16 +201,42 @@ async function commandDiff(context: CliContext, parsed: ParsedArgs): Promise<num
 }
 
 async function commandAdapterGenerate(context: CliContext, parsed: ParsedArgs): Promise<number> {
-  const version = typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2'
-  const snapshot = await readJson<ContractSnapshot>(join(context.cwd, 'contracts', 'dsh', version, 'contract.json'))
-  const adapter = adapterFrom(snapshot)
-  const path = join(context.cwd, 'contracts', 'dsh', version, 'adapter.json')
-  await writeFile(path, `${JSON.stringify(adapter, null, 2)}\n`)
-  context.log(`adapter:generate: wrote ${path} (${adapter.adapterId})`)
+  const matrix = await loadCommittedMatrix(context.cwd)
+  const snapshots = await readCommittedSnapshots(context.cwd)
+  const selected = typeof parsed.flags.version === 'string'
+    ? snapshots.filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
+    : snapshots
+  if (selected.length === 0) {
+    context.error('adapter:generate: no committed contracts matched')
+    return 1
+  }
+  for (const snapshot of selected) {
+    const adapter = adapterFrom(snapshot, matrix)
+    const path = join(context.cwd, 'contracts', 'dsh', snapshot.hostVersion, 'adapter.json')
+    await writeFile(path, `${JSON.stringify(adapter, null, 2)}\n`)
+    context.log(`adapter:generate: wrote ${path} (${adapter.adapterId})`)
+  }
+  const generated = await regenerateGeneratedContracts(context.cwd)
+  context.log(`adapter:generate: registry ${generated.versions.join(', ')}`)
   return 0
 }
 
-export function adapterFrom(snapshot: ContractSnapshot): AdapterManifest {
+/** Derive one adapter manifest; certification fields follow the support matrix. */
+export function adapterFrom(snapshot: ContractSnapshot, matrix?: SupportMatrix): AdapterManifest {
+  const entry = matrix?.entries.find((candidate) => candidate.hostVersion === snapshot.hostVersion)
+  const webPassed = entry?.profiles.web.chrome === 'passed' || entry?.profiles.web.edge === 'passed'
+  const darwinPassed = entry?.profiles.desktop.macos === 'passed'
+  const win32Passed = entry?.profiles.desktop.win32 === 'passed'
+  const verifiedProfiles: string[] = []
+  if (webPassed) verifiedProfiles.push('web')
+  if (darwinPassed || win32Passed) verifiedProfiles.push('desktop')
+  const verifiedPlatforms: string[] = []
+  if (webPassed) verifiedPlatforms.push('web')
+  if (darwinPassed) verifiedPlatforms.push('darwin')
+  if (win32Passed) verifiedPlatforms.push('win32')
+  const browsers: Array<{ family: string; minVersion: number }> = []
+  if (entry?.profiles.web.chrome === 'passed') browsers.push({ family: 'chrome', minVersion: 120 })
+  if (entry?.profiles.web.edge === 'passed') browsers.push({ family: 'edge', minVersion: 120 })
   return {
     hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
@@ -203,36 +249,75 @@ export function adapterFrom(snapshot: ContractSnapshot): AdapterManifest {
     contractHash: snapshot.contractHash,
     nodeRange: snapshot.source.nodeRange,
     clientTarget: snapshot.source.clientTarget,
-    verifiedProfiles: ['desktop', 'web'],
-    verifiedPlatforms: ['darwin', 'win32', 'web'],
-    verifiedBrowsers: [
-      { family: 'chrome', minVersion: 120 },
-      { family: 'edge', minVersion: 120 },
-    ],
+    verifiedProfiles,
+    verifiedPlatforms,
+    verifiedBrowsers: browsers,
   }
 }
 
 async function commandAdapterCheck(context: CliContext, parsed: ParsedArgs): Promise<number> {
-  const version = typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2'
-  const snapshot = await readJson<ContractSnapshot>(join(context.cwd, 'contracts', 'dsh', version, 'contract.json'))
-  const adapter = await readJson<AdapterManifest>(join(context.cwd, 'contracts', 'dsh', version, 'adapter.json'))
-  const expected = adapterFrom(snapshot)
+  const matrix = await loadCommittedMatrix(context.cwd)
+  const snapshots = await readCommittedSnapshots(context.cwd)
+  const selected = typeof parsed.flags.version === 'string'
+    ? snapshots.filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
+    : snapshots
   const problems: string[] = []
-  for (const key of Object.keys(expected) as Array<keyof AdapterManifest>) {
-    const before = JSON.stringify(expected[key])
-    const after = JSON.stringify(adapter[key])
-    if (before !== after) problems.push(`${key}: expected ${before} got ${after}`)
+  for (const snapshot of selected) {
+    const version = snapshot.hostVersion
+    const expected = adapterFrom(snapshot, matrix)
+    let adapter: AdapterManifest
+    try {
+      adapter = await readJson<AdapterManifest>(join(context.cwd, 'contracts', 'dsh', version, 'adapter.json'))
+    } catch {
+      problems.push(`${version}: adapter.json missing; run adapter:generate`)
+      continue
+    }
+    for (const key of Object.keys(expected) as Array<keyof AdapterManifest>) {
+      const before = JSON.stringify(expected[key])
+      const after = JSON.stringify(adapter[key])
+      if (before !== after) problems.push(`${version}.${key}: expected ${before} got ${after}`)
+    }
+    if (adapter.adapterId !== adapterIdFor(version)) {
+      problems.push(`${version}: adapterId must be ${adapterIdFor(version)}, got ${adapter.adapterId}`)
+    }
   }
-  // The adapter must fail closed: package engines.dsh must equal the exact host version.
   const pkg = await readJson<{ engines?: { dsh?: string } }>(join(context.cwd, 'package.json'))
-  if (pkg.engines?.dsh !== version) {
-    problems.push(`package.json engines.dsh must be exactly "${version}", got "${String(pkg.engines?.dsh)}"`)
+  const allowlist = snapshots.map((snapshot) => snapshot.hostVersion).join(' || ')
+  if (pkg.engines?.dsh !== allowlist) {
+    problems.push(`package.json engines.dsh must be the exact allowlist "${allowlist}", got "${String(pkg.engines?.dsh)}"`)
   }
   if (problems.length > 0) {
     for (const problem of problems) context.error(`adapter:check: FAIL ${problem}`)
     return 1
   }
-  context.log(`adapter:check: OK ${adapter.adapterId} contractHash=${adapter.contractHash}`)
+  context.log(`adapter:check: OK ${selected.map((snapshot) => snapshot.adapterId).join(', ')}`)
+  context.log(`adapter:check: exact allowlist ${allowlist}`)
+  return 0
+}
+
+async function commandRegenerate(context: CliContext, _parsed: ParsedArgs, checkOnly = false): Promise<number> {
+  const generated = await regenerateGeneratedContracts(context.cwd)
+  const versions = generated.versions.join(', ')
+  if (checkOnly) {
+    // Reproducibility check: regenerate once more and compare the bytes. The
+    // files were just written from the committed contracts, so a stable second
+    // pass proves there is no hand-edit or wall-clock content in the registry.
+    const firstContract = await readFile(generated.contractPath, 'utf8')
+    const firstStock = await readFile(generated.stockPath, 'utf8')
+    const second = await regenerateGeneratedContracts(context.cwd)
+    const secondContract = await readFile(second.contractPath, 'utf8')
+    const secondStock = await readFile(second.stockPath, 'utf8')
+    const problems: string[] = []
+    if (firstContract !== secondContract) problems.push('contract.ts is not reproducible')
+    if (firstStock !== secondStock) problems.push('stock.ts is not reproducible')
+    if (problems.length > 0) {
+      for (const problem of problems) context.error(`contract:verify: FAIL ${problem}`)
+      return 1
+    }
+    context.log(`contract:verify: OK generated registry reproducible for ${versions}`)
+    return 0
+  }
+  context.log(`contract:regenerate: wrote adapter registry for ${versions}`)
   return 0
 }
 
@@ -261,6 +346,22 @@ async function commandLoaderAbi(context: CliContext): Promise<number> {
   }
 
   record('platform-web', pkg.dsh?.client?.platform === 'web', `dsh.client.platform=${String(pkg.dsh?.client?.platform)}`)
+  const adapterTables = await loadAdapterModuleTables(workspace)
+  const missingSeed: string[] = []
+  for (const table of adapterTables) {
+    for (const required of CLIENT_REQUIRED_MODULES) {
+      if (!table.modules.includes(required)) missingSeed.push(`${table.version}:${required}`)
+    }
+  }
+  record(
+    'seeded-modules-per-adapter',
+    adapterTables.length > 0 && missingSeed.length === 0,
+    adapterTables.length === 0
+      ? 'no committed adapters found'
+      : missingSeed.length === 0
+        ? `all ${CLIENT_REQUIRED_MODULES.length} required modules are seeded by ${adapterTables.map((table) => table.version).join(', ')}`
+        : `missing seeded modules: ${missingSeed.join(', ')}`,
+  )
   record('single-script', !/^\s*import\s/mu.test(text), 'bundle must not contain top-level ESM imports')
   record('loader-call', text.includes('__ModuleLoader__.load('), 'bundle must register through window.__ModuleLoader__.load')
   record('id-equals-package', text.includes(`id: ${JSON.stringify(pkg.name)}`), `bundle id must be ${pkg.name}`)
@@ -377,19 +478,33 @@ async function commandLoaderAbi(context: CliContext): Promise<number> {
   return result.ok ? 0 : 1
 }
 
+/**
+ * Modules our client bundle may require. Every certified adapter's seeded table
+ * must contain each of them; the loader-ABI test enforces that per version.
+ */
+const CLIENT_REQUIRED_MODULES = [
+  'react',
+  'react/jsx-runtime',
+  'react-dom',
+  'react-dom/client',
+  '@deepseek-ai/cordis',
+  '@deepseek-ai/dsh-client-store',
+  '@deepseek-ai/dsh-client-ui-slots',
+  '@deepseek-ai/dsh-client-ui-primitives',
+  '@deepseek-ai/dsh-client-ui-dockkit',
+] as const
+
 function isPlatformModule(request: string): boolean {
-  const platformModules = [
-    'react',
-    'react/jsx-runtime',
-    'react-dom',
-    'react-dom/client',
-    '@deepseek-ai/cordis',
-    '@deepseek-ai/dsh-client-store',
-    '@deepseek-ai/dsh-client-ui-slots',
-    '@deepseek-ai/dsh-client-ui-primitives',
-    '@deepseek-ai/dsh-client-ui-dockkit',
-  ]
-  return platformModules.includes(request)
+  return (CLIENT_REQUIRED_MODULES as readonly string[]).includes(request)
+}
+
+/** Load every committed adapter's seeded module table (for the ABI test). */
+async function loadAdapterModuleTables(workspace: string): Promise<Array<{ version: string; modules: readonly string[] }>> {
+  const snapshots = await readCommittedSnapshots(workspace)
+  return snapshots.map((snapshot) => ({
+    version: snapshot.hostVersion,
+    modules: snapshot.loaderAbi.platformModules.modules,
+  }))
 }
 
 async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, release: boolean): Promise<number> {
@@ -427,6 +542,8 @@ export async function main(argv: readonly string[], context: CliContext): Promis
       return commandVerify(context, parsed)
     case 'contract:diff':
       return commandDiff(context, parsed)
+    case 'contract:regenerate':
+      return commandRegenerate(context, parsed)
     case 'adapter:generate':
       return commandAdapterGenerate(context, parsed)
     case 'adapter:check':
@@ -439,7 +556,7 @@ export async function main(argv: readonly string[], context: CliContext): Promis
       return commandGateMatrix(context, parsed, true)
     default:
       context.error(`contract CLI: unknown command "${parsed.command}"`)
-      context.error('commands: contract:snapshot contract:verify contract:diff adapter:generate adapter:check test:loader-abi gate:support-matrix gate:release')
+      context.error('commands: contract:snapshot contract:verify contract:diff contract:regenerate adapter:generate adapter:check test:loader-abi gate:support-matrix gate:release')
       return 2
   }
 }

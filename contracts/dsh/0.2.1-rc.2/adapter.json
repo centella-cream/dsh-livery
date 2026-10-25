@@ -1,0 +1,25 @@
+{
+  "hostVersion": "0.2.1-rc.2",
+  "adapterId": "dsh-0.2.1-rc.2-r1",
+  "loaderAbi": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+  "hostApiContract": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
+  "clientApiContract": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+  "tokenContract": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
+  "layoutContract": "sha256:9a206b43972eae44b5361ed1f13cd5bd1dd7b2a611565105667f02040a5dbb23",
+  "profileSchema": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
+  "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
+  "nodeRange": "^22.23.1",
+  "clientTarget": "chrome120",
+  "verifiedProfiles": [
+    "web"
+  ],
+  "verifiedPlatforms": [
+    "web"
+  ],
+  "verifiedBrowsers": [
+    {
+      "family": "chrome",
+      "minVersion": 120
+    }
+  ]
+}

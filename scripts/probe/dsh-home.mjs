@@ -19,8 +19,8 @@ export const LOCALE_EN_MARKER = '# dsh-livery acceptance harness: locale=en over
 /** The web profile bundle list from the shipped template (dsh-app-boot PROFILE_TEMPLATES). */
 export const WEB_PROFILE_BUNDLES = ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app']
 
-export function profilePaths(home) {
-  const profileDir = path.join(home, 'profiles', 'web')
+export function profilePaths(home, profileName = 'web') {
+  const profileDir = path.join(home, 'profiles', profileName)
   return {
     home,
     profileDir,
@@ -96,8 +96,8 @@ export async function dshVersion(bin, home = undefined) {
 }
 
 /** Read the profile manifest + harness-owned patch state. */
-export async function readProfileState(home) {
-  const paths = profilePaths(home)
+export async function readProfileState(home, profileName = 'web') {
+  const paths = profilePaths(home, profileName)
   const manifest = await readJsonIfExists(paths.packageJson)
   const patch = existsSync(paths.patchFile) ? await readFile(paths.patchFile, 'utf8') : null
   return {
@@ -141,14 +141,14 @@ export async function primeProfilePatch(home) {
 }
 
 /** Install the plugin tarball through the official profile package manager. */
-export async function installPlugin({ bin = 'dsh', home, tgz, packageName = 'dsh-livery' }) {
+export async function installPlugin({ bin = 'dsh', home, tgz, packageName = 'dsh-livery', profileName = 'web' }) {
   const isolated = assertIsolatedHome(home)
   const spec = `file:${path.resolve(tgz)}`
-  const paths = profilePaths(isolated)
+  const paths = profilePaths(isolated, profileName)
   const existed = existsSync(paths.packageJson)
-  if (!existed) await primeProfilePatch(isolated)
-  const result = await runDsh(bin, ['plugin', '--profile', 'web', 'add', spec], { home: isolated, timeoutMs: 300_000 })
-  const state = await readProfileState(isolated)
+  if (!existed && profileName === 'web') await primeProfilePatch(isolated)
+  const result = await runDsh(bin, ['plugin', '--profile', profileName, 'add', spec], { home: isolated, timeoutMs: 300_000 })
+  const state = await readProfileState(isolated, profileName)
   const tarballSha256 = await sha256File(tgz).catch(() => undefined)
   return {
     phase: 'install',
@@ -173,10 +173,10 @@ export async function installPlugin({ bin = 'dsh', home, tgz, packageName = 'dsh
 }
 
 /** Uninstall through the official profile package manager. */
-export async function uninstallPlugin({ bin = 'dsh', home, packageName }) {
+export async function uninstallPlugin({ bin = 'dsh', home, packageName, profileName = 'web' }) {
   const isolated = assertIsolatedHome(home)
-  const result = await runDsh(bin, ['plugin', '--profile', 'web', 'remove', packageName], { home: isolated, timeoutMs: 180_000 })
-  const state = await readProfileState(isolated)
+  const result = await runDsh(bin, ['plugin', '--profile', profileName, 'remove', packageName], { home: isolated, timeoutMs: 180_000 })
+  const state = await readProfileState(isolated, profileName)
   return {
     phase: 'uninstall',
     command: result.command,
@@ -192,10 +192,90 @@ export async function uninstallPlugin({ bin = 'dsh', home, packageName }) {
   }
 }
 
-/** Rewrite the isolated profile patch with an explicit locale preference. */
-export async function setLocalePreference(home, preference) {
+/**
+ * Byte-clone an existing profile directory into the isolated home.
+ *
+ * Used for real-profile-clone passes: the clone keeps the user's bundles,
+ * config patch and installed plugins, while all writes (plugin install,
+ * settings apply, uninstall) happen inside the workspace `.tmp` clone. The
+ * source profile is only read.
+ */
+export async function cloneProfileIntoHome({ source, home, name = 'web' }) {
   const isolated = assertIsolatedHome(home)
-  const paths = profilePaths(isolated)
+  const { spawn } = await import('node:child_process')
+  const { existsSync: exists } = await import('node:fs')
+  const sourceDir = path.resolve(source)
+  const sourceManifest = path.join(sourceDir, 'package.json')
+  if (!exists(sourceManifest)) throw new Error(`clone source is not an initialized profile (no package.json): ${sourceDir}`)
+  await ensureDir(path.join(isolated, 'profiles'))
+  const destDir = path.join(isolated, 'profiles', name)
+  if (!destDir.startsWith(`${isolated}${path.sep}`)) throw new Error(`clone destination escapes the isolated home: ${destDir}`)
+  const { rm } = await import('node:fs/promises')
+  await rm(destDir, { recursive: true, force: true })
+  const started = Date.now()
+  await new Promise((resolve, reject) => {
+    const child = spawn('cp', ['-a', sourceDir, destDir], { stdio: ['ignore', 'ignore', 'pipe'] })
+    const errors = []
+    child.stderr.on('data', (chunk) => errors.push(chunk))
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(`cp -a failed (exit ${code}): ${Buffer.concat(errors).toString('utf8').slice(0, 500)}`))
+    })
+  })
+  const manifestPath = path.join(destDir, 'package.json')
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+  // Real-world profiles accumulate local file:/link: specs whose target has
+  // since moved (a rebuilt tarball, a deleted checkout). pnpm re-resolves the
+  // whole manifest on `plugin add`, so a clone must repair such stale specs or
+  // it cannot be exercised. Every repair is reported, never silent.
+  const repairs = []
+  const dependencies = { ...(manifest.dependencies ?? {}) }
+  const { readdirSync } = await import('node:fs')
+  for (const [name, spec] of Object.entries(dependencies)) {
+    if (typeof spec !== 'string' || !spec.startsWith('file:') && !spec.startsWith('link:')) continue
+    const target = spec.slice(spec.indexOf(':') + 1)
+    const resolved = path.isAbsolute(target) ? target : path.resolve(destDir, target)
+    if (exists(resolved)) continue
+    const directory = path.dirname(resolved)
+    let replacement = null
+    if (exists(directory)) {
+      try {
+        const candidates = readdirSync(directory)
+          .filter((file) => file.endsWith('.tgz') && file.startsWith(name))
+          .sort()
+        if (candidates.length) replacement = `file:${path.join(directory, candidates[candidates.length - 1])}`
+      } catch {
+        replacement = null
+      }
+    }
+    if (replacement) {
+      dependencies[name] = replacement
+      repairs.push({ dependency: name, stale: spec, replacement, kind: 'file-replaced' })
+    } else {
+      delete dependencies[name]
+      repairs.push({ dependency: name, stale: spec, replacement: null, kind: 'dependency-removed' })
+    }
+  }
+  if (repairs.length) {
+    const repairedManifest = { ...manifest, dependencies }
+    await writeFile(manifestPath, `${JSON.stringify(repairedManifest, null, 2)}\n`, 'utf8')
+  }
+  return {
+    source: sourceDir,
+    destDir,
+    durationMs: Date.now() - started,
+    dependencies: Object.keys(dependencies),
+    bundles: manifest.dsh?.profile?.bundles ?? [],
+    patchFile: path.join(destDir, 'cordis.patch.yml'),
+    repairs,
+  }
+}
+
+/** Rewrite the isolated profile patch with an explicit locale preference. */
+export async function setLocalePreference(home, preference, profileName = 'web') {
+  const isolated = assertIsolatedHome(home)
+  const paths = profilePaths(isolated, profileName)
   let patch = existsSync(paths.patchFile) ? await readFile(paths.patchFile, 'utf8') : baseProfilePatch()
   const markerIndex = patch.indexOf(LOCALE_EN_MARKER)
   if (markerIndex !== -1) patch = patch.slice(0, markerIndex)
@@ -211,8 +291,8 @@ export async function restoreLocaleZh(home) {
 }
 
 /** Read the profile patch and answer questions the acceptance checks make. */
-export async function inspectProfilePatch(home) {
-  const paths = profilePaths(home)
+export async function inspectProfilePatch(home, profileName = 'web') {
+  const paths = profilePaths(home, profileName)
   const text = existsSync(paths.patchFile) ? await readFile(paths.patchFile, 'utf8') : ''
   // The DSH config editor writes a `- id: livery` row whose `config:` block (or
   // inline mapping) carries `skinId`. Keep this parser tolerant of both YAML
@@ -239,8 +319,8 @@ export async function inspectProfilePatch(home) {
 }
 
 /** Keep a diagnostic copy of the pnpm log from the plugin manager, when present. */
-export async function readPluginManagerLogs(home, maxFiles = 3) {
-  const { pluginManagerDir } = profilePaths(home)
+export async function readPluginManagerLogs(home, maxFiles = 3, profileName = 'web') {
+  const { pluginManagerDir } = profilePaths(home, profileName)
   const logsDir = path.join(pluginManagerDir, 'logs')
   if (!existsSync(logsDir)) return []
   const { readdir } = await import('node:fs/promises')

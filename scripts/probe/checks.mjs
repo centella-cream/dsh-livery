@@ -20,6 +20,7 @@ import {
   findSearchInput,
   galleryCards,
   openSettings,
+  openSettingsDetailed,
   readFirstPaintSamples,
   readGallery,
   readLiveryCssRules,
@@ -32,7 +33,13 @@ import {
 } from './browser.mjs'
 import { getJson, getStatus, probeBrowserTrust, probePluginBundle, rawRequest } from './http.mjs'
 import { inspectProfilePatch } from './dsh-home.mjs'
-import { EXPECTED_CAPABILITIES, labelsFor, tagLabelsFor } from './labels.mjs'
+import { BASE_CAPABILITIES, labelsFor, tagLabelsFor } from './labels.mjs'
+import {
+  adapterForTriple,
+  describeAdapter,
+  expectedPreviewsBase,
+  otherCatalogProfiles,
+} from './certified-adapters.mjs'
 import {
   ensureDir,
   firstConcreteFamily,
@@ -57,6 +64,80 @@ async function detectUiLocale(page) {
 function expect(runner, id, title, condition, detail, evidence) {
   if (condition) return runner.pass(id, title, detail, evidence)
   return runner.fail(id, title, detail, evidence)
+}
+
+/**
+ * Assert one boot payload against the certified-adapter matrix. Shared by the
+ * first (stock) boot, the post-Apply reload and reuse-mode passes so every path
+ * checks the exact `(hostVersion, adapterId, contractHash, catalogProfile)`
+ * quadruple instead of hardcoded 0.2.0 values.
+ */
+function assertBootIdentity(ctx, payload, { checkId, title, phase }) {
+  const { runner, config } = ctx
+  const matched = payload ? adapterForTriple(payload) : undefined
+  const expected = config.expectedAdapter ?? matched ?? null
+  const problems = []
+  if (!payload) problems.push('no first-frame payload')
+  if (payload && !matched) problems.push('payload identity triple is not in the certified adapter matrix')
+  if (payload && expected) {
+    if (payload.hostVersion !== expected.hostVersion) problems.push(`hostVersion ${payload.hostVersion} ≠ expected ${expected.hostVersion}`)
+    if (payload.adapterId !== expected.adapterId) problems.push(`adapterId ${payload.adapterId} ≠ expected ${expected.adapterId}`)
+    if (payload.contractHash !== expected.contractHash) problems.push('contractHash ≠ expected')
+    if (payload.catalogProfile !== expected.catalogProfile) problems.push(`catalogProfile ${payload.catalogProfile} ≠ expected`)
+  }
+  if (payload && payload.catalogUrl !== '/livery/api/catalog') problems.push(`catalogUrl ${payload.catalogUrl}`)
+  if (payload && payload.entryId !== 'livery') problems.push(`entryId ${payload.entryId}`)
+  if (payload && !/^sha256:[0-9a-f]{64}$/.test(payload.cssHash ?? '')) problems.push('cssHash is not a sha256')
+  const profileKindOk = payload?.profileKind === 'web' || payload?.profileKind === 'desktop'
+  if (payload && !profileKindOk) problems.push(`profileKind ${payload?.profileKind}`)
+  if (payload && config.expectedProfileKind && payload.profileKind !== config.expectedProfileKind) {
+    problems.push(`profileKind ${payload.profileKind} ≠ expected ${config.expectedProfileKind}`)
+  }
+  return expect(
+    runner,
+    checkId,
+    title,
+    problems.length === 0,
+    problems.length
+      ? `${phase}: ${problems.join('; ')}`
+      : `${phase}: accepted=${payload.accepted} hostVersion=${payload.hostVersion} adapterId=${payload.adapterId} contractHash=${oneLine(payload.contractHash, 20)}… catalogProfile=${oneLine(payload.catalogProfile, 20)}… profileKind=${payload.profileKind} skinId=${payload.skinId} cssHash=${oneLine(payload.cssHash, 24)}…`,
+    payload ?? undefined,
+  )
+}
+
+/** The certified adapter this run is supposed to certify (explicit or inferred). */
+function expectedAdapterOf(ctx) {
+  if (ctx.state.certifiedAdapter) return ctx.state.certifiedAdapter
+  const payload = ctx.state.bootPayloadApplied ?? ctx.state.bootPayload
+  if (payload) {
+    const matched = adapterForTriple(payload)
+    if (matched) return matched
+  }
+  return ctx.config.expectedAdapter ?? null
+}
+
+/** Exact capability availability expected for this host build. */
+function expectedCapabilitiesOf(ctx) {
+  const adapter = expectedAdapterOf(ctx)
+  if (adapter) return adapter.capabilities
+  return { ...BASE_CAPABILITIES, 'host-font-role-hooks': false }
+}
+
+/** Typography strategy selected by capability facts, never by version string. */
+function fontStrategyOf(ctx) {
+  const capabilities = ctx.state.catalog?.capabilities ?? expectedAdapterOf(ctx)?.capabilities ?? {}
+  return capabilities['host-font-role-hooks']?.available === true ? 'role-hooks' : 'legacy-composite'
+}
+
+/** Preview asset base the host advertised (per catalog profile) or the legacy root. */
+function previewsBaseOf(ctx) {
+  const base = ctx.state.catalog?.previewsBase
+  return typeof base === 'string' && base.length > 0 ? base : '/livery/assets/previews/'
+}
+
+/** Absolute preview URL for one asset name. */
+function previewUrl(ctx, file) {
+  return new URL(`${previewsBaseOf(ctx)}${file}`, ctx.config.baseUrl).href
 }
 
 /** Screenshot into the evidence layout `<locale>-<mode>-<state>.png`. */
@@ -113,7 +194,41 @@ export async function checkCatalog(ctx) {
   if (!ctx.environment.packageVersion && typeof catalog.compilerVersion === 'string') ctx.environment.packageVersion = catalog.compilerVersion
   ctx.state.catalog = catalog
   ctx.artifacts.catalog = catalog
-  expect(runner, 'catalog.schema', 'catalog shape', catalog.schemaVersion === 1 && typeof catalog.adapterId === 'string' && typeof catalog.hostVersion === 'string', `schemaVersion=${catalog.schemaVersion} adapterId=${catalog.adapterId} hostVersion=${catalog.hostVersion} profileKind=${catalog.profileKind ?? catalog.capabilities ? 'capabilities' : ''}`, { schemaVersion: catalog.schemaVersion, adapterId: catalog.adapterId, hostVersion: catalog.hostVersion, contractHash: catalog.contractHash })
+  expect(
+    runner,
+    'catalog.schema',
+    'catalog shape carries the certified host identity and catalog profile',
+    catalog.schemaVersion === 1
+      && typeof catalog.adapterId === 'string'
+      && typeof catalog.hostVersion === 'string'
+      && typeof catalog.contractHash === 'string'
+      && typeof catalog.catalogProfile === 'string'
+      && typeof catalog.previewsBase === 'string',
+    `schemaVersion=${catalog.schemaVersion} hostVersion=${catalog.hostVersion} adapterId=${catalog.adapterId} contractHash=${oneLine(catalog.contractHash, 20)}… catalogProfile=${oneLine(catalog.catalogProfile, 20)}… previewsBase=${catalog.previewsBase}`,
+    { schemaVersion: catalog.schemaVersion, hostVersion: catalog.hostVersion, adapterId: catalog.adapterId, contractHash: catalog.contractHash, catalogProfile: catalog.catalogProfile, previewsBase: catalog.previewsBase },
+  )
+  const certifiedFromCatalog = adapterForTriple(catalog)
+  const expectedAdapter = ctx.config.expectedAdapter ?? null
+  const identityProblems = []
+  if (!certifiedFromCatalog) identityProblems.push('catalog identity triple is not in the certified adapter matrix')
+  if (expectedAdapter) {
+    if (catalog.hostVersion !== expectedAdapter.hostVersion) identityProblems.push(`hostVersion ${catalog.hostVersion} ≠ expected ${expectedAdapter.hostVersion}`)
+    if (catalog.adapterId !== expectedAdapter.adapterId) identityProblems.push(`adapterId ${catalog.adapterId} ≠ expected ${expectedAdapter.adapterId}`)
+    if (catalog.contractHash !== expectedAdapter.contractHash) identityProblems.push('contractHash ≠ expected')
+  }
+  if (certifiedFromCatalog) {
+    if (catalog.catalogProfile !== certifiedFromCatalog.catalogProfile) identityProblems.push('catalogProfile ≠ certified profile')
+    const expectedBase = expectedPreviewsBase(certifiedFromCatalog.catalogProfile)
+    if (catalog.previewsBase !== expectedBase) identityProblems.push(`previewsBase ${catalog.previewsBase} ≠ ${expectedBase}`)
+  }
+  expect(
+    runner,
+    'catalog.certified-identity',
+    'catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple',
+    identityProblems.length === 0,
+    identityProblems.length ? identityProblems.join('; ') : describeAdapter(certifiedFromCatalog),
+    { catalog: { hostVersion: catalog.hostVersion, adapterId: catalog.adapterId, contractHash: catalog.contractHash, catalogProfile: catalog.catalogProfile }, expected: expectedAdapter },
+  )
   expect(runner, 'catalog.cache-control-no-store', 'catalog is not cached', /no-store/i.test(response.cacheControl ?? ''), `cache-control: ${response.cacheControl ?? '(none)'}`)
   const liveries = catalog.liveries ?? []
   expect(runner, 'catalog.gallery-size', 'catalog carries at least 10 liveries', liveries.length >= 10, `${liveries.length} liveries: ${liveries.map((livery) => livery.id).join(', ')}`, { ids: liveries.map((livery) => livery.id) })
@@ -176,23 +291,35 @@ export async function checkCatalog(ctx) {
     hashProblems.length ? hashProblems.slice(0, 6).join('; ') : `${liveries.length} livery hashes verified`,
   )
 
-  // Capability facts used by the self-check panel and layout degradation.
+  // Capability facts used by the self-check panel and layout degradation. The
+  // expected availability comes from the certified adapter record, so a 0.2.1
+  // host must additionally report host-font-role-hooks available.
   const capabilities = catalog.capabilities ?? {}
+  const expectedCapabilities = expectedCapabilitiesOf(ctx)
   const capabilityProblems = []
-  for (const [id, available] of Object.entries(EXPECTED_CAPABILITIES)) {
+  for (const [id, available] of Object.entries(expectedCapabilities)) {
     const fact = capabilities[id]
     if (!fact) capabilityProblems.push(`${id}: missing`)
     else if (Boolean(fact.available) !== available) capabilityProblems.push(`${id}: expected ${available}, got ${fact.available}`)
   }
-  expect(runner, 'catalog.capabilities', 'catalog capability availability matches the frozen contract', capabilityProblems.length === 0, capabilityProblems.length ? capabilityProblems.join('; ') : Object.keys(EXPECTED_CAPABILITIES).map((id) => `${id}=${EXPECTED_CAPABILITIES[id]}`).join(', '), { capabilities })
+  expect(
+    runner,
+    'catalog.capabilities',
+    'catalog capability availability matches the certified adapter contract',
+    capabilityProblems.length === 0,
+    capabilityProblems.length
+      ? capabilityProblems.join('; ')
+      : Object.entries(expectedCapabilities).map(([id, available]) => `${id}=${available}`).join(', '),
+    { capabilities, expected: expectedCapabilities },
+  )
 
-  // Preview SVG assets: every advertised file must be served, unknown files 404.
+  // Preview SVG assets live under the catalog-profile base the host declared.
   const previewChecks = []
   for (const livery of liveries.slice(0, 12)) {
     for (const lang of ['zh', 'en']) {
       for (const mode of ['light', 'dark']) {
         const file = `${livery.id}-${lang}-${mode}.svg`
-        previewChecks.push({ file, url: new URL(`/livery/assets/previews/${file}`, config.baseUrl).href })
+        previewChecks.push({ file, url: previewUrl(ctx, file), base: previewsBaseOf(ctx) })
       }
     }
   }
@@ -202,9 +329,33 @@ export async function checkCatalog(ctx) {
     results.push({ ...item, ...response })
   }
   const badPreviews = results.filter((entry) => entry.status !== 200 || !/svg/i.test(entry.contentType ?? ''))
-  expect(runner, 'previews.assets-served', 'all preview SVGs are served as image/svg+xml', badPreviews.length === 0, badPreviews.length ? badPreviews.slice(0, 8).map((entry) => `${entry.file} → ${entry.status} ${entry.contentType ?? ''}`).join('; ') : `${results.length} preview assets HTTP 200 image/svg+xml`)
-  const unknown = await getStatus(new URL('/livery/assets/previews/not-a-real-file.svg', config.baseUrl).href)
+  expect(
+    runner,
+    'previews.assets-served',
+    'all preview SVGs are served as image/svg+xml under the declared catalog-profile base',
+    badPreviews.length === 0,
+    badPreviews.length
+      ? badPreviews.slice(0, 8).map((entry) => `${entry.file} → ${entry.status} ${entry.contentType ?? ''}`).join('; ')
+      : `${results.length} preview assets HTTP 200 image/svg+xml under ${previewsBaseOf(ctx)}`,
+    { base: previewsBaseOf(ctx), sample: results[0]?.url },
+  )
+  const unknown = await getStatus(previewUrl(ctx, 'not-a-real-file.svg'))
   expect(runner, 'previews.unknown-404', 'unknown preview asset returns 404', unknown.status === 404, `unknown file → ${unknown.status}`)
+  const otherProfiles = certifiedFromCatalog ? otherCatalogProfiles(certifiedFromCatalog.catalogProfile) : []
+  if (otherProfiles.length > 0 && typeof catalog.catalogProfile === 'string') {
+    const foreignUrl = new URL(`${expectedPreviewsBase(otherProfiles[0])}${previewChecks[0]?.file ?? 'not-a-real-file.svg'}`, config.baseUrl).href
+    const foreign = await getStatus(foreignUrl)
+    expect(
+      runner,
+      'previews.profile-isolation',
+      'previews are served per catalog profile; another profile directory is not exposed',
+      foreign.status === 404,
+      `cross-profile asset ${new URL(foreignUrl).pathname} → ${foreign.status} (404 expected)`,
+      { url: foreignUrl, status: foreign.status, catalogProfile: catalog.catalogProfile, foreignProfile: otherProfiles[0] },
+    )
+  } else {
+    runner.skip('previews.profile-isolation', 'previews are served per catalog profile', 'no catalog profile advertised (legacy single-profile build)')
+  }
 
   const post = await rawRequest(url, { method: 'POST', headers: { Cookie: ctx.state.cookieHeader ?? '' } })
   expect(runner, 'catalog.get-only-405', 'catalog route is GET-only (POST → 405)', post.status === 405, `POST /livery/api/catalog → ${post.status}`)
@@ -232,7 +383,7 @@ export async function checkBootHandshake(ctx) {
       else expect(runner, check.id, title, check.passed, check.detail, check.evidence)
     }
     ctx.state.bundle = bundle.bundle
-    ctx.deviations.push('DSH 0.2.0-rc.2 serves client bundles through the boot-graph grouped URL (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (verified).')
+    ctx.deviations.push(`DSH ${ctx.config.expectedVersion ?? 'this host'} serves client bundles through the boot-graph grouped URL (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (verified).`)
     try {
       if (!config.liveryMode) throw new Error('performance budget applies to the dsh-livery bundle only (generic fixture mode)')
       const raw = await rawRequest(bundle.bundle.entryUrl)
@@ -282,11 +433,23 @@ export async function checkBootHandshake(ctx) {
     runner,
     'handshake.boot-global',
     'first-frame handshake global __DSH_LIVERY_BOOT__ is present and accepted',
-    bootPayload.accepted === true && bootPayload.profileKind === 'web',
+    bootPayload.accepted === true,
     `accepted=${bootPayload.accepted} profileKind=${bootPayload.profileKind} skinId=${bootPayload.skinId} cssHash=${oneLine(bootPayload.cssHash, 24)}… entryId=${bootPayload.entryId} adapter=${bootPayload.adapterId}`,
     bootPayload,
   )
-  expect(runner, 'handshake.echo', 'handshake echoes version/adapter/host', bootPayload.adapterId === 'dsh-0.2.0-rc.2-r1' && bootPayload.hostVersion === '0.2.0-rc.2' && bootPayload.entryId === 'livery', `pluginVersion=${bootPayload.pluginVersion} adapterId=${bootPayload.adapterId} hostVersion=${bootPayload.hostVersion} entryId=${bootPayload.entryId}`)
+  assertBootIdentity(ctx, bootPayload, {
+    checkId: 'handshake.echo',
+    title: 'first-frame handshake echoes a certified version/adapter/contract/catalog-profile identity',
+    phase: 'pre-apply boot',
+  })
+  if (!ctx.runner.checks.some((check) => check.id === 'handshake.certified-adapter')) {
+    const matched = adapterForTriple(bootPayload)
+    if (matched) {
+      ctx.runner.pass('handshake.certified-adapter', 'live host matches a certified adapter record (exact version + adapter + contract + catalog profile)', describeAdapter(matched), { adapter: matched })
+    } else {
+      ctx.runner.fail('handshake.certified-adapter', 'live host matches a certified adapter record', `uncertified payload identity: ${bootPayload.hostVersion} / ${bootPayload.adapterId} / ${oneLine(bootPayload.contractHash, 24)}`)
+    }
+  }
   expect(runner, 'handshake.catalog-url', 'handshake advertises the catalog route', bootPayload.catalogUrl === '/livery/api/catalog', `catalogUrl=${bootPayload.catalogUrl}`)
 }
 
@@ -316,7 +479,7 @@ export async function checkStockInitial(ctx) {
   expect(runner, 'stock.no-livery-styles', 'stock boot injects no Livery skin style elements or handshake rows', snapshot.liveryStyles.length === 0 && !handshakeGlobalPresent, `${snapshot.liveryStyles.length} skin style element(s); __DSH_LIVERY_BOOT__ present=${handshakeGlobalPresent}`)
   expect(runner, 'stock.tokens-recorded', 'stock token baseline captured for residue comparison', Boolean(state.stockTokens['--dsw-alias-bg-base']), `--dsw-alias-bg-base=${state.stockTokens['--dsw-alias-bg-base']} labelPrimary=${state.stockTokens['--dsw-alias-label-primary']} borderL1=${state.stockTokens['--dsw-alias-border-l1']}`, state.stockTokens)
   expect(runner, 'stock.host-theme-source', 'host theme source is system (preference untouched)', snapshot.themeSource === 'system' && snapshot.darkAttribute === null, `html[data-ds-theme-source]=${snapshot.themeSource} body[data-ds-dark-theme]=${snapshot.darkAttribute}`)
-  const profile = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome) : { hasThemeRow: false, text: '' }
+  const profile = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web') : { hasThemeRow: false, text: '' }
   expect(runner, 'stock.no-theme-write', 'no ui-theme row was written to the profile patch', profile.hasThemeRow === false, profile.hasThemeRow ? 'profile patch contains an ui-theme row' : 'no ui-theme row in profile patch')
   state.stockObserverReport = await readObserverReport(page)
   state.stockObserverCount = state.stockObserverReport.wholeDocument
@@ -420,14 +583,16 @@ export async function checkSettingsFlow(ctx) {
   state.dismissedDialogs = await dismissFirstRunDialogs(page)
   await capture(page, ctx, { state: 'home-before-settings' })
 
-  let dialog
+  let opened
   try {
-    dialog = await openSettings(page)
+    opened = await openSettingsDetailed(page)
   } catch (error) {
     runner.fail('settings.opens', 'settings dialog opens', String(error))
     return
   }
-  runner.pass('settings.opens', 'settings dialog opens', 'settings dialog visible')
+  state.settingsVia = opened.via
+  runner.pass('settings.opens', 'settings dialog opens', `settings dialog visible (launcher path: ${opened.via})`, { via: opened.via })
+  runner.pass('settings.launcher-path', 'settings launcher resolved on this shell version', `path=${opened.via}`)
 
   const section = await findLiverySection(page, { labels: uiLabels, catalog, locale: state.actualLocale, timeoutMs: 25_000 })
   state.section = section
@@ -583,7 +748,7 @@ export async function checkSettingsFlow(ctx) {
   }
 
   // ---- apply + persistence ----
-  const patchBefore = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome) : { text: '', skinId: null }
+  const patchBefore = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web') : { text: '', skinId: null }
   const applyCard = page.locator(`[data-testid="livery-card"][data-livery-id="${pair.applied}"]`).first()
   await applyCard.click()
   await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, pair.applied, { timeout: 10_000 }).catch(() => {})
@@ -621,10 +786,10 @@ export async function checkSettingsFlow(ctx) {
   await capture(page, ctx, { state: 'applied', mode: 'light' })
 
   if (config.mode === 'isolated') {
-    let patchAfter = await inspectProfilePatch(config.dshHome)
+    let patchAfter = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
     for (let attempt = 0; attempt < 25 && patchAfter.skinId !== pair.applied; attempt += 1) {
       await sleep(200)
-      patchAfter = await inspectProfilePatch(config.dshHome)
+      patchAfter = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
     }
     const mutation = collectMutation(patchBefore, patchAfter, pair.applied)
     state.applyMutation = mutation
@@ -653,18 +818,27 @@ export async function checkSettingsFlow(ctx) {
     afterReload.bodyAttribute === pair.applied && bootPayloadAfter?.skinId === pair.applied,
     `body attr=${afterReload.bodyAttribute} handshake.skinId=${bootPayloadAfter?.skinId} cssHash=${oneLine(bootPayloadAfter?.cssHash ?? '', 20)}…`,
   )
+  const identity = assertBootIdentity(ctx, bootPayloadAfter, {
+    checkId: 'handshake.applied-boot',
+    title: 'configured skin boot handshake is accepted with a certified host identity',
+    phase: 'post-apply reload',
+  })
+  if (identity.status === 'pass') {
+    ctx.runner.pass(
+      'handshake.certified-adapter',
+      'live host matches a certified adapter record (exact version + adapter + contract + catalog profile)',
+      describeAdapter(adapterForTriple(bootPayloadAfter)),
+      { adapter: adapterForTriple(bootPayloadAfter) },
+    )
+  } else {
+    ctx.runner.fail('handshake.certified-adapter', 'live host matches a certified adapter record', identity.detail)
+  }
   expect(
     runner,
-    'handshake.applied-boot',
-    'configured skin boot handshake is accepted with the expected identity and catalog route',
-    Boolean(bootPayloadAfter) && bootPayloadAfter.accepted === true && bootPayloadAfter.profileKind === 'web'
-      && bootPayloadAfter.skinId === pair.applied && bootPayloadAfter.adapterId === 'dsh-0.2.0-rc.2-r1'
-      && bootPayloadAfter.hostVersion === '0.2.0-rc.2' && bootPayloadAfter.entryId === 'livery'
-      && bootPayloadAfter.catalogUrl === '/livery/api/catalog' && /^sha256:[0-9a-f]{64}$/.test(bootPayloadAfter.cssHash ?? ''),
-    bootPayloadAfter
-      ? `accepted=${bootPayloadAfter.accepted} skinId=${bootPayloadAfter.skinId} adapter=${bootPayloadAfter.adapterId} host=${bootPayloadAfter.hostVersion} entry=${bootPayloadAfter.entryId} catalogUrl=${bootPayloadAfter.catalogUrl} cssHash=${oneLine(bootPayloadAfter.cssHash, 24)}…`
-      : 'window.__DSH_LIVERY_BOOT__ missing after reload',
-    bootPayloadAfter,
+    'handshake.applied-skin',
+    'configured skin is echoed by the boot handshake',
+    Boolean(bootPayloadAfter) && bootPayloadAfter.skinId === pair.applied,
+    `handshake.skinId=${bootPayloadAfter?.skinId ?? '(missing)'} (expected ${pair.applied})`,
   )
   await capture(page, ctx, { state: 'applied-after-reload', mode: 'light' })
 }
@@ -744,11 +918,28 @@ export async function checkAppliedTheme(ctx) {
     snapshot.themeSource === 'system',
     `html[data-ds-theme-source]=${snapshot.themeSource}`,
   )
-  const patch = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome) : { hasThemeRow: false, text: '' }
+  const patch = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web') : { hasThemeRow: false, text: '' }
   expect(runner, 'theme.host-preference-file', 'profile patch contains no ui-theme writes', patch.hasThemeRow === false, patch.hasThemeRow ? 'ui-theme row present' : 'no ui-theme row')
 
   // Hash equality: body attr == handshake cssHash == sha256(style text).
   const bootPayload = state.bootPayloadApplied ?? snapshot.bootPayload
+  const catalogProblems = []
+  if (bootPayload && catalog) {
+    if (catalog.hostVersion !== bootPayload.hostVersion) catalogProblems.push(`hostVersion ${catalog.hostVersion} ≠ ${bootPayload.hostVersion}`)
+    if (catalog.adapterId !== bootPayload.adapterId) catalogProblems.push(`adapterId ${catalog.adapterId} ≠ ${bootPayload.adapterId}`)
+    if (catalog.contractHash !== bootPayload.contractHash) catalogProblems.push('contractHash differs')
+    if (catalog.catalogProfile !== bootPayload.catalogProfile) catalogProblems.push('catalogProfile differs')
+  } else {
+    catalogProblems.push('missing boot payload or catalog')
+  }
+  expect(
+    runner,
+    'handshake.catalog-identity',
+    'served catalog repeats the exact certified identity of the boot handshake',
+    catalogProblems.length === 0,
+    catalogProblems.length ? catalogProblems.join('; ') : `${catalog.hostVersion} / ${catalog.adapterId} / ${oneLine(catalog.contractHash, 20)}… / ${oneLine(catalog.catalogProfile, 20)}…`,
+    { boot: bootPayload ? { hostVersion: bootPayload.hostVersion, adapterId: bootPayload.adapterId, contractHash: bootPayload.contractHash, catalogProfile: bootPayload.catalogProfile } : null, catalog: catalog ? { hostVersion: catalog.hostVersion, adapterId: catalog.adapterId, contractHash: catalog.contractHash, catalogProfile: catalog.catalogProfile } : null },
+  )
   const hashChecks = hashConsistency(snapshot, bootPayload)
   expect(
     runner,
@@ -853,6 +1044,82 @@ export async function checkAppliedTheme(ctx) {
 }
 
 /** zh-CN / en-US host font bindings from the compiled typography. */
+/** Expected font values for one locale, selected by the host capability facts. */
+function fontExpectationsOf(ctx, livery, locale) {
+  const localeKey = locale === 'zh' ? 'zh-CN' : 'en-US'
+  const lang = locale === 'zh' ? 'zh-CN' : 'en'
+  const uiStack = livery.typography?.ui?.[localeKey] ?? null
+  const contentStack = livery.typography?.content?.[localeKey] ?? uiStack
+  const codeStack = livery.typography?.code ?? null
+  return { strategy: fontStrategyOf(ctx), localeKey, lang, uiStack, contentStack, codeStack, expectedStack: contentStack ?? uiStack }
+}
+
+/** Strategy-aware font assertion for one locale snapshot. */
+function describeFontMismatch(expectations, snapshot) {
+  return JSON.stringify({
+    strategy: expectations.strategy,
+    lang: snapshot.lang,
+    expectedStack: expectations.expectedStack,
+    bodyFontFamily: snapshot.bodyFontFamily,
+    roleText: snapshot.tokens.fontRoleText,
+    composite: snapshot.tokens.fontFamily,
+  })
+}
+
+/** Assert the font strategy for one locale; returns the runner check. */
+function assertFontsForLocale(runner, ctx, expectations, snapshot, checkId, title) {
+  const { strategy, lang, expectedStack, codeStack } = expectations
+  const bodyFontOk = expectedStack ? fontStackStartsWith(snapshot.bodyFontFamily, expectedStack) : false
+  if (strategy === 'role-hooks') {
+    const roleText = normalizeFontStack(snapshot.tokens.fontRoleText)
+    const expectedText = normalizeFontStack(expectedStack)
+    const compositeStartsWith = fontStackStartsWith(snapshot.tokens.fontFamily, expectedStack)
+    return expect(
+      runner,
+      checkId,
+      title,
+      snapshot.lang === lang && roleText === expectedText && bodyFontOk && compositeStartsWith,
+      `strategy=role-hooks html lang=${snapshot.lang}; --dsh-font-family-text=${oneLine(snapshot.tokens.fontRoleText, 180)}; expected=${oneLine(expectedStack, 180)}; body font=${oneLine(snapshot.bodyFontFamily, 100)}`,
+      { ...describeFontMismatch(expectations, snapshot) },
+    )
+  }
+  const compositeEquals = normalizeFontStack(snapshot.tokens.fontFamily) === normalizeFontStack(expectedStack)
+  return expect(
+    runner,
+    checkId,
+    title,
+    snapshot.lang === lang && compositeEquals && bodyFontOk,
+    `strategy=legacy-composite html lang=${snapshot.lang}; --dsw-font-family=${oneLine(snapshot.tokens.fontFamily, 180)}; expected=${oneLine(expectedStack, 180)}`,
+    { ...describeFontMismatch(expectations, snapshot) },
+  )
+}
+
+/** Assert the documented role-hook values (0.2.1+ only). */
+function assertFontRoleHooks(runner, ctx, expectations, snapshot, checkId) {
+  if (expectations.strategy !== 'role-hooks') {
+    runner.skip(checkId, 'host font role hooks carry the livery UI and code stacks (0.2.1+)', 'host does not certify host-font-role-hooks (legacy composite strategy)')
+    return
+  }
+  const text = normalizeFontStack(snapshot.tokens.fontRoleText)
+  const expectedText = normalizeFontStack(expectations.expectedStack)
+  const code = normalizeFontStack(snapshot.tokens.fontRoleCode)
+  const expectedCode = normalizeFontStack(expectations.codeStack ?? '')
+  const codeFamilyStartsWith = expectations.codeStack ? fontStackStartsWith(snapshot.tokens.legacyCodeFamily, expectations.codeStack) : true
+  expect(
+    runner,
+    checkId,
+    'host font role hooks carry the livery UI and code stacks (0.2.1+)',
+    Boolean(expectedText) && text === expectedText && Boolean(expectedCode) && code === expectedCode && codeFamilyStartsWith,
+    `--dsh-font-family-text=${oneLine(snapshot.tokens.fontRoleText, 160)} (expected ${oneLine(expectations.expectedStack, 160)}); --dsh-font-family-code=${oneLine(snapshot.tokens.fontRoleCode, 120)} (expected ${oneLine(expectations.codeStack, 120)}); --ds-font-family-code=${oneLine(snapshot.tokens.legacyCodeFamily, 100)}`,
+    {
+      roleText: snapshot.tokens.fontRoleText,
+      roleCode: snapshot.tokens.fontRoleCode,
+      resolvedCodeFamily: snapshot.tokens.legacyCodeFamily,
+    },
+  )
+}
+
+/** zh-CN / en-US host font bindings from the compiled typography. */
 export async function checkFonts(ctx) {
   const { runner, session, config, state } = ctx
   const { page } = session
@@ -862,22 +1129,14 @@ export async function checkFonts(ctx) {
     runner.skip('fonts.en-latin', 'en page resolves the livery latin stack', 'no active livery')
     return
   }
-  const fonts = livery.typography ?? {}
-  const zhStack = fonts.ui?.['zh-CN'] ?? fonts.ui?.zh ?? null
-  const enStack = fonts.ui?.['en-US'] ?? fonts.ui?.en ?? null
+  const strategy = fontStrategyOf(ctx)
+  state.fontStrategy = strategy
   const snapshot = await readThemeSnapshot(page)
-  const expectedZh = zhStack ? normalizeFontStack(zhStack) : ''
-  const actualZh = normalizeFontStack(snapshot.tokens.fontFamily)
-  const zhFamily = firstConcreteFamily(zhStack ?? '')
-  expect(
-    runner,
-    'fonts.zh-cjk',
-    'zh-CN page resolves the livery CJK font stack',
-    snapshot.lang === 'zh-CN' && actualZh === expectedZh && fontStackStartsWith(snapshot.bodyFontFamily, zhStack),
-    `html lang=${snapshot.lang}; --dsw-font-family=${oneLine(snapshot.tokens.fontFamily, 200)}; expected=${oneLine(zhStack, 200)}; body font=${oneLine(snapshot.bodyFontFamily, 120)}`,
-    { actual: snapshot.tokens.fontFamily, expected: zhStack, bodyFontFamily: snapshot.bodyFontFamily },
-  )
-  const cjkFamily = zhFamily && ['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Songti SC', 'Noto Sans CJK SC'].includes(zhFamily) ? zhFamily : firstConcreteFamily(zhStack ?? '')
+  const zh = fontExpectationsOf(ctx, livery, 'zh')
+  const zhFamily = firstConcreteFamily(zh.expectedStack ?? '')
+  assertFontsForLocale(runner, ctx, zh, snapshot, 'fonts.zh-cjk', `zh-CN page resolves the livery CJK stack (${strategy})`)
+  assertFontRoleHooks(runner, ctx, zh, snapshot, 'fonts.zh-role-hooks')
+  const cjkFamily = zhFamily && ['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Songti SC', 'Noto Sans CJK SC'].includes(zhFamily) ? zhFamily : zhFamily
   const cjkAvailable = cjkFamily ? await page.evaluate((family) => document.fonts.check(`14px "${family.replace(/"/g, '')}"`), cjkFamily).catch(() => false) : false
   if (cjkAvailable) runner.pass('fonts.zh-document-check', 'document.fonts.check() finds a CJK family from the stack', `document.fonts.check(14px "${cjkFamily}") = true`)
   else runner.warn('fonts.zh-document-check', 'document.fonts.check() finds a CJK family from the stack', `document.fonts.check(14px "${cjkFamily ?? '(unknown)'}") = false (headless font availability)`, snapshot.fonts)
@@ -900,16 +1159,8 @@ export async function checkFonts(ctx) {
       else await sleep(1_200)
     }
     if (enSnapshot === null) enSnapshot = await readThemeSnapshot(page)
-    const actualEn = normalizeFontStack(enSnapshot.tokens.fontFamily)
-    const expectedEn = enStack ? normalizeFontStack(enStack) : ''
-    expect(
-      runner,
-      'fonts.en-latin',
-      'en page resolves the livery latin font stack',
-      enSnapshot.lang === 'en' && actualEn === expectedEn && fontStackStartsWith(enSnapshot.bodyFontFamily, enStack),
-      `html lang=${enSnapshot.lang}; --dsw-font-family=${oneLine(enSnapshot.tokens.fontFamily, 200)}; expected=${oneLine(enStack, 200)}`,
-      { actual: enSnapshot.tokens.fontFamily, expected: enStack, bodyFontFamily: enSnapshot.bodyFontFamily },
-    )
+    const en = fontExpectationsOf(ctx, livery, 'en')
+    assertFontsForLocale(runner, ctx, en, enSnapshot, 'fonts.en-latin', `en page resolves the livery latin stack (${strategy})`)
     await capture(page, ctx, { locale: 'en', state: 'applied', mode: 'light' })
     // English gallery copy/state
     await openSettings(page)
@@ -929,14 +1180,14 @@ export async function checkFonts(ctx) {
 
 async function setLocaleEn(ctx) {
   const { setLocalePreference } = await import('./dsh-home.mjs')
-  await setLocalePreference(ctx.config.dshHome, 'en')
+  await setLocalePreference(ctx.config.dshHome, 'en', ctx.config.dshProfile ?? 'web')
   // The profile patch layer hot-reloads, but give the host a beat before reload.
   await sleep(600)
 }
 
 async function restoreLocaleZh(ctx) {
   const { restoreLocaleZh: restore } = await import('./dsh-home.mjs')
-  await restore(ctx.config.dshHome)
+  await restore(ctx.config.dshHome, ctx.config.dshProfile ?? 'web')
   await sleep(400)
 }
 
@@ -977,8 +1228,9 @@ export async function checkSelfCheck(ctx) {
   const panel = await readSelfCheck(page)
   state.selfCheck = panel
   const capabilityRows = panel.capabilities
+  const expectedCapabilities = expectedCapabilitiesOf(ctx)
   const rowProblems = []
-  for (const [id, available] of Object.entries(EXPECTED_CAPABILITIES)) {
+  for (const [id, available] of Object.entries(expectedCapabilities)) {
     const row = capabilityRows.find((candidate) => candidate.id === id)
     if (!row) rowProblems.push(`${id}: row missing`)
     else if (row.available !== available) rowProblems.push(`${id}: expected ${available}, got ${row.available}`)
@@ -986,11 +1238,38 @@ export async function checkSelfCheck(ctx) {
   expect(
     runner,
     'selfcheck.capabilities',
-    'self-check lists the capability availability (theme/font/surface available; density/transcript/flow unavailable)',
+    'self-check lists capability availability from the certified adapter contract (incl. host-font-role-hooks on 0.2.1)',
     rowProblems.length === 0,
     rowProblems.length ? rowProblems.join('; ') : `${capabilityRows.length} capability row(s): ${capabilityRows.map((row) => `${row.id}=${row.available}`).join(', ')}`,
-    { capabilities: capabilityRows, text: panel.text },
+    { capabilities: capabilityRows, expected: expectedCapabilities, text: panel.text },
   )
+  // Self-check must name the live certified identity (multi-version §6).
+  const adapter = expectedAdapterOf(ctx)
+  const identityText = panel.text ?? ''
+  const contractShort = (adapter?.contractHash ?? '').replace(/^sha256:/, '').slice(0, 8)
+  const profileShort = (state.catalog?.catalogProfile ?? '').replace(/^sha256:/, '').slice(0, 8)
+  const identityProblems = []
+  if (adapter) {
+    if (!identityText.includes(adapter.hostVersion)) identityProblems.push(`hostVersion ${adapter.hostVersion} not shown`)
+    if (!identityText.includes(adapter.adapterId)) identityProblems.push(`adapterId ${adapter.adapterId} not shown`)
+    if (contractShort && !identityText.includes(contractShort)) identityProblems.push(`contract hash prefix ${contractShort} not shown`)
+  } else {
+    identityProblems.push('no certified adapter resolved for this run')
+  }
+  expect(
+    runner,
+    'selfcheck.identity',
+    'self-check shows the live host version, adapter id and contract hash',
+    identityProblems.length === 0,
+    identityProblems.length ? identityProblems.join('; ') : `panel shows ${adapter.hostVersion} / ${adapter.adapterId} / ${contractShort}…`,
+    { text: oneLine(identityText, 1200) },
+  )
+  const profileShown = !profileShort || identityText.includes(profileShort)
+  if (profileShown) {
+    runner.pass('selfcheck.catalog-profile', 'self-check shows the catalog profile id', `panel shows ${profileShort}… (${oneLine(state.catalog?.catalogProfile, 30)}…)`)
+  } else {
+    runner.warn('selfcheck.catalog-profile', 'self-check shows the catalog profile id', `panel does not show the catalog profile prefix ${profileShort} — client copy may not surface it yet (evidence recorded)`)
+  }
   if (!state.appliedSkin) {
     runner.skip('selfcheck.contrast', 'self-check reports 0 contrast failures', 'no active livery presented (stock)')
     runner.skip('selfcheck.css-safety', 'self-check reports 0 !important / 0 hash selectors', 'no active livery presented (stock)')
@@ -1349,7 +1628,7 @@ export async function checkUninstallResidue(ctx) {
   ctx.lifecycle.stopBeforeUninstall = stop
   expect(runner, 'lifecycle.sigterm', 'SIGTERM stops the web service cleanly and closes the port', stop.stopped && (stop.exitCode === 0 || stop.exitCode === null) && stop.portClosed, `exit=${stop.exitCode} signal=${stop.signal} shutdown=${stop.shutdownMs}ms portClosed=${stop.portClosed} forced=${stop.forceKilled}`)
 
-  const patchBefore = await inspectProfilePatch(config.dshHome)
+  const patchBefore = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
   const uninstall = await uninstallPlugin({ bin: config.dshBin, home: config.dshHome, packageName: config.packageName })
   ctx.lifecycle.uninstall = uninstall
   expect(
@@ -1402,9 +1681,11 @@ export async function checkUninstallResidue(ctx) {
     }
     const hasPayload = await session.page.evaluate(() => Boolean(window.__DSH_LIVERY_BOOT__))
     expect(runner, 'residue.no-boot-payload', 'after uninstall the first-frame handshake global is absent', !hasPayload, `window.__DSH_LIVERY_BOOT__=${hasPayload}`)
+    const firstLiveryId = state.catalog?.liveries?.[0]?.id ?? 'fjord'
+    const residuePreviewPath = `${previewsBaseOf(ctx)}${firstLiveryId}-zh-light.svg`
     const urls = [
       ['residue.catalog-route', '/livery/api/catalog', 404],
-      ['residue.preview-route', '/livery/assets/previews/ivory-slate-zh-light.svg', 404],
+      ['residue.preview-route', residuePreviewPath, 404],
       ['residue.plugin-route', `/plugins/${config.pluginId}/client.js`, 404],
     ]
     if (state.clientEntry?.url) urls.push(['residue.old-bundle-url', new URL(state.clientEntry.url, post.baseUrl).toString(), 404])
@@ -1419,7 +1700,7 @@ export async function checkUninstallResidue(ctx) {
     }
     await capture(session.page, ctx, { state: 'stock-post-uninstall', mode: 'light' })
     await session.context.close()
-    const patchAfter = await inspectProfilePatch(config.dshHome)
+    const patchAfter = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
     // The official package manager removes the dependency and the bundle
     // selection (asserted in lifecycle.uninstall). It does NOT clean settings
     // rows written by the config editor into the profile patch — that residue is

@@ -121,6 +121,13 @@ export interface ProfileSchemaContract {
 export interface ContractCapabilities {
   readonly themeCss: boolean
   readonly hostFontFamily: boolean
+  /**
+   * Documented host-level font-family role hooks (`--dsh-font-family-text`,
+   * `--dsh-font-family-code`) introduced by DSH 0.2.1. When present, a theme can
+   * change fonts through the public host mechanism instead of overriding the
+   * composite token ladder.
+   */
+  readonly fontRoleHooks: boolean
   readonly surfaceMaterial: boolean
   readonly hostDensityTokens: boolean
   readonly hostTranscriptWidth: boolean
@@ -133,12 +140,25 @@ export interface ContractSnapshot {
   readonly hostVersion: string
   readonly capturedAt: string
   readonly source: {
-    readonly kind: 'installed-package'
+    /**
+     * `installed-package` for npm/CLI installs, `packaged-app` when the contract
+     * was extracted from the Desktop app's Electron `app.asar` (which strips
+     * `.d.ts` files, so missing type documents are supplemented from the same
+     * published version and recorded here).
+     */
+    readonly kind: 'installed-package' | 'packaged-app'
     readonly dshPackage: string
     readonly nodeRange: string
     /** Where the range came from: `declared` by the target or `certified`. */
     readonly nodeRangeSource: string
     readonly clientTarget: string
+    /** Present only for packaged-app snapshots. */
+    readonly prepared?: {
+      readonly archiveSha256?: string
+      readonly extractor: string
+      readonly supplements: readonly string[]
+      readonly notes: string
+    }
   }
   readonly loaderAbi: LoaderAbiContract
   readonly hostApi: HostApiContract

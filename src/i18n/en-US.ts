@@ -142,6 +142,7 @@ export const enUS = {
   'check.configured': 'Configured livery',
   'check.effective': 'Applied livery',
   'check.catalog': 'Catalog',
+  'check.profile': 'Catalog profile',
   'check.catalogLoaded': 'Loaded',
   'check.catalogUnavailable': 'Unavailable',
 
@@ -174,6 +175,7 @@ export const enUS = {
   'capability.host-message-flow': 'message flow',
   'capability.theme-css': 'theme CSS',
   'capability.host-font-family': 'font family',
+  'capability.host-font-role-hooks': 'font role hooks',
   'capability.surface-material': 'surface material',
 
   // Optional-capability degradation note shown inside the self-check panel.

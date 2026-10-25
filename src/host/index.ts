@@ -7,10 +7,11 @@
  *    persisted skin id is a settings form the Client reads and writes through
  *    `ctx.configForms.get('livery')`.
  * 2. Contribute the first-frame rows on every index render, but only after the
- *    pre-loader gate has proved the live host identity matches the certified
- *    contract. A closed gate contributes nothing: stock stays stock.
+ *    pre-loader gate has mapped the live DSH version through the generated
+ *    adapter registry and proved the identity matches a certified build. A
+ *    closed gate contributes nothing: stock stays stock.
  * 3. Serve the read-only catalog and preview assets from the webserver, when a
- *    Web carrier is composed.
+ *    Web carrier is composed, for the adapter this process resolved to.
  *
  * The listener is registered unconditionally: the event is inert without a
  * `WebServer`, and a desktop deployment that never serves an index simply never
@@ -24,8 +25,7 @@ import type { Context } from '@deepseek-ai/cordis'
 // require DSH packages at runtime.
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import { ENTRY_ID } from '../core/types.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../generated/contract.js'
-import { CATALOG_META, LIVERIES } from '../generated/liveries.js'
+import { adapterForVersion, type AdapterRecord } from '../generated/contract.js'
 import { computeBootState, type BootState, type ProfileKind } from './boot.js'
 import { formatGateLogLine } from './diagnostics.js'
 import { readSkinId, type LiveryHostConfig } from './config.js'
@@ -38,7 +38,7 @@ export const name = 'livery'
 export { Config, normalizeSkinId, readSkinId } from './config.js'
 export type { LiveryHostConfig, SkinPreference } from './config.js'
 export type { BootState, GateResult, ProfileKind } from './boot.js'
-export { buildCatalog, bindPreviews } from './catalog.js'
+export { bindPreviews, bindProfilePreviews, buildCatalog, previewsBaseFor } from './catalog.js'
 export { registerLiveryRoutes } from './routes.js'
 
 /** One resolved picture of the deployment the Host is running in. */
@@ -77,8 +77,9 @@ let lastLoggedGateLine: string | undefined
  * Detect the deployment profile.
  *
  * Electron sets `process.versions.electron`; the Web profile does not. The
- * profile kind is carried into the payload so the Client can refuse desktop
- * first-paint claims this build has not certified.
+ * profile kind is recorded in the payload for diagnostics only: certification
+ * scope is a support-matrix claim, not a runtime switch, so it never decides
+ * whether a certified adapter is accepted.
  * @returns `desktop` under Electron, `web` otherwise.
  */
 export function detectProfileKind(): ProfileKind {
@@ -141,12 +142,26 @@ export function resolveHostEnvironment(): Promise<HostEnvironment> {
 }
 
 /**
+ * The adapter this process currently styles, resolved through the generated
+ * registry from the last observed host version.
+ *
+ * Read on every call (not cached here) so the route handlers start answering
+ * the moment the version probe settles, and a probe failure keeps everything
+ * closed rather than serving a guessed identity.
+ * @returns the certified adapter, or `undefined` when the version is unknown/uncertified.
+ */
+export function resolveAdapter(): AdapterRecord | undefined {
+  return adapterForVersion(resolvedEnvironment?.observedHostVersion ?? undefined)
+}
+
+/**
  * Evaluate the gate for one Host Config value.
  *
  * Pure given an explicit `environment`; when omitted it uses the last resolved
  * probe (and treats an unresolved probe as "version unknown", which fails
- * closed). Reads the live volatile config on every call, so a persisted change
- * is reflected on the next index render without remount.
+ * closed). The observed version is mapped to an adapter inside the gate; the
+ * live volatile config is read on every call, so a persisted skin change is
+ * reflected on the next index render without remount.
  * @param config - live Host Config (or absent).
  * @param environment - resolved deployment identity.
  * @returns the boot state for this render.
@@ -160,10 +175,6 @@ export function bootStateForConfig(
 ): BootState {
   return computeBootState({
     skinId: readSkinId(config),
-    capabilities: HOST_CAPABILITIES,
-    liveries: LIVERIES,
-    catalogMeta: CATALOG_META,
-    contractFacts: CONTRACT_FACTS,
     profileKind: environment.profileKind,
     observedHostVersion: environment.observedHostVersion,
   })
@@ -215,19 +226,22 @@ export function apply(ctx: Context, config: LiveryHostConfig): void {
   ctx.on('webserver/index-inject', (table) => {
     const state = bootStateForConfig(config)
     lastGateStatus = state
-    if (state.accepted) {
-      // A later failure after a success should warn again.
-      lastLoggedGateLine = undefined
-      if (state.rows.length > 0) table.push(...state.rows)
+    if (!state.gate.accepted) {
+      logGateFailureOnce(ctx, state)
       return
     }
-    logGateFailureOnce(ctx, state)
+    // A later failure after a success should warn again.
+    lastLoggedGateLine = undefined
+    if (state.accepted) table.push(...state.rows)
   })
 
   // The browser carrier is optional: desktop deployments may never compose it.
+  // Routes answer for whatever adapter the version probe resolved; before it
+  // settles (or when the version is uncertified) they answer 404 and serve
+  // nothing.
   ctx.inject(['webServer'], (child) => {
     child.effect(
-      () => registerLiveryRoutes(child.webServer),
+      () => registerLiveryRoutes(child.webServer, { adapterFor: resolveAdapter }),
       'livery: routes',
     )
   })

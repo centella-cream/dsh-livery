@@ -1,10 +1,11 @@
 /**
  * DSH Livery — capability evaluation.
  *
- * The frozen contract snapshot (`src/generated/contract.ts`) is the only place a
- * runtime learns which host capabilities exist. This module turns that data
- * plus a manifest's declared compatibility set into an effective layout and a
- * deterministic degradation report. No host version is ever hard-coded here.
+ * The generated adapter registry (`src/generated/contract.ts`) is the only place
+ * a runtime learns which host capabilities exist. This module turns one
+ * adapter's capability facts plus a manifest's declared compatibility set into
+ * an effective layout and a deterministic degradation report. No host version
+ * string is ever read here — capability facts decide.
  */
 
 import type {
@@ -15,16 +16,12 @@ import type {
   LiveryManifest,
 } from './types.js'
 import { CAP } from './types.js'
-import { HOST_CAPABILITIES } from '../generated/contract.js'
 
 /**
  * Fallback marker for a required capability that has no safe substitute: the
  * livery is not usable and the host/client must stay on stock.
  */
 export const NO_FALLBACK = 'none' as const
-
-/** The certified contract capability facts (also re-exported for convenience). */
-export const HOST_CONTRACT_CAPABILITIES: CapabilityMap = HOST_CAPABILITIES
 
 /** Result of combining contract facts with a manifest's declared capabilities. */
 export interface CapabilityEvaluation {
@@ -51,7 +48,9 @@ const RECIPE_GATES: readonly RecipeGate[] = [
 ]
 
 /** Capabilities that are safe to lose without making a livery unusable. */
-const GENERIC_OPTIONAL_FALLBACK: Record<string, string> = {
+const GENERIC_OPTIONAL_FALLBACK: Readonly<Record<string, string>> = {
+  [CAP.hostFontFamily]: 'stock-font-tokens',
+  [CAP.hostFontRoleHooks]: 'legacy-font-tokens',
   [CAP.reducedTransparency]: 'solid',
   [CAP.forcedColors]: 'system-colors',
   [CAP.reducedMotion]: 'no-motion',
@@ -136,4 +135,9 @@ export function unavailableRequiredCapabilities(
   degraded: readonly CapabilityDegrade[],
 ): readonly CapabilityDegrade[] {
   return degraded.filter((entry) => entry.fallback === NO_FALLBACK)
+}
+
+/** True when the host exposes the documented per-role font-family hooks. */
+export function hasFontRoleHooks(capabilities: CapabilityMap): boolean {
+  return capabilities[CAP.hostFontRoleHooks]?.available === true
 }

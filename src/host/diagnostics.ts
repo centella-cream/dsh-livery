@@ -1,5 +1,5 @@
 /**
- * Human-readable diagnostics for the pre-loader gate.
+ * Human-readable diagnostics for the multi-adapter pre-loader gate.
  *
  * The gate itself is deliberately silent data ({@link GateResult}); this module
  * turns a closed gate into stable, structured strings for three consumers:
@@ -11,12 +11,12 @@
  *
  * Strings are English and machine-oriented ("code: detail") on purpose: the
  * Client localizes its own UI, and a translated diagnostic is not reproducible
- * in a report. No secrets, paths or URLs are included — version, adapter id,
- * contract hash prefix, capability ids and an action.
+ * in a report. No secrets, paths or URLs are included — observed version, the
+ * certified allowlist, adapter id, host version, contract hash prefix, catalog
+ * profile, capability ids and an action.
  */
 
 import type { CapabilityMap } from '../core/types.js'
-import type { ContractFacts } from '../generated/contract.js'
 import type { GateResult } from './boot.js'
 
 /** Codes the gate can raise. Kept stable: they are copied into reports. */
@@ -25,6 +25,7 @@ export const GATE_CODE = {
   versionMismatch: 'gate.version-mismatch',
   adapterMismatch: 'gate.adapter-mismatch',
   contractMismatch: 'gate.contract-mismatch',
+  catalogProfileMismatch: 'gate.catalog-profile-mismatch',
   skinUnknown: 'gate.skin-unknown',
   renderFailed: 'gate.render-failed',
 } as const
@@ -57,32 +58,40 @@ function oneLine(value: string): string {
 }
 
 /**
+ * The supported-version allowlist as one phrase.
+ * @param versions - exact certified host versions.
+ * @returns e.g. `0.2.0-rc.2, 0.2.1-rc.2, 0.2.1-rc.3`.
+ */
+function versionList(versions: readonly string[]): string {
+  return versions.length === 0 ? '<none>' : versions.join(', ')
+}
+
+/**
  * Build the structured diagnostic list for one gate evaluation.
  *
  * An accepted gate has nothing to report and yields `[]` (a successful boot is
  * not a warning). A closed gate always carries the codes, the observed vs.
- * certified identity, the profile, the capability gaps that closed it and an
- * action a user can take — in that order.
+ * certified identity, the deployment profile, the capability gaps that closed
+ * it and an action a user can take — in that order.
  * @param gate - gate outcome from `computeBootState`.
  * @param capabilities - capability map the gate evaluated (for gap details).
- * @param contractFacts - certified contract the gate compared against.
  * @returns diagnostic lines, empty when the gate accepted.
  */
-export function buildDiagnostics(
-  gate: GateResult,
-  capabilities: CapabilityMap,
-  contractFacts: ContractFacts,
-): string[] {
+export function buildDiagnostics(gate: GateResult, capabilities: CapabilityMap): string[] {
   if (gate.accepted) return []
 
   const lines: string[] = []
   lines.push(`gate.closed: ${gate.codes.join(', ')}`)
   lines.push(
-    `version: observed DSH ${gate.observedHostVersion ?? 'unknown'}, certified ${gate.expectedHostVersion}`,
+    `version: observed DSH ${gate.observedHostVersion ?? 'unknown'}, certified ${versionList(gate.supportedHostVersions)}`,
   )
   lines.push(`profile: ${gate.profileKind}`)
-  lines.push(`adapter: ${gate.adapterId}, certified ${gate.expectedAdapterId}`)
-  lines.push(`contract: ${shortHash(gate.contractHash)}, certified ${shortHash(gate.expectedContractHash)}`)
+  lines.push(
+    `adapter: ${gate.adapterId === '' ? 'unresolved' : gate.adapterId}`
+    + `, host ${gate.hostVersion === '' ? 'unknown' : gate.hostVersion}`
+    + `, catalog profile ${gate.catalogProfile === '' ? 'unknown' : gate.catalogProfile}`,
+  )
+  lines.push(`contract: ${shortHash(gate.contractHash)}`)
 
   for (const id of gate.missingCapabilities) {
     const fact = capabilities[id]
@@ -105,11 +114,8 @@ export function buildDiagnostics(
   }
 
   lines.push(
-    `contract.facts: dsh ${contractFacts.dshVersion}, adapter ${contractFacts.adapterId}, `
-    + `hash ${shortHash(contractFacts.contractHash)}`,
-  )
-  lines.push(
-    'action: keep the stock appearance and install a dsh-livery release certified for this host build',
+    `action: keep the stock appearance; this build styles only DSH ${versionList(gate.supportedHostVersions)} `
+    + '— install a dsh-livery release certified for this host build',
   )
   return lines
 }
@@ -129,11 +135,11 @@ export function formatGateLogLine(gate: GateResult): string {
     `codes=[${gate.codes.join(',')}]`,
     `profile=${gate.profileKind}`,
     `observedHostVersion=${observed}`,
-    `expectedHostVersion=${gate.expectedHostVersion}`,
-    `adapter=${gate.adapterId}`,
-    `expectedAdapter=${gate.expectedAdapterId}`,
+    `supported=[${gate.supportedHostVersions.join(',')}]`,
+    `adapter=${gate.adapterId === '' ? 'unresolved' : gate.adapterId}`,
+    `hostVersion=${gate.hostVersion === '' ? 'unknown' : gate.hostVersion}`,
     `contract=${shortHash(gate.contractHash)}`,
-    `expectedContract=${shortHash(gate.expectedContractHash)}`,
+    `catalogProfile=${gate.catalogProfile === '' ? 'unknown' : gate.catalogProfile}`,
     `skin=${gate.activeSkinId}`,
     'action=keep-stock-and-install-a-certified-livery-build',
   ]

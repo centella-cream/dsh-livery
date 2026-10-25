@@ -33,9 +33,18 @@ import {
   oneLine,
   parseArgs,
   redact,
+  removeIsolatedHome,
   safeRemoveTree,
 } from './probe/util.mjs'
-import { dshVersion, installPlugin, profilePaths, resolveDshBin, summarizeOperation } from './probe/dsh-home.mjs'
+import {
+  cloneProfileIntoHome,
+  dshVersion,
+  installPlugin,
+  profilePaths,
+  resolveDshBin,
+  summarizeOperation,
+} from './probe/dsh-home.mjs'
+import { SUPPORTED_HOST_VERSIONS, adapterForTriple, adapterForVersion, describeAdapter } from './probe/certified-adapters.mjs'
 import { bootWeb, stopWeb } from './probe/boot.mjs'
 import { launchChrome } from './probe/playwright.mjs'
 import { bootstrapPage, newSession } from './probe/browser.mjs'
@@ -75,7 +84,15 @@ Options:
   --boot-timeout <ms>     Readiness timeout (default: 120000)
   --plugin-id <id>        Client module graph id (default: dsh-livery)
   --package <name>        npm package name installed in the profile (default: dsh-livery)
-  --profile-name <name>   Screenshot/profile bucket name (default: web-chrome / reuse)
+  --profile-name <name>   Screenshot/profile bucket name (default: <host-version>-web-chrome / reuse)
+  --expect-version <v>    Exact certified host version this run must certify
+                          (default: dsh --version for isolated runs; optional for --reuse)
+  --expect-profile-kind <web|desktop>
+                          Expected BootPayload.profileKind (default: web for isolated web runs)
+  --clone-from <dir>      Byte-clone an existing profile directory into the isolated home
+                          before installing (real-profile-clone passes; source is read-only)
+  --notes <file>          Markdown appended to the report as manual notes / scope caveats
+  --title <text>          Report title
   --locale <zh|en>        Browser locale for the primary pass (default: zh)
   --labels <json>         Override UI label copy (path to JSON, or inline JSON)
   --pw-core <path>        playwright-core index.mjs to import
@@ -97,6 +114,33 @@ function failStartup(message, details) {
   error.details = details
   error.startup = true
   throw error
+}
+
+/**
+ * Version-aware report limitations. One entry list per run; the §20 layout gap
+ * and the client-bundle URL deviation are facts of every certified build, while
+ * the desktop entry appears only for packaged-app / desktop-profile-kind runs.
+ */
+function buildKnownLimitations(ctx, adapter) {
+  const version = adapter?.hostVersion ?? ctx.config.expectedVersion ?? 'this host'
+  const sourceKind = adapter?.sourceKind ?? 'unknown-source'
+  const limitations = [
+    `HONEST GAP — IMPLEMENTATION_PLAN.md §20 "at least one safe layout capability actually effective" cannot be met on DSH ${version}: the certified adapter (${sourceKind}) exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.`,
+    'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → settings apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).',
+    '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
+    `DSH ${version} serves client bundles only through boot-graph grouped URLs (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (asserted as a documented warning).`,
+    'No Playwright browser download is used: the harness drives the system Chrome through channel: \'chrome\' (web carrier) or connects over CDP to the Electron renderer (desktop).',
+  ]
+  if (adapter?.sourceKind === 'packaged-app' || ctx.config.expectedProfileKind === 'desktop') {
+    limitations.push(
+      'DESKTOP SCOPE — native Electron window chrome, macOS traffic lights/leading, DPI scaling, vibrancy and Dock/rightbar window states are NOT programmatically verified by this run. The verified surface is the Desktop app runtime (app.asar + bundled Node 24.21.0) and its renderer web contents; every native-window claim is explicitly out of scope here.',
+      'DESKTOP SCOPE — the Desktop composition is booted by the Electron application itself; any evidence comes from a second isolated-instance launch (separate DSH_HOME + user-data-dir) or from the same app runtime serving a Web carrier, never from a headless boot of the desktop profile (the CLI refuses: profile desktop is managed exclusively by the Electron application).',
+      'DESKTOP SCOPE — coexistence with third-party first-paint plugins (e.g. dsh-skin in the real desktop profile) is recorded from observed styles/attributes; competing boot injections are reported, not hidden, and native-window composition effects remain unverified.',
+    )
+  } else {
+    limitations.push('Web profile only: Desktop / macOS / Windows native-window criteria from §18.9/§20 (Electron surface, caption, traffic lights, Dock) are out of scope for this harness.')
+  }
+  return limitations
 }
 
 async function main() {
@@ -122,6 +166,10 @@ async function main() {
         'pw-core',
         'dsh-bin',
         'title',
+        'expect-version',
+        'expect-profile-kind',
+        'clone-from',
+        'notes',
       ],
       aliases: { h: 'help' },
     })
@@ -150,7 +198,17 @@ async function main() {
   const pluginId = options['plugin-id'] ?? 'dsh-livery'
   const packageName = options.package ?? (pluginId === 'dsh-livery' ? 'dsh-livery' : pluginId)
   const mode = reuse ? 'reuse' : 'isolated'
-  const profileName = options['profile-name'] ?? (reuse ? 'reuse' : `web-chrome-${packageName}`)
+  const cloneFrom = options['clone-from'] ? path.resolve(options['clone-from']) : null
+  const expectVersionOption = options['expect-version'] ?? null
+  const expectProfileKindOption = options['expect-profile-kind'] ?? null
+  if (expectProfileKindOption !== null && !['web', 'desktop'].includes(expectProfileKindOption)) {
+    failStartup(`--expect-profile-kind must be web or desktop, got "${expectProfileKindOption}"`)
+  }
+  const expectedAdapterByOption = expectVersionOption ? adapterForVersion(expectVersionOption) : null
+  if (expectVersionOption && !expectedAdapterByOption) {
+    failStartup(`--expect-version ${expectVersionOption} is not a certified adapter (certified: ${SUPPORTED_HOST_VERSIONS.join(', ')})`.replace('${SUPPORTED_HOST_VERSIONS.join(', ')}', ''))
+  }
+  const profileNameOption = options['profile-name'] ?? null
   const bootTimeout = Number(options['boot-timeout'] ?? 120_000)
   const reportPath = options['no-report'] ? null : path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'docs', 'verification', 'web-acceptance.md'))
   const jsonPath = path.resolve(options.json ?? path.join(outDir, 'probe.json'))
@@ -165,7 +223,9 @@ async function main() {
       reuseUrl: reuse,
       pluginId,
       packageName,
-      profileName,
+      profileName: profileNameOption,
+      profileNameOption,
+      dshProfile: 'web',
       outDir,
       screensDir,
       htmlDir,
@@ -183,6 +243,13 @@ async function main() {
       labelOverrides: options.labels ?? null,
       title: options.title ?? null,
       liveryMode: pluginId === 'dsh-livery',
+      expectVersionOption,
+      expectedVersion: expectedAdapterByOption?.hostVersion ?? null,
+      expectedAdapter: expectedAdapterByOption,
+      expectedProfileKind: expectProfileKindOption ?? (reuse ? null : 'web'),
+      cloneFrom,
+      notesPath: options.notes ? path.resolve(options.notes) : null,
+      notesText: null,
       baseUrl: null,
     },
     runner: new CheckRunner(),
@@ -191,14 +258,7 @@ async function main() {
     artifacts: { screenshots: [], filmstrip: [], html: [] },
     phases: [],
     deviations: [],
-    knownLimitations: [
-      'HONEST GAP — IMPLEMENTATION_PLAN.md §20 "at least one safe layout capability actually effective" cannot be met on DSH 0.2.0-rc.2: the certified contract exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.',
-      'Web profile only: Desktop / macOS / Windows native-window criteria from §18.9/§20 (Electron surface, caption, traffic lights, Dock) are out of scope for this harness.',
-      'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → settings apply → hard reload → restore stock → official uninstall → restart residue.',
-      '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
-      'DSH 0.2.0-rc.2 serves client bundles only through boot-graph grouped URLs (`plugins/??<pkg>/client.js&rev=…`); the bare `/plugins/<pkg>/client.js?rev=` form returns 404 in this build (asserted as a documented warning).',
-      'No Playwright browser download is used: the harness drives the system Chrome through `channel: \'chrome\'`.',
-    ],
+    knownLimitations: [],
   }
   ctx.config.labels = labelsFor(locale)
   if (ctx.config.labelOverrides) {
@@ -234,9 +294,49 @@ async function main() {
     // ---------------------------------------------------------------- prepare
     {
       const p = phase('prepare')
-      const dshVersionInfo = await dshVersion(ctx.config.dshBin, reuse ? undefined : path.join(dshHome, '.version-probe'))
-      ctx.environment.dshVersion = dshVersionInfo.version
+      // `dsh --version` does not need the run home; a fixed workspace probe keeps
+      // external (Desktop /tmp) homes valid without a nested path.
+      const dshVersionInfo = await dshVersion(ctx.config.dshBin, reuse ? undefined : path.join(TMP_ROOT, 'version-probe'))
+      const detectedVersion = String(dshVersionInfo.version ?? '').trim().split(/\s+/)[0] || null
+      ctx.environment.dshVersion = detectedVersion ?? dshVersionInfo.version
+      ctx.environment.dshBin = ctx.config.dshBin
       ctx.environment.osRelease = (await import('node:os')).release()
+      if (ctx.config.notesPath) {
+        try {
+          ctx.config.notesText = await readFile(ctx.config.notesPath, 'utf8')
+        } catch (error) {
+          ctx.deviations.push(`could not read --notes ${ctx.config.notesPath}: ${error.message}`)
+        }
+      }
+      // Resolve the certified adapter this run must prove. Isolated runs infer
+      // it from the CLI that will boot the host; reuse runs infer it from the
+      // boot payload later unless --expect-version pins it.
+      let adapter = ctx.config.expectedAdapter ?? null
+      if (!adapter && !reuse) {
+        adapter = adapterForVersion(detectedVersion)
+        if (!adapter) {
+          failStartup(
+            `the dsh CLI reports uncertified host version "${detectedVersion}" (certified: ${SUPPORTED_HOST_VERSIONS.join(', ')}); refusing to run a matrix acceptance`,
+            { detectedVersion, certified: SUPPORTED_HOST_VERSIONS },
+          )
+        }
+      }
+      if (adapter) {
+        ctx.config.expectedAdapter = adapter
+        ctx.config.expectedVersion = adapter.hostVersion
+        ctx.environment.hostRuntime = adapter.sourceKind
+        ctx.environment.expectedAdapter = describeAdapter(adapter)
+        ctx.runner.pass('env.certified-host', 'dsh CLI host version maps to a certified adapter record', describeAdapter(adapter), { adapter })
+      } else if (!reuse) {
+        failStartup('no certified adapter resolved for this isolated run')
+      }
+      if (!ctx.config.expectedVersion) ctx.config.expectedVersion = detectedVersion
+      if (!ctx.config.profileName) {
+        ctx.config.profileName = reuse
+          ? `reuse${ctx.config.expectedVersion ? `-${ctx.config.expectedVersion}` : ''}`
+          : `${ctx.config.expectedVersion ?? 'web'}-web-chrome`
+      }
+      ctx.knownLimitations = buildKnownLimitations(ctx, adapter)
       if (!reuse) {
         if (!(await access(tgz).then(() => true, () => false))) failStartup(`tarball not found: ${tgz}`)
         const manifest = await readTarballManifest(tgz)
@@ -245,8 +345,25 @@ async function main() {
         if (manifest && manifest.name !== packageName) {
           ctx.deviations.push(`tarball package name "${manifest.name}" differs from --package "${packageName}"`)
         }
-        if (!keep) await safeRemoveTree(dshHome)
+        if (!keep) await removeIsolatedHome(dshHome)
         await ensureDir(dshHome)
+        if (cloneFrom) {
+          const clone = await cloneProfileIntoHome({ source: cloneFrom, home: dshHome, name: 'web' })
+          ctx.state.clone = clone
+          ctx.runner.pass(
+            'lifecycle.profile-cloned',
+            'existing profile byte-cloned into the isolated home (source read-only)',
+            `${clone.source} → ${clone.destDir} (${clone.durationMs} ms); deps=${clone.dependencies.join(', ') || '(none)'}; bundles=${clone.bundles.join(', ')}`,
+            clone,
+          )
+          if (clone.repairs.length) {
+            const detail = clone.repairs.map((repair) => `${repair.dependency}: ${repair.kind} (${repair.stale}${repair.replacement ? ` → ${repair.replacement}` : ''})`).join('; ')
+            ctx.deviations.push(`cloned profile manifest repaired for reproduction: ${detail}`)
+            ctx.runner.warn('lifecycle.clone-repaired', 'cloned profile needed local dependency-spec repair before install', detail)
+          } else {
+            ctx.runner.pass('lifecycle.clone-repaired', 'cloned profile manifest needs no local dependency repair', 'all local file:/link: specs resolve')
+          }
+        }
         ctx.install = await installPlugin({ bin: ctx.config.dshBin, home: dshHome, tgz, packageName })
         ctx.state.installTimings = { durationMs: ctx.install.durationMs, exitCode: ctx.install.exitCode, stdout: oneLine(ctx.install.stdout, 600), stderr: oneLine(ctx.install.stderr, 600) }
         const installedOk = ctx.install.exitCode === 0 && Boolean(ctx.install.dependencies?.[packageName]) && ctx.install.bundles?.includes(packageName)
@@ -267,7 +384,11 @@ async function main() {
             /* informational */
           }
         }
-        ctx.runner.pass('lifecycle.profile-initialized', 'isolated profile initialized from the shipped web template', `home=${dshHome}; profile=${profilePaths(dshHome).profileDir}; initialized=${ctx.install.initializedProfile}; sha256=${ctx.install.tarballSha256 ?? '?'}`)
+        if (!cloneFrom) {
+          ctx.runner.pass('lifecycle.profile-initialized', 'isolated profile initialized from the shipped web template', `home=${dshHome}; profile=${profilePaths(dshHome).profileDir}; initialized=${ctx.install.initializedProfile}; sha256=${ctx.install.tarballSha256 ?? '?'}`)
+        } else {
+          ctx.runner.pass('lifecycle.install-on-clone', 'official install path works against the cloned profile', `profile=${profilePaths(dshHome).profileDir}; initialized=${ctx.install.initializedProfile}; sha256=${ctx.install.tarballSha256 ?? '?'}`)
+        }
       } else {
         const url = new URL(reuse)
         if (!url.searchParams.get('token')) failStartup('--reuse URL must be the printed `dsh web: …/?token=<hex>` URL (token is required for the one-time cookie exchange)')
@@ -298,6 +419,15 @@ async function main() {
       bootBaseUrl = bootHandle.baseUrl
       ctx.config.baseUrl = bootHandle.baseUrl
       ctx.runner.pass('lifecycle.boot', '`dsh --profile web --no-open --port 0` boots and prints its authenticated URL', `ready in ${bootHandle.readyMs}ms on port ${bootHandle.port}; log=${bootHandle.logPath}`, { url: redact(bootHandle.url), readyMs: bootHandle.readyMs, pid: bootHandle.pid })
+      const bootLog = bootHandle.logText()
+      ctx.state.bootLogTail = bootLog.split('\n').slice(-40).join('\n')
+      const skippedLines = bootLog.split('\n').filter((line) => /skipped|incompatible|warning/i.test(line)).slice(0, 12)
+      if (skippedLines.length) {
+        ctx.deviations.push(`boot log carries ${skippedLines.length} warning/skipped line(s): ${oneLine(skippedLines.join(' | '), 800)}`)
+        ctx.runner.warn('lifecycle.boot-warnings', 'boot log has no skipped-bundle or compatibility warnings', oneLine(skippedLines.join(' | '), 700))
+      } else {
+        ctx.runner.pass('lifecycle.boot-warnings', 'boot log has no skipped-bundle or compatibility warnings', 'no skipped/incompatible/warning lines in the boot log')
+      }
       p.record(true, `ready in ${bootHandle.readyMs}ms port ${bootHandle.port}`)
     } else {
       bootUrl = reuse
@@ -469,7 +599,7 @@ async function main() {
     if (browserInfo?.browser) await browserInfo.browser.close().catch(() => {})
     if (dshHome && !keep) {
       try {
-        await safeRemoveTree(dshHome)
+        await removeIsolatedHome(dshHome)
       } catch (error) {
         ctx.deviations.push(`could not remove isolated home: ${error.message}`)
       }

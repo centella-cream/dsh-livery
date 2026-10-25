@@ -109,3 +109,29 @@ pnpm verify                      # typecheck + tests + compile/check + audits + 
 node scripts/acceptance-web.mjs --tgz dsh-livery-0.1.0.tgz
 node scripts/cli.mjs gate:support-matrix   # expected: BLOCKED until G6
 ```
+
+---
+
+# Round 3 — multi-version acceptance (2026-10-25)
+
+Final artifact: `dsh-livery-0.1.0.tgz` sha256 `19dc6895e8986fab1581c2b22da10e0507811e94f5596a2f32a82fe02b60ac0b` (257,022 B). Full report:
+[docs/verification/multi-version-acceptance.md](multi-version-acceptance.md).
+
+| Host | Profile / runtime | Result | Evidence |
+|---|---|---|---|
+| `0.2.1-rc.2` | Web/Chrome, isolated full acceptance | **121 pass / 0 fail / 3 skip / 1 warn** | `artifacts/acceptance/0.2.1-rc.2-web/` |
+| `0.2.1-rc.2` | Web/Chrome, user Web Profile clone | **121 pass / 0 fail / 3 skip / 3 warn** | `artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone/` |
+| `0.2.1-rc.3` | Desktop packaged-app runtime, headless web carrier | **121 pass / 0 fail / 3 skip / 1 warn** | `artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/` |
+| `0.2.0-rc.2` | Web/Chrome (round 2, unchanged) | **110 pass / 0 fail / 3 skip / 2 warn** + clone 80/0/7/2 | `artifacts/acceptance/` (round-2 dirs) |
+
+Repo gates on the final state: tsc 0 errors, vitest 527/527, 92 generated files across
+2 catalog profiles in sync, per-livery CSS 9096 B (0.2.0) / 8508 B (0.2.1) vs 12,288 B
+hard cap, contrast 1180 assertions/profile with 0 failures, token coverage missing 0
+per profile, loader-ABI/adapter-check/pack-check/lint green, client gzip 20,282 B
+(25,600 B budget).
+
+Certification gaps are explicit: Web/Edge pending; native Electron window surfaces
+(caption/traffic lights/DPI/vibrancy) pending — the packaged runtime was verified via
+its web carrier only; G6/formal support matrix not claimed; layout capability gate and
+wallpaper/import limitations unchanged. See
+`artifacts/release/known-limitations.md`.

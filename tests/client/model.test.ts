@@ -16,12 +16,13 @@ import {
   normalizeSkinId,
   previewFileName,
   previewSeeds,
+  previewAssetUrl,
   previewUrl,
   shortHash,
   sortLiveries,
 } from '../../src/client/model.js'
 import type { LiveryRuntimeSnapshot } from '../../src/client/model.js'
-import { makeCatalog, makeLivery, TEST_CAPABILITIES, TEST_CONTRACT_HASH } from './fixtures.js'
+import { makeCatalog, makeLivery, TEST_ADAPTER, TEST_CAPABILITIES, TEST_PREVIEWS_BASE } from './fixtures.js'
 import type { CapabilityMap } from '../../src/core/types.js'
 
 const CATALOG = makeCatalog()
@@ -197,10 +198,22 @@ describe('config normalization and helpers', () => {
     expect(isStock('fjord')).toBe(false)
   })
 
-  it('builds the frozen preview filename/URL convention', () => {
+  it('builds the frozen preview filename convention', () => {
     expect(previewFileName('fjord', 'zh', 'light')).toBe('fjord-zh-light.svg')
     expect(previewFileName('fjord', 'en', 'dark')).toBe('fjord-en-dark.svg')
-    expect(previewUrl('fjord', 'zh', 'dark')).toBe('/livery/assets/previews/fjord-zh-dark.svg')
+  })
+
+  it('joins preview URLs onto the catalog-declared base, never a hardcoded path', () => {
+    // The profile-scoped base comes from the fetched catalog (multi-version.md §6).
+    expect(previewUrl(TEST_PREVIEWS_BASE, 'fjord', 'zh', 'dark')).toBe(`${TEST_PREVIEWS_BASE}fjord-zh-dark.svg`)
+    expect(previewUrl(`${TEST_PREVIEWS_BASE}`, 'fjord', 'en', 'light'))
+      .toBe(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
+    // Trailing slash is optional and normalized exactly once.
+    const withoutSlash = TEST_PREVIEWS_BASE.slice(0, -1)
+    expect(previewAssetUrl(withoutSlash, 'a.svg')).toBe(`${TEST_PREVIEWS_BASE}a.svg`)
+    expect(previewAssetUrl(TEST_PREVIEWS_BASE, 'a.svg')).toBe(`${TEST_PREVIEWS_BASE}a.svg`)
+    expect(previewUrl('/livery/assets/previews/other-profile/', 'x', 'zh', 'light'))
+      .toBe('/livery/assets/previews/other-profile/x-zh-light.svg')
   })
 
   it('shortens hashes for display', () => {
@@ -220,7 +233,7 @@ describe('config normalization and helpers', () => {
 
   it('creates the boot-phase snapshot', () => {
     const snapshot = createInitialSnapshot(
-      { adapterId: 'a', contractHash: TEST_CONTRACT_HASH, pluginVersion: '1', hostVersion: 'h' },
+      { adapterId: TEST_ADAPTER.adapterId, contractHash: TEST_ADAPTER.contractHash, pluginVersion: '1', hostVersion: TEST_ADAPTER.hostVersion },
       { status: 'absent', reason: undefined, diagnostics: ['x'] },
     )
     expect(snapshot.phase).toBe('boot')
@@ -228,6 +241,15 @@ describe('config normalization and helpers', () => {
     expect(snapshot.revision).toBe(0)
     expect(snapshot.configStatus).toBe('loading')
     expect(snapshot.locale).toBe('en')
+    expect(snapshot.catalogProfile).toBeUndefined()
+  })
+
+  it('seeds the catalog profile from the handshake when one is known', () => {
+    const snapshot = createInitialSnapshot(
+      { adapterId: TEST_ADAPTER.adapterId, contractHash: TEST_ADAPTER.contractHash, pluginVersion: '1', hostVersion: TEST_ADAPTER.hostVersion },
+      { status: 'valid', reason: undefined, diagnostics: [], catalogProfile: TEST_ADAPTER.catalogProfile },
+    )
+    expect(snapshot.catalogProfile).toBe(TEST_ADAPTER.catalogProfile)
   })
 })
 

@@ -1,22 +1,22 @@
 /**
  * Build-time audits: token coverage, CSS safety and contrast.
  *
- * These are release gates, not reports: `compileCatalog` refuses to emit a
- * catalog when any of them fails, and `audit:*` CLI commands exit non-zero. The
- * artifacts written under `artifacts/liveries/` are the machine-readable evidence
- * for each gate.
+ * Multi-version rule (docs/implementation/multi-version.md §2): every audit is
+ * relative to one explicit `StockSnapshot`. The required-token set, the direct
+ * static bridge set and every documented inheritance/exemption is computed from
+ * that snapshot's `referencedBy` data — never from a global token table and never
+ * hardcoded — so a host that adds/removes a consumed token re-opens the gate.
  *
- * CSS safety is enforced with a real postcss parse (never regex over the whole
- * sheet): every rendered fragment is parsed, selectors are checked against the
- * only allowed scopes (`body[data-dsh-livery]`, `:root:lang()`), token
- * declarations must live under those scopes, `!important` is forbidden, CSS
- * Modules hash class selectors are forbidden, remote URLs are forbidden, and
- * `@layer dsh-livery.compat` is the only home for layout compensation rules.
+ * These are release gates, not reports: `compileCatalog` refuses to emit a
+ * catalog profile when any of them fails, and `audit:*` CLI commands exit
+ * non-zero. The artifacts written under `artifacts/liveries/<profileId>/` are the
+ * machine-readable evidence for each gate.
  */
 import postcss from 'postcss'
 import type { ChildNode, Declaration, Rule } from 'postcss'
 import type {
   CapabilityDegrade,
+  CatalogProfileData,
   CompiledLivery,
   CompiledVariant,
   ContrastEntry,
@@ -26,8 +26,8 @@ import type {
 } from '../core/types.js'
 import { summarizeContrast } from '../core/contrast.js'
 import { DELIBERATELY_INHERITED_TOKENS } from '../core/derive.js'
+import type { StockSnapshot } from '../generated/stock.js'
 import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from './previews.js'
-import { STOCK_TOKENS } from '../generated/stock.js'
 
 /** Documented size budgets from IMPLEMENTATION_PLAN §18.8 (bytes, UTF-8). */
 export const SIZE_BUDGETS = {
@@ -43,6 +43,9 @@ export const Z_INDEX_BUDGET = 20
 /** CSS cascade layer that must own every layout compensation rule. */
 export const COMPAT_LAYER_NAME = 'dsh-livery.compat'
 
+/** Version of the reasoning documented in `exemptions`; bump when re-reviewed. */
+export const TOKEN_EXEMPTION_VERSION = 'multi-version-r1'
+
 export interface CompileProblem {
   readonly code: string
   readonly path: string
@@ -50,7 +53,7 @@ export interface CompileProblem {
 }
 
 /* ------------------------------------------------------------------ */
-/* Token coverage                                                       */
+/* Token coverage (per stock snapshot)                                  */
 /* ------------------------------------------------------------------ */
 
 export interface TokenExemption {
@@ -62,16 +65,26 @@ export interface TokenExemption {
 }
 
 /**
- * Versioned exemption list: required host tokens this compiler intentionally does
- * not override. Each entry documents *why* stock inheritance is the correct
- * rendering (semantic hue preservation, host rebind contracts, alpha compositing
- * helpers, decorative gradients), so a future contract bump can re-review them.
- *
- * `DELIBERATELY_INHERITED_TOKENS` from `src/core/derive.ts` is the authoritative
- * core list; the compiler adds the alpha-only aliases that derive resolves to the
- * same stock alpha and therefore omits from the emitted override map.
+ * Alpha-only aliases derive resolves to exactly the stock value: they are
+ * black/white (or semantic-red) washes whose compositing is independent of the
+ * palette ramp, so inheriting the stock alpha is the correct rendering. Token
+ * names are version-independent (the 0.2.1 token contract keeps every name) and
+ * entries are only consulted when a required token is uncovered.
  */
-const EXEMPTION_SINCE = 'dsh-0.2.0-rc.2-r1'
+const ALPHA_INHERITANCE: readonly TokenExemption[] = [
+  { token: '--dsw-alias-bg-mask-1', reason: 'pure black alpha scrim; composites correctly over every livery surface', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-bg-mask-drop', reason: 'drop-shadow scrim alpha; painted over the page surface, so the stock alpha is mode-correct', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-bg-skeleton', reason: 'black/white alpha skeleton wash with no hue; stock alpha is correct on every surface', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-inverted', reason: 'transparent/white alpha hairline used for contrast inversion; hue-free', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-l1', reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-l2', reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-l2-darkmode-thin', reason: 'dark-mode hairline thinning helper; alpha-only and mode-correct', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-l3', reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-border-l4', reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-interactive-bg-active', reason: 'press-state neutral wash at ~10% alpha; the stock tint stays below perceptual threshold over any livery surface and the contrast matrix does not assert it', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-interactive-bg-hover', reason: 'hover neutral wash at ~6% alpha; the stock tint stays below perceptual threshold over any livery surface', since: TOKEN_EXEMPTION_VERSION },
+  { token: '--dsw-alias-interactive-bg-hover-danger', reason: 'danger hover wash at ~5% alpha; semantic red is preserved by design', since: TOKEN_EXEMPTION_VERSION },
+]
 
 /** Reasons for the core's deliberately-inherited tokens. */
 const CORE_INHERITANCE_REASONS: Readonly<Record<string, string>> = {
@@ -92,207 +105,101 @@ const CORE_INHERITANCE_REASONS: Readonly<Record<string, string>> = {
   '--dsw-alias-file-diff-deleted-marker': 'diff colours are semantic added/deleted hues and are intentionally not re-themed',
 }
 
-/**
- * Alpha-only aliases derive resolves to exactly the stock value: they are
- * black/white (or semantic-red) washes whose compositing is independent of the
- * palette ramp, so inheriting the stock alpha is the correct rendering.
- */
-const ALPHA_INHERITANCE: readonly TokenExemption[] = [
-  {
-    token: '--dsw-alias-bg-mask-1',
-    reason: 'pure black alpha scrim; composites correctly over every livery surface',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-bg-mask-drop',
-    reason: 'drop-shadow scrim alpha; the host paints it over the page surface, so the stock alpha is mode-correct',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-bg-skeleton',
-    reason: 'black/white alpha skeleton wash with no hue; stock alpha is correct on every surface',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-inverted',
-    reason: 'transparent/white alpha hairline used for contrast inversion; hue-free',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-l1',
-    reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-l2',
-    reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-l2-darkmode-thin',
-    reason: 'dark-mode hairline thinning helper; alpha-only and mode-correct',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-l3',
-    reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-border-l4',
-    reason: 'black/white alpha hairline; compositing is hue-free, so the stock alpha ladder stays correct over the derived surfaces',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-interactive-bg-active',
-    reason: 'press-state neutral wash at ~10% alpha; the stock tint stays below perceptual threshold over any livery surface and the contrast matrix does not assert it',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-interactive-bg-hover',
-    reason: 'hover neutral wash at ~6% alpha; the stock tint stays below perceptual threshold over any livery surface',
-    since: EXEMPTION_SINCE,
-  },
-  {
-    token: '--dsw-alias-interactive-bg-hover-danger',
-    reason: 'danger hover wash at ~5% alpha; semantic red is preserved by design',
-    since: EXEMPTION_SINCE,
-  },
-]
+/** Token sets derived from one host-version stock snapshot. */
+export interface StockTokenSets {
+  readonly version: string
+  readonly tokenContractHash: string
+  /** Every `--dsw-*` declaration consumed by a shipped package. */
+  readonly consumed: readonly string[]
+  /** Consumed alias/specific/static tokens (the A-tier required set). */
+  readonly required: readonly string[]
+  /** Consumed alias/specific tokens (manifest-overridable, emitted when changed). */
+  readonly aliasSpecific: readonly string[]
+  /** Static steps painted directly by a package other than the theme package. */
+  readonly directStatics: readonly string[]
+  /** Alias/specific required tokens + direct statics: the shipped override set. */
+  readonly emitted: ReadonlySet<string>
+  /** Required host tokens a livery may deliberately inherit, with reasons. */
+  readonly exemptions: ReadonlyMap<string, TokenExemption>
+}
 
-function buildTokenExemptions(): TokenExemption[] {
-  const exemptions: TokenExemption[] = []
-  const seen = new Set<string>()
+const TOKEN_SETS_CACHE = new Map<string, StockTokenSets>()
+
+/** Compute (and cache) the token sets for one stock snapshot. */
+export function tokenSetsFor(stock: StockSnapshot): StockTokenSets {
+  const cacheKey = `${stock.version}|${stock.tokenContractHash}`
+  const cached = TOKEN_SETS_CACHE.get(cacheKey)
+  if (cached !== undefined) return cached
+
+  const entries = Object.entries(stock.tokens)
+  const consumed = entries
+    .filter(([, declaration]) => (declaration.referencedBy?.length ?? 0) > 0)
+    .map(([name]) => name)
+    .sort()
+  const required = consumed.filter((name) => /^--dsw-(alias|specific|static)-[a-z0-9-]+$/.test(name))
+  const aliasSpecific = required.filter((name) => /^--dsw-(alias|specific)-/.test(name))
+  const directStatics = entries
+    .filter(
+      ([name, declaration]) =>
+        name.startsWith('--dsw-static-') &&
+        (declaration.referencedBy ?? []).some((pkg) => pkg !== 'dsh-client-ui-theme'),
+    )
+    .map(([name]) => name)
+    .sort()
+  const emitted = new Set<string>([...aliasSpecific, ...directStatics])
+
+  const exemptions = new Map<string, TokenExemption>()
+  const addExemption = (exemption: TokenExemption): void => {
+    if (!exemptions.has(exemption.token)) exemptions.set(exemption.token, exemption)
+  }
   for (const token of DELIBERATELY_INHERITED_TOKENS) {
-    if (seen.has(token)) continue
-    seen.add(token)
-    exemptions.push({
+    addExemption({
       token,
       reason: CORE_INHERITANCE_REASONS[token] ?? 'documented deliberately-inherited token from src/core/derive.ts',
-      since: EXEMPTION_SINCE,
+      since: TOKEN_EXEMPTION_VERSION,
     })
   }
-  for (const exemption of ALPHA_INHERITANCE) {
-    if (seen.has(exemption.token)) continue
-    seen.add(exemption.token)
-    exemptions.push(exemption)
-  }
+  for (const exemption of ALPHA_INHERITANCE) addExemption(exemption)
   // Raw palette steps referenced only by the theme package: they are consumed by
-  // the alias-layer definitions that this compiler replaces with concrete derived
+  // the alias-layer definitions that the compiler replaces with concrete derived
   // values, so the stock step is unreachable in the painted UI.
-  for (const token of REQUIRED_TOKENS) {
-    if (EMITTED_TOKEN_NAMES.has(token) || seen.has(token)) continue
+  for (const token of required) {
+    if (emitted.has(token) || exemptions.has(token)) continue
     if (!token.startsWith('--dsw-static-')) continue
-    seen.add(token)
-    exemptions.push({
+    addExemption({
       token,
       reason:
         'theme-internal palette step: referenced only by the theme package while defining the alias layer; the compiler overrides those aliases with concrete derived values, so this stock step is never painted directly',
-      since: EXEMPTION_SINCE,
+      since: TOKEN_EXEMPTION_VERSION,
     })
   }
-  return exemptions
-}
 
-/** Version string recorded in artifacts so exemption reviews are traceable. */
-export const TOKEN_EXEMPTION_VERSION = 'dsh-0.2.0-rc.2-r1'
-
-/**
- * A-tier required set (IMPLEMENTATION_PLAN §8.2, Lead pin): every
- * `--dsw-alias-*` / `--dsw-specific-*` / `--dsw-static-*` declaration that at
- * least one shipped DSH package consumes, read from the frozen contract snapshot
- * at compile time (never hardcoded), sorted for determinism.
- */
-export const REQUIRED_TOKENS: readonly string[] = Object.entries(STOCK_TOKENS)
-  .filter(
-    ([name, declaration]) =>
-      /^--dsw-(alias|specific|static)-[a-z0-9-]+$/.test(name) &&
-      (declaration.referencedBy?.length ?? 0) > 0,
-  )
-  .map(([name]) => name)
-  .sort()
-
-/**
- * Raw palette steps consumed *directly* by a shipped package other than the
- * theme package itself. The theme package references every static step while
- * defining the alias layer; those references are already covered by overriding
- * the aliases with concrete values. These 13 steps are different: components read
- * them straight from CSS, so stock values would leave visible mixed-colour
- * surfaces. They are therefore part of the emitted token overlay.
- */
-export const DIRECT_CONSUMED_STATIC_TOKENS: readonly string[] = Object.entries(STOCK_TOKENS)
-  .filter(
-    ([name, declaration]) =>
-      name.startsWith('--dsw-static-') &&
-      (declaration.referencedBy ?? []).some((pkg) => pkg !== 'dsh-client-ui-theme'),
-  )
-  .map(([name]) => name)
-  .sort()
-
-/**
- * Emission policy (IMPLEMENTATION_PLAN §8.2): the shipped override set is exactly
- * the consumed set — required alias/specific tokens plus directly-consumed static
- * steps. Everything else is inherited from stock and reported as a non-blocking
- * diagnostic (`inheritedUnconsumed`).
- */
-export const TOKEN_EMISSION_POLICY = 'consumed-only' as const
-
-/**
- * Emission set (Lead-approved size-budget policy, §18.8): the required
- * alias/specific tokens plus the static steps that are painted directly. Static
- * steps referenced *only* by the theme package are internal to the alias layer
- * definitions the compiler already replaces with concrete values, so emitting
- * them would duplicate ~4.7KB of CSS without changing a single painted pixel;
- * they are documented as inherited exemptions instead.
- */
-export const EMITTED_TOKEN_NAMES: ReadonlySet<string> = new Set([
-  ...REQUIRED_TOKENS.filter((name) => /^--dsw-(alias|specific)-/.test(name)),
-  ...DIRECT_CONSUMED_STATIC_TOKENS,
-])
-
-/** The versioned exemption list itself (deterministically ordered). */
-export const TOKEN_EXEMPTIONS: readonly TokenExemption[] = buildTokenExemptions()
-
-const EXEMPTION_BY_TOKEN: ReadonlyMap<string, TokenExemption> = new Map(
-  TOKEN_EXEMPTIONS.map((exemption) => [exemption.token, exemption]),
-)
-
-
-/** Trim a derived variant down to the consumed-token emission policy. */
-export function selectEmittedVariant(variant: CompiledVariant): CompiledVariant {
-  const tokens: Record<string, string> = {}
-  for (const [name, value] of Object.entries(variant.tokens)) {
-    if (EMITTED_TOKEN_NAMES.has(name)) tokens[name] = value
+  const sets: StockTokenSets = {
+    version: stock.version,
+    tokenContractHash: stock.tokenContractHash,
+    consumed,
+    required,
+    aliasSpecific,
+    directStatics,
+    emitted,
+    exemptions,
   }
-  return { seeds: variant.seeds, tokens, contrast: variant.contrast }
-}
-
-/** Derived tokens intentionally left at their stock value (non-blocking). */
-export function inheritedUnconsumedTokens(derived: Iterable<string>): string[] {
-  const inherited: string[] = []
-  for (const name of new Set(derived)) {
-    if (!EMITTED_TOKEN_NAMES.has(name)) inherited.push(name)
-  }
-  return inherited.sort()
-}
-
-/** Alias/specific tokens referenced by shipped packages but not emitted (should be empty). */
-export function unconsumedAliasTokens(derived: Iterable<string>): string[] {
-  return inheritedUnconsumedTokens(derived).filter((name) => REQUIRED_TOKENS.includes(name))
+  TOKEN_SETS_CACHE.set(cacheKey, sets)
+  return sets
 }
 
 /** Compare a generated token set against the required host-token set. */
-export function coverTokens(generated: Iterable<string>): TokenCoverageReport {
+export function coverTokens(generated: Iterable<string>, sets: StockTokenSets): TokenCoverageReport {
   const present = new Set(generated)
   const covered: string[] = []
   const inherited: string[] = []
   const missing: string[] = []
-  for (const token of REQUIRED_TOKENS) {
+  for (const token of sets.required) {
     if (present.has(token)) {
       covered.push(token)
       continue
     }
-    if (EXEMPTION_BY_TOKEN.has(token)) {
+    if (sets.exemptions.has(token)) {
       inherited.push(token)
       continue
     }
@@ -307,7 +214,10 @@ export function liveryTokenNames(livery: Pick<CompiledLivery, 'light' | 'dark'>)
 }
 
 /** Aggregate coverage across every livery: a token only counts as covered when every livery emits it. */
-export function coverCatalog(liveries: readonly Pick<CompiledLivery, 'light' | 'dark'>[]): TokenCoverageReport {
+export function coverCatalog(
+  liveries: readonly Pick<CompiledLivery, 'light' | 'dark'>[],
+  sets: StockTokenSets,
+): TokenCoverageReport {
   const emitted = new Map<string, number>()
   for (const livery of liveries) {
     for (const token of liveryTokenNames(livery)) {
@@ -317,13 +227,13 @@ export function coverCatalog(liveries: readonly Pick<CompiledLivery, 'light' | '
   const covered: string[] = []
   const inherited: string[] = []
   const missing: string[] = []
-  for (const token of REQUIRED_TOKENS) {
+  for (const token of sets.required) {
     const count = emitted.get(token) ?? 0
     if (count === liveries.length && count > 0) {
       covered.push(token)
       continue
     }
-    if (EXEMPTION_BY_TOKEN.has(token)) {
+    if (sets.exemptions.has(token)) {
       inherited.push(token)
       continue
     }
@@ -333,15 +243,42 @@ export function coverCatalog(liveries: readonly Pick<CompiledLivery, 'light' | '
 }
 
 /** Per-token exemption metadata for artifacts (only tokens actually exempted). */
-export function exemptionDetails(tokens: readonly string[]): TokenExemption[] {
+export function exemptionDetails(tokens: readonly string[], sets: StockTokenSets): TokenExemption[] {
   return tokens.flatMap((token) => {
-    const exemption = EXEMPTION_BY_TOKEN.get(token)
+    const exemption = sets.exemptions.get(token)
     return exemption === undefined ? [] : [exemption]
   })
 }
 
+/** Derived tokens intentionally left at their stock value (non-blocking). */
+export function inheritedUnconsumedTokens(derived: Iterable<string>, sets: StockTokenSets): string[] {
+  const inherited: string[] = []
+  for (const name of new Set(derived)) {
+    if (!sets.emitted.has(name)) inherited.push(name)
+  }
+  return inherited.sort()
+}
+
+/**
+ * Trim a derived variant down to the consumed-token emission policy (idempotent).
+ * Tokens named in `explicitOverrides` are always kept: an author override that
+ * passed manifest validation is intent, even when no shipped package consumes
+ * the token yet ("explicit overrides win", interfaces.md §2).
+ */
+export function selectEmittedVariant(
+  variant: CompiledVariant,
+  sets: StockTokenSets,
+  explicitOverrides: ReadonlySet<string> = new Set(),
+): CompiledVariant {
+  const tokens: Record<string, string> = {}
+  for (const [name, value] of Object.entries(variant.tokens)) {
+    if (sets.emitted.has(name) || explicitOverrides.has(name)) tokens[name] = value
+  }
+  return { seeds: variant.seeds, tokens, contrast: variant.contrast }
+}
+
 /* ------------------------------------------------------------------ */
-/* CSS safety                                                           */
+/* CSS safety                                                          */
 /* ------------------------------------------------------------------ */
 
 export type CssAxis = 'tokens' | 'typography' | 'layout' | 'boot'
@@ -384,8 +321,6 @@ const AT_FONT_FACE_PATTERN = /@font-face\b/gi
 const CLOSE_STYLE_PATTERN = /<\/style/gi
 
 function splitSelectorList(selector: string): string[] {
-  // A comma inside :not()/:is()/:where() must not split the list; rules emitted by
-  // Livery never contain those, but be conservative for host-injected text.
   const out: string[] = []
   let depth = 0
   let current = ''
@@ -444,8 +379,7 @@ function byteLength(input: string): number {
 
 /**
  * Audit already-rendered CSS fragments. Pure and deterministic: the compiler calls
- * this per livery, `audit:css` calls it for the whole generated catalog plus boot
- * CSS for every livery.
+ * this per livery, `audit:css` calls it for every profile's catalog plus boot CSS.
  */
 export function auditCssFragments(fragments: readonly CssFragment[]): CssAuditResult {
   let important = 0
@@ -472,6 +406,7 @@ export function auditCssFragments(fragments: readonly CssFragment[]): CssAuditRe
       root = postcss.parse(css, { from: undefined })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
+      const violations = [`${fragment.axis}: CSS does not parse (${message})`]
       return {
         report: {
           important: important + 1,
@@ -494,7 +429,7 @@ export function auditCssFragments(fragments: readonly CssFragment[]): CssAuditRe
           unlayeredCompatRules,
           bytes,
           pass: false,
-          violations: [`${fragment.axis}: CSS does not parse (${message})`],
+          violations,
         },
       }
     }
@@ -631,28 +566,47 @@ export function summarizeLiveryContrast(livery: Pick<CompiledLivery, 'id' | 'lig
 }
 
 /* ------------------------------------------------------------------ */
-/* Artifacts                                                            */
+/* Artifact context                                                     */
 /* ------------------------------------------------------------------ */
 
 export interface ArtifactContext {
+  readonly profileId: string
   readonly sourceHash: string
-  readonly contractHash: string
   readonly compiledAt: string
-  readonly adapterId: string
+  /** Exact host versions that share this profile, ascending. */
+  readonly sourceAdapters: readonly string[]
+  /** Adapter ids of the same group, ascending by host version. */
+  readonly adapterIds: readonly string[]
+  /** Contract hash of the group's representative adapter. */
+  readonly contractHash: string
+  /** Representative adapter identity/presentation facts. */
   readonly hostVersion: string
+  readonly adapterId: string
+  /** Token contract + coverage sets for this profile's stock snapshot. */
+  readonly tokenSets: StockTokenSets
 }
+
+export const GENERATOR = 'dsh-livery/compiler'
+
+/* ------------------------------------------------------------------ */
+/* Token coverage artifact                                              */
+/* ------------------------------------------------------------------ */
 
 export interface TokenCoverageArtifact {
   readonly schemaVersion: 1
   readonly generator: string
+  readonly profileId: string
   readonly sourceHash: string
-  readonly contractHash: string
   readonly compiledAt: string
-  readonly adapterId: string
+  readonly sourceAdapters: readonly string[]
   readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
   readonly exemptionVersion: string
   readonly required: readonly string[]
-  readonly counts: { readonly required: number; readonly covered: number; readonly inherited: number; readonly missing: number }
+  readonly consumed: readonly string[]
+  readonly counts: { readonly consumed: number; readonly required: number; readonly covered: number; readonly inherited: number; readonly missing: number }
   readonly exemptions: readonly TokenExemption[]
   readonly inherited: readonly string[]
   readonly missing: readonly string[]
@@ -663,7 +617,7 @@ export interface TokenCoverageArtifact {
     readonly missing: readonly string[]
   }[]
   readonly emissionPolicy: {
-    readonly mode: typeof TOKEN_EMISSION_POLICY
+    readonly mode: 'consumed-only'
     readonly emitted: number
     readonly inheritedUnconsumed: readonly string[]
     readonly inheritedUnconsumedCount: number
@@ -671,17 +625,16 @@ export interface TokenCoverageArtifact {
   readonly pass: boolean
 }
 
-const GENERATOR = 'dsh-livery/compiler'
-
-/** Build artifacts/liveries/token-coverage.json content. */
+/** Build artifacts/liveries/<profileId>/token-coverage.json content. */
 export function buildTokenCoverageArtifact(
   liveries: readonly CompiledLivery[],
   context: ArtifactContext,
-  derivedTokenNames: Iterable<string> = [],
+  derivedTokenNames: Iterable<string>,
 ): TokenCoverageArtifact {
-  const aggregate = coverCatalog(liveries)
+  const sets = context.tokenSets
+  const aggregate = coverCatalog(liveries, sets)
   const perLivery = liveries.map((livery) => {
-    const coverage = coverTokens(liveryTokenNames(livery))
+    const coverage = coverTokens(liveryTokenNames(livery), sets)
     return {
       id: livery.id,
       covered: coverage.covered.length,
@@ -689,44 +642,57 @@ export function buildTokenCoverageArtifact(
       missing: coverage.missing,
     }
   })
+  const inheritedUnconsumed = inheritedUnconsumedTokens(derivedTokenNames, sets)
   return {
     schemaVersion: 1,
     generator: GENERATOR,
+    profileId: context.profileId,
     sourceHash: context.sourceHash,
-    contractHash: context.contractHash,
     compiledAt: context.compiledAt,
-    adapterId: context.adapterId,
+    sourceAdapters: context.sourceAdapters,
     hostVersion: context.hostVersion,
+    adapterId: context.adapterId,
+    contractHash: context.contractHash,
+    tokenContractHash: sets.tokenContractHash,
     exemptionVersion: TOKEN_EXEMPTION_VERSION,
-    required: REQUIRED_TOKENS,
+    required: sets.required,
+    consumed: sets.consumed,
     counts: {
-      required: REQUIRED_TOKENS.length,
+      consumed: sets.consumed.length,
+      required: sets.required.length,
       covered: aggregate.covered.length,
       inherited: aggregate.inherited.length,
       missing: aggregate.missing.length,
     },
-    exemptions: exemptionDetails(aggregate.inherited),
+    exemptions: exemptionDetails(aggregate.inherited, sets),
     inherited: aggregate.inherited,
     missing: aggregate.missing,
     perLivery,
     emissionPolicy: {
-      mode: TOKEN_EMISSION_POLICY,
-      emitted: EMITTED_TOKEN_NAMES.size,
-      inheritedUnconsumed: inheritedUnconsumedTokens(derivedTokenNames),
-      inheritedUnconsumedCount: inheritedUnconsumedTokens(derivedTokenNames).length,
+      mode: 'consumed-only',
+      emitted: sets.emitted.size,
+      inheritedUnconsumed,
+      inheritedUnconsumedCount: inheritedUnconsumed.length,
     },
     pass: aggregate.missing.length === 0,
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* CSS safety artifact                                                  */
+/* ------------------------------------------------------------------ */
+
 export interface CssSafetyArtifact {
   readonly schemaVersion: 1
   readonly generator: string
+  readonly profileId: string
   readonly sourceHash: string
-  readonly contractHash: string
   readonly compiledAt: string
-  readonly adapterId: string
+  readonly sourceAdapters: readonly string[]
   readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
   readonly budgets: { readonly bootBytes: number; readonly liveryBytes: number; readonly zIndex: number }
   readonly liveries: readonly {
     readonly id: string
@@ -748,7 +714,7 @@ export interface CssSafetyArtifact {
   readonly pass: boolean
 }
 
-/** Build artifacts/liveries/css-safety.json content from the compiled catalog. */
+/** Build artifacts/liveries/<profileId>/css-safety.json content. */
 export function buildCssSafetyArtifact(
   catalog: LiveryCatalog,
   bootCss: readonly { readonly id: string; readonly css: string; readonly hash: string }[],
@@ -784,11 +750,14 @@ export function buildCssSafetyArtifact(
   return {
     schemaVersion: 1,
     generator: GENERATOR,
+    profileId: context.profileId,
     sourceHash: context.sourceHash,
-    contractHash: context.contractHash,
     compiledAt: context.compiledAt,
-    adapterId: context.adapterId,
+    sourceAdapters: context.sourceAdapters,
     hostVersion: context.hostVersion,
+    adapterId: context.adapterId,
+    contractHash: context.contractHash,
+    tokenContractHash: context.tokenSets.tokenContractHash,
     budgets: { bootBytes: SIZE_BUDGETS.bootBytes, liveryBytes: SIZE_BUDGETS.liveryBytes, zIndex: Z_INDEX_BUDGET },
     liveries,
     boot,
@@ -796,14 +765,21 @@ export function buildCssSafetyArtifact(
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Contrast artifact                                                    */
+/* ------------------------------------------------------------------ */
+
 export interface ContrastArtifact {
   readonly schemaVersion: 1
   readonly generator: string
+  readonly profileId: string
   readonly sourceHash: string
-  readonly contractHash: string
   readonly compiledAt: string
-  readonly adapterId: string
+  readonly sourceAdapters: readonly string[]
   readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
   readonly summary: {
     readonly total: number
     readonly failures: number
@@ -819,7 +795,7 @@ export interface ContrastArtifact {
   readonly pass: boolean
 }
 
-/** Build artifacts/liveries/contrast.json content. */
+/** Build artifacts/liveries/<profileId>/contrast.json content. */
 export function buildContrastArtifact(
   liveries: readonly CompiledLivery[],
   context: ArtifactContext,
@@ -841,11 +817,14 @@ export function buildContrastArtifact(
   return {
     schemaVersion: 1,
     generator: GENERATOR,
+    profileId: context.profileId,
     sourceHash: context.sourceHash,
-    contractHash: context.contractHash,
     compiledAt: context.compiledAt,
-    adapterId: context.adapterId,
+    sourceAdapters: context.sourceAdapters,
     hostVersion: context.hostVersion,
+    adapterId: context.adapterId,
+    contractHash: context.contractHash,
+    tokenContractHash: context.tokenSets.tokenContractHash,
     summary: {
       total: lightTotal + darkTotal,
       failures: failures.length,
@@ -878,6 +857,10 @@ export function buildContrastArtifact(
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Catalog report artifact                                              */
+/* ------------------------------------------------------------------ */
+
 export interface LiveryReportEntry {
   readonly id: string
   readonly name: { readonly 'zh-CN': string; readonly 'en-US': string }
@@ -906,20 +889,35 @@ export interface LiveryReportEntry {
   readonly degraded: readonly CapabilityDegrade[]
 }
 
+export interface AdapterEntry {
+  readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
+  readonly sourceKind: string
+  readonly nodeRange: string
+  readonly catalogProfile: string
+}
+
 export interface CatalogReport {
   readonly schemaVersion: 1
   readonly generator: string
+  readonly profileId: string
   readonly sourceHash: string
-  readonly contractHash: string
   readonly compiledAt: string
-  readonly adapterId: string
   readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
   readonly compilerVersion: string
+  readonly sourceAdapters: readonly string[]
+  readonly adapters: readonly AdapterEntry[]
   readonly counts: {
     readonly liveries: number
     readonly previews: number
     readonly contrastEntries: number
     readonly contrastFailures: number
+    readonly tokenConsumed: number
     readonly tokenRequired: number
     readonly tokenCovered: number
     readonly tokenInherited: number
@@ -935,16 +933,17 @@ export interface CatalogReport {
     readonly cssSafety: boolean
     readonly sizeBudget: boolean
     readonly capabilities: boolean
+    readonly adapterRenderIdentity: boolean
   }
   readonly previews: {
+    readonly directory: string
     readonly count: number
     readonly width: number
     readonly height: number
     readonly files: readonly string[]
   }
   readonly emissionPolicy: {
-    readonly mode: typeof TOKEN_EMISSION_POLICY
-    readonly emitted: number
+    readonly mode: 'consumed-only'
     readonly inheritedUnconsumed: readonly string[]
     readonly inheritedUnconsumedCount: number
   }
@@ -956,19 +955,24 @@ export interface CatalogReportOptions {
   readonly context: ArtifactContext
   readonly declaredLayouts: ReadonlyMap<string, CompiledLivery['layout']>
   readonly previewFiles: readonly string[]
+  readonly previewDirectory: string
   readonly bootCss: readonly { readonly id: string; readonly css: string }[]
   readonly maxLiveryCssBytes: number
+  readonly adapterEntries: readonly AdapterEntry[]
   readonly derivedTokenNames: Iterable<string>
+  readonly adapterRenderIdentity: boolean
 }
 
-/** Build artifacts/liveries/report.json content. */
+/** Build artifacts/liveries/<profileId>/report.json content. */
 export function buildCatalogReport(options: CatalogReportOptions): CatalogReport {
   const { catalog, context, declaredLayouts, previewFiles, bootCss } = options
-  const coverage = coverCatalog(catalog.liveries)
+  const sets = context.tokenSets
+  const coverage = coverCatalog(catalog.liveries, sets)
   const entries: LiveryReportEntry[] = catalog.liveries.map((livery) => {
     const css = auditLiveryCss(livery)
     const lightContrast = modeContrast(livery.light.contrast)
     const darkContrast = modeContrast(livery.dark.contrast)
+    const liveryCoverage = coverTokens(liveryTokenNames(livery), sets)
     return {
       id: livery.id,
       name: livery.meta.name,
@@ -1003,9 +1007,9 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
       css: { ...css.bytes },
       contrast: { total: lightContrast.total + darkContrast.total, failures: lightContrast.failures.length + darkContrast.failures.length },
       tokenCoverage: {
-        covered: coverTokens(liveryTokenNames(livery)).covered.length,
-        inherited: coverTokens(liveryTokenNames(livery)).inherited.length,
-        missing: coverTokens(liveryTokenNames(livery)).missing,
+        covered: liveryCoverage.covered.length,
+        inherited: liveryCoverage.inherited.length,
+        missing: liveryCoverage.missing,
       },
       cssSafety: css.safety,
       degraded: livery.audit.degraded,
@@ -1016,21 +1020,27 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
   const cssBytes = entries.reduce((total, entry) => total + entry.css.total, 0)
   const maxLiveryCssBytes = Math.max(0, ...entries.map((entry) => entry.css.total))
   const maxBootCssBytes = Math.max(0, ...bootCss.map((entry) => Buffer.byteLength(entry.css, 'utf8')))
+  const inheritedUnconsumed = inheritedUnconsumedTokens(options.derivedTokenNames, sets)
   return {
     schemaVersion: 1,
     generator: GENERATOR,
+    profileId: context.profileId,
     sourceHash: context.sourceHash,
-    contractHash: context.contractHash,
     compiledAt: context.compiledAt,
-    adapterId: context.adapterId,
     hostVersion: context.hostVersion,
+    adapterId: context.adapterId,
+    contractHash: context.contractHash,
+    tokenContractHash: sets.tokenContractHash,
     compilerVersion: '0.1.0',
+    sourceAdapters: context.sourceAdapters,
+    adapters: options.adapterEntries,
     counts: {
       liveries: entries.length,
       previews: previewFiles.length,
       contrastEntries,
       contrastFailures,
-      tokenRequired: REQUIRED_TOKENS.length,
+      tokenConsumed: sets.consumed.length,
+      tokenRequired: sets.required.length,
       tokenCovered: coverage.covered.length,
       tokenInherited: coverage.inherited.length,
       tokenMissing: coverage.missing.length,
@@ -1045,19 +1055,136 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
       cssSafety: entries.every((entry) => entry.cssSafety.pass),
       sizeBudget: maxLiveryCssBytes <= SIZE_BUDGETS.liveryBytes && maxBootCssBytes <= SIZE_BUDGETS.bootBytes,
       capabilities: entries.every((entry) => entry.degraded.every((degrade) => degrade.fallback !== 'none')),
+      adapterRenderIdentity: options.adapterRenderIdentity,
     },
     previews: {
+      directory: options.previewDirectory,
       count: previewFiles.length,
       width: PREVIEW_WIDTH,
       height: PREVIEW_HEIGHT,
       files: previewFiles,
     },
     emissionPolicy: {
-      mode: TOKEN_EMISSION_POLICY,
-      emitted: EMITTED_TOKEN_NAMES.size,
-      inheritedUnconsumed: inheritedUnconsumedTokens(options.derivedTokenNames),
-      inheritedUnconsumedCount: inheritedUnconsumedTokens(options.derivedTokenNames).length,
+      mode: 'consumed-only',
+      inheritedUnconsumed,
+      inheritedUnconsumedCount: inheritedUnconsumed.length,
     },
     liveries: entries,
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Cross-profile summary artifact                                       */
+/* ------------------------------------------------------------------ */
+
+export interface SummaryProfileEntry {
+  readonly profileId: string
+  readonly compiledAt: string
+  readonly sourceHash: string
+  readonly sourceAdapters: readonly string[]
+  readonly adapterIds: readonly string[]
+  readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly tokenContractHash: string
+  readonly counts: CatalogReport['counts']
+  readonly gates: CatalogReport['gates']
+  readonly previews: { readonly directory: string; readonly count: number }
+  readonly css: {
+    readonly maxLiveryBytes: number
+    readonly maxBootBytes: number
+    readonly budgetBytes: number
+  }
+  readonly tokenCoverage: {
+    readonly consumed: number
+    readonly required: number
+    readonly covered: number
+    readonly inherited: number
+    readonly missing: number
+    readonly pass: boolean
+  }
+  readonly contrast: { readonly total: number; readonly failures: number; readonly pass: boolean }
+  readonly cssSafety: { readonly pass: boolean }
+}
+
+export interface SummaryAdapterEntry extends AdapterEntry {
+  readonly liveries: number
+}
+
+export interface SummaryArtifact {
+  readonly schemaVersion: 1
+  readonly generator: string
+  readonly profiles: readonly SummaryProfileEntry[]
+  readonly adapters: readonly SummaryAdapterEntry[]
+  readonly counts: { readonly profiles: number; readonly adapters: number; readonly liveries: number; readonly previews: number }
+  readonly pass: boolean
+}
+
+export interface SummaryProfileSource {
+  readonly profile: CatalogProfileData
+  readonly report: CatalogReport
+  readonly contrast: ContrastArtifact
+  readonly tokenCoverage: TokenCoverageArtifact
+  readonly cssSafety: CssSafetyArtifact
+  readonly adapters: readonly AdapterEntry[]
+  readonly previewDirectory: string
+}
+
+/** Build artifacts/liveries/summary.json content (adapter → profile mapping). */
+export function buildSummaryArtifact(sources: readonly SummaryProfileSource[]): SummaryArtifact {
+  const profiles: SummaryProfileEntry[] = sources.map((source) => ({
+    profileId: source.profile.profileId,
+    compiledAt: source.profile.compiledAt,
+    sourceHash: source.profile.sourceHash,
+    sourceAdapters: source.profile.sourceAdapters,
+    adapterIds: source.adapters.map((adapter) => adapter.adapterId),
+    hostVersion: source.report.hostVersion,
+    adapterId: source.report.adapterId,
+    contractHash: source.report.contractHash,
+    tokenContractHash: source.report.tokenContractHash,
+    counts: source.report.counts,
+    gates: source.report.gates,
+    previews: { directory: source.previewDirectory, count: source.report.previews.count },
+    css: {
+      maxLiveryBytes: source.report.counts.maxLiveryCssBytes,
+      maxBootBytes: source.report.counts.maxBootCssBytes,
+      budgetBytes: SIZE_BUDGETS.liveryBytes,
+    },
+    tokenCoverage: {
+      consumed: source.tokenCoverage.counts.consumed,
+      required: source.tokenCoverage.counts.required,
+      covered: source.tokenCoverage.counts.covered,
+      inherited: source.tokenCoverage.counts.inherited,
+      missing: source.tokenCoverage.counts.missing,
+      pass: source.tokenCoverage.pass,
+    },
+    contrast: { total: source.contrast.summary.total, failures: source.contrast.summary.failures, pass: source.contrast.pass },
+    cssSafety: { pass: source.cssSafety.pass },
+  }))
+  const adapters: SummaryAdapterEntry[] = sources.flatMap((source) =>
+    source.adapters.map((adapter) => ({ ...adapter, liveries: source.profile.liveries.length })),
+  )
+  const pass =
+    profiles.every(
+      (profile) =>
+        profile.tokenCoverage.pass &&
+        profile.contrast.pass &&
+        profile.cssSafety.pass &&
+        profile.gates.validation &&
+        profile.gates.sizeBudget &&
+        profile.gates.adapterRenderIdentity,
+    ) && adapters.length > 0
+  return {
+    schemaVersion: 1,
+    generator: GENERATOR,
+    profiles,
+    adapters,
+    counts: {
+      profiles: profiles.length,
+      adapters: adapters.length,
+      liveries: profiles.reduce((total, profile) => total + profile.counts.liveries, 0),
+      previews: profiles.reduce((total, profile) => total + profile.previews.count, 0),
+    },
+    pass,
   }
 }

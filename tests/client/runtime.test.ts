@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import type { BootPayload, CapabilityMap, LiveryCatalog } from '../../src/core/types.js'
-import { ADAPTER_ID, DSH_VERSION, LIVERY_VERSION } from '../../src/core/types.js'
+import { LIVERY_VERSION } from '../../src/core/types.js'
+import { ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
+import { checkBoot } from '../../src/client/handshake.js'
 import type { BootCheck } from '../../src/client/handshake.js'
 import type { LiveryRuntime } from '../../src/client/runtime.js'
 import { createLiveryRuntime } from '../../src/client/runtime.js'
 import {
+  ADAPTER_021_2,
+  adapterRecordOf,
   FakeConfigForm,
   FakeDocument,
   FakeLocale,
   FakeTheme,
   RecordingPresenter,
+  TEST_ADAPTER,
   TEST_CORE,
-  TEST_CONTRACT_HASH,
   flush,
   makeBootPayload,
   makeCatalog,
@@ -21,15 +25,17 @@ import {
 const CAPABILITIES = makeCatalog().capabilities
 
 function failClosed(reason = 'adapter mismatch'): BootCheck {
-  return { kind: 'mismatch', payload: undefined, reasons: [reason] }
+  return { kind: 'mismatch', payload: undefined, adapter: undefined, reasons: [reason] }
 }
 
 function noBoot(): BootCheck {
-  return { kind: 'absent', payload: undefined, reasons: ['no first-frame payload'] }
+  return checkBoot(undefined, ADAPTER_IDENTITIES)
 }
 
-function validBoot(payload: Partial<BootPayload> = {}): BootCheck {
-  return { kind: 'valid', payload: makeBootPayload(payload), reasons: [] }
+function validBoot(payload: Partial<Record<keyof BootPayload, unknown>> = {}): BootCheck {
+  const check = checkBoot(makeBootPayload(payload), ADAPTER_IDENTITIES)
+  if (check.kind !== 'valid') throw new Error(`fixture boot must be valid: ${check.reasons.join('; ')}`)
+  return check
 }
 
 interface Harness {
@@ -66,10 +72,10 @@ function createHarness(options: {
   const runtime = createLiveryRuntime({
     boot: options.boot ?? noBoot(),
     identity: {
-      adapterId: ADAPTER_ID,
-      contractHash: TEST_CONTRACT_HASH,
+      adapterId: TEST_ADAPTER.adapterId,
+      contractHash: TEST_ADAPTER.contractHash,
       pluginVersion: LIVERY_VERSION,
-      hostVersion: DSH_VERSION,
+      hostVersion: TEST_ADAPTER.hostVersion,
     },
     entryId: 'livery',
     configForms: { get: () => form },
@@ -205,6 +211,36 @@ describe('first settle', () => {
     expect(snapshot.effectiveId).toBe('fjord')
     expect(harness.presenter.count('adoptBootStyle')).toBe(1)
     expect(harness.presenter.count('applyConfirmed')).toBe(0)
+  })
+
+  it('takes identity + catalog profile from the fetched catalog (0.2.1 path)', async () => {
+    const catalog = makeCatalog(undefined, adapterRecordOf(ADAPTER_021_2).capabilities, ADAPTER_021_2)
+    const harness = createHarness({ catalog })
+
+    harness.runtime.start()
+    await flush()
+
+    const snapshot = harness.runtime.getSnapshot()
+    expect(snapshot.phase).toBe('ready')
+    expect(snapshot.catalogStatus).toBe('ready')
+    expect(snapshot.catalogProfile).toBe(ADAPTER_021_2.catalogProfile)
+    expect(snapshot.identity).toEqual({
+      adapterId: ADAPTER_021_2.adapterId,
+      contractHash: ADAPTER_021_2.contractHash,
+      pluginVersion: LIVERY_VERSION,
+      hostVersion: ADAPTER_021_2.hostVersion,
+    })
+    expect(snapshot.capabilities['host-font-role-hooks']?.available).toBe(true)
+  })
+
+  it('seeds the catalog profile from a known handshake before the catalog arrives', async () => {
+    const form = new FakeConfigForm({
+      status: 'loading', value: undefined, revision: undefined, writable: false, mode: 'host',
+    })
+    const harness = createHarness({ form, boot: validBoot() })
+    harness.runtime.start()
+    await flush()
+    expect(harness.runtime.getSnapshot().catalogProfile).toBe(TEST_ADAPTER.catalogProfile)
   })
 
   it('fails closed without fetching when the handshake mismatches', async () => {

@@ -21,8 +21,9 @@ import { parseColor } from '../core/color.js'
 import { FONT_STACKS, METRICS, TAGS } from '../core/registry.js'
 import type { CapabilityMap, LiveryManifest, LocalizedText } from '../core/types.js'
 import { CAP } from '../core/types.js'
-import { HOST_CAPABILITIES } from '../generated/contract.js'
-import { STOCK_TOKENS } from '../generated/stock.js'
+import { DEFAULT_ADAPTER } from '../generated/contract.js'
+import { stockForVersion } from '../generated/stock.js'
+import type { StockSnapshot } from '../generated/stock.js'
 import manifestSchema from '../../schemas/livery.schema.json'
 
 /** One machine-readable validation problem. `path` is `<source file>#<JSON pointer>`. */
@@ -41,8 +42,17 @@ export interface ManifestSource {
 }
 
 export interface ManifestValidationOptions {
-  /** Capability availability for the certified host build (defaults to the frozen snapshot). */
+  /**
+   * Capability availability for the host build being compiled (defaults to the
+   * newest certified adapter). The compiler always passes the representative
+   * adapter's map explicitly.
+   */
   readonly capabilities?: CapabilityMap
+  /**
+   * Stock token snapshot whose token inventory defines the manifest's allowed
+   * token overrides (defaults to the newest certified adapter's host version).
+   */
+  readonly stock?: StockSnapshot
 }
 
 export interface CatalogValidation {
@@ -56,13 +66,32 @@ const KNOWN_FONTS: ReadonlySet<string> = new Set(Object.keys(FONT_STACKS))
 const KNOWN_METRICS: ReadonlySet<string> = new Set(Object.keys(METRICS))
 const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set(Object.values(CAP) as string[])
 
+const TOKEN_WHITELIST_CACHE = new Map<string, ReadonlySet<string>>()
+
 /**
  * Explicit token overrides may only target host-declared semantic tokens. Raw
  * static palette steps and private `--dsh-*` hooks are not part of the whitelist.
+ * Derived from the exact stock snapshot, so a host token rename narrows it.
  */
-export const TOKEN_WHITELIST: ReadonlySet<string> = new Set(
-  Object.keys(STOCK_TOKENS).filter((name) => /^--dsw-(alias|specific)-[a-z0-9-]+$/.test(name)),
-)
+export function tokenWhitelist(stock: StockSnapshot): ReadonlySet<string> {
+  const cacheKey = `${stock.version}|${stock.tokenContractHash}`
+  const cached = TOKEN_WHITELIST_CACHE.get(cacheKey)
+  if (cached !== undefined) return cached
+  const whitelist: ReadonlySet<string> = new Set(
+    Object.keys(stock.tokens).filter((name) => /^--dsw-(alias|specific)-[a-z0-9-]+$/.test(name)),
+  )
+  TOKEN_WHITELIST_CACHE.set(cacheKey, whitelist)
+  return whitelist
+}
+
+/** Default stock snapshot used when a caller supplies none (newest certified host). */
+export function defaultStockSnapshot(): StockSnapshot {
+  const stock = stockForVersion(DEFAULT_ADAPTER.hostVersion)
+  if (stock === undefined) {
+    throw new Error(`compiler bug: no stock snapshot for DEFAULT_ADAPTER ${DEFAULT_ADAPTER.hostVersion}`)
+  }
+  return stock
+}
 
 const UNSAFE_VALUE_PATTERNS: readonly { readonly pattern: RegExp; readonly reason: string }[] = [
   { pattern: /[;{}<>]/, reason: 'contains rule, declaration or markup delimiters' },
@@ -155,7 +184,9 @@ export function validateManifest(
   const valid = validator(source.raw)
   if (!valid) return schemaDiagnostics(source, validator.errors)
 
-  const capabilities = options.capabilities ?? HOST_CAPABILITIES
+  const capabilities = options.capabilities ?? DEFAULT_ADAPTER.capabilities
+  const stock = options.stock ?? defaultStockSnapshot()
+  const whitelist = tokenWhitelist(stock)
   const manifest = source.raw as LiveryManifest
   const diagnostics: Diagnostic[] = []
   const file = source.file
@@ -290,7 +321,7 @@ export function validateManifest(
     const tokens = variant.tokens
     if (tokens === undefined) continue
     for (const [name, value] of Object.entries(tokens)) {
-      if (!TOKEN_WHITELIST.has(name)) {
+      if (!whitelist.has(name)) {
         diagnostics.push({
           code: 'token.not-whitelisted',
           path: `${file}#/variants/${mode}/tokens/${name}`,

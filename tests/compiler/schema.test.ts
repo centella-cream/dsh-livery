@@ -8,12 +8,15 @@
 import { describe, expect, it } from 'vitest'
 import type { LiveryManifest } from '../../src/core/types.js'
 import {
-  TOKEN_WHITELIST,
+  defaultStockSnapshot,
   getManifestValidator,
+  tokenWhitelist,
   validateCatalog,
   validateManifest,
   type ManifestSource,
 } from '../../src/compiler/validate.js'
+import { ADAPTERS } from '../../src/generated/contract.js'
+import { stockForVersion } from '../../src/generated/stock.js'
 import { cloneManifest, liveryIds, loadManifestSources, readManifest } from './helpers.js'
 
 const FJORD_FILE = 'liveries/fjord/manifest.json'
@@ -167,8 +170,10 @@ describe('semantic manifest validation', () => {
     const diagnostics = validateManifest(source)
     expect(diagnostics.map((diagnostic) => diagnostic.code)).toContain('token.not-whitelisted')
     // The schema accepts the *shape*; only the semantic layer knows the host token inventory.
-    expect(TOKEN_WHITELIST.has('--dsw-alias-bg-base')).toBe(true)
-    expect(TOKEN_WHITELIST.has('--dsw-alias-not-a-host-token')).toBe(false)
+    const whitelist = tokenWhitelist(defaultStockSnapshot())
+    expect(whitelist.has('--dsw-alias-bg-base')).toBe(true)
+    expect(whitelist.has('--dsw-alias-not-a-host-token')).toBe(false)
+    expect(whitelist.has('--dsw-static-neutral-bluish-00')).toBe(false)
   })
 
   it('rejects unsafe token values even when the raw schema pattern is bypassed', () => {
@@ -195,6 +200,16 @@ describe('semantic manifest validation', () => {
       }
     })
     expect(validateManifest(source).map((diagnostic) => diagnostic.code)).toContain('capability.overlap')
+  })
+
+  it('accepts the shipped catalog for every certified host version', () => {
+    for (const version of ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3']) {
+      const adapter = ADAPTERS.find((candidate) => candidate.hostVersion === version)
+      const stock = stockForVersion(version)
+      if (adapter === undefined || stock === undefined) throw new Error(`fixture missing for ${version}`)
+      const result = validateCatalog(loadManifestSources(), { stock, capabilities: adapter.capabilities })
+      expect(result.ok, `${version}: ${JSON.stringify(result.diagnostics, null, 2)}`).toBe(true)
+    }
   })
 
   it('accepts the shipped catalog and keeps ids/order unique', () => {

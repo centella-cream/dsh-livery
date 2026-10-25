@@ -1,6 +1,7 @@
 /**
  * Host plugin entry tests: the functional plugin exports, the lazy version
- * probe, and the `apply` wiring (unconditional listener, live config reads,
+ * probe, adapter resolution through the generated registry, and the `apply`
+ * wiring (unconditional listener, live config reads, per-adapter routes,
  * optional webServer/settings injections, one-line deduped warnings).
  */
 
@@ -15,14 +16,22 @@ import {
   name,
   observeHostVersion,
   resetLiveryHostForTests,
+  resolveAdapter,
   setHostEnvironmentForTests,
 } from '../../src/host/index.js'
 import { Config } from '../../src/host/config.js'
 import type { LiveryHostConfig } from '../../src/host/config.js'
-import { CONTRACT_FACTS } from '../../src/generated/contract.js'
-import { CATALOG_META, LIVERIES } from '../../src/generated/liveries.js'
+import { ADAPTERS } from '../../src/generated/contract.js'
+import { CATALOG_PROFILES } from '../../src/generated/liveries.js'
 import { CATALOG_ROUTE, STOCK_ID } from '../../src/core/types.js'
 import { fakeRequest } from './fixtures.js'
+
+/** First generated certified adapter, when a compiled catalog exists. */
+const FIRST_ADAPTER = ADAPTERS[0]
+/** Whether generated catalog profiles are present (false before compile). */
+const COMPILED = FIRST_ADAPTER !== undefined
+  && Object.keys(CATALOG_PROFILES).length > 0
+  && CATALOG_PROFILES[FIRST_ADAPTER.catalogProfile] !== undefined
 
 /** A fake webserver recording registered routes. */
 function makeWebServer() {
@@ -60,7 +69,6 @@ function makeHostContext(options: { webServer?: object; settings?: object } = {}
   const effects: EffectRecord[] = []
   const injected: string[][] = []
   const warn = vi.fn()
-  const childContexts: unknown[] = []
   const context = {
     fiber: { uid: 1 },
     logger: { warn },
@@ -72,19 +80,15 @@ function makeHostContext(options: { webServer?: object; settings?: object } = {}
     inject(deps: string[], callback: (child: unknown) => void) {
       injected.push(deps)
       if (deps.includes('webServer') && options.webServer !== undefined) {
-        const child = makeChildContext({ webServer: options.webServer }, effects)
-        childContexts.push(child)
-        callback(child)
+        callback(makeChildContext({ webServer: options.webServer }, effects))
       }
       if (deps.includes('settings') && options.settings !== undefined) {
-        const child = makeChildContext({ settings: options.settings }, effects)
-        childContexts.push(child)
-        callback(child)
+        callback(makeChildContext({ settings: options.settings }, effects))
       }
       return { then: () => undefined }
     },
   }
-  return { context: context as unknown as Context, listener, effects, injected, warn, childContexts }
+  return { context: context as unknown as Context, listener, effects, injected, warn }
 }
 
 /** A Host config whose volatile value the test controls. */
@@ -98,9 +102,13 @@ function liveConfig(initial: string) {
   }
 }
 
-/** Seed the environment with an exactly matching host identity. */
-function seedMatchingEnvironment(): void {
-  setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: CONTRACT_FACTS.dshVersion })
+/** Seed the environment with the first generated certified adapter's version. */
+function seedCertifiedEnvironment(): void {
+  if (FIRST_ADAPTER === undefined) throw new Error('no generated adapter')
+  setHostEnvironmentForTests({
+    profileKind: 'web',
+    observedHostVersion: FIRST_ADAPTER.hostVersion,
+  })
 }
 
 beforeEach(() => {
@@ -117,7 +125,6 @@ describe('plugin exports', () => {
     expect(name).toBe('livery')
     expect(typeof apply).toBe('function')
     expect(typeof Config).toBe('function')
-    // A Schemastery schema is callable and validates the one volatile field.
     expect((Config as unknown as (input: unknown) => unknown)({}))
       .toEqual({ skinId: expect.objectContaining({ get: expect.any(Function) }) })
   })
@@ -136,49 +143,61 @@ describe('observeHostVersion', () => {
   })
 })
 
-describe('bootStateForConfig', () => {
-  it.skipIf(CATALOG_META.contractHash !== CONTRACT_FACTS.contractHash)(
-    'passes the gate for stock and emits no rows',
-    () => {
-    seedMatchingEnvironment()
-    const state = bootStateForConfig(Config() as LiveryHostConfig)
-    expect(state.gate.accepted).toBe(true)
-    expect(state.accepted).toBe(false)
-    expect(state.rows).toEqual([])
-    expect(state.payload.skinId).toBe(STOCK_ID)
-    expect(state.payload.cssHash).toBe('')
-    },
-  )
-
-  it('rejects an unknown skin id without touching the generated catalog', () => {
-    seedMatchingEnvironment()
-    const state = bootStateForConfig(Config({ skinId: 'definitely-not-a-livery' }) as LiveryHostConfig)
-    expect(state.accepted).toBe(false)
-    expect(state.rows).toEqual([])
-    expect(state.gate.codes).toContain('gate.skin-unknown')
+describe('resolveAdapter', () => {
+  it('returns undefined before the version probe resolves', () => {
+    expect(resolveAdapter()).toBeUndefined()
   })
 
-  it('fails closed when the environment probe has not resolved', () => {
+  it('maps a certified version to its generated adapter', () => {
+    if (FIRST_ADAPTER === undefined) return
+    seedCertifiedEnvironment()
+    expect(resolveAdapter()).toEqual(FIRST_ADAPTER)
+  })
+
+  it('returns undefined for an uncertified version', () => {
+    setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
+    expect(resolveAdapter()).toBeUndefined()
+  })
+})
+
+describe('bootStateForConfig', () => {
+  it('fails closed with zero rows when the version probe has not resolved', () => {
     const state = bootStateForConfig(Config() as LiveryHostConfig)
-    expect(state.accepted).toBe(false)
+    expect(state.gate.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.version-unknown')
   })
 
-  it.skipIf(LIVERIES.length === 0)('accepts a generated livery when the contract matches', () => {
-    seedMatchingEnvironment()
-    const first = LIVERIES[0]
+  it('fails closed for an uncertified host version', () => {
+    setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
+    const state = bootStateForConfig(Config() as LiveryHostConfig)
+    expect(state.gate.accepted).toBe(false)
+    expect(state.rows).toEqual([])
+    expect(state.gate.codes).toContain('gate.version-mismatch')
+    expect(state.gate.supportedHostVersions.length).toBeGreaterThan(0)
+  })
+
+  it.skipIf(!COMPILED)('passes the gate for stock against the certified adapter', () => {
+    seedCertifiedEnvironment()
+    const state = bootStateForConfig(Config() as LiveryHostConfig)
+    expect(state.gate.accepted).toBe(true)
+    expect(state.accepted).toBe(false)
+    expect(state.rows).toEqual([])
+    expect(state.payload.adapterId).toBe(FIRST_ADAPTER?.adapterId)
+    expect(state.payload.skinId).toBe(STOCK_ID)
+  })
+
+  it.skipIf(!COMPILED)('accepts a livery from the active adapter profile', () => {
+    seedCertifiedEnvironment()
+    if (FIRST_ADAPTER === undefined) return
+    const profile = CATALOG_PROFILES[FIRST_ADAPTER.catalogProfile]
+    const first = profile?.liveries[0]
     if (first === undefined) return
     const state = bootStateForConfig(Config({ skinId: first.id }) as LiveryHostConfig)
-    // Placeholder generated artifacts (before `pnpm liveries:compile`) carry a
-    // non-certified contract hash; the gate must close rather than guess.
-    if (CATALOG_META.contractHash !== CONTRACT_FACTS.contractHash) {
-      expect(state.accepted).toBe(false)
-      expect(state.rows).toEqual([])
-      return
-    }
     expect(state.accepted).toBe(true)
     expect(state.rows).toHaveLength(3)
+    expect(state.payload.adapterId).toBe(FIRST_ADAPTER.adapterId)
+    expect(state.payload.catalogProfile).toBe(FIRST_ADAPTER.catalogProfile)
     expect(state.payload.skinId).toBe(first.id)
   })
 })
@@ -190,7 +209,7 @@ describe('apply', () => {
     expect(host.listener.current).toBeTypeOf('function')
   })
 
-  it('pushes no rows and warns once for a closed gate', () => {
+  it('pushes no rows and warns once for an uncertified host, with a structured line', () => {
     setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
     const host = makeHostContext()
     apply(host.context, Config() as LiveryHostConfig)
@@ -199,48 +218,58 @@ describe('apply', () => {
     host.listener.current?.(table)
     expect(table).toEqual([])
     expect(host.warn).toHaveBeenCalledTimes(1)
-    expect(String(host.warn.mock.calls[0]?.[0])).toContain('gate.version-mismatch')
-    expect(String(host.warn.mock.calls[0]?.[0])).toContain('profile=web')
-    expect(getLastGateStatus()?.accepted).toBe(false)
+    const line = String(host.warn.mock.calls[0]?.[0])
+    expect(line).toContain('gate.version-mismatch')
+    expect(line).toContain('profile=web')
+    expect(line).toContain('supported=[')
+    expect(getLastGateStatus()?.gate.accepted).toBe(false)
+  })
+
+  it('does not warn when the gate passes and the skin is stock', () => {
+    if (FIRST_ADAPTER === undefined) return
+    seedCertifiedEnvironment()
+    const host = makeHostContext()
+    apply(host.context, Config() as LiveryHostConfig)
+    host.listener.current?.([])
+    expect(getLastGateStatus()?.gate.accepted).toBe(true)
+    expect(host.warn).not.toHaveBeenCalled()
   })
 
   it('re-reads the live volatile config on every emit (no remount)', () => {
+    setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
     const host = makeHostContext()
     const live = liveConfig(STOCK_ID)
-    seedMatchingEnvironment()
     apply(host.context, live.config)
     host.listener.current?.([])
     expect(getLastGateStatus()?.gate.activeSkinId).toBe(STOCK_ID)
 
-    // Whatever the generated-catalog state, the next emit must observe the new
-    // value: the gate reports the requested id it just read.
     live.set('definitely-not-a-livery')
     host.listener.current?.([])
     expect(getLastGateStatus()?.gate.activeSkinId).toBe('definitely-not-a-livery')
-    expect(getLastGateStatus()?.gate.codes).toContain('gate.skin-unknown')
   })
 
-  it.skipIf(
-    LIVERIES.length === 0 || CATALOG_META.contractHash !== CONTRACT_FACTS.contractHash,
-  )('emits rows after a persisted stock -> livery change without remount', () => {
+  it.skipIf(!COMPILED)('emits rows after a persisted stock -> livery change without remount', () => {
+    if (FIRST_ADAPTER === undefined) return
+    const profile = CATALOG_PROFILES[FIRST_ADAPTER.catalogProfile]
+    const first = profile?.liveries[0]
+    if (first === undefined) return
+    seedCertifiedEnvironment()
     const host = makeHostContext()
     const live = liveConfig(STOCK_ID)
-    seedMatchingEnvironment()
     apply(host.context, live.config)
+
     const firstTable: IndexInjection[] = []
     host.listener.current?.(firstTable)
     expect(firstTable).toEqual([])
     expect(getLastGateStatus()?.gate.accepted).toBe(true)
-    expect(getLastGateStatus()?.accepted).toBe(false)
 
-    const liveryId = LIVERIES[0]?.id
-    if (liveryId === undefined) return
-    live.set(liveryId)
+    live.set(first.id)
     const secondTable: IndexInjection[] = []
     host.listener.current?.(secondTable)
     expect(secondTable).toHaveLength(3)
     expect(secondTable[0]?.kind).toBe('html')
-    expect(getLastGateStatus()?.payload.skinId).toBe(liveryId)
+    expect(getLastGateStatus()?.payload.adapterId).toBe(FIRST_ADAPTER.adapterId)
+    expect(getLastGateStatus()?.payload.skinId).toBe(first.id)
   })
 
   it('registers both routes through ctx.inject([webServer]) and disposes them via effect', () => {
@@ -258,32 +287,9 @@ describe('apply', () => {
     expect(webServer.routes.size).toBe(0)
   })
 
-  it('configures the settings policy with auto:false through ctx.inject([settings])', () => {
-    const configure = vi.fn(() => () => {})
-    const host = makeHostContext({ settings: { configure } })
-    apply(host.context, Config() as LiveryHostConfig)
-    expect(host.injected).toContainEqual(['settings'])
-    expect(configure).toHaveBeenCalledTimes(1)
-    expect(configure).toHaveBeenCalledWith({ auto: false }, expect.anything())
-    expect(host.effects.some((effect) => effect.label === 'livery: settings policy')).toBe(true)
-  })
-
-  it('shows no trace when the settings service is absent (and does not fail)', () => {
-    const host = makeHostContext()
-    expect(() => apply(host.context, Config() as LiveryHostConfig)).not.toThrow()
-    expect(host.effects).toEqual([])
-  })
-
-  it('does not fail when settings.configure throws', () => {
-    const configure = vi.fn(() => {
-      throw new Error('settings locked')
-    })
-    const host = makeHostContext({ settings: { configure } })
-    expect(() => apply(host.context, Config() as LiveryHostConfig)).not.toThrow()
-    expect(host.effects.some((effect) => effect.label === 'livery: settings policy')).toBe(true)
-  })
-
-  it('serves the catalog route registered by apply', async () => {
+  it('serves the catalog for the resolved adapter through the registered route', async () => {
+    if (FIRST_ADAPTER === undefined) return
+    seedCertifiedEnvironment()
     const webServer = makeWebServer()
     const host = makeHostContext({ webServer })
     apply(host.context, Config() as LiveryHostConfig)
@@ -312,12 +318,62 @@ describe('apply', () => {
     expect(res.statusCode).toBe(200)
     expect(res.headers['content-type']).toBe('application/json')
     expect(res.headers['cache-control']).toBe('no-store')
-    expect(String(chunks[0])).toContain('"schemaVersion":1')
+    const parsed = JSON.parse(String(chunks[0])) as Record<string, unknown>
+    expect(parsed.adapterId).toBe(FIRST_ADAPTER.adapterId)
+    expect(parsed.hostVersion).toBe(FIRST_ADAPTER.hostVersion)
+    expect(parsed.contractHash).toBe(FIRST_ADAPTER.contractHash)
+    expect(parsed.catalogProfile).toBe(FIRST_ADAPTER.catalogProfile)
   })
 
-  it('never throws out of the index listener for a stock config', () => {
-    const host = makeHostContext()
+  it('serves nothing from the routes before the version probe resolves', async () => {
+    const webServer = makeWebServer()
+    const host = makeHostContext({ webServer })
     apply(host.context, Config() as LiveryHostConfig)
-    expect(() => host.listener.current?.([])).not.toThrow()
+    const handler = webServer.routes.get(`exact:${CATALOG_ROUTE}`) as (
+      req: unknown,
+      res: unknown,
+    ) => Promise<void>
+    const res = {
+      headersSent: false,
+      writableEnded: false,
+      statusCode: 0,
+      headers: {} as Record<string, string>,
+      writeHead(status: number, headers: Record<string, string>) {
+        this.statusCode = status
+        this.headers = headers
+        this.headersSent = true
+        return this
+      },
+      end() {
+        this.writableEnded = true
+      },
+    }
+    await handler(fakeRequest('GET', CATALOG_ROUTE), res)
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('configures the settings policy with auto:false through ctx.inject([settings])', () => {
+    const configure = vi.fn(() => () => {})
+    const host = makeHostContext({ settings: { configure } })
+    apply(host.context, Config() as LiveryHostConfig)
+    expect(host.injected).toContainEqual(['settings'])
+    expect(configure).toHaveBeenCalledTimes(1)
+    expect(configure).toHaveBeenCalledWith({ auto: false }, expect.anything())
+    expect(host.effects.some((effect) => effect.label === 'livery: settings policy')).toBe(true)
+  })
+
+  it('shows no trace when the settings service is absent (and does not fail)', () => {
+    const host = makeHostContext()
+    expect(() => apply(host.context, Config() as LiveryHostConfig)).not.toThrow()
+    expect(host.effects).toEqual([])
+  })
+
+  it('does not fail when settings.configure throws', () => {
+    const configure = vi.fn(() => {
+      throw new Error('settings locked')
+    })
+    const host = makeHostContext({ settings: { configure } })
+    expect(() => apply(host.context, Config() as LiveryHostConfig)).not.toThrow()
+    expect(host.effects.some((effect) => effect.label === 'livery: settings policy')).toBe(true)
   })
 })

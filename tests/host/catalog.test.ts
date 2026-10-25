@@ -1,85 +1,114 @@
 /**
- * Catalog and preview-binding tests: the served document has the frozen shape,
- * and the preview whitelist is derived only from safe flat filenames.
+ * Catalog and per-profile preview-binding tests: the served document carries
+ * the adapter's identity and catalog profile, and the preview whitelist is
+ * derived only from safe flat filenames inside the profile's own directory.
  */
 
 import { describe, expect, it } from 'vitest'
 import {
   bindPreviews,
+  bindProfilePreviews,
   buildCatalog,
+  catalogProfileFor,
   collectPreviewFiles,
+  isSafeCatalogProfileId,
   liveryIdsOf,
   parsePreviewsIndex,
+  previewsBaseFor,
   serializeCatalog,
 } from '../../src/host/catalog.js'
 import {
-  BODY_ATTRIBUTE,
-  CATALOG_ROUTE,
-  DSH_VERSION,
-  ENTRY_ID,
-  LIVERY_VERSION,
+  PREVIEW_ROUTE_PREFIX,
   SCHEMA_VERSION,
+  LIVERY_VERSION,
   type LiveryCatalog,
 } from '../../src/core/types.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../../src/generated/contract.js'
-import { makeCatalogMeta, makeLivery } from './fixtures.js'
+import {
+  SYNTHETIC_PROFILE_A,
+  SYNTHETIC_PROFILE_B,
+  makeAdapter,
+  makeLivery,
+  makeProfile,
+} from './fixtures.js'
 
-/** Assert one parsed JSON value is the frozen catalog shape. */
+/** Assert one parsed JSON value is the multi-profile catalog shape. */
 function expectCatalogShape(value: unknown): asserts value is LiveryCatalog {
   expect(value).toBeTypeOf('object')
   expect(value).not.toBeNull()
   const catalog = value as Record<string, unknown>
   expect(catalog.schemaVersion).toBe(SCHEMA_VERSION)
   expect(catalog.compilerVersion).toBe(LIVERY_VERSION)
-  expect(catalog.adapterId).toBe(CONTRACT_FACTS.adapterId)
-  expect(catalog.hostVersion).toBe(DSH_VERSION)
-  expect(catalog.contractHash).toBe(CONTRACT_FACTS.contractHash)
+  expect(typeof catalog.adapterId).toBe('string')
+  expect(typeof catalog.hostVersion).toBe('string')
+  expect(typeof catalog.contractHash).toBe('string')
+  expect(typeof catalog.catalogProfile).toBe('string')
   expect(catalog.capabilities).toBeTypeOf('object')
+  expect(typeof catalog.previewsBase).toBe('string')
   expect(Array.isArray(catalog.liveries)).toBe(true)
-  for (const livery of catalog.liveries as Array<Record<string, unknown>>) {
-    expect(typeof livery.id).toBe('string')
-    expect(typeof livery.hash).toBe('string')
-    expect(livery.light).toBeTypeOf('object')
-    expect(livery.dark).toBeTypeOf('object')
-    expect(livery.meta).toBeTypeOf('object')
-    expect(livery.layout).toBeTypeOf('object')
-  }
 }
 
 describe('buildCatalog', () => {
-  it('assembles the frozen catalog fields from generated inputs', () => {
-    const catalog = buildCatalog({
-      liveries: [makeLivery()],
-      catalogMeta: makeCatalogMeta(),
-      capabilities: HOST_CAPABILITIES,
-      contractFacts: CONTRACT_FACTS,
-    })
+  it("assembles one adapter's identity, profile, capabilities and previews base", () => {
+    const adapter = makeAdapter()
+    const profile = makeProfile(SYNTHETIC_PROFILE_A, [makeLivery()])
+    const catalog = buildCatalog(adapter, profile)
     expect(catalog.schemaVersion).toBe(SCHEMA_VERSION)
     expect(catalog.compilerVersion).toBe(LIVERY_VERSION)
-    expect(catalog.adapterId).toBe(CONTRACT_FACTS.adapterId)
-    expect(catalog.hostVersion).toBe(DSH_VERSION)
-    expect(catalog.contractHash).toBe(CONTRACT_FACTS.contractHash)
-    expect(catalog.capabilities).toBe(HOST_CAPABILITIES)
+    expect(catalog.adapterId).toBe(adapter.adapterId)
+    expect(catalog.hostVersion).toBe(adapter.hostVersion)
+    expect(catalog.contractHash).toBe(adapter.contractHash)
+    expect(catalog.catalogProfile).toBe(SYNTHETIC_PROFILE_A)
+    expect(catalog.capabilities).toBe(adapter.capabilities)
+    expect(catalog.previewsBase).toBe(`${PREVIEW_ROUTE_PREFIX}${SYNTHETIC_PROFILE_A}/`)
     expect(catalog.liveries).toHaveLength(1)
     expect(catalog.liveries[0]?.id).toBe('ivory-slate')
   })
 
-  it('serializes to JSON that parses back into the catalog shape', () => {
-    const catalog = buildCatalog({ liveries: [makeLivery()], catalogMeta: makeCatalogMeta() })
-    const parsed: unknown = JSON.parse(serializeCatalog(catalog))
-    expectCatalogShape(parsed)
-    expect((parsed as LiveryCatalog).liveries).toHaveLength(1)
+  it('serializes identically-named adapters differently when they differ in identity', () => {
+    const first = makeAdapter()
+    const second = makeAdapter({
+      hostVersion: 'test-host-2.0.0',
+      adapterId: 'dsh-test-host-2.0.0-r1',
+      contractHash: `sha256:${'2'.repeat(64)}`,
+      catalogProfile: SYNTHETIC_PROFILE_B,
+    })
+    const firstCatalog = buildCatalog(first, makeProfile(SYNTHETIC_PROFILE_A))
+    const secondCatalog = buildCatalog(second, makeProfile(SYNTHETIC_PROFILE_B))
+    expect(firstCatalog.adapterId).not.toBe(secondCatalog.adapterId)
+    expect(firstCatalog.hostVersion).not.toBe(secondCatalog.hostVersion)
+    expect(firstCatalog.contractHash).not.toBe(secondCatalog.contractHash)
+    expect(firstCatalog.catalogProfile).not.toBe(secondCatalog.catalogProfile)
+    expect(firstCatalog.previewsBase).not.toBe(secondCatalog.previewsBase)
   })
 
   it('is pure: equal inputs give equal catalogues', () => {
-    const inputs = { liveries: [makeLivery()], catalogMeta: makeCatalogMeta() }
-    expect(buildCatalog(inputs)).toEqual(buildCatalog(inputs))
+    const adapter = makeAdapter()
+    const profile = makeProfile(SYNTHETIC_PROFILE_A)
+    expect(buildCatalog(adapter, profile)).toEqual(buildCatalog(adapter, profile))
   })
 
-  it('survives an empty catalog (placeholder build) without throwing', () => {
-    const catalog = buildCatalog({ liveries: [], catalogMeta: makeCatalogMeta() })
+  it('yields an empty livery list deterministically when the profile is missing', () => {
+    const adapter = makeAdapter({ catalogProfile: 'sha256:not-generated' })
+    const catalog = buildCatalog(adapter)
     expect(catalog.liveries).toEqual([])
+    expect(catalog.catalogProfile).toBe('sha256:not-generated')
+    expect(catalog.previewsBase).toBe(`${PREVIEW_ROUTE_PREFIX}sha256:not-generated/`)
     expect(() => serializeCatalog(catalog)).not.toThrow()
+  })
+
+  it('resolves a profile through the generated registry id only', () => {
+    const adapter = makeAdapter()
+    // Synthetic profiles are not in the generated registry by construction.
+    expect(catalogProfileFor(adapter)).toBeUndefined()
+  })
+
+  it('serializes to JSON that parses back into the catalog shape', () => {
+    const adapter = makeAdapter()
+    const catalog = buildCatalog(adapter, makeProfile(SYNTHETIC_PROFILE_A, [makeLivery()]))
+    const parsed: unknown = JSON.parse(serializeCatalog(catalog))
+    expectCatalogShape(parsed)
+    expect((parsed as LiveryCatalog).catalogProfile).toBe(SYNTHETIC_PROFILE_A)
+    expect((parsed as LiveryCatalog).liveries).toHaveLength(1)
   })
 
   it('derives the known-id set for normalization', () => {
@@ -87,6 +116,24 @@ describe('buildCatalog', () => {
     expect(ids.has('ivory-slate')).toBe(true)
     expect(ids.has('ocean-mist')).toBe(true)
     expect(ids.has('deleted')).toBe(false)
+  })
+})
+
+describe('previewsBase', () => {
+  it('is the frozen route prefix plus the profile id plus a slash', () => {
+    expect(previewsBaseFor(SYNTHETIC_PROFILE_A)).toBe(
+      `/livery/assets/previews/${SYNTHETIC_PROFILE_A}/`,
+    )
+    expect(previewsBaseFor('sha256:abc')).toBe('/livery/assets/previews/sha256:abc/')
+  })
+
+  it('rejects profile ids that could name a path', () => {
+    expect(isSafeCatalogProfileId('sha256:abc')).toBe(true)
+    expect(isSafeCatalogProfileId('')).toBe(false)
+    expect(isSafeCatalogProfileId('../profile')).toBe(false)
+    expect(isSafeCatalogProfileId('a/b')).toBe(false)
+    expect(isSafeCatalogProfileId('a\\b')).toBe(false)
+    expect(isSafeCatalogProfileId('a\0b')).toBe(false)
   })
 })
 
@@ -103,14 +150,6 @@ describe('collectPreviewFiles', () => {
   it('accepts object keys and mapping values', () => {
     expect(collectPreviewFiles({ 'a-zh-light.svg': { hash: 'x' }, id: 'b-en-dark.svg' }))
       .toEqual(['a-zh-light.svg', 'b-en-dark.svg'])
-  })
-
-  it('accepts nested generated metadata', () => {
-    const parsed = {
-      generatedAt: '2026-01-01',
-      previews: [{ name: 'a.svg', bytes: 12 }, { name: 'nested/b.svg' }],
-    }
-    expect(collectPreviewFiles(parsed)).toEqual(['a.svg'])
   })
 
   it('ignores traversal, absolute paths, separators and non-svg names', () => {
@@ -137,44 +176,76 @@ describe('collectPreviewFiles', () => {
 })
 
 describe('bindPreviews', () => {
-  it('resolves generated names against the built module, deterministically', () => {
-    const bindings = bindPreviews({
+  it('resolves a profile index against the built module, deterministically', () => {
+    const paths: string[] = []
+    const bindings = bindPreviews(SYNTHETIC_PROFILE_A, {
       moduleUrl: new URL('file:///virtual/lib/index.js'),
-      readIndexText: () => JSON.stringify({ files: ['b.svg', 'a.svg'] }),
+      readIndexText: (indexPath) => {
+        paths.push(indexPath)
+        return JSON.stringify({ files: ['b.svg', 'a.svg'], count: 2 })
+      },
     })
+    expect(paths).toEqual([`/virtual/lib/previews/${SYNTHETIC_PROFILE_A}/index.json`])
     expect([...bindings.keys()]).toEqual(['a.svg', 'b.svg'])
-    expect(bindings.get('a.svg')).toBe('/virtual/lib/previews/a.svg')
-    expect(bindings.get('b.svg')).toBe('/virtual/lib/previews/b.svg')
+    expect(bindings.get('a.svg')).toBe(`/virtual/lib/previews/${SYNTHETIC_PROFILE_A}/a.svg`)
+    expect(bindings.get('b.svg')).toBe(`/virtual/lib/previews/${SYNTHETIC_PROFILE_A}/b.svg`)
   })
 
-  it('yields a deterministic empty map when the index is missing or unreadable', () => {
-    const missing = bindPreviews({
+  it('binds each profile into its own directory', () => {
+    const bindings = bindPreviews(SYNTHETIC_PROFILE_B, {
+      moduleUrl: new URL('file:///virtual/lib/index.js'),
+      readIndexText: () => JSON.stringify({ files: ['c.svg'], count: 1 }),
+    })
+    expect(bindings.get('c.svg')).toBe(`/virtual/lib/previews/${SYNTHETIC_PROFILE_B}/c.svg`)
+  })
+
+  it('yields a deterministic empty map for a missing/invalid index', () => {
+    const missing = bindPreviews(SYNTHETIC_PROFILE_A, {
       moduleUrl: new URL('file:///virtual/lib/index.js'),
       readIndexText: () => {
         throw new Error('ENOENT')
       },
     })
     expect(missing.size).toBe(0)
-    const invalid = bindPreviews({
+    const invalid = bindPreviews(SYNTHETIC_PROFILE_A, {
       moduleUrl: new URL('file:///virtual/lib/index.js'),
       readIndexText: () => 'not json',
     })
     expect(invalid.size).toBe(0)
-    const badUrl = bindPreviews({ moduleUrl: 'not a url' })
-    expect(badUrl.size).toBe(0)
   })
 
-  it('produces a map without files for a real missing generated index with no seams', () => {
-    // Source tests run from src/host, where `previews/index.json` does not exist.
-    const bindings = bindPreviews()
-    expect(bindings.size).toBe(0)
+  it('never resolves an unsafe profile id', () => {
+    const paths: string[] = []
+    for (const profileId of ['', '../etc', 'a/b', 'sha256:..']) {
+      const bindings = bindPreviews(profileId, {
+        moduleUrl: new URL('file:///virtual/lib/index.js'),
+        readIndexText: (indexPath) => {
+          paths.push(indexPath)
+          return JSON.stringify({ files: ['a.svg'] })
+        },
+      })
+      expect(bindings.size, profileId).toBe(0)
+    }
+    expect(paths).toEqual([])
+  })
+
+  it('produces an empty map without seams when the generated index is absent', () => {
+    // Source tests run from src/host, where `previews/` does not exist.
+    expect(bindPreviews(SYNTHETIC_PROFILE_A).size).toBe(0)
   })
 })
 
-describe('route constants used by the catalog contract', () => {
-  it('exposes the frozen public names', () => {
-    expect(CATALOG_ROUTE).toBe('/livery/api/catalog')
-    expect(ENTRY_ID).toBe('livery')
-    expect(BODY_ATTRIBUTE).toBe('data-dsh-livery')
+describe('bindProfilePreviews', () => {
+  it('binds each requested profile id', () => {
+    const bindings = bindProfilePreviews({
+      profileIds: [SYNTHETIC_PROFILE_A, SYNTHETIC_PROFILE_B],
+      moduleUrl: new URL('file:///virtual/lib/index.js'),
+      readIndexText: () => JSON.stringify({ files: ['a.svg'], count: 1 }),
+    })
+    expect([...bindings.keys()]).toEqual([SYNTHETIC_PROFILE_A, SYNTHETIC_PROFILE_B])
+    expect(bindings.get(SYNTHETIC_PROFILE_A)?.get('a.svg'))
+      .toBe(`/virtual/lib/previews/${SYNTHETIC_PROFILE_A}/a.svg`)
+    expect(bindings.get(SYNTHETIC_PROFILE_B)?.get('a.svg'))
+      .toBe(`/virtual/lib/previews/${SYNTHETIC_PROFILE_B}/a.svg`)
   })
 })

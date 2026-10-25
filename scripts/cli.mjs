@@ -72,7 +72,24 @@ async function packCheck(args) {
       problems.push(`package.json files must not include ${forbidden}/`)
     }
   }
-  if (pkg.engines?.dsh !== '0.2.0-rc.2') problems.push(`engines.dsh must be exactly 0.2.0-rc.2, got ${String(pkg.engines?.dsh)}`)
+  // Exact allowlist: every certified contract version, joined with ` || `.
+  let expectedAllowlist
+  try {
+    const { readdir: readDir } = await import('node:fs/promises')
+    expectedAllowlist = (await readDir(join(root, 'contracts', 'dsh'), { withFileTypes: true }))
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort()
+      .join(' || ')
+  } catch {
+    expectedAllowlist = ''
+  }
+  if (pkg.engines?.dsh !== expectedAllowlist) {
+    problems.push(`engines.dsh must be the exact allowlist "${expectedAllowlist}", got ${String(pkg.engines?.dsh)}`)
+  }
+  if (typeof pkg.engines?.node !== 'string' || !pkg.engines.node.includes('^22.23.1') || !pkg.engines.node.includes('^24.21.0')) {
+    problems.push(`engines.node must cover the certified runtimes, got ${String(pkg.engines?.node)}`)
+  }
   if (pkg.dsh?.client?.platform !== 'web') problems.push('dsh.client.platform must be web')
   for (const external of pkg.dsh?.client?.external ?? []) {
     problems.push(`dsh.client.external must stay empty for the seeded-platform build (found ${external})`)

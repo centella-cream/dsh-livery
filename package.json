@@ -28,8 +28,8 @@
     "./lib/client.js"
   ],
   "engines": {
-    "node": "^22.23.1",
-    "dsh": "0.2.0-rc.2"
+    "node": "^22.23.1 || ^24.21.0",
+    "dsh": "0.2.0-rc.2 || 0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "keywords": [
     "dsh",
@@ -86,7 +86,9 @@
     "acceptance:web": "node scripts/acceptance-web.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm liveries:check && pnpm audit:css && pnpm audit:contrast && pnpm build && pnpm pack:check",
     "test:client": "vitest run tests/client",
-    "test:host": "vitest run tests/host"
+    "test:host": "vitest run tests/host",
+    "contract:regenerate": "node scripts/cli.mjs contract:regenerate",
+    "contract:extract-desktop": "node scripts/prepare-desktop-contract.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",

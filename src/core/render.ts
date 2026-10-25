@@ -1,22 +1,28 @@
 /**
  * DSH Livery — deterministic CSS rendering + content hashing (COMPILE TIME).
  *
- * The compiler renders once per livery and ships the exact bytes + `cssHash`;
- * the Host and Client only read `CompiledLivery.css` / `CompiledLivery.cssHash`
- * through `src/core/catalog.ts`, so they never import this module (it needs the
- * frozen stock snapshot to re-bind host font hooks).
+ * The compiler renders once per catalog profile and ships the exact bytes +
+ * `cssHash`; the Host and Client only read `CompiledLivery.css` /
+ * `CompiledLivery.cssHash` through `src/core/catalog.ts`, so they never import
+ * this module (it needs the frozen stock snapshot of the target host version).
  *
- * Output contract (docs/implementation/interfaces.md §2, Lead pins):
+ * Every render entry point takes the host `StockSnapshot` explicitly (§2 of
+ * docs/implementation/multi-version.md): a catalog compiled for one host version
+ * can never render against another version's token values.
+ *
+ * Output contract (frozen):
  * - `tokens`: `body[data-dsh-livery="<id>"]{…light…}` then
  *   `body[data-dsh-livery="<id>"][data-ds-dark-theme]{…dark…}`, followed by the
  *   unlayered token-level media fallbacks from `layout.ts` (forced colors,
  *   reduced transparency).
- * - `typography`: `:root:lang(zh) body[…]` and `:root:lang(en) body[…]` host
- *   font-token bindings. The host declares the font ladder tokens on `body` with
- *   `var(--dsw-font-family)`, so the body-scoped family override flows through
- *   every composite shorthand without repeating the stack. A concrete content
- *   stack is only embedded when a manifest picks a different content font than
- *   the UI font for that locale.
+ * - `typography`: `:root:lang(zh) body[…]` and `:root:lang(en) body[…]` font
+ *   bindings, selected by capability facts:
+ *   - `host-font-role-hooks` available (0.2.1+): bind ONLY the documented host
+ *     hooks `--dsh-font-family-text` / `--dsh-font-family-code`; the composite
+ *     `--dsw-font-*` ladder is not touched (the host derives it from the hooks).
+ *   - hooks absent: legacy strategy — override `--dsw-font-family` plus the
+ *     consumed composite family tokens, de-referencing via
+ *     `var(--dsw-font-family)` / `var(--dsh-...)` without repeating stacks.
  * - `layout`: the `@layer dsh-livery.compat` order statement (component
  *   compensation rules only; none are safe on the certified host).
  *
@@ -32,7 +38,8 @@ import type {
   ResolvedTypography,
 } from './types.js'
 import { STOCK_ID } from './types.js'
-import { STOCK_TOKENS } from '../generated/stock.js'
+import type { StockSnapshot } from '../generated/stock.js'
+import { hasFontRoleHooks } from './capabilities.js'
 import {
   bodyDarkScope,
   bodyScope,
@@ -47,6 +54,12 @@ export type RenderableLivery = Pick<
   CompiledLivery,
   'id' | 'light' | 'dark' | 'typography' | 'layout' | 'requiredCapabilities' | 'optionalCapabilities'
 >
+
+/** Documented per-role font-family hooks exposed by 0.2.1+ hosts. */
+export const FONT_ROLE_HOOKS = {
+  text: '--dsh-font-family-text',
+  code: '--dsh-font-family-code',
+} as const
 
 const FONT_FAMILY_TOKEN = '--dsw-font-family'
 const FONT_BRAND_TOKEN = '--dsw-font-family-brand'
@@ -93,15 +106,15 @@ interface StockShorthand {
   readonly selector: string | null
 }
 
-function stockShorthand(name: string): StockShorthand | null {
-  const declaration = STOCK_TOKENS[name]
+function stockShorthand(stock: StockSnapshot, name: string): StockShorthand | null {
+  const declaration = stock.tokens[name]
   if (declaration === undefined || declaration.referencedBy.length === 0) return null
   return { value: declaration.light, selector: declaration.selector }
 }
 
 /** Raw stock value regardless of consumption (needed to rebind content fonts). */
-function stockDeclarationValue(name: string): string | null {
-  const declaration = STOCK_TOKENS[name]
+function stockDeclarationValue(stock: StockSnapshot, name: string): string | null {
+  const declaration = stock.tokens[name]
   return declaration === undefined ? null : declaration.light
 }
 
@@ -114,52 +127,85 @@ function replaceExpression(value: string, expression: string, replacement: strin
  * declaration lives on `:root` and re-binds a `var()` there (a body-scoped copy
  * re-resolves it against the body family override).
  */
-function isRedundantFontDeclaration(name: string, value: string): boolean {
-  const declaration = STOCK_TOKENS[name]
+function isRedundantFontDeclaration(stock: StockSnapshot, name: string, value: string): boolean {
+  const declaration = stock.tokens[name]
   if (declaration === undefined) return true
   if (value !== declaration.light) return false
   return !(declaration.selector === ':root' && declaration.light.includes('var('))
 }
 
 /**
- * Host font-token bindings for one locale (fixed order → stable bytes):
- * `--dsw-font-family` (+ brand) always; the Markdown ladder only when the
- * content stack differs from the UI stack; the code family token plus the
- * consumed code shorthands always.
+ * Typography strategy for hosts WITH documented font role hooks (0.2.1+): bind
+ * only `--dsh-font-family-text` / `--dsh-font-family-code` per language. The
+ * host composes the composite `--dsw-font-*` ladder from these hooks, so
+ * overriding the ladder would be redundant and fragile.
  */
-export function typographyDeclarations(
+function hookTypographyDeclarations(
   typography: ResolvedTypography,
   locale: 'zh-CN' | 'en-US',
-): readonly (readonly [token: string, value: string])[] {
+): readonly (readonly [string, string])[] {
+  // One text role hook exists per locale; the UI stack is the documented
+  // replacement for the host UI family. Code always uses the mono registry stack.
+  return [
+    [FONT_ROLE_HOOKS.text, typography.ui[locale]],
+    [FONT_ROLE_HOOKS.code, typography.code],
+  ]
+}
+
+/**
+ * Legacy typography strategy for hosts WITHOUT font role hooks (0.2.0-rc.2):
+ * override `--dsw-font-family` and de-reference the consumed composite tokens
+ * through `var(--dsw-font-family)`; do not repeat the stack.
+ */
+function legacyTypographyDeclarations(
+  typography: ResolvedTypography,
+  locale: 'zh-CN' | 'en-US',
+  stock: StockSnapshot,
+): readonly (readonly [string, string])[] {
   const uiStack = typography.ui[locale]
   const contentStack = typography.content[locale]
   const codeStack = typography.code
   const declarations: [string, string][] = [[FONT_FAMILY_TOKEN, uiStack]]
 
-  const brand = stockShorthand(FONT_BRAND_TOKEN)
+  const brand = stockShorthand(stock, FONT_BRAND_TOKEN)
   if (brand !== null) declarations.push([FONT_BRAND_TOKEN, brand.value])
 
   const contentDiffers = contentStack !== uiStack
   if (contentDiffers) {
     for (const name of CONSUMED_MARKDOWN_SHORTHANDS) {
-      const stock = stockDeclarationValue(name)
-      if (stock === null || !stock.includes(UI_FAMILY_EXPRESSION)) continue
-      declarations.push([name, replaceExpression(stock, UI_FAMILY_EXPRESSION, contentStack)])
+      const stockValue = stockDeclarationValue(stock, name)
+      if (stockValue === null || !stockValue.includes(UI_FAMILY_EXPRESSION)) continue
+      declarations.push([name, replaceExpression(stockValue, UI_FAMILY_EXPRESSION, contentStack)])
     }
   }
   for (const name of CONSUMED_UI_SHORTHANDS) {
-    const shorthand = stockShorthand(name)
+    const shorthand = stockShorthand(stock, name)
     if (shorthand === null || !shorthand.value.includes(UI_FAMILY_EXPRESSION)) continue
     declarations.push([name, shorthand.value])
   }
   declarations.push([CODE_FAMILY_TOKEN, codeStack])
   for (const name of CONSUMED_CODE_SHORTHANDS) {
-    const shorthand = stockShorthand(name)
+    const shorthand = stockShorthand(stock, name)
     if (shorthand === null || !shorthand.value.includes(CODE_FAMILY_EXPRESSION)) continue
     declarations.push([name, replaceExpression(shorthand.value, CODE_FAMILY_EXPRESSION, `var(${CODE_FAMILY_TOKEN})`)])
   }
 
-  return declarations.filter(([name, value]) => !isRedundantFontDeclaration(name, value))
+  return declarations.filter(([name, value]) => !isRedundantFontDeclaration(stock, name, value))
+}
+
+/**
+ * Host font-token bindings for one locale (fixed order → stable bytes), selected
+ * by capability facts only — never by a host version string.
+ */
+export function typographyDeclarations(
+  typography: ResolvedTypography,
+  locale: 'zh-CN' | 'en-US',
+  capabilities: CapabilityMap,
+  stock: StockSnapshot,
+): readonly (readonly [token: string, value: string])[] {
+  return hasFontRoleHooks(capabilities)
+    ? hookTypographyDeclarations(typography, locale)
+    : legacyTypographyDeclarations(typography, locale, stock)
 }
 
 // ---------------------------------------------------------------------------
@@ -242,12 +288,12 @@ function renderTokenCss(livery: RenderableLivery, capabilities: CapabilityMap, p
   )
 }
 
-function renderTypographyCss(livery: RenderableLivery, pretty: boolean): string {
+function renderTypographyCss(livery: RenderableLivery, capabilities: CapabilityMap, stock: StockSnapshot, pretty: boolean): string {
   return joinFragments(
     LOCALE_SELECTORS.map(([locale, lang]) =>
       formatRule(
         `:root:lang(${lang}) ${bodyScope(livery.id)}`,
-        typographyDeclarations(livery.typography, locale),
+        typographyDeclarations(livery.typography, locale, capabilities, stock),
         pretty,
       ),
     ),
@@ -262,18 +308,20 @@ function renderLayoutFragment(livery: RenderableLivery, capabilities: Capability
 }
 
 /**
- * Render the three CSS fragments for one compiled livery. Compact bytes are the
- * default (what the compiler ships and hashes); `options.pretty` is for audits.
+ * Render the three CSS fragments for one compiled livery against one exact host
+ * stock snapshot. Compact bytes are the default (what the compiler ships and
+ * hashes); `options.pretty` is for audits.
  */
 export function renderLiveryCss(
   livery: RenderableLivery,
   capabilities: CapabilityMap,
+  stock: StockSnapshot,
   options: RenderOptions = {},
 ): LiveryCss {
   const pretty = options.pretty ?? false
   return {
     tokens: sanitizeStyleText(renderTokenCss(livery, capabilities, pretty)),
-    typography: sanitizeStyleText(renderTypographyCss(livery, pretty)),
+    typography: sanitizeStyleText(renderTypographyCss(livery, capabilities, stock, pretty)),
     layout: sanitizeStyleText(renderLayoutFragment(livery, capabilities, pretty)),
   }
 }
@@ -284,8 +332,8 @@ export function styleTextFromFragments(css: LiveryCss): string {
 }
 
 /** Rendition used by the compiler for the shipped bytes and `cssHash`. */
-export function renderStyleText(livery: CompiledLivery, capabilities: CapabilityMap): string {
-  return styleTextFromFragments(renderLiveryCss(livery, capabilities))
+export function renderStyleText(livery: CompiledLivery, capabilities: CapabilityMap, stock: StockSnapshot): string {
+  return styleTextFromFragments(renderLiveryCss(livery, capabilities, stock))
 }
 
 /** `sha256:<hex>` of the exact production stylesheet bytes. */
@@ -298,11 +346,15 @@ export function computeLiveryCssHash(css: LiveryCss): string {
  * `renderBootCssFromCatalog` from `src/core/catalog.ts` instead (stock-free).
  * `stock`/unknown id → empty CSS and hash.
  */
-export function renderBootCss(catalog: LiveryCatalog, skinId: string): { readonly css: string; readonly hash: string } {
+export function renderBootCss(
+  catalog: LiveryCatalog,
+  skinId: string,
+  stock: StockSnapshot,
+): { readonly css: string; readonly hash: string } {
   if (skinId === STOCK_ID) return { css: '', hash: '' }
   const livery = catalog.liveries.find((candidate) => candidate.id === skinId)
   if (livery === undefined) return { css: '', hash: '' }
-  const css = renderStyleText(livery, catalog.capabilities)
+  const css = renderStyleText(livery, catalog.capabilities, stock)
   return { css, hash: hashCss(css) }
 }
 
@@ -424,7 +476,7 @@ function stableStringify(value: unknown): string {
 
 /**
  * Catalog identity hash over id + rendered CSS + layout + typography (property
- * order canonicalised, so Host, compiler and Client compute the same value).
+ * order canonicalised, so compiler and Client compute the same value).
  */
 export function hashLivery(livery: Omit<CompiledLivery, 'hash'>): string {
   return hashCss(

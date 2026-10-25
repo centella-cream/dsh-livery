@@ -60,7 +60,15 @@ for (const file of files.filter((path) => path.endsWith('.json'))) {
 // Contract + adapter must agree with the package's exact support declaration.
 try {
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  if (pkg.engines?.dsh !== '0.2.0-rc.2') problems.push('package.json engines.dsh must be exactly 0.2.0-rc.2')
+  const { readdir: readDir } = await import('node:fs/promises')
+  const contractDirs = (await readDir(join(root, 'contracts', 'dsh'), { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+  const allowlist = contractDirs.join(' || ')
+  if (pkg.engines?.dsh !== allowlist) {
+    problems.push(`package.json engines.dsh must be the exact allowlist "${allowlist}", got "${String(pkg.engines?.dsh)}"`)
+  }
   if (!pkg.dsh?.bundle?.patch) problems.push('package.json dsh.bundle.patch is required')
   const patch = await readFile(join(root, 'cordis.patch.yml'), 'utf8')
   if (!patch.includes('id: livery')) problems.push('cordis.patch.yml must insert the stable entry id `livery`')

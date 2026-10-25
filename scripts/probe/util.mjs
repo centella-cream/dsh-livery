@@ -89,15 +89,37 @@ export async function safeRemoveTree(target) {
   await rm(resolved, { recursive: true, force: true })
 }
 
+/**
+ * Directories that may host the bundled Desktop runtime's Harness home.
+ *
+ * The Desktop app bundles pnpm 11, which discovers a parent pnpm workspace if
+ * the home lives inside this repository (store-dir mismatch); those runs use a
+ * system temp directory instead. Only paths carrying the harness prefix under a
+ * system temp root are accepted — the user's real home never is.
+ */
+function isExternalTempHome(resolved) {
+  if (!path.basename(resolved).startsWith('dsh-livery-')) return false
+  return [path.resolve('/tmp'), path.resolve(os.tmpdir())].some((root) => resolved.startsWith(`${root}${path.sep}`))
+}
+
 /** Assert a path may be used as an isolated Harness home. */
 export function assertIsolatedHome(home) {
   const resolved = path.resolve(home)
   const userHome = path.resolve(os.homedir(), '.dsh')
   if (resolved === userHome) throw new Error(`refusing to use the user's real Harness home (${userHome}) as DSH_HOME`)
-  if (!resolved.startsWith(`${TMP_ROOT}${path.sep}`)) {
-    throw new Error(`isolated DSH_HOME must live under ${TMP_ROOT}; got ${resolved}`)
-  }
-  return resolved
+  if (resolved.startsWith(`${TMP_ROOT}${path.sep}`)) return resolved
+  if (isExternalTempHome(resolved)) return resolved
+  throw new Error(
+    `isolated DSH_HOME must live under ${TMP_ROOT} or a system temp dir named dsh-livery-* (Desktop runtime); got ${resolved}`,
+  )
+}
+
+/** Remove a disposable isolated home wherever it lives (never the real one). */
+export async function removeIsolatedHome(home) {
+  const resolved = assertIsolatedHome(home)
+  if (resolved.startsWith(`${TMP_ROOT}${path.sep}`)) return safeRemoveTree(resolved)
+  const { rm } = await import('node:fs/promises')
+  await rm(resolved, { recursive: true, force: true })
 }
 
 export function sha256Text(text) {

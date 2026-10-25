@@ -1,28 +1,34 @@
 /**
- * Deterministic fixtures for the Host unit tests.
+ * Deterministic fixtures for the multi-adapter Host unit tests.
  *
  * Everything here is pure data matching the frozen types in `src/core/types.ts`
- * and the generated contract facts — no filesystem, no ambient process state,
- * so a test failure names a host rule rather than a machine difference.
+ * and the generated adapter registry — no filesystem, no ambient process state,
+ * so a test failure names a host rule rather than a machine difference. The
+ * *real* generated registry/catalog profiles are exercised separately in
+ * `generated.test.ts`.
  */
 
 import type {
-  CatalogMeta,
-} from '../../src/generated/liveries.js'
-import type {
   CapabilityMap,
+  CatalogProfileData,
   CompiledLivery,
   CompiledVariant,
-  ContractCapabilityFacts,
   LiveryAuditReport,
   MetricsDefinition,
   ResolvedTypography,
 } from '../../src/core/types.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../../src/generated/contract.js'
+import type { AdapterRecord } from '../../src/generated/contract.js'
 import type { BootStateInput } from '../../src/host/boot.js'
+import { buildCatalog } from '../../src/host/catalog.js'
 
-/** Boot CSS renderer stub: deterministic bytes and hash, no core dependency. */
+/** First synthetic catalog profile id (not a generated one). */
+export const SYNTHETIC_PROFILE_A = 'sha256:synthetic-profile-a'
+/** Second synthetic catalog profile id (renders differently on purpose). */
+export const SYNTHETIC_PROFILE_B = 'sha256:synthetic-profile-b'
+
+/** Compiled boot CSS of the fixture livery, byte-for-byte. */
 export const FIXTURE_BOOT_CSS = 'body[data-dsh-livery="ivory-slate"]{--dsw-alias-bg:#ffffff}'
+/** Content hash the fixture livery claims for its compiled CSS. */
 export const FIXTURE_BOOT_HASH = 'sha256:0123456789abcdef0123456789abcdef'
 
 /** Typography metrics fixture used by the compiled-livery fixture. */
@@ -88,7 +94,7 @@ export function makeLivery(overrides: Partial<CompiledLivery> = {}): CompiledLiv
     optionalCapabilities: [],
     light: variant,
     dark: variant,
-    css: { tokens: '', typography: '', layout: '' },
+    css: { tokens: FIXTURE_BOOT_CSS, typography: '', layout: '' },
     cssHash: FIXTURE_BOOT_HASH,
     hash: 'sha256:fixture-livery',
     audit,
@@ -96,67 +102,99 @@ export function makeLivery(overrides: Partial<CompiledLivery> = {}): CompiledLiv
   }
 }
 
-/** Catalog metadata that agrees with the certified contract facts. */
-export function makeCatalogMeta(overrides: Partial<CatalogMeta> = {}): CatalogMeta {
+/**
+ * A capability map with the two required theme facts available.
+ * @param missing - ids to mark unavailable; unknown ids are added as absent facts.
+ * @returns a complete-enough capability map fixture.
+ */
+export function makeCapabilities(missing: readonly string[] = []): CapabilityMap {
+  const unavailable = new Set(missing)
+  const fact = (id: string, available: boolean, required: boolean): CapabilityMap[string] => ({
+    id,
+    available: available && !unavailable.has(id),
+    provenance: available && !unavailable.has(id) ? 'documented' : 'absent',
+    required,
+    detail: `fixture capability ${id}`,
+  })
   return {
-    compiledAt: '2026-01-01T00:00:00.000Z',
-    sourceHash: 'sha256:fixture-source',
-    contractHash: CONTRACT_FACTS.contractHash,
-    adapterId: CONTRACT_FACTS.adapterId,
-    hostVersion: CONTRACT_FACTS.dshVersion,
-    capabilities: HOST_CAPABILITIES,
-    ...overrides,
+    'theme-css': fact('theme-css', true, true),
+    'host-font-family': fact('host-font-family', true, true),
+    'host-font-role-hooks': fact('host-font-role-hooks', false, false),
+    'surface-material': fact('surface-material', true, false),
+    'host-density-tokens': fact('host-density-tokens', false, false),
+    ...Object.fromEntries(missing.map((id) => [id, fact(id, false, false)])),
   }
 }
 
 /**
- * A full boot input that the gate must accept, before per-test overrides.
- * `renderBoot` is stubbed so gate/payload/row tests do not depend on the core
- * renderer being present; the real renderer is exercised by integration tests.
+ * One synthetic certified adapter. Every field is filled so a test can assert
+ * that host code reads identity from the adapter record and nothing ambient.
+ * @param overrides - patched fields.
+ * @returns adapter fixture.
  */
-export function makeBootInput(overrides: Partial<BootStateInput> = {}): BootStateInput {
+export function makeAdapter(overrides: Partial<AdapterRecord> = {}): AdapterRecord {
   return {
-    skinId: 'ivory-slate',
-    capabilities: HOST_CAPABILITIES,
-    liveries: [makeLivery()],
-    catalogMeta: makeCatalogMeta(),
-    contractFacts: CONTRACT_FACTS,
-    profileKind: 'web',
-    observedHostVersion: CONTRACT_FACTS.dshVersion,
-    renderBoot: () => ({ css: FIXTURE_BOOT_CSS, hash: FIXTURE_BOOT_HASH }),
+    hostVersion: 'test-host-1.0.0',
+    adapterId: 'dsh-test-host-1.0.0-r1',
+    contractHash: 'sha256:1111111111111111111111111111111111111111111111111111111111111111',
+    loaderAbiHash: 'sha256:test-loader-abi',
+    hostApiHash: 'sha256:test-host-api',
+    clientApiHash: 'sha256:test-client-api',
+    tokenHash: 'sha256:test-token',
+    layoutHash: 'sha256:test-layout',
+    profileSchemaHash: 'sha256:test-profile-schema',
+    nodeRange: '^22.23.1',
+    nodeRangeSource: 'fixture',
+    clientTarget: 'chrome120',
+    platformModules: ['react'],
+    capabilities: makeCapabilities(),
+    catalogProfile: SYNTHETIC_PROFILE_A,
+    sourceKind: 'installed-package',
+    sourceEvidence: [],
+    capturedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   }
 }
 
-/** A capability map where the supplied ids are unavailable, everything else from the host facts. */
-export function capabilitiesWithout(ids: readonly string[]): CapabilityMap {
-  const next: Record<string, CapabilityMap[string]> = { ...HOST_CAPABILITIES }
-  for (const id of ids) {
-    const fact = next[id]
-    next[id] = {
-      id,
-      available: false,
-      provenance: fact?.provenance ?? 'absent',
-      required: fact?.required ?? false,
-      detail: fact?.detail ?? 'fixture: unavailable',
-    }
+/** One synthetic compiled catalog profile. */
+export function makeProfile(
+  profileId: string,
+  liveries: readonly CompiledLivery[] = [makeLivery()],
+  overrides: Partial<CatalogProfileData> = {},
+): CatalogProfileData {
+  return {
+    profileId,
+    compiledAt: '2026-01-01T00:00:00.000Z',
+    sourceHash: `sha256:source-${profileId}`,
+    sourceAdapters: [],
+    liveries,
+    ...overrides,
   }
-  return next
 }
 
-/** Contract capability facts fixture (used by diagnostics tests). */
-export function contractCapabilityFacts(): ContractCapabilityFacts {
-  const facts: Record<string, ContractCapabilityFacts[string]> = {}
-  for (const [id, fact] of Object.entries(HOST_CAPABILITIES)) {
-    facts[id] = {
-      id,
-      available: fact.available,
-      provenance: fact.provenance,
-      required: fact.required,
-      detail: fact.detail,
-    }
+/** Catalog for one synthetic adapter, with an explicit profile (never the registry). */
+export function makeAdapterCatalog(
+  adapter: AdapterRecord = makeAdapter(),
+  liveries: readonly CompiledLivery[] = [makeLivery()],
+) {
+  return buildCatalog(adapter, makeProfile(adapter.catalogProfile, liveries))
+}
+
+/**
+ * A full boot input that the gate must accept, before per-test overrides.
+ * `adapter`/`catalog` are synthetic, so no generated artifacts are involved.
+ */
+export function makeBootInput(overrides: Partial<BootStateInput> = {}): BootStateInput {
+  const adapter = overrides.adapter ?? makeAdapter()
+  const catalog = overrides.catalog ?? makeAdapterCatalog(adapter)
+  return {
+    skinId: 'ivory-slate',
+    profileKind: 'web',
+    observedHostVersion: adapter.hostVersion,
+    adapter,
+    catalog,
+    ...overrides,
   }
-  return facts
 }
 
 /** Recording fake for `node:http`'s ServerResponse, enough for route handlers. */
@@ -209,4 +247,3 @@ export class FakeResponse {
 export function fakeRequest(method: string, url: string): { method: string; url: string } {
   return { method, url }
 }
-

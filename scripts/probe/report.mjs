@@ -6,6 +6,7 @@
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { oneLine, redact, writeJson, writeText } from './util.mjs'
+import { SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
 
 const CHECK_AREA_TITLES = {
   env: 'Environment',
@@ -76,6 +77,8 @@ export function buildProbeReport(ctx) {
   const environment = {
     date: new Date().toISOString(),
     dshVersion: ctx.environment?.dshVersion,
+    dshBin: ctx.environment?.dshBin,
+    hostRuntime: ctx.environment?.hostRuntime ?? null,
     nodeVersion: process.version,
     platform: process.platform,
     osRelease: ctx.environment?.osRelease,
@@ -83,12 +86,48 @@ export function buildProbeReport(ctx) {
     chromeVersion: ctx.environment?.chromeVersion,
     playwrightVersion: ctx.environment?.playwrightVersion,
   }
+  const expectedAdapter = ctx.config.expectedAdapter ?? null
+  const observedPayload = ctx.state.bootPayloadApplied ?? ctx.state.bootPayload ?? null
+  const observedCatalog = ctx.state.catalog ?? null
+  const observedAdapter = observedPayload ? adapterForTriple(observedPayload) ?? null : observedCatalog ? adapterForTriple(observedCatalog) ?? null : null
   const target = {
     packageName: ctx.config.packageName,
     pluginId: ctx.config.pluginId,
     packageVersion: ctx.environment?.packageVersion ?? null,
     tarball: ctx.install?.spec ?? ctx.config.tgz ?? null,
     tarballSha256: ctx.install?.tarballSha256 ?? null,
+    hostVersion: ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? null,
+    adapterId: expectedAdapter?.adapterId ?? observedCatalog?.adapterId ?? null,
+    contractHash: expectedAdapter?.contractHash ?? observedCatalog?.contractHash ?? null,
+    catalogProfile: expectedAdapter?.catalogProfile ?? observedCatalog?.catalogProfile ?? null,
+    sourceKind: expectedAdapter?.sourceKind ?? null,
+  }
+  const matrix = {
+    certifiedVersions: SUPPORTED_HOST_VERSIONS,
+    expected: expectedAdapter
+      ? {
+          hostVersion: expectedAdapter.hostVersion,
+          adapterId: expectedAdapter.adapterId,
+          contractHash: expectedAdapter.contractHash,
+          catalogProfile: expectedAdapter.catalogProfile,
+          platformModules: expectedAdapter.platformModules,
+          sourceKind: expectedAdapter.sourceKind,
+          capabilities: expectedAdapter.capabilities,
+        }
+      : null,
+    observed: observedPayload || observedCatalog
+      ? {
+          hostVersion: observedPayload?.hostVersion ?? observedCatalog?.hostVersion ?? null,
+          adapterId: observedPayload?.adapterId ?? observedCatalog?.adapterId ?? null,
+          contractHash: observedPayload?.contractHash ?? observedCatalog?.contractHash ?? null,
+          catalogProfile: observedPayload?.catalogProfile ?? observedCatalog?.catalogProfile ?? null,
+          profileKind: observedPayload?.profileKind ?? null,
+          previewsBase: observedCatalog?.previewsBase ?? null,
+          certified: Boolean(observedAdapter),
+        }
+      : null,
+    profileKindExpected: ctx.config.expectedProfileKind ?? null,
+    cloneFrom: ctx.config.cloneFrom ? redact(ctx.config.cloneFrom) : null,
   }
   const summary = ctx.runner.summary
   const report = {
@@ -101,11 +140,15 @@ export function buildProbeReport(ctx) {
     summary,
     environment,
     target,
+    matrix,
     config: {
       profileName: ctx.config.profileName,
       dshHome: redact(ctx.config.dshHome ?? ''),
       reuseUrl: ctx.config.reuseUrl ? redact(ctx.config.reuseUrl) : null,
       locale: ctx.config.locale,
+      expectedVersion: ctx.config.expectedVersion ?? null,
+      expectedProfileKind: ctx.config.expectedProfileKind ?? null,
+      cloneFrom: ctx.config.cloneFrom ? redact(ctx.config.cloneFrom) : null,
       bootTimeoutMs: ctx.config.bootTimeout,
       artifactsDir: ctx.config.outDir,
       reportPath: ctx.config.reportPath,
@@ -147,6 +190,7 @@ export function buildProbeReport(ctx) {
       profile: ctx.profileEvidence ?? null,
       deviations: ctx.deviations ?? [],
       knownLimitations: ctx.knownLimitations ?? [],
+      manualNotes: ctx.config.notesText ?? null,
     },
   }
   return report
@@ -234,6 +278,14 @@ export const PLAN20_ROWS = [
     checks: ['boot.graph-entry', 'bundle.serves-client-js', 'handshake.applied-boot', 'catalog.schema', 'catalog.livery-hashes'],
   },
   {
+    criterion: 'Live host matches a certified adapter (version + adapter id + contract hash + catalog profile)',
+    checks: ['env.certified-host', 'handshake.certified-adapter', 'handshake.applied-boot', 'catalog.certified-identity', 'handshake.catalog-identity'],
+  },
+  {
+    criterion: 'Platform module table / client bundle ABI resolves on this host build',
+    checks: ['boot.graph-entry', 'bundle.serves-client-js', 'handshake.certified-adapter'],
+  },
+  {
     criterion: 'zh-CN + en-US settings UI and previews complete',
     checks: ['settings.livery-section', 'settings.section-label', 'gallery.cards', 'search.name', 'keyboard.arrow-right', 'fonts.en-latin', 'locale.en-gallery', 'preview.previewing'],
   },
@@ -243,7 +295,8 @@ export const PLAN20_ROWS = [
   },
   {
     criterion: 'Colour + host-level font-family actually effective (not just the settings page)',
-    checks: ['theme.light-tokens', 'theme.dark-tokens', 'fonts.zh-cjk', 'css.token-scoping'],
+    checks: ['theme.light-tokens', 'theme.dark-tokens', 'fonts.zh-cjk', 'fonts.zh-role-hooks', 'css.token-scoping'],
+    note: 'font strategy is capability-selected: role hooks (--dsh-font-family-text/-code) on 0.2.1+, legacy composite tokens on 0.2.0-rc.2',
   },
   {
     criterion: 'At least one safe layout capability actually effective',
@@ -311,7 +364,9 @@ function plan20RowStatus(checkById, row) {
 export function renderMarkdown(report, { title } = {}) {
   const { summary, environment, target } = report
   const lines = []
-  lines.push(`# ${title ?? 'Web-profile acceptance evidence — DSH Livery'}`)
+  const hostVersion = report.target?.hostVersion ?? report.environment?.dshVersion ?? 'unknown host'
+  const sourceKind = report.target?.sourceKind ?? report.environment?.hostRuntime ?? 'unknown-source'
+  lines.push(`# ${title ?? `Acceptance evidence — DSH Livery on DSH ${hostVersion} (${sourceKind})`}`)
   lines.push('')
   lines.push(
     `Run \`${report.runId}\` · ${report.mode === 'isolated' ? 'isolated DSH_HOME' : 'reuse of a running profile'} · ` +
@@ -332,6 +387,32 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push(`| target package | ${target.packageName}@${target.packageVersion ?? '?'} (\`${target.tarball ?? '—'}\`) |`)
   lines.push(`| tarball sha256 | ${target.tarballSha256 ?? '—'} |`)
   lines.push(`| browser | headless Chrome, viewport 1440×900 |`)
+  lines.push('')
+  lines.push('## Host identity & certification')
+  lines.push('')
+  const matrix = report.matrix ?? {}
+  lines.push('| item | expected (certified) | observed live |')
+  lines.push('|---|---|---|')
+  const exp = matrix.expected ?? {}
+  const obs = matrix.observed ?? {}
+  const cell = (value) => (value === undefined || value === null || value === '' ? '—' : String(value))
+  lines.push(`| host version | ${cell(exp.hostVersion)} | ${cell(obs.hostVersion)} |`)
+  lines.push(`| adapter id | ${cell(exp.adapterId)} | ${cell(obs.adapterId)} |`)
+  lines.push(`| contract hash | ${cell(exp.contractHash)} | ${cell(obs.contractHash)} |`)
+  lines.push(`| catalog profile | ${cell(exp.catalogProfile)} | ${cell(obs.catalogProfile)} |`)
+  lines.push(`| platform module table | ${cell(exp.platformModules)} modules | — (resolved at boot) |`)
+  lines.push(`| package source kind | ${cell(exp.sourceKind)} | — |`)
+  lines.push(`| BootPayload.profileKind | ${cell(matrix.profileKindExpected)} | ${cell(obs.profileKind)} |`)
+  lines.push(`| previews base | — | ${cell(obs.previewsBase)} |`)
+  const identityOk = Boolean(obs.certified)
+    && (!exp.hostVersion || !obs.hostVersion || exp.hostVersion === obs.hostVersion)
+    && (!exp.contractHash || !obs.contractHash || exp.contractHash === obs.contractHash)
+  lines.push('')
+  lines.push(
+    `Certified-adapter match: ${identityOk ? '✅ yes' : obs.hostVersion ? '❌ no' : '⏭ not observed (stock boot / reuse without payload)'}` +
+      (obs.catalogProfile ? ` · catalog profile ${String(obs.catalogProfile).slice(0, 19)}…` : ''),
+  )
+  if (matrix.cloneFrom) lines.push(`\nProfile source: byte-clone of \`${matrix.cloneFrom}\` (isolated copy; source read-only).`)
   lines.push('')
   lines.push('## Boot')
   lines.push('')
@@ -456,6 +537,12 @@ export function renderMarkdown(report, { title } = {}) {
     lines.push('```json')
     lines.push(JSON.stringify(report.evidence.lifecycle, null, 2))
     lines.push('```')
+    lines.push('')
+  }
+  if (report.evidence?.manualNotes) {
+    lines.push('## Manual notes / scope caveats')
+    lines.push('')
+    lines.push(String(report.evidence.manualNotes).trim())
     lines.push('')
   }
   lines.push('---')

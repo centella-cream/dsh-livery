@@ -78,6 +78,7 @@ async function buildHost() {
     format: 'esm',
     target: nodeTarget,
     sourcemap: false,
+    minify: true,
     logLevel: 'warning',
     external: ['@deepseek-ai/dsh-app-boot'],
     banner: {
@@ -97,6 +98,7 @@ async function buildClient() {
     format: 'cjs',
     target: 'chrome120',
     sourcemap: false,
+    minify: true,
     logLevel: 'warning',
     jsx: 'automatic',
     external: PLATFORM_MODULES,
@@ -118,34 +120,66 @@ async function buildClient() {
 }
 
 async function checkSizes() {
-  // Performance budgets from IMPLEMENTATION_PLAN §18.8.
+  // Performance budgets from IMPLEMENTATION_PLAN §18.8, applied per catalog profile.
   const CLIENT_GZIP_BUDGET = 25 * 1024
-  const BOOT_CSS_BUDGET = 12 * 1024
   const PER_LIVERY_CSS_BUDGET = 12 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))
   const host = await readFile(join(root, 'lib', 'index.js'))
   const clientGzip = gzipSync(client, { level: 9 }).byteLength
   const hostGzip = gzipSync(host, { level: 9 }).byteLength
 
-  // Livery CSS budgets come from the compiled catalog, whose cssHash is over the
-  // exact bytes the host injects.
+  // Compiler layout: artifacts/liveries/<profileId>/{report,contrast,token-coverage,css-safety}.json
+  // plus artifacts/liveries/summary.json mapping adapters -> profile.
+  let profileIds = []
   let maxLiveryCss = 0
   let liveryCount = 0
   let cssSafety = 'missing'
   try {
-    const report = JSON.parse(await readFile(join(root, 'artifacts', 'liveries', 'report.json'), 'utf8'))
-    liveryCount = report.counts?.liveries ?? 0
-    maxLiveryCss = report.counts?.maxLiveryCssBytes ?? 0
-    cssSafety = report.gates?.cssSafety === true ? 'pass' : 'fail'
+    const summary = JSON.parse(await readFile(join(root, 'artifacts', 'liveries', 'summary.json'), 'utf8'))
+    profileIds = Array.isArray(summary.profiles) ? summary.profiles.map((profile) => profile.profileId ?? profile.id) : []
   } catch {
-    // compiler report is optional for this static measurement
+    // fall back to scanning profile dirs
+  }
+  if (profileIds.length === 0) {
+    try {
+      const { readdir } = await import('node:fs/promises')
+      const entries = await readdir(join(root, 'artifacts', 'liveries'), { withFileTypes: true })
+      profileIds = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name)
+    } catch {
+      profileIds = []
+    }
+  }
+  let profileReports = 0
+  for (const profileId of profileIds) {
+    try {
+      const report = JSON.parse(await readFile(join(root, 'artifacts', 'liveries', profileId, 'report.json'), 'utf8'))
+      profileReports += 1
+      const profileLiveries = report.counts?.liveries ?? report.liveries?.length ?? 0
+      if (profileLiveries > 0) {
+        liveryCount = liveryCount === 0 ? profileLiveries : Math.min(liveryCount, profileLiveries)
+      }
+      maxLiveryCss = Math.max(maxLiveryCss, report.counts?.maxLiveryCssBytes ?? 0)
+      if (report.gates?.cssSafety === false) cssSafety = 'fail'
+      else if (cssSafety === 'missing') cssSafety = 'pass'
+    } catch {
+      // missing profile report is caught by the profileReports check
+    }
   }
 
   const problems = []
   if (clientGzip > CLIENT_GZIP_BUDGET) problems.push(`client gzip ${clientGzip}B exceeds ${CLIENT_GZIP_BUDGET}B budget`)
   if (maxLiveryCss > PER_LIVERY_CSS_BUDGET) problems.push(`largest livery css ${maxLiveryCss}B exceeds ${PER_LIVERY_CSS_BUDGET}B budget`)
-  if (liveryCount !== 10) problems.push(`expected 10 compiled liveries, found ${liveryCount}`)
+  if (profileReports < 2) problems.push(`expected at least 2 compiled catalog profiles, found ${profileReports}`)
+  if (liveryCount !== 10) problems.push(`expected 10 liveries per catalog profile, smallest profile has ${liveryCount}`)
   if (cssSafety === 'fail') problems.push('compiler CSS safety report failed')
+  for (const profileId of profileIds) {
+    try {
+      const index = JSON.parse(await readFile(join(root, 'lib', 'previews', profileId, 'index.json'), 'utf8'))
+      if ((index.files ?? []).length !== 40) problems.push(`previews/${profileId} must contain 40 svg files, found ${(index.files ?? []).length}`)
+    } catch {
+      problems.push(`previews/${profileId}/index.json is missing`)
+    }
+  }
 
   const report = {
     generatedAt: 'deterministic-build',
@@ -154,7 +188,8 @@ async function checkSizes() {
     clientGzip,
     hostBytes: host.byteLength,
     hostGzip,
-    budgets: { clientGzip: CLIENT_GZIP_BUDGET, bootCss: BOOT_CSS_BUDGET, perLiveryCss: PER_LIVERY_CSS_BUDGET },
+    budgets: { clientGzip: CLIENT_GZIP_BUDGET, bootCss: 12 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
+    profiles: profileIds,
     liveryCount,
     maxLiveryCss,
     cssSafety,
@@ -162,7 +197,9 @@ async function checkSizes() {
     problems,
   }
   await writeFile(join(root, 'lib', 'build-report.json'), `${JSON.stringify(report, null, 2)}\n`)
-  console.log(`build: host ${host.byteLength}B (gzip ${hostGzip}B) · client ${client.byteLength}B (gzip ${clientGzip}B) · max livery css ${maxLiveryCss}B`)
+  console.log(
+    `build: host ${host.byteLength}B (gzip ${hostGzip}B) · client ${client.byteLength}B (gzip ${clientGzip}B) · profiles ${profileIds.join(', ')} · max livery css ${maxLiveryCss}B`,
+  )
   if (problems.length > 0) {
     for (const problem of problems) console.error(`build: BUDGET FAIL ${problem}`)
     throw new Error('build budget gate failed')

@@ -64,6 +64,7 @@ function makeSnapshot(overrides: {
     capabilities: {
       themeCss: true,
       hostFontFamily: true,
+      fontRoleHooks: false,
       surfaceMaterial: true,
       hostDensityTokens: false,
       hostTranscriptWidth: false,

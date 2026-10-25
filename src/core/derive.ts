@@ -2,7 +2,7 @@
  * DSH Livery — data-driven light/dark token derivation (COMPILE-TIME ONLY).
  *
  * `deriveLivery` turns a manifest's four seed colours per mode into a complete
- * concrete token overlay for the frozen host palette:
+ * concrete token overlay for one exact host stock snapshot:
  *
  * 1. Neutral ramp: every neutral static step is re-mapped in OKLab from the
  *    `surface` ↔ `text` seed pair, preserving the host's relative lightness
@@ -14,7 +14,7 @@
  *    foreground aliases are contrast-adjusted, never the semantic statics.
  * 4. Alias / specific tokens are resolved through their stock `var()` chain,
  *    `color-mix()` expressions are evaluated against the new ramp values and the
- *    two host think-selection gradients are re-stopped on the new ramp.
+ *    host think-selection gradients are re-stopped on the new ramp.
  * 5. The dark variant is derived independently from its own seeds; it is not an
  *    inversion of the light variant.
  * 6. A bounded WCAG repair pass (`auditContrast` + `adjustForContrast`) moves
@@ -27,15 +27,18 @@
  *    through `contrast`; unconsumed tokens inherit stock and are reported as
  *    non-blocking diagnostics by the compiler.
  *
- * This module imports the frozen stock snapshot, so it must never be reachable
- * from the Client/Host runtime bundles: only the build-time compiler uses it.
+ * Every entry point takes the host `StockSnapshot` explicitly (§2 of
+ * docs/implementation/multi-version.md): a catalog compiled for one host version
+ * can never derive against another version's token values. No module-global
+ * stock table survives. This module imports the frozen snapshot *types* only and
+ * must never be reachable from the Client/Host runtime bundles.
+ *
  * Output is deterministic: fixed ordering, fixed rounding, no I/O, no clocks.
  */
 
 import type { CompiledVariant, ContrastEntry, LiveryManifest, Mode, Seeds, TokenMap } from './types.js'
 import type { Rgb } from './color.js'
 import {
-  clampToSrgbGamut,
   contrastRatio,
   evaluateColorMix,
   formatCssColor,
@@ -44,20 +47,13 @@ import {
   parseColor,
   parseColorWithAlpha,
   rgbToOklab,
-  splitTopLevelList,
   substituteVars,
 } from './color.js'
-import { STOCK_TOKENS, STOCK_LIGHT, STOCK_DARK } from '../generated/stock.js'
+import type { StockSnapshot, StockTokenDeclaration } from '../generated/stock.js'
 import { CONTRAST_CHECKS, adjustForContrast, auditContrast, resolveCheckColors } from './contrast.js'
 
-/** Stock declaration maps for both host palettes. */
-export interface StockTokens {
-  readonly light: TokenMap
-  readonly dark: TokenMap
-}
-
-/** Frozen declaration snapshot; pass this when a caller has no custom stock. */
-export const STOCK_SNAPSHOT: StockTokens = { light: STOCK_LIGHT, dark: STOCK_DARK }
+/** Declaration record of one host stock snapshot (mode-independent metadata). */
+export type StockDeclarations = Readonly<Record<string, StockTokenDeclaration>>
 
 /** Material (surfaceStyle soft/glass) tokens that glass makes translucent. */
 export const MATERIAL_LAYER_TOKENS: readonly string[] = [
@@ -74,12 +70,6 @@ const GLASS_ALPHA: Readonly<Record<string, number>> = {
   '--dsw-alias-bg-layer-3': 0.92,
   '--dsw-alias-bg-module-platform': 0.72,
 }
-
-/** Host think-selection gradients re-stopped on the derived neutral ramp. */
-export const GRADIENT_TOKEN_NAMES: readonly string[] = [
-  '--dsw-linear-gradient-think',
-  '--dsw-linear-think-select',
-] as const
 
 /** Brand / on-accent roles always owned by the livery (even when unconsumed). */
 const ROLE_TOKEN_NAMES: readonly string[] = [
@@ -110,57 +100,63 @@ export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   '--dsw-alias-file-diff-deleted-bg',
   '--dsw-alias-file-diff-deleted-gutter',
   '--dsw-alias-file-diff-deleted-marker',
+  // Host think-selection fades are not consumed by any shipped package in the
+  // frozen snapshots (referencedBy empty), so they stay at the host values.
+  '--dsw-linear-gradient-think',
+  '--dsw-linear-think-select',
 ] as const
 
+/** Stock declaration record for one snapshot (shared helper). */
+export function declarationsOf(stock: StockSnapshot): StockDeclarations {
+  return stock.tokens
+}
+
 /**
- * A-tier required tokens (§8.2): every alias/specific token a shipped DSH
- * package actually consumes according to the frozen contract snapshot.
+ * A-tier required tokens for one snapshot (§8.2): every alias/specific token a
+ * shipped DSH package actually consumes in that host's frozen contract.
  */
-export const REQUIRED_COLOR_TOKEN_NAMES: readonly string[] = Object.entries(STOCK_TOKENS)
-  .filter(
-    ([name, declaration]) =>
-      /^--dsw-(alias|specific)-[a-z0-9-]+$/.test(name) && declaration.referencedBy.length > 0,
-  )
-  .map(([name]) => name)
-  .sort()
+export function requiredColorTokenNames(stock: StockSnapshot): readonly string[] {
+  return Object.entries(stock.tokens)
+    .filter(
+      ([name, declaration]) =>
+        /^--dsw-(alias|specific)-[a-z0-9-]+$/.test(name) && declaration.referencedBy.length > 0,
+    )
+    .map(([name]) => name)
+    .sort()
+}
 
 /**
  * Raw palette steps consumed directly by a shipped package other than the theme
- * package. The theme package references every static step while defining the
- * alias layer, so those references are already covered by the emitted aliases;
- * these steps are read by components straight from CSS and must be overridden.
+ * package for one snapshot. The theme package references every static step while
+ * defining the alias layer, so those references are already covered by the
+ * emitted aliases; these steps are read by components straight from CSS.
  */
-export const DIRECT_CONSUMED_STATIC_TOKEN_NAMES: readonly string[] = Object.entries(STOCK_TOKENS)
-  .filter(
-    ([name, declaration]) =>
-      name.startsWith('--dsw-static-') &&
-      declaration.referencedBy.some((pkg) => pkg !== 'dsh-client-ui-theme'),
-  )
-  .map(([name]) => name)
-  .sort()
-
-/** Alias/specific tokens asserted by the contrast matrix (kept for diagnostics). */
-const MATRIX_TOKEN_NAMES: ReadonlySet<string> = new Set(
-  CONTRAST_CHECKS.flatMap((spec) => {
-    const names = [spec.foregroundToken, spec.backgroundToken]
-    if (spec.backgroundOverToken !== undefined) names.push(spec.backgroundOverToken)
-    return names
-  }),
-)
+export function directConsumedStaticTokenNames(stock: StockSnapshot): readonly string[] {
+  return Object.entries(stock.tokens)
+    .filter(
+      ([name, declaration]) =>
+        name.startsWith('--dsw-static-') &&
+        declaration.referencedBy.some((pkg) => pkg !== 'dsh-client-ui-theme'),
+    )
+    .map(([name]) => name)
+    .sort()
+}
 
 /**
- * The deterministic emitted-token set: required consumed aliases + directly
- * consumed static steps + contrast-matrix roles + brand roles + gradients +
- * material tokens. Everything else inherits stock (non-blocking diagnostics).
+ * The deterministic emitted-token set for one snapshot (A-tier emission policy,
+ * §8.2): every alias/specific token a shipped package consumes plus the static
+ * steps read directly by components; brand roles and material tokens are always
+ * owned by the livery. Everything else inherits stock and is reported by the
+ * compiler as a non-blocking diagnostic. No host version string is involved.
  */
-export const EMITTED_TOKEN_NAMES: ReadonlySet<string> = new Set([
-  ...REQUIRED_COLOR_TOKEN_NAMES,
-  ...DIRECT_CONSUMED_STATIC_TOKEN_NAMES,
-  ...MATRIX_TOKEN_NAMES,
-  ...ROLE_TOKEN_NAMES,
-  ...GRADIENT_TOKEN_NAMES,
-  ...MATERIAL_LAYER_TOKENS,
-])
+export function emittedTokenNames(stock: StockSnapshot): ReadonlySet<string> {
+  return new Set([
+    ...requiredColorTokenNames(stock),
+    ...directConsumedStaticTokenNames(stock),
+    ...ROLE_TOKEN_NAMES,
+    ...MATERIAL_LAYER_TOKENS,
+  ])
+}
 
 // ---------------------------------------------------------------------------
 // Derivation helpers
@@ -188,7 +184,9 @@ interface RampMapping {
   readonly map: (rgb: Rgb) => Rgb
 }
 
-function buildNeutralMapping(mode: Mode, seeds: Seeds, rawOf: (name: string) => string): RampMapping {
+type RawOf = (name: string) => string
+
+function buildNeutralMapping(mode: Mode, seeds: Seeds, rawOf: RawOf): RampMapping {
   const luminanceOf = (name: string): number => rgbToOklab(parseColor(rawOf(name))).l
   const surface = parseColor(seeds.surface)
   const text = parseColor(seeds.text)
@@ -218,9 +216,10 @@ function buildSeedMapping(
   seed: Rgb,
   surface: Rgb,
   text: Rgb,
-  rawOf: (tokenName: string) => string,
+  declarations: StockDeclarations,
+  rawOf: RawOf,
 ): RampMapping {
-  const familyNames = Object.keys(STOCK_TOKENS).filter((tokenName) =>
+  const familyNames = Object.keys(declarations).filter((tokenName) =>
     tokenName.startsWith(`--dsw-static-${name}-`),
   )
   let lightPole = Number.NEGATIVE_INFINITY
@@ -249,30 +248,6 @@ function buildSeedMapping(
   }
 }
 
-/** Re-stop a two-stop neutral `linear-gradient()` on the derived ramp. */
-function mapGradient(expression: string, mapNeutral: (rgb: Rgb) => Rgb): string | null {
-  const prefix = 'linear-gradient('
-  const trimmed = expression.trim()
-  if (!trimmed.startsWith(prefix) || !trimmed.endsWith(')')) return null
-  const inner = trimmed.slice(prefix.length, -1)
-  const parts = splitTopLevelList(inner).map((part) => part.trim())
-  if (parts.length < 3) return null
-  const angle = parts[0] as string
-  const stops = parts.slice(1).map((stop) => {
-    const match = /^(.+?)\s+([0-9.]+%)$/.exec(stop)
-    const colorExpression = match === null ? stop : (match[1] as string).trim()
-    const position = match === null ? '' : ` ${match[2] as string}`
-    let parsed: { rgb: Rgb; alpha: number }
-    try {
-      parsed = parseColorWithAlpha(colorExpression)
-    } catch {
-      return stop
-    }
-    return `${formatCssColor(mapNeutral(parsed.rgb), parsed.alpha)}${position}`
-  })
-  return `linear-gradient(${angle}, ${stops.join(', ')})`
-}
-
 function canonicalColor(value: string): string | null {
   try {
     const parsed = parseColorWithAlpha(value)
@@ -292,9 +267,14 @@ function rgbaEqual(a: { rgb: Rgb; alpha: number }, b: { rgb: Rgb; alpha: number 
   )
 }
 
-function sameAsStock(name: string, value: string, stockForMode: TokenMap): boolean {
-  const raw = stockForMode[name]
-  if (raw === undefined) return false
+function rawStockValue(declaration: StockTokenDeclaration, mode: Mode): string {
+  return mode === 'light' ? declaration.light : declaration.dark
+}
+
+function sameAsStock(name: string, value: string, declarations: StockDeclarations, mode: Mode): boolean {
+  const declaration = declarations[name]
+  if (declaration === undefined) return false
+  const raw = rawStockValue(declaration, mode)
   if (value === raw) return true
   try {
     return rgbaEqual(parseColorWithAlpha(value), parseColorWithAlpha(raw))
@@ -316,26 +296,26 @@ function sortedTokens(source: MutableTokens): TokenMap {
 // Per-mode derivation
 // ---------------------------------------------------------------------------
 
-function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: TokenMap): CompiledVariant {
+function deriveVariant(manifest: LiveryManifest, mode: Mode, stock: StockSnapshot): CompiledVariant {
   const seeds = manifest.variants[mode].seeds
   const overrides: TokenMap = manifest.variants[mode].tokens ?? {}
   const overridden = new Set<string>(Object.keys(overrides))
+  const declarations = stock.tokens
   const surface = parseColor(seeds.surface)
   const text = parseColor(seeds.text)
   const accent = parseColor(seeds.accent)
   const secondary = parseColor(seeds.secondary)
 
-  const rawOf = (name: string): string => {
-    const value = stockForMode[name]
-    if (value !== undefined) return value
-    const declaration = STOCK_TOKENS[name]
-    return declaration === undefined ? '' : declaration.light
+  const rawOf: RawOf = (name: string): string => {
+    const declaration = declarations[name]
+    if (declaration === undefined) return ''
+    return rawStockValue(declaration, mode)
   }
 
   const full: MutableTokens = {}
   const neutralMapping = buildNeutralMapping(mode, seeds, rawOf)
-  const accentMapping = buildSeedMapping('deepseek', mode, accent, surface, text, rawOf)
-  const secondaryMapping = buildSeedMapping('blue', mode, secondary, surface, text, rawOf)
+  const accentMapping = buildSeedMapping('deepseek', mode, accent, surface, text, declarations, rawOf)
+  const secondaryMapping = buildSeedMapping('blue', mode, secondary, surface, text, declarations, rawOf)
   const mappings: Readonly<Record<StaticFamily, RampMapping | null>> = {
     neutral: neutralMapping,
     accent: accentMapping,
@@ -344,9 +324,9 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
   }
 
   // 1. Static palette steps.
-  for (const [name, declaration] of Object.entries(STOCK_TOKENS)) {
+  for (const [name, declaration] of Object.entries(declarations)) {
     if (declaration.category !== 'static') continue
-    const raw = rawOf(name)
+    const raw = rawStockValue(declaration, mode)
     if (raw.length === 0) continue
     const parsed = parseColorWithAlpha(raw)
     const mapping = mappings[staticFamilyOf(name)]
@@ -397,7 +377,7 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
   const resolveRef = (name: string): string | null => {
     const direct = full[name]
     if (direct !== undefined) return direct
-    const declaration = STOCK_TOKENS[name]
+    const declaration = declarations[name]
     if (declaration === undefined) return null
     return resolveToken(name)
   }
@@ -408,31 +388,25 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
     const literal = canonicalColor(value)
     if (literal !== null) return literal
     if (value.startsWith('color-mix(')) return evaluateColorMix(value)
-    if (value.startsWith('linear-gradient(')) return mapGradient(value, neutralMapping.map)
     return null
   }
   function resolveToken(name: string): string | null {
     if (resolvedCache.has(name)) return resolvedCache.get(name) ?? null
     if (visiting.has(name)) return null
-    const declaration = STOCK_TOKENS[name]
+    const declaration = declarations[name]
     if (declaration === undefined) return null
     visiting.add(name)
-    const value = resolveExpression(rawOf(name))
+    const value = resolveExpression(rawStockValue(declaration, mode))
     visiting.delete(name)
     resolvedCache.set(name, value)
     return value
   }
-  for (const [name, declaration] of Object.entries(STOCK_TOKENS)) {
+  for (const [name, declaration] of Object.entries(declarations)) {
     if (declaration.category !== 'alias' && declaration.category !== 'specific') continue
     if (pinned.has(name)) continue
     const value = resolveToken(name)
     if (value !== null) full[name] = value
   }
-  for (const name of GRADIENT_TOKEN_NAMES) {
-    const value = resolveToken(name)
-    if (value !== null) full[name] = value
-  }
-
   // 5. Surface material recipes are token-only (no selectors).
   const surfaceStyle = manifest.layout.surfaceStyle
   if (surfaceStyle !== 'solid') {
@@ -449,12 +423,12 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
   let contrast: readonly ContrastEntry[] = []
   for (let pass = 0; pass < 6; pass += 1) {
     const variant: CompiledVariant = { seeds, tokens: sortedTokens({ ...full }), contrast: [] }
-    contrast = auditContrast(variant, mode)
+    contrast = auditContrast(variant, mode, stock)
     let changed = false
     for (const spec of CONTRAST_CHECKS) {
       if (!spec.adjustable) continue
       if (overridden.has(spec.foregroundToken)) continue
-      const resolved = resolveCheckColors(full, spec, mode)
+      const resolved = resolveCheckColors(full, spec, mode, stock)
       if (resolved === null) continue
       const ratio = contrastRatio(resolved.foreground, resolved.background)
       if (ratio >= spec.min) continue
@@ -468,14 +442,14 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
     if (!changed) break
   }
   const finalVariant: CompiledVariant = { seeds, tokens: sortedTokens({ ...full }), contrast: [] }
-  contrast = auditContrast(finalVariant, mode)
+  contrast = auditContrast(finalVariant, mode, stock)
 
   // 7. Emission policy (§8.2): consumed tokens only; everything else inherits
   //    stock and is reported by the compiler as a non-blocking diagnostic.
+  const emittedNames = emittedTokenNames(stock)
   const forced = new Set<string>([
     ...overridden,
     ...Object.keys(roleOverrides),
-    ...GRADIENT_TOKEN_NAMES,
     ...(surfaceStyle === 'solid' ? [] : MATERIAL_LAYER_TOKENS),
   ])
   const emitted: MutableTokens = {}
@@ -484,8 +458,8 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
     if (value === undefined) continue
     if (DELIBERATELY_INHERITED_TOKENS.includes(name)) continue
     const isForced = forced.has(name)
-    if (!isForced && !EMITTED_TOKEN_NAMES.has(name)) continue
-    if (!isForced && sameAsStock(name, value, stockForMode)) continue
+    if (!isForced && !emittedNames.has(name)) continue
+    if (!isForced && sameAsStock(name, value, declarations, mode)) continue
     emitted[name] = value
   }
 
@@ -493,17 +467,20 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stockForMode: Token
 }
 
 /**
- * Derive the complete light/dark token sets for one manifest. Deterministic and
- * side-effect free; `stock` defaults to the frozen snapshot from the contract.
- * Compile-time only — never reachable from the runtime bundles.
+ * Derive the complete light/dark token sets for one manifest against one exact
+ * host stock snapshot. The snapshot is required: a catalog compiled for one host
+ * version must never derive against another version's token values.
+ *
+ * Deterministic and side-effect free; compile-time only (never reachable from
+ * the runtime bundles).
  */
 export function deriveLivery(
   manifest: LiveryManifest,
-  stock: StockTokens = STOCK_SNAPSHOT,
+  stock: StockSnapshot,
 ): { readonly light: CompiledVariant; readonly dark: CompiledVariant } {
   return {
-    light: deriveVariant(manifest, 'light', stock.light),
-    dark: deriveVariant(manifest, 'dark', stock.dark),
+    light: deriveVariant(manifest, 'light', stock),
+    dark: deriveVariant(manifest, 'dark', stock),
   }
 }
 
@@ -511,6 +488,3 @@ export function deriveLivery(
 export function isTokenWhitelisted(name: string): boolean {
   return name.startsWith('--dsw-alias-') || name.startsWith('--dsw-specific-') || name.startsWith('--dsw-static-')
 }
-
-/** Clamp helper re-exported for tests that build ramps by hand. */
-export { clampToSrgbGamut }

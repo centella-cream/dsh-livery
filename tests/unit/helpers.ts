@@ -2,22 +2,61 @@
  * Unit-test helpers: build compiled liveries from fixture manifests without the
  * compiler (the compiler owns `src/compiler/**`; these helpers exercise the
  * same core pipeline the compiler uses).
+ *
+ * Everything is version-explicit: tests can build the same manifest against the
+ * 0.2.0-rc.2 legacy stock/capabilities and against the 0.2.1-rc.2 host with
+ * font-role hooks, and compare the deterministic output.
  */
 
 import type {
   CapabilityMap,
   CompiledLivery,
+  CompiledVariant,
   LiveryAuditReport,
+  LiveryCatalog,
   LiveryManifest,
   ResolvedTypography,
-  CompiledVariant,
 } from '../../src/core/types.js'
-import { HOST_CAPABILITIES } from '../../src/generated/contract.js'
+import type { AdapterRecord } from '../../src/generated/contract.js'
+import type { StockSnapshot } from '../../src/generated/stock.js'
+import { ADAPTER_BY_VERSION } from '../../src/generated/contract.js'
+import { STOCK_BY_VERSION } from '../../src/generated/stock.js'
 import { evaluateCapabilities, type CapabilityEvaluation } from '../../src/core/capabilities.js'
 import { deriveLivery } from '../../src/core/derive.js'
 import { resolveTypography } from '../../src/core/registry.js'
-import { renderLiveryCss, hashCss, hashLivery, styleTextFromFragments, type RenderableLivery } from '../../src/core/render.js'
+import {
+  hashCss,
+  hashLivery,
+  renderLiveryCss,
+  styleTextFromFragments,
+  type RenderableLivery,
+} from '../../src/core/render.js'
 import { auditContrast, summarizeContrast } from '../../src/core/contrast.js'
+
+/** Certified adapter records used by the tests. */
+export const ADAPTER_020: AdapterRecord = ADAPTER_BY_VERSION['0.2.0-rc.2'] as AdapterRecord
+export const ADAPTER_021_RC2: AdapterRecord = ADAPTER_BY_VERSION['0.2.1-rc.2'] as AdapterRecord
+export const ADAPTER_021_RC3: AdapterRecord = ADAPTER_BY_VERSION['0.2.1-rc.3'] as AdapterRecord
+
+/** Frozen stock snapshots keyed by host version. */
+export const STOCK_020: StockSnapshot = STOCK_BY_VERSION['0.2.0-rc.2'] as StockSnapshot
+export const STOCK_021_RC2: StockSnapshot = STOCK_BY_VERSION['0.2.1-rc.2'] as StockSnapshot
+export const STOCK_021_RC3: StockSnapshot = STOCK_BY_VERSION['0.2.1-rc.3'] as StockSnapshot
+
+export interface BuildOptions {
+  /** Capability map; defaults to the adapter's certified map. */
+  readonly capabilities?: CapabilityMap
+  /** Host stock snapshot; defaults to the adapter's snapshot. */
+  readonly stock?: StockSnapshot
+  /** Adapter used for identity/previews; defaults to 0.2.0-rc.2. */
+  readonly adapter?: AdapterRecord
+}
+
+function stockForAdapter(adapter: AdapterRecord): StockSnapshot {
+  const stock = STOCK_BY_VERSION[adapter.hostVersion]
+  if (stock === undefined) throw new Error(`No stock snapshot for ${adapter.hostVersion}`)
+  return stock
+}
 
 export interface FixtureBuild {
   readonly manifest: LiveryManifest
@@ -26,21 +65,25 @@ export interface FixtureBuild {
   readonly dark: CompiledVariant
   readonly typography: ResolvedTypography
   readonly evaluation: CapabilityEvaluation
+  readonly adapter: AdapterRecord
+  readonly stock: StockSnapshot
 }
 
 /** Run derive + typography resolution + capability evaluation for one manifest. */
-export function buildFixture(
-  manifest: LiveryManifest,
-  capabilities: CapabilityMap = HOST_CAPABILITIES,
-): FixtureBuild {
+export function buildFixture(manifest: LiveryManifest, options: BuildOptions = {}): FixtureBuild {
+  const adapter = options.adapter ?? ADAPTER_020
+  const stock = options.stock ?? stockForAdapter(adapter)
+  const capabilities = options.capabilities ?? adapter.capabilities
   const typography = resolveTypography(manifest)
   const evaluation = evaluateCapabilities(capabilities, manifest)
   const effectiveManifest: LiveryManifest = { ...manifest, layout: evaluation.effectiveLayout }
-  const variants = deriveLivery(effectiveManifest)
+  const variants = deriveLivery(effectiveManifest, stock)
   return {
     manifest,
     typography,
     evaluation,
+    adapter,
+    stock,
     light: variants.light,
     dark: variants.dark,
     renderable: {
@@ -55,14 +98,28 @@ export function buildFixture(
   }
 }
 
+/** Render a fixture build with its adapter capability map + stock snapshot. */
+export function renderFixture(
+  manifest: LiveryManifest,
+  options: BuildOptions = {},
+): { readonly build: FixtureBuild; readonly css: ReturnType<typeof renderLiveryCss>; readonly cssText: string } {
+  const build = buildFixture(manifest, options)
+  const css = renderLiveryCss(build.renderable, build.evaluation.map, build.stock)
+  return { build, css, cssText: styleTextFromFragments(css) }
+}
+
 /** Full CompiledLivery (css + cssHash + hash + audit) from a fixture manifest. */
-export function compileFixture(manifest: LiveryManifest, capabilities: CapabilityMap = HOST_CAPABILITIES): CompiledLivery {
-  const build = buildFixture(manifest, capabilities)
-  const css = renderLiveryCss(build.renderable, build.evaluation.map)
+export function compileFixture(
+  manifest: LiveryManifest,
+  options: BuildOptions = {},
+): CompiledLivery {
+  const build = buildFixture(manifest, options)
+  const css = renderLiveryCss(build.renderable, build.evaluation.map, build.stock)
   const cssText = styleTextFromFragments(css)
   const audit: LiveryAuditReport = {
     contrast: [...build.light.contrast, ...build.dark.contrast],
-    contrastFailures: summarizeContrast(build.light.contrast).failures + summarizeContrast(build.dark.contrast).failures,
+    contrastFailures:
+      summarizeContrast(build.light.contrast).failures + summarizeContrast(build.dark.contrast).failures,
     tokenCoverage: {
       covered: [...new Set([...Object.keys(build.light.tokens), ...Object.keys(build.dark.tokens)])].sort(),
       inherited: [],
@@ -95,23 +152,21 @@ export function compileFixture(manifest: LiveryManifest, capabilities: Capabilit
   return { ...base, hash: hashLivery(base) }
 }
 
-/** Concatenated mock catalog for catalog/render tests. */
-export function catalogOf(liveries: readonly CompiledLivery[]): {
-  readonly schemaVersion: 1
-  readonly compilerVersion: '0.1.0'
-  readonly adapterId: 'dsh-0.2.0-rc.2-r1'
-  readonly hostVersion: '0.2.0-rc.2'
-  readonly contractHash: string
-  readonly capabilities: CapabilityMap
-  readonly liveries: readonly CompiledLivery[]
-} {
+/** Mock catalog carrying the adapter identity fields for catalog/render tests. */
+export function catalogOf(
+  liveries: readonly CompiledLivery[],
+  options: BuildOptions = {},
+): LiveryCatalog {
+  const adapter = options.adapter ?? ADAPTER_020
   return {
     schemaVersion: 1,
     compilerVersion: '0.1.0',
-    adapterId: 'dsh-0.2.0-rc.2-r1',
-    hostVersion: '0.2.0-rc.2',
-    contractHash: 'sha256:test',
-    capabilities: HOST_CAPABILITIES,
+    adapterId: adapter.adapterId,
+    hostVersion: adapter.hostVersion,
+    contractHash: adapter.contractHash,
+    catalogProfile: adapter.catalogProfile,
+    capabilities: options.capabilities ?? adapter.capabilities,
+    previewsBase: `/livery/assets/previews/${adapter.catalogProfile}/`,
     liveries,
   }
 }
@@ -129,13 +184,13 @@ export function contrastRoleSet(entries: readonly { readonly role: string }[]): 
   return new Set(entries.map((entry) => entry.role))
 }
 
-/** Audited entries for one fixture build (both modes). */
+/** Audited entries for one fixture build (both modes), against its stock. */
 export function auditFixture(build: FixtureBuild): {
   readonly light: ReturnType<typeof auditContrast>
   readonly dark: ReturnType<typeof auditContrast>
 } {
   return {
-    light: auditContrast(build.light, 'light'),
-    dark: auditContrast(build.dark, 'dark'),
+    light: auditContrast(build.light, 'light', build.stock),
+    dark: auditContrast(build.dark, 'dark', build.stock),
   }
 }

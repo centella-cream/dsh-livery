@@ -119,6 +119,9 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
                   : t('check.catalogUnavailable')}
               </p>
               <p className="livery-check__value">
+                {t('check.profile')}: {snapshot.catalogProfile ?? t('check.none')}
+              </p>
+              <p className="livery-check__value">
                 {t('check.configured')}: {snapshot.confirmedId ?? t('check.none')}
               </p>
               <p className="livery-check__value">

@@ -11,10 +11,9 @@ import {
   summarizeContrast,
 } from '../../src/core/contrast.js'
 import { contrastRatio, parseColor, parseColorWithAlpha } from '../../src/core/color.js'
-import { STOCK_TOKENS } from '../../src/generated/stock.js'
 import type { CompiledVariant, ContrastEntry, TokenMap } from '../../src/core/types.js'
 import { FIXTURE_MANIFESTS } from './fixtures.js'
-import { buildFixture } from './helpers.js'
+import { ADAPTER_021_RC2, STOCK_020, STOCK_021_RC2, buildFixture } from './helpers.js'
 
 function variantOf(manifestIndex: number, mode: 'light' | 'dark'): CompiledVariant {
   const build = buildFixture(FIXTURE_MANIFESTS[manifestIndex]!)
@@ -57,38 +56,39 @@ describe('contrast matrix', () => {
     }
   })
 
-  it('references real stock tokens only', () => {
+  it('references real stock tokens only in the frozen matrix', () => {
     for (const spec of CONTRAST_CHECKS) {
-      expect(STOCK_TOKENS[spec.foregroundToken]).toBeDefined()
-      expect(STOCK_TOKENS[spec.backgroundToken]).toBeDefined()
-      if (spec.backgroundOverToken !== undefined) expect(STOCK_TOKENS[spec.backgroundOverToken]).toBeDefined()
       expect(spec.min).toBeGreaterThanOrEqual(3)
       expect(['text', 'large-text', 'non-text']).toContain(spec.kind)
     }
-    for (const token of Object.values(CONTRAST_SURFACES)) expect(STOCK_TOKENS[token]).toBeDefined()
-    for (const token of Object.values(CONTRAST_FOREGROUNDS)) expect(STOCK_TOKENS[token]).toBeDefined()
+    for (const token of Object.values(CONTRAST_SURFACES)) expect(token.startsWith('--dsw-')).toBe(true)
+    for (const token of Object.values(CONTRAST_FOREGROUNDS)) expect(token.startsWith('--dsw-')).toBe(true)
   })
 
-  it('passes every assertion for every fixture in both modes', () => {
+  it('passes every assertion for every fixture in both modes on both host versions', () => {
     for (let index = 0; index < FIXTURE_MANIFESTS.length; index += 1) {
-      for (const mode of ['light', 'dark'] as const) {
-        const variant = variantOf(index, mode)
-        const entries = auditContrast(variant, mode)
-        const summary = summarizeContrast(entries)
-        expect(summary.failures).toBe(0)
-        expect(summary.total).toBeGreaterThan(40)
-        for (const entry of entries) {
-          expect(entry.foreground).toMatch(/^#[0-9a-f]{6}$/)
-          expect(entry.background).toMatch(/^#[0-9a-f]{6}$/)
-          expect(entry.ratio).toBeGreaterThanOrEqual(entry.min)
-          expect(entry.pass).toBe(true)
+      for (const options of [{}, { adapter: ADAPTER_021_RC2 }]) {
+        const build = buildFixture(FIXTURE_MANIFESTS[index]!, options)
+        for (const mode of ['light', 'dark'] as const) {
+          const variant = mode === 'light' ? build.light : build.dark
+          const stock = options.adapter === undefined ? STOCK_020 : STOCK_021_RC2
+          const entries = auditContrast(variant, mode, stock)
+          const summary = summarizeContrast(entries)
+          expect(summary.failures).toBe(0)
+          expect(summary.total).toBeGreaterThan(40)
+          for (const entry of entries) {
+            expect(entry.foreground).toMatch(/^#[0-9a-f]{6}$/)
+            expect(entry.background).toMatch(/^#[0-9a-f]{6}$/)
+            expect(entry.ratio).toBeGreaterThanOrEqual(entry.min)
+            expect(entry.pass).toBe(true)
+          }
         }
       }
     }
   })
 
   it('includes the expected role/surface/state names', () => {
-    const entries = auditContrast(variantOf(0, 'light'), 'light')
+    const entries = auditContrast(variantOf(0, 'light'), 'light', STOCK_020)
     for (const role of [
       'label-primary/base/default',
       'label-primary/sidebar/default',
@@ -108,9 +108,9 @@ describe('contrast matrix', () => {
 
   it('composites translucent tokens over their surface before measuring', () => {
     const build = buildFixture(FIXTURE_MANIFESTS[0]!)
-    const entries = auditContrast(build.light, 'light')
+    const entries = auditContrast(build.light, 'light', build.stock)
     const menuEntry = entryFor(entries, 'label-primary/menu/default')
-    const rawMenu = resolveTokenColor(build.light.tokens, CONTRAST_SURFACES.menu, 'light')
+    const rawMenu = resolveTokenColor(build.light.tokens, CONTRAST_SURFACES.menu, 'light', build.stock)
     expect(rawMenu).not.toBeNull()
     expect(rawMenu?.alpha).toBeLessThan(1)
     // The audited background is the composited opaque colour, not the raw token.
@@ -118,8 +118,30 @@ describe('contrast matrix', () => {
     const baseToken = build.light.tokens['--dsw-alias-bg-base']
     expect(baseToken).toBeDefined()
     const composited = compositeOver(rawMenu!, parseColor(baseToken as string))
-    const hex = `#${[composited.r, composited.g, composited.b].map((channel) => Math.round(channel).toString(16).padStart(2, '0')).join('')}`
+    const hex = `#${[composited.r, composited.g, composited.b]
+      .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
+      .join('')}`
     expect(menuEntry.background).toBe(hex)
+  })
+
+  it('resolves inherited tokens from the explicit stock snapshot', () => {
+    const semantic = '--dsw-alias-state-error-primary'
+    const from020 = resolveTokenColor({}, semantic, 'light', STOCK_020)
+    const from021 = resolveTokenColor({}, semantic, 'light', STOCK_021_RC2)
+    expect(from020).not.toBeNull()
+    expect(from021).not.toBeNull()
+    // Semantics-identical colour contract: values are equal across the two hosts.
+    expect(`${from020?.rgb.r},${from020?.rgb.g},${from020?.rgb.b}`).toBe(
+      `${from021?.rgb.r},${from021?.rgb.g},${from021?.rgb.b}`,
+    )
+    // Different snapshots are accepted independently (no module-global table).
+    const resolved = resolveTokenColor(
+      { '--dsw-alias-state-error-primary': '#010203' },
+      semantic,
+      'dark',
+      STOCK_021_RC2,
+    )
+    expect(resolved?.rgb).toEqual({ r: 1, g: 2, b: 3 })
   })
 
   it('skips entries whose tokens cannot resolve (never throws)', () => {
@@ -128,9 +150,7 @@ describe('contrast matrix', () => {
       tokens: { '--dsw-alias-label-primary': 'not-a-colour' },
       contrast: [],
     }
-    const entries = auditContrast(variant, 'light')
-    // The malformed token falls back to the stock declaration; the audit never
-    // throws and still returns typed entries.
+    const entries = auditContrast(variant, 'light', STOCK_020)
     expect(entries.length).toBeGreaterThan(0)
     for (const entry of entries) {
       expect(typeof entry.pass).toBe('boolean')
@@ -181,7 +201,7 @@ describe('adjustForContrast', () => {
     }
   })
 
-  it('can repair a synthetic failing variant', () => {
+  it('can repair a synthetic failing variant against a per-version snapshot', () => {
     const background = '#ffffff'
     const failing = '#eeeeee'
     const before: CompiledVariant = {
@@ -193,7 +213,7 @@ describe('adjustForContrast', () => {
       contrast: [],
     }
     const primarySpec = CONTRAST_CHECKS.find((spec) => spec.role === 'label-primary')!
-    const resolved = resolveCheckColors(before.tokens, primarySpec, 'light')
+    const resolved = resolveCheckColors(before.tokens, primarySpec, 'light', STOCK_021_RC2)
     expect(resolved).not.toBeNull()
     const ratio = contrastRatio(resolved!.foreground, resolved!.background)
     expect(ratio).toBeLessThan(primarySpec.min)
@@ -202,13 +222,13 @@ describe('adjustForContrast', () => {
       '--dsw-alias-label-primary': adjustForContrast(failing, background, primarySpec.min),
     }
     const repaired: CompiledVariant = { seeds: before.seeds, tokens, contrast: [] }
-    const entries = auditContrast(repaired, 'light')
+    const entries = auditContrast(repaired, 'light', STOCK_021_RC2)
     const labelEntries = entries.filter((entry) => entry.role.startsWith('label-primary/'))
     expect(labelEntries.length).toBeGreaterThan(0)
     const baseDefault = entries.find((entry) => entry.role === 'label-primary/base/default')
     expect(baseDefault).toBeDefined()
     expect(baseDefault?.pass).toBe(true)
-    const repairedBase = resolveCheckColors(tokens, primarySpec, 'light')
+    const repairedBase = resolveCheckColors(tokens, primarySpec, 'light', STOCK_021_RC2)
     expect(repairedBase).not.toBeNull()
     expect(contrastRatio(repairedBase!.foreground, repairedBase!.background)).toBeGreaterThanOrEqual(primarySpec.min)
   })

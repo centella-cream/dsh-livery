@@ -194,9 +194,13 @@ export const OVERRIDE_MANIFEST: LiveryManifest = makeManifest(
       light: {
         '--dsw-static-neutral-bluish-500': '#123456',
         '--dsw-alias-label-secondary': '#654321',
+        // Not consumed by any shipped package: only an explicit override makes
+        // this token appear in the derived variant + emitted CSS.
+        '--dsw-specific-tip': '#f2e8ee',
       },
       dark: {
         '--dsw-static-neutral-bluish-500': '#abcdef',
+        '--dsw-specific-tip': '#2b2027',
       },
     },
   },

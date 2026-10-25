@@ -63,6 +63,7 @@ function SkinCard({
   labelById,
   locale,
   mode,
+  previewsBase,
   index,
   focusIndex,
   selected,
@@ -77,6 +78,7 @@ function SkinCard({
   readonly labelById: TagLabels
   readonly locale: 'zh' | 'en'
   readonly mode: 'light' | 'dark'
+  readonly previewsBase: string
   readonly index: number
   readonly focusIndex: number
   readonly selected: boolean
@@ -123,7 +125,7 @@ function SkinCard({
             <img
               className="livery-thumb__img"
               data-testid="livery-thumb"
-              src={previewUrl(livery.id, locale, mode)}
+              src={previewUrl(previewsBase, livery.id, locale, mode)}
               alt={t('card.thumbnailAlt', {
                 name,
                 mode: t(mode === 'dark' ? 'mode.dark' : 'mode.light'),
@@ -319,6 +321,7 @@ export function Gallery({ t, snapshot, filter, onFilterChange, onPreview }: Gall
                   labelById={labelById}
                   locale={snapshot.locale}
                   mode={snapshot.themeMode}
+                  previewsBase={snapshot.catalog?.previewsBase ?? ''}
                   index={index}
                   focusIndex={focusIndex}
                   selected={selected}

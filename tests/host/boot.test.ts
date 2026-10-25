@@ -1,9 +1,9 @@
 /**
- * Pre-loader gate and boot-row tests.
+ * Multi-adapter pre-loader gate and boot-row tests.
  *
  * The gate is the plugin's only fail-closed boundary: every rejection case here
  * asserts `rows.length === 0`, because "partially injected" is the one outcome
- * the contract forbids.
+ * the contract forbids, and an uncertified host version must never be styled.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -16,7 +16,8 @@ import {
   renderBootStyleHtml,
   type BootStateInput,
 } from '../../src/host/boot.js'
-import { CONTRACT_FACTS, HOST_CAPABILITIES } from '../../src/generated/contract.js'
+import { buildCatalog } from '../../src/host/catalog.js'
+import type { AdapterRecord } from '../../src/generated/contract.js'
 import {
   BODY_ATTRIBUTE,
   BOOT_GLOBAL,
@@ -31,28 +32,101 @@ import {
 import {
   FIXTURE_BOOT_CSS,
   FIXTURE_BOOT_HASH,
-  capabilitiesWithout,
+  SYNTHETIC_PROFILE_A,
+  SYNTHETIC_PROFILE_B,
+  makeAdapter,
+  makeAdapterCatalog,
   makeBootInput,
-  makeCatalogMeta,
+  makeCapabilities,
   makeLivery,
+  makeProfile,
 } from './fixtures.js'
 
-/** Rows are typed against the host contract; tests read them as a record. */
-function rowKinds(input: BootStateInput): string[] {
-  return computeBootState(input).rows.map((row) => row.kind)
+/** The three synthetic certified adapters the host must style (two share a profile). */
+function syntheticAdapters(): AdapterRecord[] {
+  return [
+    makeAdapter(),
+    makeAdapter({
+      hostVersion: 'test-host-2.0.0',
+      adapterId: 'dsh-test-host-2.0.0-r1',
+      contractHash: `sha256:${'2'.repeat(64)}`,
+      catalogProfile: SYNTHETIC_PROFILE_B,
+    }),
+    makeAdapter({
+      hostVersion: 'test-host-2.1.0',
+      adapterId: 'dsh-test-host-2.1.0-r1',
+      contractHash: `sha256:${'3'.repeat(64)}`,
+      catalogProfile: SYNTHETIC_PROFILE_B,
+    }),
+  ]
 }
 
-describe('computeBootState — acceptance', () => {
-  it('accepts an exact contract and emits the three boot rows in the frozen order', () => {
-    const state = computeBootState(makeBootInput())
-    expect(state.accepted).toBe(true)
-    expect(state.diagnostics).toEqual([])
-    // Frozen: first-paint CSS row first, then the handshake global, then the
-    // body attribute stamp.
-    expect(rowKinds(makeBootInput())).toEqual(['html', 'global', 'script'])
-    expect(state.rows).toHaveLength(3)
-    expect(state.gate.accepted).toBe(true)
-    expect(state.gate.codes).toEqual([])
+/** An input with no resolvable adapter: unknown/uncertified host version. */
+function unresolvedInput(observedHostVersion: string | null): BootStateInput {
+  return {
+    skinId: 'ivory-slate',
+    profileKind: 'web',
+    observedHostVersion,
+  }
+}
+
+describe('computeBootState — acceptance per certified adapter', () => {
+  it.each(syntheticAdapters().map((adapter) => [adapter.hostVersion, adapter] as const))(
+    'accepts adapter %s and emits the three boot rows in the frozen order',
+    (_version, adapter) => {
+      const state = computeBootState(makeBootInput({ adapter }))
+      expect(state.gate.accepted).toBe(true)
+      expect(state.accepted).toBe(true)
+      expect(state.diagnostics).toEqual([])
+      expect(state.rows.map((row) => row.kind)).toEqual(['html', 'global', 'script'])
+      expect(state.rows).toHaveLength(3)
+      expect(state.adapter).toEqual(adapter)
+      expect(state.capabilities).toBe(adapter.capabilities)
+    },
+  )
+
+  it.each(syntheticAdapters().map((adapter) => [adapter.hostVersion, adapter] as const))(
+    'carries %s adapter identity into the payload and gate',
+    (_version, adapter) => {
+      const state = computeBootState(makeBootInput({ adapter }))
+      expect(state.payload.adapterId).toBe(adapter.adapterId)
+      expect(state.payload.hostVersion).toBe(adapter.hostVersion)
+      expect(state.payload.contractHash).toBe(adapter.contractHash)
+      expect(state.payload.catalogProfile).toBe(adapter.catalogProfile)
+      expect(state.gate.adapterId).toBe(adapter.adapterId)
+      expect(state.gate.hostVersion).toBe(adapter.hostVersion)
+      expect(state.gate.contractHash).toBe(adapter.contractHash)
+      expect(state.gate.catalogProfile).toBe(adapter.catalogProfile)
+    },
+  )
+
+  it('shares one catalog profile between render-equivalent adapters', () => {
+    const [first, second, third] = syntheticAdapters()
+    expect(first?.catalogProfile).toBe(SYNTHETIC_PROFILE_A)
+    expect(second?.catalogProfile).toBe(third?.catalogProfile)
+    if (second === undefined) throw new Error('missing adapter')
+    const result = computeBootState(makeBootInput({ adapter: second }))
+    expect(result.payload.catalogProfile).toBe(SYNTHETIC_PROFILE_B)
+  })
+
+  it('describes the payload schema-completely for one adapter', () => {
+    const adapter = makeAdapter()
+    const state = computeBootState(makeBootInput({ adapter }))
+    expect(state.payload).toEqual({
+      pluginVersion: LIVERY_VERSION,
+      adapterId: adapter.adapterId,
+      hostVersion: adapter.hostVersion,
+      contractHash: adapter.contractHash,
+      catalogProfile: adapter.catalogProfile,
+      profileKind: 'web',
+      accepted: true,
+      skinId: 'ivory-slate',
+      cssHash: FIXTURE_BOOT_HASH,
+      bootStyleId: BOOT_STYLE_ID,
+      catalogUrl: CATALOG_ROUTE,
+      entryId: ENTRY_ID,
+      diagnostics: [],
+    })
   })
 
   it('emits the boot style as head HTML first, carrying id, plugin marker and hash', () => {
@@ -65,16 +139,13 @@ describe('computeBootState — acceptance', () => {
     expect(row.html).toContain(`data-plugin="${PLUGIN_MARKER}"`)
     expect(row.html).toContain(`${HASH_ATTRIBUTE}="${FIXTURE_BOOT_HASH}"`)
     expect(row.html).toContain(FIXTURE_BOOT_CSS)
-    // The only `</style` may be the row's own closing tag; the CSS body must
-    // not be able to close the element early.
     expect(row.html.match(/<\/style/gi) ?? []).toHaveLength(1)
     expect(row.html.endsWith('</style>')).toBe(true)
   })
 
   it('emits the handshake payload global second', () => {
     const state = computeBootState(makeBootInput())
-    const row = state.rows[1]
-    expect(row).toEqual({ kind: 'global', name: BOOT_GLOBAL, value: state.payload })
+    expect(state.rows[1]).toEqual({ kind: 'global', name: BOOT_GLOBAL, value: state.payload })
   })
 
   it('emits the body script that stamps both body attributes', () => {
@@ -90,41 +161,25 @@ describe('computeBootState — acceptance', () => {
     expect(row.text).not.toMatch(/<\/script/i)
   })
 
-  it('describes the payload exactly once, schema-complete', () => {
-    const state = computeBootState(makeBootInput())
-    expect(state.payload).toEqual({
-      pluginVersion: LIVERY_VERSION,
-      adapterId: CONTRACT_FACTS.adapterId,
-      hostVersion: CONTRACT_FACTS.dshVersion,
-      contractHash: CONTRACT_FACTS.contractHash,
-      profileKind: 'web',
-      accepted: true,
-      skinId: 'ivory-slate',
-      cssHash: FIXTURE_BOOT_HASH,
-      bootStyleId: BOOT_STYLE_ID,
-      catalogUrl: CATALOG_ROUTE,
-      entryId: ENTRY_ID,
-      diagnostics: [],
-    })
-  })
-
-  it('carries the deployment profile into the payload', () => {
+  it('records the deployment profile for diagnostics only', () => {
     const state = computeBootState(makeBootInput({ profileKind: 'desktop' }))
     expect(state.accepted).toBe(true)
     expect(state.payload.profileKind).toBe('desktop')
+    expect(state.gate.profileKind).toBe('desktop')
   })
 
-  it('contributes no rows for the stock skin (gate passes, boot accepted = false)', () => {
-    const state = computeBootState(makeBootInput({ skinId: STOCK_ID }))
-    // Stock passes the host gate but has no boot content, so `accepted` (rows
-    // will be injected) is false while the gate verdict is true.
-    expect(state.gate.accepted).toBe(true)
-    expect(state.accepted).toBe(false)
-    expect(state.rows).toEqual([])
-    expect(state.payload.accepted).toBe(false)
-    expect(state.payload.skinId).toBe(STOCK_ID)
-    expect(state.payload.cssHash).toBe('')
-    expect(state.diagnostics).toEqual([])
+  it('contributes no rows for the stock skin on every adapter', () => {
+    for (const adapter of syntheticAdapters()) {
+      const state = computeBootState(makeBootInput({ adapter, skinId: STOCK_ID }))
+      expect(state.gate.accepted).toBe(true)
+      expect(state.accepted).toBe(false)
+      expect(state.rows).toEqual([])
+      expect(state.payload.accepted).toBe(false)
+      expect(state.payload.skinId).toBe(STOCK_ID)
+      expect(state.payload.cssHash).toBe('')
+      expect(state.payload.adapterId).toBe(adapter.adapterId)
+      expect(state.diagnostics).toEqual([])
+    }
   })
 
   it('treats an absent config value as stock', () => {
@@ -135,132 +190,154 @@ describe('computeBootState — acceptance', () => {
     expect(state.payload.skinId).toBe(STOCK_ID)
   })
 
-  it('boot state follows the live skin id (no state carried between renders)', () => {
-    const input = makeBootInput()
-    const stock = computeBootState({ ...input, skinId: STOCK_ID })
-    const livery = computeBootState({ ...input, skinId: 'ivory-slate' })
-    const other = computeBootState({
-      ...input,
-      liveries: [makeLivery(), makeLivery({ id: 'ocean-mist' })],
-      skinId: 'ocean-mist',
-    })
-    expect(stock.rows).toEqual([])
-    expect(stock.accepted).toBe(false)
-    expect(livery.accepted).toBe(true)
-    expect(livery.rows).toHaveLength(3)
-    expect(livery.payload.skinId).toBe('ivory-slate')
-    expect(other.payload.skinId).toBe('ocean-mist')
-  })
-
   it('keeps optional unavailable capabilities out of the gate', () => {
     const livery = makeLivery({ optionalCapabilities: ['host-density-tokens'] })
-    const state = computeBootState(makeBootInput({ liveries: [livery] }))
+    const adapter = makeAdapter()
+    const state = computeBootState(makeBootInput({
+      adapter,
+      catalog: makeAdapterCatalog(adapter, [livery]),
+    }))
     expect(state.accepted).toBe(true)
     expect(state.rows).toHaveLength(3)
     expect(state.gate.missingCapabilities).toEqual([])
   })
+
+  it('boot state follows the live skin id (no state carried between renders)', () => {
+    const input = makeBootInput()
+    const stock = computeBootState({ ...input, skinId: STOCK_ID })
+    const livery = computeBootState({ ...input, skinId: 'ivory-slate' })
+    expect(stock.rows).toEqual([])
+    expect(stock.accepted).toBe(false)
+    expect(livery.accepted).toBe(true)
+    expect(livery.rows).toHaveLength(3)
+  })
 })
 
-describe('computeBootState — fail closed', () => {
-  it('rejects a different host version with zero rows', () => {
-    const state = computeBootState(makeBootInput({ observedHostVersion: '0.2.1-rc.2' }))
-    expect(state.accepted).toBe(false)
-    expect(state.rows).toEqual([])
-    expect(state.payload.accepted).toBe(false)
-    expect(state.payload.cssHash).toBe('')
-    expect(state.gate.codes).toContain('gate.version-mismatch')
-    expect(state.diagnostics.join('\n')).toContain('gate.version-mismatch')
-  })
-
-  it('rejects a slightly different version string (exact comparison)', () => {
-    const state = computeBootState(makeBootInput({ observedHostVersion: `${CONTRACT_FACTS.dshVersion} ` }))
-    expect(state.accepted).toBe(false)
-    expect(state.rows).toEqual([])
-  })
-
-  it('rejects an unreadable host version', () => {
-    const state = computeBootState(makeBootInput({ observedHostVersion: null }))
+describe('computeBootState — unknown / uncertified host versions', () => {
+  it('rejects an unreadable host version with zero rows', () => {
+    const state = computeBootState(unresolvedInput(null))
+    expect(state.gate.accepted).toBe(false)
     expect(state.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.version-unknown')
+    expect(state.gate.adapterId).toBe('')
+    expect(state.payload.adapterId).toBe('')
+    expect(state.payload.catalogProfile).toBe('')
+    expect(state.diagnostics.join('\n')).toContain('gate.version-unknown')
   })
 
-  it('rejects an adapter mismatch observed at runtime', () => {
-    const state = computeBootState(makeBootInput({ observedAdapterId: 'dsh-other-adapter' }))
-    expect(state.accepted).toBe(false)
+  it.each(['9.9.9', '0.3.0-rc.1', '0.2.1'])(
+    'rejects uncertified version %s with zero rows',
+    (version) => {
+      const state = computeBootState(unresolvedInput(version))
+      expect(state.gate.accepted).toBe(false)
+      expect(state.rows).toEqual([])
+      expect(state.gate.codes).toContain('gate.version-mismatch')
+      expect(state.diagnostics.join('\n')).toContain('certified')
+    },
+  )
+
+  it('trims whitespace around the observed version before the registry lookup', () => {
+    // A padded-but-certified version is still the same exact version.
+    const certified = '0.2.0-rc.2'
+    const state = computeBootState(unresolvedInput(` ${certified} `))
+    expect(state.gate.observedHostVersion).toBe(certified)
+    expect(state.gate.codes).not.toContain('gate.version-unknown')
+  })
+
+  it('lists the certified allowlist in diagnostics', () => {
+    const state = computeBootState(unresolvedInput('9.9.9'))
+    expect(state.gate.supportedHostVersions.length).toBeGreaterThan(0)
+    for (const version of state.gate.supportedHostVersions) {
+      expect(state.diagnostics.join('\n')).toContain(version)
+    }
+  })
+
+  it('rejects an adapter override that disagrees with the observed version', () => {
+    const adapter = makeAdapter()
+    const state = computeBootState(makeBootInput({ adapter, observedHostVersion: 'test-host-other' }))
+    expect(state.gate.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.adapter-mismatch')
-    expect(state.diagnostics.join('\n')).toContain('dsh-other-adapter')
   })
+})
 
-  it('rejects a catalog compiled for another adapter', () => {
-    const state = computeBootState(makeBootInput({
-      catalogMeta: makeCatalogMeta({ adapterId: 'dsh-other-adapter' }),
-    }))
-    expect(state.accepted).toBe(false)
+describe('computeBootState — catalog identity', () => {
+  it('rejects a catalog built for another adapter', () => {
+    const adapter = makeAdapter()
+    const catalog = { ...makeAdapterCatalog(adapter), adapterId: 'dsh-other' }
+    const state = computeBootState(makeBootInput({ adapter, catalog }))
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.adapter-mismatch')
   })
 
-  it('rejects a contract hash mismatch', () => {
-    const state = computeBootState(makeBootInput({ observedContractHash: 'sha256:deadbeef' }))
-    expect(state.accepted).toBe(false)
+  it('rejects a catalog built for another contract', () => {
+    const adapter = makeAdapter()
+    const catalog = { ...makeAdapterCatalog(adapter), contractHash: `sha256:${'f'.repeat(64)}` }
+    const state = computeBootState(makeBootInput({ adapter, catalog }))
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.contract-mismatch')
     expect(state.diagnostics.join('\n')).toContain('gate.contract-mismatch')
   })
 
-  it('rejects a catalog compiled against another contract', () => {
-    const state = computeBootState(makeBootInput({
-      catalogMeta: makeCatalogMeta({ contractHash: 'sha256:deadbeef' }),
-    }))
-    expect(state.accepted).toBe(false)
+  it('rejects a catalog whose profile does not match the adapter', () => {
+    const adapter = makeAdapter()
+    const catalog = { ...makeAdapterCatalog(adapter), catalogProfile: SYNTHETIC_PROFILE_B }
+    const state = computeBootState(makeBootInput({ adapter, catalog }))
     expect(state.rows).toEqual([])
-    expect(state.gate.codes).toContain('gate.contract-mismatch')
+    expect(state.gate.codes).toContain('gate.catalog-profile-mismatch')
   })
+})
 
+describe('computeBootState — skin, capability and render failures', () => {
   it('rejects an unknown/deleted skin id', () => {
     const state = computeBootState(makeBootInput({ skinId: 'deleted-livery' }))
-    expect(state.accepted).toBe(false)
+    expect(state.gate.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.skin-unknown')
     expect(state.diagnostics.join('\n')).toContain('deleted-livery')
   })
 
-  it('rejects a missing required capability', () => {
-    const livery = makeLivery({ requiredCapabilities: ['theme-css', 'host-font-family'] })
-    const state = computeBootState(makeBootInput({
-      liveries: [livery],
-      capabilities: capabilitiesWithout(['host-font-family']),
-    }))
-    expect(state.accepted).toBe(false)
+  it('rejects a skin id known to another catalog profile only', () => {
+    const adapter = makeAdapter()
+    const catalog = buildCatalog(
+      { ...adapter, catalogProfile: SYNTHETIC_PROFILE_B },
+      makeProfile(SYNTHETIC_PROFILE_B, [makeLivery({ id: 'other-profile-livery' })]),
+    )
+    const state = computeBootState(makeBootInput({ adapter, catalog, skinId: 'other-profile-livery' }))
     expect(state.rows).toEqual([])
-    expect(state.gate.codes).toContain('capability.missing:host-font-family')
-    expect(state.gate.missingCapabilities).toEqual(['host-font-family'])
+    // The catalog no longer matches the adapter profile, so identity closes first.
+    expect(state.gate.codes).toContain('gate.catalog-profile-mismatch')
   })
 
-  it('rejects when the boot renderer throws', () => {
+  it('rejects a missing required capability on this adapter', () => {
+    const adapter = makeAdapter({ capabilities: makeCapabilities(['theme-css']) })
+    const state = computeBootState(makeBootInput({ adapter }))
+    expect(state.gate.accepted).toBe(false)
+    expect(state.rows).toEqual([])
+    expect(state.gate.codes).toContain('capability.missing:theme-css')
+    expect(state.gate.missingCapabilities).toEqual(['theme-css'])
+  })
+
+  it('rejects when the compiled boot stylesheet cannot be read', () => {
     const state = computeBootState(makeBootInput({
       renderBoot: () => {
-        throw new Error('token table corrupt')
+        throw new Error('profile catalog corrupt')
       },
     }))
-    expect(state.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.render-failed')
-    expect(state.diagnostics.join('\n')).toContain('token table corrupt')
+    expect(state.diagnostics.join('\n')).toContain('profile catalog corrupt')
   })
 
   it('rejects an empty compiled stylesheet', () => {
     const state = computeBootState(makeBootInput({ renderBoot: () => ({ css: '', hash: 'sha256:x' }) }))
-    expect(state.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.render-failed')
   })
 
-  it('rejects a rendered stylesheet without a hash', () => {
+  it('rejects a compiled stylesheet without a hash', () => {
     const state = computeBootState(makeBootInput({ renderBoot: () => ({ css: FIXTURE_BOOT_CSS, hash: '' }) }))
-    expect(state.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.render-failed')
   })
@@ -269,7 +346,6 @@ describe('computeBootState — fail closed', () => {
     const state = computeBootState(makeBootInput({
       renderBoot: () => ({ css: 'body{content:"</style>"}', hash: 'sha256:x' }),
     }))
-    expect(state.accepted).toBe(false)
     expect(state.rows).toEqual([])
     expect(state.gate.codes).toContain('gate.render-failed')
   })
@@ -278,10 +354,9 @@ describe('computeBootState — fail closed', () => {
 describe('row escaping', () => {
   it('never lets a malicious livery id close the script element', () => {
     const evilId = 'evil</script><script>alert(1)</script>'
-    const state = computeBootState(makeBootInput({
-      skinId: evilId,
-      liveries: [makeLivery({ id: evilId })],
-    }))
+    const adapter = makeAdapter()
+    const catalog = makeAdapterCatalog(adapter, [makeLivery({ id: evilId })])
+    const state = computeBootState(makeBootInput({ adapter, catalog, skinId: evilId }))
     expect(state.accepted).toBe(true)
     const scriptRow = state.rows[2]
     if (scriptRow?.kind !== 'script') throw new Error('expected script row')
@@ -306,8 +381,6 @@ describe('row escaping', () => {
 
   it('builds style markup with escaped CSS and hash', () => {
     const html = renderBootStyleHtml('body{color:red}</style>', 'sha256:"x"')
-    // The injected CSS's own closing sequence is escaped; only the element's
-    // final closing tag remains.
     expect(html.match(/<\/style/gi) ?? []).toHaveLength(1)
     expect(html.endsWith('</style>')).toBe(true)
     expect(html).toContain('<\\/style>')
@@ -329,11 +402,5 @@ describe('rows are plain serializable data', () => {
     expect(serialized).toContain('"kind":"html"')
     expect(serialized).toContain('"kind":"script"')
     expect(() => JSON.parse(serialized)).not.toThrow()
-  })
-
-  it('always uses the host capability map the contract facts describe', () => {
-    const state = computeBootState(makeBootInput())
-    expect(HOST_CAPABILITIES['theme-css']?.available).toBe(true)
-    expect(state.accepted).toBe(true)
   })
 })
