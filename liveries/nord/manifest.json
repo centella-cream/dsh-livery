@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "nord",
+  "meta": {
+    "name": {
+      "zh-CN": "极夜",
+      "en-US": "Nord"
+    },
+    "description": {
+      "zh-CN": "极地夜空的蓝灰调：冷、静、清晰，长时间阅读也不易疲惫。",
+      "en-US": "The blue-grey of an arctic night: cool, still and crisp for long sessions."
+    },
+    "tags": [
+      "cool",
+      "calm"
+    ],
+    "order": 110
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#5e81ac",
+        "secondary": "#88c0d0",
+        "surface": "#eceff4",
+        "text": "#2e3440"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#88c0d0",
+        "secondary": "#81a1c1",
+        "surface": "#2e3440",
+        "text": "#e5e9f0"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "content": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "comfortable",
+      "en-US": "comfortable"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "soft"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

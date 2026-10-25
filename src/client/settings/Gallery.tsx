@@ -51,6 +51,7 @@ export function tagLabels(t: LiveryTranslate): TagLabels {
   const keys = [
     'calm', 'cool', 'warm', 'muted', 'deep', 'elegant',
     'neutral', 'contrast', 'classic', 'playful',
+    'retro', 'paper', 'ink', 'neon', 'organic', 'tech',
   ] as const
   for (const tag of keys) labels[tag] = t(`tag.${tag}`)
   return labels

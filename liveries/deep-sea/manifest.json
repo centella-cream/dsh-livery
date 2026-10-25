@@ -7,8 +7,8 @@
       "en-US": "Deep Sea"
     },
     "description": {
-      "zh-CN": "深海蓝的玻璃质感，越往下越暗，文字像浮在幽静的水层里。",
-      "en-US": "Deep blue behind a glass surface, darkening downward so text seems to float in still water."
+      "zh-CN": "深海般的蓝黑层次，配以轻微透明感，让面板像浮在水下的玻璃。",
+      "en-US": "Abyssal blue-black layers with a touch of translucency, panels like glass under water."
     },
     "tags": [
       "deep",
@@ -19,25 +19,25 @@
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#1c567d",
-        "secondary": "#4a86ac",
-        "surface": "#eef4f9",
-        "text": "#10202c"
+        "accent": "#1e6470",
+        "secondary": "#5d8b93",
+        "surface": "#eef4f5",
+        "text": "#15262a"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#6db3d6",
-        "secondary": "#4d8fb2",
-        "surface": "#0e1720",
-        "text": "#e6f1f8"
+        "accent": "#5fb7c4",
+        "secondary": "#3f7d86",
+        "surface": "#0e181b",
+        "text": "#dcecef"
       }
     }
   },
   "typography": {
     "ui": {
       "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "en-US": "humanist-latin"
     },
     "content": {
       "zh-CN": "system-cjk",
@@ -45,13 +45,13 @@
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "cjk-comfortable",
-      "en-US": "latin-default"
+      "zh-CN": "compact",
+      "en-US": "compact"
     }
   },
   "layout": {
-    "density": "comfortable",
-    "conversationWidth": "wide",
+    "density": "host",
+    "conversationWidth": "host",
     "messageFlow": "stock",
     "surfaceStyle": "glass"
   },

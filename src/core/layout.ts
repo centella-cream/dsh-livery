@@ -21,8 +21,7 @@
 
 import type { CapabilityMap, CompiledVariant, LiveryManifest, Mode } from './types.js'
 import { CAP, COMPAT_LAYER } from './types.js'
-import { MATERIAL_LAYER_TOKENS } from './derive.js'
-import { formatHex, parseColorWithAlpha } from './color.js'
+import { surfaceStyleOf } from './registry.js'
 
 /** Minimal livery shape needed to render layout/material CSS. */
 export interface LayoutLivery {
@@ -38,9 +37,6 @@ export const LAYOUT_LAYER_STATEMENT = `@layer ${COMPAT_LAYER};`
 /** System-colour token mapping applied under forced colors. */
 export const FORCED_COLORS_TOKEN_MAP: readonly (readonly [token: string, systemColor: string])[] = [
   ['--dsw-alias-bg-base', 'Canvas'],
-  ['--dsw-alias-bg-layer-1', 'Canvas'],
-  ['--dsw-alias-bg-layer-2', 'Canvas'],
-  ['--dsw-alias-bg-layer-3', 'Canvas'],
   ['--dsw-specific-sidebar-fill', 'Canvas'],
   ['--dsw-specific-bubble', 'Canvas'],
   ['--dsw-specific-input-major', 'Canvas'],
@@ -53,9 +49,6 @@ export const FORCED_COLORS_TOKEN_MAP: readonly (readonly [token: string, systemC
   ['--dsw-alias-brand-primary', 'ButtonFace'],
   ['--dsw-alias-link', 'LinkText'],
   ['--dsw-alias-state-business-primary', 'Highlight'],
-  ['--dsw-alias-state-error-primary', 'CanvasText'],
-  ['--dsw-alias-state-warn-label', 'CanvasText'],
-  ['--dsw-alias-state-success-primary', 'CanvasText'],
 ] as const
 
 /** Options shared with the CSS renderer. */
@@ -103,27 +96,35 @@ function capabilityAvailable(capabilities: CapabilityMap, id: string): boolean {
   return capabilities[id]?.available !== false
 }
 
-/** The opaque fallback value of a translucent material token. */
-function opaqueValue(value: string): string | null {
-  try {
-    const parsed = parseColorWithAlpha(value)
-    if (parsed.alpha >= 1) return null
-    return formatHex(parsed.rgb)
-  } catch {
-    return null
-  }
-}
+/**
+ * Material filter tokens a surface style may author. Under
+ * `prefers-reduced-transparency: reduce` every authored blur/saturation filter is
+ * forced back to `none` so the reduced-transparency preference is honoured.
+ */
+export const MATERIAL_FILTER_TOKENS: readonly string[] = [
+  '--dsw-menu-backdrop-filter',
+  '--dsw-mask-blur',
+] as const
 
-function materialDeclarations(variant: CompiledVariant): readonly (readonly [string, string])[] {
-  const declarations: [string, string][] = []
-  for (const name of MATERIAL_LAYER_TOKENS) {
-    const value = variant.tokens[name]
-    if (value === undefined) continue
-    const opaque = opaqueValue(value)
-    if (opaque === null) continue
-    declarations.push([name, opaque])
+const FILTER_FUNCTION_PATTERN = /(?:blur|saturate|brightness|contrast|grayscale|sepia|drop-shadow)\(/i
+
+/**
+ * Material filter tokens the active surface-style recipe actually authors with a
+ * filter function. Under reduced transparency both the authored values and the
+ * host stock blur are forced back to `none`.
+ */
+function authoredMaterialFilters(livery: LayoutLivery): readonly string[] {
+  const definition = surfaceStyleOf(livery.layout.surfaceStyle)
+  const filters: string[] = []
+  for (const name of MATERIAL_FILTER_TOKENS) {
+    const light = definition.light[name]
+    const dark = definition.dark[name]
+    const authored =
+      (light !== undefined && FILTER_FUNCTION_PATTERN.test(light)) ||
+      (dark !== undefined && FILTER_FUNCTION_PATTERN.test(dark))
+    if (authored) filters.push(name)
   }
-  return declarations
+  return filters
 }
 
 /**
@@ -136,13 +137,13 @@ export function renderMaterialCss(livery: LayoutLivery, capabilities: Capability
 
   const materialSupported = capabilityAvailable(capabilities, CAP.surfaceMaterial)
   const reducedTransparencySupported = capabilityAvailable(capabilities, CAP.reducedTransparency)
-  if (materialSupported && reducedTransparencySupported && livery.layout.surfaceStyle === 'glass') {
-    const light = materialDeclarations(livery.light)
-    const dark = materialDeclarations(livery.dark)
-    if (light.length > 0 || dark.length > 0) {
+  if (materialSupported && reducedTransparencySupported) {
+    const filters = authoredMaterialFilters(livery)
+    if (filters.length > 0) {
+      const overrides: [string, string][] = filters.map((token) => [token, 'none'])
       const rules = [
-        formatRule(bodyScope(livery.id), light, pretty),
-        formatRule(bodyDarkScope(livery.id), dark, pretty),
+        formatRule(bodyScope(livery.id), overrides, pretty),
+        formatRule(bodyDarkScope(livery.id), overrides, pretty),
       ]
       blocks.push(formatMedia('prefers-reduced-transparency: reduce', rules, pretty))
     }

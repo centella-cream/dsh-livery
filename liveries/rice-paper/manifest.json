@@ -7,68 +7,63 @@
       "en-US": "Rice Paper"
     },
     "description": {
-      "zh-CN": "取宣纸与旧书页的暖白底色，棕色文字落在纸上，安静而古雅。",
-      "en-US": "Warm paper and ink: a gently aged off-white surface with brown-toned text."
+      "zh-CN": "宣纸与旧书的米白，正文用衬线，像在安静地读一页好文章。",
+      "en-US": "Old-book cream with serif text: a quiet page made for close reading."
     },
     "tags": [
-      "classic",
-      "warm"
+      "paper",
+      "classic"
     ],
     "order": 60
   },
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#7c5c36",
-        "secondary": "#b59a74",
-        "surface": "#faf6ee",
+        "accent": "#8c6a3f",
+        "secondary": "#a58f6b",
+        "surface": "#f8f4ea",
         "text": "#2b2419"
-      },
-      "tokens": {
-        "--dsw-specific-tip": "#f1e8d8"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#c7a97d",
-        "secondary": "#9d8461",
-        "surface": "#1c1914",
-        "text": "#f6efe2"
-      },
-      "tokens": {
-        "--dsw-specific-tip": "#28231b"
+        "accent": "#d6b98c",
+        "secondary": "#a48f6d",
+        "surface": "#191610",
+        "text": "#efe6d5"
       }
     }
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "cjk-comfortable",
-      "en-US": "airy"
+      "zh-CN": "editorial",
+      "en-US": "editorial"
     }
   },
   "layout": {
     "density": "host",
-    "conversationWidth": "focused",
-    "messageFlow": "separated",
-    "surfaceStyle": "solid"
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "paper"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
+      "host-density-tokens",
       "host-transcript-width",
-      "host-message-flow",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

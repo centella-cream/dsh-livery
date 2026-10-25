@@ -28,7 +28,12 @@
     "meta": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "description", "tags", "order"],
+      "required": [
+        "name",
+        "description",
+        "tags",
+        "order"
+      ],
       "properties": {
         "name": {
           "description": "Display name, written natively in both locales.",
@@ -59,7 +64,10 @@
     "variants": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["light", "dark"],
+      "required": [
+        "light",
+        "dark"
+      ],
       "properties": {
         "light": {
           "$ref": "#/$defs/variant"
@@ -72,7 +80,12 @@
     "typography": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["ui", "content", "code", "metrics"],
+      "required": [
+        "ui",
+        "content",
+        "code",
+        "metrics"
+      ],
       "properties": {
         "ui": {
           "description": "Font registry id per locale for UI chrome (menus, buttons, labels).",
@@ -96,7 +109,12 @@
       "description": "Registered layout recipes only; manifests never carry selectors or lengths.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["density", "conversationWidth", "messageFlow", "surfaceStyle"],
+      "required": [
+        "density",
+        "conversationWidth",
+        "messageFlow",
+        "surfaceStyle"
+      ],
       "properties": {
         "density": {
           "$ref": "#/$defs/densityId"
@@ -116,7 +134,10 @@
       "description": "Capability declaration. A missing required capability makes the livery unavailable; a missing optional capability is degraded with a documented fallback.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["requiredCapabilities", "optionalCapabilities"],
+      "required": [
+        "requiredCapabilities",
+        "optionalCapabilities"
+      ],
       "properties": {
         "requiredCapabilities": {
           "$ref": "#/$defs/capabilityList"
@@ -130,12 +151,18 @@
   "$defs": {
     "localeId": {
       "type": "string",
-      "enum": ["zh-CN", "en-US"]
+      "enum": [
+        "zh-CN",
+        "en-US"
+      ]
     },
     "localizedName": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["zh-CN", "en-US"],
+      "required": [
+        "zh-CN",
+        "en-US"
+      ],
       "properties": {
         "zh-CN": {
           "type": "string",
@@ -154,7 +181,10 @@
     "localizedDescription": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["zh-CN", "en-US"],
+      "required": [
+        "zh-CN",
+        "en-US"
+      ],
       "properties": {
         "zh-CN": {
           "type": "string",
@@ -182,7 +212,13 @@
         "playful",
         "contrast",
         "muted",
-        "classic"
+        "classic",
+        "retro",
+        "paper",
+        "ink",
+        "neon",
+        "organic",
+        "tech"
       ]
     },
     "hexColor": {
@@ -193,7 +229,12 @@
     "seeds": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["accent", "secondary", "surface", "text"],
+      "required": [
+        "accent",
+        "secondary",
+        "surface",
+        "text"
+      ],
       "properties": {
         "accent": {
           "$ref": "#/$defs/hexColor"
@@ -212,7 +253,9 @@
     "variant": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["seeds"],
+      "required": [
+        "seeds"
+      ],
       "properties": {
         "seeds": {
           "$ref": "#/$defs/seeds"
@@ -238,14 +281,28 @@
       "pattern": "^(?![\\s\\S]*(?:url\\s*\\(|@import|@font-face|@supports|@layer|expression\\s*\\(|javascript:|vbscript:|data:|https?:|file:|;|\\{|\\}|<|>))[\\s\\S]+$"
     },
     "fontId": {
-      "description": "Registered font stack id (src/core/registry.ts FONT_STACKS). Raw font stacks, @font-face and remote files are rejected.",
+      "description": "Registered local-only font stack id (src/core/registry.ts FONT_STACKS). Raw font stacks, @font-face, remote files and bundled fonts are rejected; new style-system ids are local system stacks with generic fallbacks.",
       "type": "string",
-      "enum": ["system-cjk", "system-latin", "system-mono"]
+      "enum": [
+        "system-cjk",
+        "system-latin",
+        "system-mono",
+        "serif-cjk",
+        "serif-latin",
+        "humanist-cjk",
+        "humanist-latin",
+        "display-latin",
+        "rounded-latin",
+        "tech-latin"
+      ]
     },
     "fontRecord": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["zh-CN", "en-US"],
+      "required": [
+        "zh-CN",
+        "en-US"
+      ],
       "properties": {
         "zh-CN": {
           "$ref": "#/$defs/fontId"
@@ -256,14 +313,27 @@
       }
     },
     "metricsId": {
-      "description": "Registered typography metrics profile id (src/core/registry.ts METRICS).",
+      "description": "Registered typography metrics profile id (src/core/registry.ts METRICS). Profiles may carry mode-independent consumed-font-token overrides (sizes/line-heights); manifests only reference the id.",
       "type": "string",
-      "enum": ["cjk-comfortable", "latin-default", "compact", "airy"]
+      "enum": [
+        "cjk-comfortable",
+        "latin-default",
+        "comfortable",
+        "compact",
+        "airy",
+        "editorial",
+        "punchy",
+        "technical",
+        "quiet"
+      ]
     },
     "metricsRecord": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["zh-CN", "en-US"],
+      "required": [
+        "zh-CN",
+        "en-US"
+      ],
       "properties": {
         "zh-CN": {
           "$ref": "#/$defs/metricsId"
@@ -275,19 +345,41 @@
     },
     "densityId": {
       "type": "string",
-      "enum": ["host", "compact", "comfortable"]
+      "enum": [
+        "host",
+        "compact",
+        "comfortable"
+      ]
     },
     "conversationWidthId": {
       "type": "string",
-      "enum": ["host", "focused", "wide"]
+      "enum": [
+        "host",
+        "focused",
+        "wide"
+      ]
     },
     "messageFlowId": {
       "type": "string",
-      "enum": ["stock", "separated"]
+      "enum": [
+        "stock",
+        "separated"
+      ]
     },
     "surfaceStyleId": {
       "type": "string",
-      "enum": ["solid", "soft", "glass"]
+      "enum": [
+        "solid",
+        "soft",
+        "glass",
+        "flat",
+        "sharp",
+        "rounded",
+        "paper",
+        "elevated",
+        "terminal"
+      ],
+      "description": "Registered surface-style recipe id (src/core/registry.ts SurfaceStyleDefinitions). The manifest never carries radii/shadows/tokens for the style; only the registered id."
     },
     "capabilityId": {
       "type": "string",

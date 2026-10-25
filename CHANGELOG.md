@@ -2,6 +2,58 @@
 
 All notable changes to DSH Livery are recorded here.
 
+## [0.3.0] — unreleased
+
+Visual style system v2 + 24-style gallery, and the entry rename requested by the
+user.
+
+### Added
+
+- **24 liveries** (was 10) built from a design table
+  (`docs/research/design-table.json`): 10 retuned originals, 12 palettes inspired
+  by permissively licensed open-source themes (Nord, Dracula, Gruvbox, Solarized,
+  Catppuccin, Tokyo Night, Rosé Pine, Everforest, Kanagawa, One Dark, Ayu,
+  Flexoki — attributions and licences in `NOTICE.md`), and 2 original
+  Chinese-aesthetic designs (青瓷 Celadon, 朱砂 Cinnabar).
+- **Style axes** so liveries differ beyond colour: 10 local-only font stacks
+  (system/humanist/serif/display/rounded/mono) instead of 3; 9 metric profiles
+  driving the consumed host type-scale tokens; 9 surface styles emitting
+  `--dsw-radius-*`, `--dsw-corner-shape`, `--dsw-elevation-*`/`--dsw-shadow-*`,
+  border tints and glass material (`--dsw-menu-backdrop-filter`) — from sharp
+  squared panels to pill-rounded cards and floating/glass panels.
+- Preview v2: thumbnails now draw the real corner radii, elevation/hairlines and
+  type scale per livery (deterministic SVG, no assets), so the gallery shows the
+  actual design differences.
+- Style-token audit: frozen value grammar (shape/elevation/material/border/font
+  families, hostile-value rejection) attached per livery to the compiler report.
+- 6 new gallery tags: retro/paper/ink/neon/organic/tech (16 total).
+
+### Changed
+
+- Entry rename: zh **视觉风格**, en **Visual Style** (was 皮肤 / Livery) for the
+  sidebar row, page title, Settings fallback and all supporting copy; internal
+  ids/testids unchanged.
+- Plugin version `0.2.2` → `0.3.0`; tarball `dsh-livery-0.3.0.tgz`.
+- Contrast-repaired 8 seed colours across 6 palettes (OKLCH lightness only,
+  hue/chroma preserved) so toast/tooltip inverse-label contrast passes; the
+  design table stores the final seeds.
+- Host bundle grows to ~2.5 MB raw / ~295 KB gzip because both catalog profiles
+  embed the full per-livery audit payloads (no host budget declared; trimming
+  runtime-irrelevant audit data is a documented post-release optimization).
+
+### Verified
+
+- Package `dsh-livery-0.3.0.tgz` sha256 `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950`.
+- Repo gates: tsc 0, vitest 588/588, 204 generated files / 2 profiles,
+  24 liveries/profile + 96 previews/profile, contrast 2 832 assertions/profile
+  0 failures, per-livery CSS 8 134–11 778 B (cap 12 288 B), client gzip 21 106 B.
+- Real Web Profile live QA with the final package: 24-card gallery; applying
+  graphite / catppuccin / rice-paper / tokyo-night produced real host-level
+  differences (serif vs sans font stack, radius 6px vs 24px, different surface
+  backgrounds, glass backdrop material); stock restored afterwards.
+- Full four-target acceptance matrix is re-run and reported in
+  `docs/verification/`.
+
 ## [0.2.2] — unreleased
 
 User-directed UI round: the Livery entry moves out of the Settings page into DSH's
@@ -22,13 +74,13 @@ main-page left-sidebar plugin navigation (the same pattern as 插件 / 自动化
 
 ### Changed
 
-- Plugin version `0.1.0` → `0.2.2`; tarball name `dsh-livery-0.2.2.tgz`.
+- Plugin version `0.1.0` → `0.2.2`; tarball name `dsh-livery-0.3.0.tgz`.
 - On panel-navigation hosts the Settings → 皮肤 section is no longer registered
   (single entry point, no duplicate navigation).
 
 ### Verified
 
-- Package `dsh-livery-0.2.2.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
+- Package `dsh-livery-0.3.0.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
 - Sidebar entry accepted on all four targets: Web 0.2.1-rc.2 isolated 127/0/3/1,
   real-web-profile clone 128/0/3/2, Desktop 0.2.1-rc.3 packaged runtime 127/0/3/1,
   Desktop 0.2.1-rc.3 real Electron renderer 22/0/1 (native chrome/DPI/vibrancy

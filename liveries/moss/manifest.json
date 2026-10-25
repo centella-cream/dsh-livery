@@ -8,57 +8,58 @@
     },
     "description": {
       "zh-CN": "苔藓与湿润石阶的颜色，绿中带褐，沉着自然而不抢戏。",
-      "en-US": "Moss on wet stone — a grounded green-brown that stays calm and out of the way."
+      "en-US": "Moss on wet stone: a brownish green that settles in without competing with the conversation."
     },
     "tags": [
-      "calm",
-      "muted"
+      "organic",
+      "calm"
     ],
     "order": 40
   },
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#4f5c3d",
-        "secondary": "#8a9472",
-        "surface": "#f1f3ec",
-        "text": "#22261c"
+        "accent": "#4f6b43",
+        "secondary": "#87906a",
+        "surface": "#f2f4ec",
+        "text": "#20261b"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#a8b590",
-        "secondary": "#7f8a6a",
-        "surface": "#181b14",
-        "text": "#eef1e8"
+        "accent": "#9cb383",
+        "secondary": "#6f7f5e",
+        "surface": "#171c14",
+        "text": "#e9eee1"
       }
     }
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "compact",
-      "en-US": "compact"
+      "zh-CN": "comfortable",
+      "en-US": "comfortable"
     }
   },
   "layout": {
-    "density": "compact",
-    "conversationWidth": "focused",
+    "density": "host",
+    "conversationWidth": "host",
     "messageFlow": "stock",
-    "surfaceStyle": "solid"
+    "surfaceStyle": "paper"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
       "host-density-tokens",

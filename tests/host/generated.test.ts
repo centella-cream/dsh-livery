@@ -40,6 +40,19 @@ const COMPILED = ADAPTERS.length > 0
   && CATALOG_PROFILE_IDS.length > 0
   && ADAPTERS.every((adapter) => CATALOG_PROFILES[adapter.catalogProfile] !== undefined)
 
+/**
+ * Liveries each catalog profile ships, read from the emitted catalog instead of
+ * hardcoding a round's design count (10 in round 4, 24 after the style-system
+ * round). Every profile must agree; the count is asserted per profile below.
+ */
+const LIVERIES_PER_PROFILE = CATALOG_PROFILES[CATALOG_PROFILE_IDS[0] ?? '']?.liveries.length ?? 0
+
+/**
+ * Preview files each profile ships: four deterministic previews per livery
+ * (zh/en × light/dark). Derived so a catalog-count change needs no test edit.
+ */
+const PREVIEWS_PER_PROFILE = LIVERIES_PER_PROFILE * 4
+
 /** Module URL of the built host bundle; preview indexes are resolved from there. */
 const BUILT_MODULE_URL = new URL('../../lib/index.js', import.meta.url)
 
@@ -142,11 +155,13 @@ describe.skipIf(!COMPILED)('generated adapter registry', () => {
   })
 
   it('gives every adapter a catalog profile with a full preview set', () => {
+    expect(LIVERIES_PER_PROFILE).toBeGreaterThan(0)
     for (const adapter of ADAPTERS) {
       const profile = CATALOG_PROFILES[adapter.catalogProfile]
       expect(profile, adapter.catalogProfile).toBeDefined()
-      expect(profile?.liveries).toHaveLength(10)
-      expect(REAL_PREVIEWS.get(adapter.catalogProfile)?.size).toBe(40)
+      // One design count per profile: every compiled set is complete, not partial.
+      expect(profile?.liveries.length, adapter.catalogProfile).toBe(LIVERIES_PER_PROFILE)
+      expect(REAL_PREVIEWS.get(adapter.catalogProfile)?.size).toBe(PREVIEWS_PER_PROFILE)
     }
     expect([...REAL_PREVIEWS.keys()].sort()).toEqual([...CATALOG_PROFILE_IDS].sort())
   })
@@ -178,7 +193,7 @@ describe.skipIf(!COMPILED)('generated catalog per adapter', () => {
       expect(parsed.contractHash).toBe(adapter.contractHash)
       expect(parsed.catalogProfile).toBe(adapter.catalogProfile)
       expect(parsed.previewsBase).toBe(previewsBaseFor(adapter.catalogProfile))
-      expect((parsed.liveries as unknown[]).length).toBe(10)
+      expect((parsed.liveries as unknown[]).length).toBe(LIVERIES_PER_PROFILE)
     }
   })
 })
@@ -229,13 +244,25 @@ describe.skipIf(!COMPILED)('generated boot per adapter', () => {
     const desktop = adapterForVersion('0.2.1-rc.3')
     expect(web).toBeDefined()
     expect(desktop).toBeDefined()
-    const profile = web === undefined ? undefined : CATALOG_PROFILES[web.catalogProfile]
-    const first = profile?.liveries[0]
-    if (first === undefined || web === undefined || desktop === undefined) return
-    const webState = realBootState(web.hostVersion, first.id)
-    const desktopState = realBootState(desktop.hostVersion, first.id)
-    expect(webState.payload.cssHash).toBe(desktopState.payload.cssHash)
-    expect(webState.rows[0]).toEqual(desktopState.rows[0])
+    if (web === undefined || desktop === undefined) return
+    expect(web.catalogProfile).toBe(desktop.catalogProfile)
+    expect(web.adapterId).not.toBe(desktop.adapterId)
+    const profile = CATALOG_PROFILES[web.catalogProfile]
+    expect(profile?.liveries.length).toBe(LIVERIES_PER_PROFILE)
+    for (const livery of profile?.liveries ?? []) {
+      const webState = realBootState(web.hostVersion, livery.id)
+      const desktopState = realBootState(desktop.hostVersion, livery.id)
+      expect(webState.accepted, livery.id).toBe(true)
+      expect(desktopState.accepted, livery.id).toBe(true)
+      // Same compiled bytes, only the recorded adapter identity differs.
+      expect(webState.payload.cssHash, livery.id).toBe(desktopState.payload.cssHash)
+      // CSS and attribute rows are byte-identical; only the identity-carrying
+      // global payload names its own adapter.
+      expect(webState.rows[0], livery.id).toEqual(desktopState.rows[0])
+      expect(webState.rows[2], livery.id).toEqual(desktopState.rows[2])
+      expect(webState.payload.adapterId, livery.id).toBe(web.adapterId)
+      expect(desktopState.payload.adapterId, livery.id).toBe(desktop.adapterId)
+    }
   })
 
   it('passes the gate for stock on every certified adapter', () => {
@@ -286,7 +313,9 @@ describe.skipIf(!COMPILED)('generated previews per profile', () => {
   it('binds exactly the frozen preview index of each profile', () => {
     for (const profileId of CATALOG_PROFILE_IDS) {
       const previews = bindPreviews(profileId, { moduleUrl: BUILT_MODULE_URL })
-      expect(previews.size, profileId).toBe(40)
+      // Four previews per livery; derived so a design-count change needs no edit.
+      expect(previews.size, profileId).toBe((CATALOG_PROFILES[profileId]?.liveries.length ?? 0) * 4)
+      expect(previews.size, profileId).toBe(PREVIEWS_PER_PROFILE)
       for (const name of previews.keys()) {
         expect(name).toMatch(/^[a-z0-9-]+-(zh|en)-(light|dark)\.svg$/)
         expect(previews.get(name)).toContain(`/previews/${profileId}/`)

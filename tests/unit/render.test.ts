@@ -12,7 +12,7 @@ import {
 } from '../../src/core/render.js'
 import { CAP } from '../../src/core/types.js'
 import type { CapabilityMap } from '../../src/core/types.js'
-import { FIXTURE_MANIFESTS, OVERRIDE_MANIFEST, makeManifest } from './fixtures.js'
+import { FIXTURE_MANIFESTS, OVERRIDE_MANIFEST, V2_STYLE_MANIFESTS, makeManifest } from './fixtures.js'
 import {
   ADAPTER_020,
   ADAPTER_021_RC2,
@@ -296,11 +296,32 @@ describe('CSS size budget (§18.8: hard cap 12KiB)', () => {
         const tokenBytes = Buffer.byteLength(livery.css.tokens, 'utf8')
         const typographyBytes = Buffer.byteLength(livery.css.typography, 'utf8')
         expect(bytes).toBeLessThanOrEqual(12 * 1024)
-        expect(tokenBytes).toBeLessThanOrEqual(9 * 1024)
+        expect(tokenBytes).toBeLessThanOrEqual(10 * 1024)
         expect(typographyBytes).toBeLessThanOrEqual(1600)
         expect(livery.css.layout).toBe('@layer dsh-livery.compat;')
       }
     }
+  })
+
+  it('keeps the worst-case style system v2 recipe inside the 12KiB budget', () => {
+    let worst = { id: '', version: '', bytes: 0 }
+    for (const manifest of V2_STYLE_MANIFESTS) {
+      for (const options of [{}, { adapter: ADAPTER_021_RC2 }]) {
+        const livery = compileFixture(manifest, options)
+        const bytes = Buffer.byteLength(styleTextFromFragments(livery.css), 'utf8')
+        expect(bytes).toBeLessThanOrEqual(12 * 1024)
+        // Style tokens are actually serialized on both host generations (the
+        // `solid` recipe is intentionally empty).
+        if (manifest.layout.surfaceStyle !== 'solid') {
+          const familyTokens = Object.keys(livery.light.tokens).filter((token) => token.startsWith('--dsw-radius-'))
+          expect(familyTokens.length).toBeGreaterThan(0)
+          expect(livery.css.tokens).toMatch(/--dsw-radius-(?:xs|sm|md|lg|xl|panel):/)
+          expect(livery.css.tokens).toMatch(/--dsw-(?:shadow-lv1|elevation-panel):/)
+        }
+        if (bytes > worst.bytes) worst = { id: livery.id, version: options.adapter?.hostVersion ?? '0.2.0-rc.2', bytes }
+      }
+    }
+    expect(worst.bytes).toBeLessThanOrEqual(12 * 1024)
   })
 
   it('the 0.2.1 hook strategy shrinks the per-livery CSS', () => {

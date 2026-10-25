@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "celadon",
+  "meta": {
+    "name": {
+      "zh-CN": "青瓷",
+      "en-US": "Celadon"
+    },
+    "description": {
+      "zh-CN": "青瓷釉面的微青与柔光，温润、透亮，像一件摆在窗边的器皿。",
+      "en-US": "The faint green and soft sheen of celadon glaze: gentle, translucent, quietly placed."
+    },
+    "tags": [
+      "calm",
+      "organic"
+    ],
+    "order": 230
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#4f7f6a",
+        "secondary": "#86a894",
+        "surface": "#f2f6f3",
+        "text": "#24312b"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#7fb89c",
+        "secondary": "#5d8a76",
+        "surface": "#15201b",
+        "text": "#e6efe9"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "humanist-latin"
+    },
+    "content": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "airy",
+      "en-US": "airy"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "soft"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

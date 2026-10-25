@@ -7,11 +7,11 @@
       "en-US": "Linen"
     },
     "description": {
-      "zh-CN": "亚麻布般的中性暖灰，不偏冷不偏黄，是最耐看的日常底色。",
-      "en-US": "A linen-neutral warm grey with no colour cast — the everyday background that ages well."
+      "zh-CN": "亚麻的暖灰与柔和对比，朴素、耐看，像一张质地很好的工作台。",
+      "en-US": "Warm linen greys with soft contrast: plain, durable, like a well-made workbench."
     },
     "tags": [
-      "neutral",
+      "warm",
       "calm"
     ],
     "order": 100
@@ -19,51 +19,51 @@
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#7a6a53",
-        "secondary": "#b3a48c",
-        "surface": "#f7f4ee",
-        "text": "#2a251d"
+        "accent": "#7a6a52",
+        "secondary": "#a49a82",
+        "surface": "#f7f4ed",
+        "text": "#29251d"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#c9b79a",
-        "secondary": "#a3937a",
-        "surface": "#1b1813",
-        "text": "#f6f1e7"
+        "accent": "#c9b99c",
+        "secondary": "#948875",
+        "surface": "#1a1814",
+        "text": "#f1ece2"
       }
     }
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "cjk-comfortable",
-      "en-US": "latin-default"
+      "zh-CN": "airy",
+      "en-US": "airy"
     }
   },
   "layout": {
-    "density": "comfortable",
-    "conversationWidth": "wide",
-    "messageFlow": "separated",
-    "surfaceStyle": "solid"
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "paper"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
       "host-density-tokens",
       "host-transcript-width",
-      "host-message-flow",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

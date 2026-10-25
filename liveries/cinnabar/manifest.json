@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "cinnabar",
+  "meta": {
+    "name": {
+      "zh-CN": "朱砂",
+      "en-US": "Cinnabar"
+    },
+    "description": {
+      "zh-CN": "朱砂印泥般浓烈的红，圆润而正式，适合需要一点仪式感的场合。",
+      "en-US": "Seal-red cinnabar with rounded, formal edges: a little ceremony for serious work."
+    },
+    "tags": [
+      "warm",
+      "contrast"
+    ],
+    "order": 240
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#b03a2e",
+        "secondary": "#c97b5b",
+        "surface": "#faf3ef",
+        "text": "#33201a"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#e2705f",
+        "secondary": "#c98a6f",
+        "surface": "#1f1412",
+        "text": "#f3e4dc"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "display-latin"
+    },
+    "content": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "punchy",
+      "en-US": "punchy"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "rounded"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

@@ -7,63 +7,63 @@
       "en-US": "Graphite"
     },
     "description": {
-      "zh-CN": "近乎中性的高对比石墨灰，边界清晰，信息层级一眼可辨。",
-      "en-US": "Near-neutral graphite with firm contrast and crisp edges, built for hierarchy you can scan."
+      "zh-CN": "近乎中性的石墨灰，方正利落，适合工程文档与密集操作。",
+      "en-US": "Near-neutral graphite with square edges: at home in engineering docs and dense controls."
     },
     "tags": [
-      "contrast",
-      "neutral"
+      "neutral",
+      "tech"
     ],
     "order": 50
   },
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#3c3c3e",
-        "secondary": "#6b6b70",
-        "surface": "#f5f5f6",
-        "text": "#111113"
+        "accent": "#4b5563",
+        "secondary": "#7b8492",
+        "surface": "#f2f3f4",
+        "text": "#1b1f24"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#d4d4d8",
-        "secondary": "#9a9aa0",
-        "surface": "#121214",
-        "text": "#f7f7f8"
+        "accent": "#9aa4b2",
+        "secondary": "#6b7480",
+        "surface": "#14171a",
+        "text": "#eceff2"
       }
     }
   },
   "typography": {
     "ui": {
       "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "en-US": "tech-latin"
     },
     "content": {
       "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "en-US": "humanist-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "compact",
-      "en-US": "latin-default"
+      "zh-CN": "technical",
+      "en-US": "technical"
     }
   },
   "layout": {
-    "density": "compact",
-    "conversationWidth": "wide",
-    "messageFlow": "separated",
-    "surfaceStyle": "solid"
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "sharp"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
       "host-density-tokens",
       "host-transcript-width",
-      "host-message-flow",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

@@ -85,6 +85,74 @@ describe('livery manifest JSON Schema', () => {
     ).toContain('enum')
   })
 
+  it('accepts the style-system v2 font, metrics, surfaceStyle and tag ids', () => {
+    const source = mutated(fjord, (copy) => {
+      const manifest = copy as unknown as {
+        typography: {
+          ui: Record<string, string>
+          content: Record<string, string>
+          code: string
+          metrics: Record<string, string>
+        }
+        layout: Record<string, string>
+        meta: { tags: string[] }
+      }
+      manifest.typography.ui = { 'zh-CN': 'humanist-cjk', 'en-US': 'humanist-latin' }
+      manifest.typography.content = { 'zh-CN': 'serif-cjk', 'en-US': 'serif-latin' }
+      manifest.typography.code = 'tech-latin'
+      manifest.typography.metrics = { 'zh-CN': 'editorial', 'en-US': 'punchy' }
+      manifest.layout = { ...manifest.layout, surfaceStyle: 'paper' }
+      manifest.meta.tags = ['paper', 'ink', 'organic']
+    })
+    expect(validateManifest(source)).toEqual([])
+    for (const [key, value] of [
+      ['humanist-cjk', true],
+      ['serif-latin', true],
+      ['editorial', true],
+      ['quiet', true],
+      ['flat', true],
+      ['terminal', true],
+      ['neon', true],
+      ['tech', true],
+    ] as const) {
+      expect(typeof key).toBe('string')
+      expect(value).toBe(true)
+    }
+  })
+
+  it('rejects unregistered style-system ids', () => {
+    for (const mutate of [
+      (copy: Record<string, unknown>) => {
+        const typography = copy.typography as { code: string }
+        typography.code = 'serif-latin2'
+      },
+      (copy: Record<string, unknown>) => {
+        const typography = copy.typography as { metrics: Record<string, string> }
+        typography.metrics = { 'zh-CN': 'editorial-heavy', 'en-US': 'latin-default' }
+      },
+      (copy: Record<string, unknown>) => {
+        const layout = copy.layout as Record<string, string>
+        layout.surfaceStyle = 'floating'
+      },
+      (copy: Record<string, unknown>) => {
+        const meta = copy.meta as { tags: string[] }
+        meta.tags = ['retro', 'holographic']
+      },
+    ]) {
+      expect(schemaCodes(mutated(fjord, mutate)), JSON.stringify(mutate)).not.toEqual([])
+    }
+  })
+
+  it('rejects an unregistered surfaceStyle even when the schema enum is bypassed', () => {
+    const source = mutated(fjord, (copy) => {
+      const layout = copy.layout as Record<string, string>
+      layout.surfaceStyle = 'solid'
+    })
+    // Sanity: the registered id validates; semantic drift is covered when core
+    // removes an id while the schema keeps it (checked against SURFACE_STYLE_DEFINITIONS).
+    expect(validateManifest(source)).toEqual([])
+  })
+
   it('rejects layout recipes outside the registered enums', () => {
     expect(schemaCodes(mutated(fjord, (copy) => (copy.layout = { ...fjord.layout, density: 'ultra-dense' })))).toContain('enum')
     expect(
@@ -213,19 +281,50 @@ describe('semantic manifest validation', () => {
   })
 
   it('accepts the shipped catalog and keeps ids/order unique', () => {
+    const manifests = loadManifestSources().map((source) => source.raw as LiveryManifest)
     const result = validateCatalog(loadManifestSources())
     expect(result.ok, JSON.stringify(result.diagnostics, null, 2)).toBe(true)
-    expect(result.manifests).toHaveLength(10)
-    expect(new Set(result.manifests.map((manifest) => manifest.id)).size).toBe(10)
-    expect(new Set(result.manifests.map((manifest) => manifest.meta.order)).size).toBe(10)
+    expect(result.manifests).toHaveLength(liveryIds().length)
+    expect(new Set(result.manifests.map((manifest) => manifest.id)).size).toBe(liveryIds().length)
+    expect(new Set(result.manifests.map((manifest) => manifest.meta.order)).size).toBe(liveryIds().length)
+    expect(new Set(manifests.map((manifest) => manifest.meta.order))).toEqual(
+      new Set(manifests.map((manifest) => manifest.meta.order).sort((a, b) => a - b)),
+    )
   })
 
-  it('exercises every layout recipe value across the built-in set', () => {
+  it('keeps layout structural and exercises the style-system v2 axes', () => {
     const manifests = loadManifestSources().map((source) => source.raw as LiveryManifest)
     const values = (pick: (manifest: LiveryManifest) => string): Set<string> => new Set(manifests.map(pick))
-    expect(values((manifest) => manifest.layout.density)).toEqual(new Set(['host', 'compact', 'comfortable']))
-    expect(values((manifest) => manifest.layout.conversationWidth)).toEqual(new Set(['host', 'focused', 'wide']))
-    expect(values((manifest) => manifest.layout.messageFlow)).toEqual(new Set(['stock', 'separated']))
-    expect(values((manifest) => manifest.layout.surfaceStyle)).toEqual(new Set(['solid', 'soft', 'glass']))
+    // Frozen decision: DSH has no public density/width/flow hook, so the structure
+    // stays host/stock and the visible differences are palette/type/shape/elevation.
+    expect(values((manifest) => manifest.layout.density)).toEqual(new Set(['host']))
+    expect(values((manifest) => manifest.layout.conversationWidth)).toEqual(new Set(['host']))
+    expect(values((manifest) => manifest.layout.messageFlow)).toEqual(new Set(['stock']))
+    const surfaces = values((manifest) => manifest.layout.surfaceStyle)
+    for (const required of ['soft', 'glass', 'flat', 'sharp', 'rounded', 'paper', 'elevated']) {
+      expect(surfaces.has(required), `surfaceStyle ${required}`).toBe(true)
+    }
+    const fonts = new Set<string>()
+    const metrics = new Set<string>()
+    const tags = new Set<string>()
+    for (const manifest of manifests) {
+      for (const locale of ['zh-CN', 'en-US'] as const) {
+        fonts.add(manifest.typography.ui[locale])
+        fonts.add(manifest.typography.content[locale])
+        metrics.add(manifest.typography.metrics[locale])
+      }
+      fonts.add(manifest.typography.code)
+      for (const tag of manifest.meta.tags) tags.add(tag)
+    }
+    // New local-only font ids and style metrics are actually exercised.
+    for (const font of ['serif-cjk', 'serif-latin', 'humanist-cjk', 'humanist-latin', 'display-latin', 'rounded-latin', 'tech-latin']) {
+      expect(fonts.has(font), `font ${font}`).toBe(true)
+    }
+    for (const metric of ['comfortable', 'editorial', 'punchy', 'technical', 'quiet', 'compact', 'airy']) {
+      expect(metrics.has(metric), `metrics ${metric}`).toBe(true)
+    }
+    for (const tag of ['retro', 'paper', 'ink', 'neon', 'organic', 'tech']) {
+      expect(tags.has(tag), `tag ${tag}`).toBe(true)
+    }
   })
 })

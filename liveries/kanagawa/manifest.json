@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "kanagawa",
+  "meta": {
+    "name": {
+      "zh-CN": "神奈川",
+      "en-US": "Kanagawa"
+    },
+    "description": {
+      "zh-CN": "取意浮世绘的墨蓝与浪白，方正的版画感，沉静而有笔触。",
+      "en-US": "Woodblock ink blue and wave white: a printmaker's stillness with sharp edges."
+    },
+    "tags": [
+      "ink",
+      "deep"
+    ],
+    "order": 190
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#4d699b",
+        "secondary": "#6e915f",
+        "surface": "#fff8c8",
+        "text": "#545464"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#7e9cd8",
+        "secondary": "#957fb8",
+        "surface": "#1f1f28",
+        "text": "#dcd7ba"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "content": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "quiet",
+      "en-US": "quiet"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "sharp"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

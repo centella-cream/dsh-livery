@@ -1,0 +1,1421 @@
+{
+  "schemaVersion": 1,
+  "liveries": [
+    {
+      "id": "fjord",
+      "order": 10,
+      "name": {
+        "zh-CN": "\u5ce1\u6e7e",
+        "en-US": "Fjord"
+      },
+      "description": {
+        "zh-CN": "\u4f4e\u9971\u548c\u7684\u84dd\u7070\u8c03\uff0c\u5b89\u9759\u800c\u514b\u5236\uff0c\u9002\u5408\u957f\u65f6\u95f4\u9605\u8bfb\u4e0e\u4e13\u6ce8\u5de5\u4f5c\u3002",
+        "en-US": "A low-chroma blue-grey palette that stays quiet and out of the way through long working sessions."
+      },
+      "tags": [
+        "calm",
+        "cool"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#46688a",
+          "secondary": "#7b98b0",
+          "surface": "#f0f3f6",
+          "text": "#1b2733"
+        },
+        "dark": {
+          "accent": "#8fb3d1",
+          "secondary": "#7098b8",
+          "surface": "#181c21",
+          "text": "#eef2f6"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "soft",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "plum",
+      "order": 20,
+      "name": {
+        "zh-CN": "\u6885\u5b50",
+        "en-US": "Plum"
+      },
+      "description": {
+        "zh-CN": "\u5e26\u4e00\u70b9\u7070\u8c03\u7684\u6885\u5b50\u7d2b\uff0c\u67d4\u548c\u800c\u4e0d\u751c\u817b\uff0c\u4e3a\u754c\u9762\u94fa\u4e00\u5c42\u6c89\u9759\u7684\u4e66\u5377\u6c14\u3002",
+        "en-US": "A greyed plum with a literary calm, sweet enough to warm the page but never sugary."
+      },
+      "tags": [
+        "elegant",
+        "warm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#7c3f5f",
+          "secondary": "#a07a90",
+          "surface": "#f7f2f5",
+          "text": "#2a1c25"
+        },
+        "dark": {
+          "accent": "#d9a7c1",
+          "secondary": "#9d7890",
+          "surface": "#1f161c",
+          "text": "#f3e9ef"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "editorial",
+        "en-US": "editorial"
+      },
+      "surfaceStyle": "rounded",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "amber-dusk",
+      "order": 30,
+      "name": {
+        "zh-CN": "\u7425\u73c0\u66ae\u8272",
+        "en-US": "Amber Dusk"
+      },
+      "description": {
+        "zh-CN": "\u7425\u73c0\u8272\u7684\u9ec4\u660f\u4f59\u6e29\uff0c\u6696\u800c\u4e0d\u523a\u773c\uff0c\u8ba9\u5bf9\u8bdd\u533a\u57df\u50cf\u88ab\u706f\u4e0b\u7167\u6696\u4e00\u6837\u677e\u8f6f\u3002",
+        "en-US": "The warm afterglow of amber dusk: gentle on the eyes and soft underfoot."
+      },
+      "tags": [
+        "warm",
+        "classic"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#9a6a1f",
+          "secondary": "#b99b5e",
+          "surface": "#f9f4e8",
+          "text": "#2e2416"
+        },
+        "dark": {
+          "accent": "#e0b25f",
+          "secondary": "#a98c55",
+          "surface": "#1e1911",
+          "text": "#f1e7d6"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "airy",
+        "en-US": "airy"
+      },
+      "surfaceStyle": "elevated",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "moss",
+      "order": 40,
+      "name": {
+        "zh-CN": "\u82d4\u85d3",
+        "en-US": "Moss"
+      },
+      "description": {
+        "zh-CN": "\u82d4\u85d3\u4e0e\u6e7f\u6da6\u77f3\u9636\u7684\u989c\u8272\uff0c\u7eff\u4e2d\u5e26\u8910\uff0c\u6c89\u7740\u81ea\u7136\u800c\u4e0d\u62a2\u620f\u3002",
+        "en-US": "Moss on wet stone: a brownish green that settles in without competing with the conversation."
+      },
+      "tags": [
+        "organic",
+        "calm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4f6b43",
+          "secondary": "#87906a",
+          "surface": "#f2f4ec",
+          "text": "#20261b"
+        },
+        "dark": {
+          "accent": "#9cb383",
+          "secondary": "#6f7f5e",
+          "surface": "#171c14",
+          "text": "#e9eee1"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "graphite",
+      "order": 50,
+      "name": {
+        "zh-CN": "\u77f3\u58a8",
+        "en-US": "Graphite"
+      },
+      "description": {
+        "zh-CN": "\u8fd1\u4e4e\u4e2d\u6027\u7684\u77f3\u58a8\u7070\uff0c\u65b9\u6b63\u5229\u843d\uff0c\u9002\u5408\u5de5\u7a0b\u6587\u6863\u4e0e\u5bc6\u96c6\u64cd\u4f5c\u3002",
+        "en-US": "Near-neutral graphite with square edges: at home in engineering docs and dense controls."
+      },
+      "tags": [
+        "neutral",
+        "tech"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4b5563",
+          "secondary": "#7b8492",
+          "surface": "#f2f3f4",
+          "text": "#1b1f24"
+        },
+        "dark": {
+          "accent": "#9aa4b2",
+          "secondary": "#6b7480",
+          "surface": "#14171a",
+          "text": "#eceff2"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "tech-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "technical",
+        "en-US": "technical"
+      },
+      "surfaceStyle": "sharp",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "rice-paper",
+      "order": 60,
+      "name": {
+        "zh-CN": "\u5ba3\u7eb8",
+        "en-US": "Rice Paper"
+      },
+      "description": {
+        "zh-CN": "\u5ba3\u7eb8\u4e0e\u65e7\u4e66\u7684\u7c73\u767d\uff0c\u6b63\u6587\u7528\u886c\u7ebf\uff0c\u50cf\u5728\u5b89\u9759\u5730\u8bfb\u4e00\u9875\u597d\u6587\u7ae0\u3002",
+        "en-US": "Old-book cream with serif text: a quiet page made for close reading."
+      },
+      "tags": [
+        "paper",
+        "classic"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#8c6a3f",
+          "secondary": "#a58f6b",
+          "surface": "#f8f4ea",
+          "text": "#2b2419"
+        },
+        "dark": {
+          "accent": "#d6b98c",
+          "secondary": "#a48f6d",
+          "surface": "#191610",
+          "text": "#efe6d5"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "editorial",
+        "en-US": "editorial"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "deep-sea",
+      "order": 70,
+      "name": {
+        "zh-CN": "\u6df1\u6d77",
+        "en-US": "Deep Sea"
+      },
+      "description": {
+        "zh-CN": "\u6df1\u6d77\u822c\u7684\u84dd\u9ed1\u5c42\u6b21\uff0c\u914d\u4ee5\u8f7b\u5fae\u900f\u660e\u611f\uff0c\u8ba9\u9762\u677f\u50cf\u6d6e\u5728\u6c34\u4e0b\u7684\u73bb\u7483\u3002",
+        "en-US": "Abyssal blue-black layers with a touch of translucency, panels like glass under water."
+      },
+      "tags": [
+        "deep",
+        "cool"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#1e6470",
+          "secondary": "#5d8b93",
+          "surface": "#eef4f5",
+          "text": "#15262a"
+        },
+        "dark": {
+          "accent": "#5fb7c4",
+          "secondary": "#3f7d86",
+          "surface": "#0e181b",
+          "text": "#dcecef"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "system-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "compact",
+        "en-US": "compact"
+      },
+      "surfaceStyle": "glass",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "sakura",
+      "order": 80,
+      "name": {
+        "zh-CN": "\u6a31",
+        "en-US": "Sakura"
+      },
+      "description": {
+        "zh-CN": "\u6a31\u82b1\u7c89\u7684\u900f\u660e\u611f\uff0c\u5706\u6da6\u800c\u8f7b\u76c8\uff0c\u9002\u5408\u8f7b\u677e\u3001\u6709\u521b\u610f\u7684\u4f1a\u8bdd\u3002",
+        "en-US": "Sheer sakura pink with rounded corners: light, friendly, made for playful sessions."
+      },
+      "tags": [
+        "playful",
+        "warm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#b0526f",
+          "secondary": "#c98fa4",
+          "surface": "#fbf3f5",
+          "text": "#2f1c23"
+        },
+        "dark": {
+          "accent": "#e59ab0",
+          "secondary": "#b97890",
+          "surface": "#1e1619",
+          "text": "#f6e8ee"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "rounded-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "rounded-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "rounded",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "midnight",
+      "order": 90,
+      "name": {
+        "zh-CN": "\u5348\u591c",
+        "en-US": "Midnight"
+      },
+      "description": {
+        "zh-CN": "\u84dd\u9ed1\u6df1\u591c\u4e0e\u51b7\u767d\u5b57\uff0c\u5e72\u51c0\u3001\u514b\u5236\uff0c\u9002\u5408\u957f\u65f6\u95f4\u4e13\u6ce8\u7684\u591c\u95f4\u5de5\u4f5c\u3002",
+        "en-US": "Blue-black midnight with cool white type: clean, restrained, built for late focus."
+      },
+      "tags": [
+        "deep",
+        "neutral"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#3d4b6e",
+          "secondary": "#6f7d9c",
+          "surface": "#f1f2f5",
+          "text": "#171b26"
+        },
+        "dark": {
+          "accent": "#8d9bc7",
+          "secondary": "#5c6a94",
+          "surface": "#0f1118",
+          "text": "#e5e8f2"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "display-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "system-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "quiet",
+        "en-US": "quiet"
+      },
+      "surfaceStyle": "flat",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "linen",
+      "order": 100,
+      "name": {
+        "zh-CN": "\u4e9a\u9ebb",
+        "en-US": "Linen"
+      },
+      "description": {
+        "zh-CN": "\u4e9a\u9ebb\u7684\u6696\u7070\u4e0e\u67d4\u548c\u5bf9\u6bd4\uff0c\u6734\u7d20\u3001\u8010\u770b\uff0c\u50cf\u4e00\u5f20\u8d28\u5730\u5f88\u597d\u7684\u5de5\u4f5c\u53f0\u3002",
+        "en-US": "Warm linen greys with soft contrast: plain, durable, like a well-made workbench."
+      },
+      "tags": [
+        "warm",
+        "calm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#7a6a52",
+          "secondary": "#a49a82",
+          "surface": "#f7f4ed",
+          "text": "#29251d"
+        },
+        "dark": {
+          "accent": "#c9b99c",
+          "secondary": "#948875",
+          "surface": "#1a1814",
+          "text": "#f1ece2"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "airy",
+        "en-US": "airy"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "nord",
+      "order": 110,
+      "name": {
+        "zh-CN": "\u6781\u591c",
+        "en-US": "Nord"
+      },
+      "description": {
+        "zh-CN": "\u6781\u5730\u591c\u7a7a\u7684\u84dd\u7070\u8c03\uff1a\u51b7\u3001\u9759\u3001\u6e05\u6670\uff0c\u957f\u65f6\u95f4\u9605\u8bfb\u4e5f\u4e0d\u6613\u75b2\u60eb\u3002",
+        "en-US": "The blue-grey of an arctic night: cool, still and crisp for long sessions."
+      },
+      "tags": [
+        "cool",
+        "calm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#5e81ac",
+          "secondary": "#88c0d0",
+          "surface": "#eceff4",
+          "text": "#2e3440"
+        },
+        "dark": {
+          "accent": "#88c0d0",
+          "secondary": "#81a1c1",
+          "surface": "#2e3440",
+          "text": "#e5e9f0"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "soft",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "nord"
+    },
+    {
+      "id": "dracula",
+      "order": 120,
+      "name": {
+        "zh-CN": "\u5fb7\u53e4\u62c9",
+        "en-US": "Dracula"
+      },
+      "description": {
+        "zh-CN": "\u7d2b\u4e0e\u54c1\u7ea2\u4ea4\u7ec7\u7684\u591c\u8272\uff0c\u9510\u5229\u800c\u5e26\u7740\u4e00\u70b9\u620f\u5267\u6027\u3002",
+        "en-US": "A theatrical violet night, sharp-edged and a little dramatic."
+      },
+      "tags": [
+        "deep",
+        "playful"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#6d28d9",
+          "secondary": "#bd93f9",
+          "surface": "#f8f8f2",
+          "text": "#282a36"
+        },
+        "dark": {
+          "accent": "#bd93f9",
+          "secondary": "#ff79c6",
+          "surface": "#282a36",
+          "text": "#f8f8f2"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "display-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "system-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "punchy",
+        "en-US": "punchy"
+      },
+      "surfaceStyle": "sharp",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "dracula"
+    },
+    {
+      "id": "gruvbox",
+      "order": 130,
+      "name": {
+        "zh-CN": "\u590d\u53e4\u6696\u8272",
+        "en-US": "Gruvbox"
+      },
+      "description": {
+        "zh-CN": "\u65e7\u952e\u76d8\u4e0e\u8001\u7ec8\u7aef\u7684\u6696\u8272\u8c03\uff0c\u65b9\u6b63\u5e73\u76f4\uff0c\u5e26\u7740\u590d\u53e4\u7684\u9897\u7c92\u611f\u3002",
+        "en-US": "Warm old-terminal colours with square, flat panels: a retro grain without the noise."
+      },
+      "tags": [
+        "retro",
+        "warm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#af3a03",
+          "secondary": "#79740e",
+          "surface": "#fbf1c7",
+          "text": "#3c3836"
+        },
+        "dark": {
+          "accent": "#fe8019",
+          "secondary": "#b8bb26",
+          "surface": "#282828",
+          "text": "#ebdbb2"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "flat",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "gruvbox"
+    },
+    {
+      "id": "solarized",
+      "order": 140,
+      "name": {
+        "zh-CN": "\u6697\u623f",
+        "en-US": "Solarized"
+      },
+      "description": {
+        "zh-CN": "\u5728\u6696\u767d\u7eb8\u9762\u4e0a\u8bfb\u94c5\u5b57\u7684\u5b89\u5b9a\u611f\uff0c\u4f4e\u9971\u548c\u3001\u8bb2\u7a76\u5c42\u6b21\u3002",
+        "en-US": "The steadiness of type on warm paper: low-chroma and carefully layered."
+      },
+      "tags": [
+        "classic",
+        "muted"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#268bd2",
+          "secondary": "#2aa198",
+          "surface": "#fdf6e3",
+          "text": "#3f545c"
+        },
+        "dark": {
+          "accent": "#268bd2",
+          "secondary": "#2aa198",
+          "surface": "#002b36",
+          "text": "#adbbbb"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "editorial",
+        "en-US": "editorial"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "solarized"
+    },
+    {
+      "id": "catppuccin",
+      "order": 150,
+      "name": {
+        "zh-CN": "\u732b\u5e03\u5947\u8bfa",
+        "en-US": "Catppuccin"
+      },
+      "description": {
+        "zh-CN": "\u5976\u6cb9\u8d28\u611f\u7684\u67d4\u5f69\uff0c\u5706\u6da6\u3001\u4eb2\u548c\uff0c\u8ba9\u957f\u65f6\u95f4\u5bf9\u8bdd\u4e5f\u4fdd\u6301\u8f7b\u677e\u3002",
+        "en-US": "Creamy pastels with pill-soft corners that keep long chats relaxed."
+      },
+      "tags": [
+        "playful",
+        "calm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#1e66f5",
+          "secondary": "#8839ef",
+          "surface": "#eff1f5",
+          "text": "#4c4f69"
+        },
+        "dark": {
+          "accent": "#89b4fa",
+          "secondary": "#cba6f7",
+          "surface": "#1e1e2e",
+          "text": "#cdd6f4"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "rounded-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "rounded-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "rounded",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "catppuccin"
+    },
+    {
+      "id": "tokyo-night",
+      "order": 160,
+      "name": {
+        "zh-CN": "\u4e1c\u4eac\u591c",
+        "en-US": "Tokyo Night"
+      },
+      "description": {
+        "zh-CN": "\u9713\u8679\u6620\u5728\u591c\u96e8\u91cc\u7684\u84dd\u7d2b\u5149\uff0c\u73bb\u7483\u9762\u677f\uff0c\u50cf\u57ce\u5e02\u51cc\u6668\u7684\u9a71\u52a8\u5668\u3002",
+        "en-US": "Neon on rain-slick blue-violet: glass panels for the small hours."
+      },
+      "tags": [
+        "neon",
+        "deep"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#34548a",
+          "secondary": "#5a4a78",
+          "surface": "#d5d6db",
+          "text": "#343b58"
+        },
+        "dark": {
+          "accent": "#7aa2f7",
+          "secondary": "#bb9af7",
+          "surface": "#1a1b26",
+          "text": "#c0caf5"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "tech-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "technical",
+        "en-US": "technical"
+      },
+      "surfaceStyle": "glass",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "tokyo-night"
+    },
+    {
+      "id": "rose-pine",
+      "order": 170,
+      "name": {
+        "zh-CN": "\u73ab\u7470\u677e",
+        "en-US": "Ros\u00e9 Pine"
+      },
+      "description": {
+        "zh-CN": "\u73ab\u7470\u7070\u4e0e\u677e\u8102\u7eff\u7684\u4f4e\u8bed\uff0c\u7559\u767d\u5145\u88d5\uff0c\u9002\u5408\u6162\u8bfb\u4e0e\u5199\u4f5c\u3002",
+        "en-US": "Rose-grey and pine whispers with generous whitespace, made for unhurried writing."
+      },
+      "tags": [
+        "elegant",
+        "muted"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#286983",
+          "secondary": "#907aa9",
+          "surface": "#faf4ed",
+          "text": "#524d74"
+        },
+        "dark": {
+          "accent": "#9ccfd8",
+          "secondary": "#c4a7e7",
+          "surface": "#232136",
+          "text": "#e0def4"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "airy",
+        "en-US": "airy"
+      },
+      "surfaceStyle": "soft",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "rose-pine"
+    },
+    {
+      "id": "everforest",
+      "order": 180,
+      "name": {
+        "zh-CN": "\u68ee\u91ce",
+        "en-US": "Everforest"
+      },
+      "description": {
+        "zh-CN": "\u68ee\u6797\u4e0e\u82d4\u539f\u7684\u7eff\uff0c\u5b89\u9759\u3001\u6e29\u6da6\uff0c\u50cf\u5728\u6728\u5c4b\u91cc\u7528\u7eb8\u7b14\u5de5\u4f5c\u3002",
+        "en-US": "Forest and tundra greens, quiet and soft: work like writing by hand in a cabin."
+      },
+      "tags": [
+        "organic",
+        "calm"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#8da101",
+          "secondary": "#3a94c5",
+          "surface": "#fdf6e3",
+          "text": "#435058"
+        },
+        "dark": {
+          "accent": "#a7c080",
+          "secondary": "#7fbbb3",
+          "surface": "#2d353b",
+          "text": "#ded1b4"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "everforest"
+    },
+    {
+      "id": "kanagawa",
+      "order": 190,
+      "name": {
+        "zh-CN": "\u795e\u5948\u5ddd",
+        "en-US": "Kanagawa"
+      },
+      "description": {
+        "zh-CN": "\u53d6\u610f\u6d6e\u4e16\u7ed8\u7684\u58a8\u84dd\u4e0e\u6d6a\u767d\uff0c\u65b9\u6b63\u7684\u7248\u753b\u611f\uff0c\u6c89\u9759\u800c\u6709\u7b14\u89e6\u3002",
+        "en-US": "Woodblock ink blue and wave white: a printmaker's stillness with sharp edges."
+      },
+      "tags": [
+        "ink",
+        "deep"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4d699b",
+          "secondary": "#6e915f",
+          "surface": "#fff8c8",
+          "text": "#545464"
+        },
+        "dark": {
+          "accent": "#7e9cd8",
+          "secondary": "#957fb8",
+          "surface": "#1f1f28",
+          "text": "#dcd7ba"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "quiet",
+        "en-US": "quiet"
+      },
+      "surfaceStyle": "sharp",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "kanagawa"
+    },
+    {
+      "id": "one-dark",
+      "order": 200,
+      "name": {
+        "zh-CN": "\u539f\u5b50\u6697\u8272",
+        "en-US": "One Dark"
+      },
+      "description": {
+        "zh-CN": "\u7ecf\u5178\u7f16\u8f91\u5668\u6697\u8272\uff1a\u4e2d\u6027\u3001\u7d27\u51d1\u3001\u65e0\u88c5\u9970\uff0c\u8ba9\u4ee3\u7801\u4e0e\u6587\u5b57\u7ad9\u5728\u524d\u9762\u3002",
+        "en-US": "The classic editor dark: neutral, compact, unadorned, with code up front."
+      },
+      "tags": [
+        "tech",
+        "neutral"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4078f2",
+          "secondary": "#a626a4",
+          "surface": "#fafafa",
+          "text": "#383a42"
+        },
+        "dark": {
+          "accent": "#61afef",
+          "secondary": "#c678dd",
+          "surface": "#282c34",
+          "text": "#b5bcc9"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "system-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "technical",
+        "en-US": "technical"
+      },
+      "surfaceStyle": "flat",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "one-dark"
+    },
+    {
+      "id": "ayu",
+      "order": 210,
+      "name": {
+        "zh-CN": "\u4e9a\u7531",
+        "en-US": "Ayu"
+      },
+      "description": {
+        "zh-CN": "\u6e29\u6696\u7684\u6a59\u5149\u538b\u5728\u6df1\u84dd\u4e0a\uff0c\u7d27\u51d1\u800c\u660e\u5feb\uff0c\u50cf\u6df1\u591c\u91cc\u7684\u4e00\u76cf\u53f0\u706f\u3002",
+        "en-US": "Warm orange on deep blue: compact and bright, a desk lamp at midnight."
+      },
+      "tags": [
+        "warm",
+        "tech"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#ff9940",
+          "secondary": "#399ee6",
+          "surface": "#fafafa",
+          "text": "#51565b"
+        },
+        "dark": {
+          "accent": "#ffcc66",
+          "secondary": "#73b8ff",
+          "surface": "#0b0e14",
+          "text": "#bfbdb6"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "compact",
+        "en-US": "compact"
+      },
+      "surfaceStyle": "elevated",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "ayu"
+    },
+    {
+      "id": "flexoki",
+      "order": 220,
+      "name": {
+        "zh-CN": "\u58a8\u7eb8",
+        "en-US": "Flexoki"
+      },
+      "description": {
+        "zh-CN": "\u58a8\u4e0e\u7eb8\u7684\u6781\u81f4\u514b\u5236\uff1a\u786c\u8fb9\u3001\u7d20\u8272\u3001\u7559\u767d\uff0c\u4e00\u5207\u4e3a\u4e86\u6587\u5b57\u672c\u8eab\u3002",
+        "en-US": "Ink and paper at their most restrained: hard edges, plain colour, whitespace for the words."
+      },
+      "tags": [
+        "paper",
+        "ink"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4385be",
+          "secondary": "#ce5d97",
+          "surface": "#fffcf0",
+          "text": "#100f0f"
+        },
+        "dark": {
+          "accent": "#4385be",
+          "secondary": "#ce5d97",
+          "surface": "#100f0f",
+          "text": "#cecdc3"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "editorial",
+        "en-US": "editorial"
+      },
+      "surfaceStyle": "paper",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": "flexoki"
+    },
+    {
+      "id": "celadon",
+      "order": 230,
+      "name": {
+        "zh-CN": "\u9752\u74f7",
+        "en-US": "Celadon"
+      },
+      "description": {
+        "zh-CN": "\u9752\u74f7\u91c9\u9762\u7684\u5fae\u9752\u4e0e\u67d4\u5149\uff0c\u6e29\u6da6\u3001\u900f\u4eae\uff0c\u50cf\u4e00\u4ef6\u6446\u5728\u7a97\u8fb9\u7684\u5668\u76bf\u3002",
+        "en-US": "The faint green and soft sheen of celadon glaze: gentle, translucent, quietly placed."
+      },
+      "tags": [
+        "calm",
+        "organic"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#4f7f6a",
+          "secondary": "#86a894",
+          "surface": "#f2f6f3",
+          "text": "#24312b"
+        },
+        "dark": {
+          "accent": "#7fb89c",
+          "secondary": "#5d8a76",
+          "surface": "#15201b",
+          "text": "#e6efe9"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "humanist-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "airy",
+        "en-US": "airy"
+      },
+      "surfaceStyle": "soft",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    },
+    {
+      "id": "cinnabar",
+      "order": 240,
+      "name": {
+        "zh-CN": "\u6731\u7802",
+        "en-US": "Cinnabar"
+      },
+      "description": {
+        "zh-CN": "\u6731\u7802\u5370\u6ce5\u822c\u6d53\u70c8\u7684\u7ea2\uff0c\u5706\u6da6\u800c\u6b63\u5f0f\uff0c\u9002\u5408\u9700\u8981\u4e00\u70b9\u4eea\u5f0f\u611f\u7684\u573a\u5408\u3002",
+        "en-US": "Seal-red cinnabar with rounded, formal edges: a little ceremony for serious work."
+      },
+      "tags": [
+        "warm",
+        "contrast"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#b03a2e",
+          "secondary": "#c97b5b",
+          "surface": "#faf3ef",
+          "text": "#33201a"
+        },
+        "dark": {
+          "accent": "#e2705f",
+          "secondary": "#c98a6f",
+          "surface": "#1f1412",
+          "text": "#f3e4dc"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "serif-cjk",
+          "en-US": "display-latin"
+        },
+        "content": {
+          "zh-CN": "serif-cjk",
+          "en-US": "serif-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "punchy",
+        "en-US": "punchy"
+      },
+      "surfaceStyle": "rounded",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ],
+      "inspiration": null
+    }
+  ]
+}

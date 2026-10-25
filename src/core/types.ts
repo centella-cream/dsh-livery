@@ -10,7 +10,7 @@
 export const SCHEMA_VERSION = 1 as const
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.2.2' as const
+export const LIVERY_VERSION = '0.3.0' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always
@@ -69,16 +69,45 @@ export type LocalizedText = Readonly<Record<LocaleId, string>>
 export type Mode = 'light' | 'dark'
 
 /** Font registry ids. Raw font stacks never appear in a manifest. */
-export type FontId = 'system-cjk' | 'system-latin' | 'system-mono'
+export type FontId =
+  | 'system-cjk'
+  | 'system-latin'
+  | 'system-mono'
+  | 'serif-cjk'
+  | 'serif-latin'
+  | 'humanist-cjk'
+  | 'humanist-latin'
+  | 'display-latin'
+  | 'rounded-latin'
+  | 'tech-latin'
 
 /** Typography metrics profile ids. */
-export type MetricsId = 'cjk-comfortable' | 'latin-default' | 'compact' | 'airy'
+export type MetricsId =
+  | 'cjk-comfortable'
+  | 'latin-default'
+  | 'compact'
+  | 'airy'
+  /** Additive alias of `cjk-comfortable` used by the v2 design table. */
+  | 'comfortable'
+  | 'editorial'
+  | 'punchy'
+  | 'technical'
+  | 'quiet'
 
 /** Layout recipe ids (registered recipes only — manifests never carry selectors). */
 export type DensityId = 'host' | 'compact' | 'comfortable'
 export type ConversationWidthId = 'host' | 'focused' | 'wide'
 export type MessageFlowId = 'stock' | 'separated'
-export type SurfaceStyleId = 'solid' | 'soft' | 'glass'
+export type SurfaceStyleId =
+  | 'solid'
+  | 'soft'
+  | 'glass'
+  | 'flat'
+  | 'sharp'
+  | 'rounded'
+  | 'paper'
+  | 'elevated'
+  | 'terminal'
 
 /** Capability ids shared by the manifest, the contract snapshot and self-check. */
 export const CAP = {
@@ -162,8 +191,27 @@ export interface FontStackDefinition {
 
 export interface MetricsDefinition {
   readonly id: MetricsId
+  /** Design metadata: target body line-height (1.35–1.75). */
   readonly lineHeight: number
   readonly note: string
+  /**
+   * Mode-independent host font-token overrides (style system v2) applied to both
+   * variants. Only consumed host font tokens may be overridden; content/user
+   * font-size tokens stay authoritative.
+   */
+  readonly tokens: Readonly<Record<string, string>>
+}
+
+/**
+ * One surface-style recipe: token-only module shape / elevation / material /
+ * border overrides (no selectors). The maps may only use the registered style
+ * token families validated by `src/core/audit.ts`.
+ */
+export interface SurfaceStyleDefinition {
+  readonly id: SurfaceStyleId
+  readonly note: string
+  readonly light: TokenMap
+  readonly dark: TokenMap
 }
 
 /** Resolved, locale-split typography values used by the CSS renderer. */

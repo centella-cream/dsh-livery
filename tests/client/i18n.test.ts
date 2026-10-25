@@ -117,6 +117,35 @@ describe('untranslated-key detection', () => {
   })
 })
 
+describe('entry rename — 视觉风格 / Visual Style', () => {
+  it('names the entry consistently in both locales', () => {
+    expect(zhCN['panel.label']).toBe('视觉风格')
+    expect(enUS['panel.label']).toBe('Visual Style')
+    expect(zhCN['panel.title']).toBe('视觉风格')
+    expect(enUS['panel.title']).toBe('Visual Style')
+    // Legacy Settings-fallback label follows the same entry name.
+    expect(zhCN['section.label']).toBe('视觉风格')
+    expect(enUS['section.label']).toBe('Visual Style')
+    expect(zhCN['gallery.aria']).toContain('视觉风格')
+    expect(enUS['gallery.aria']).toBe('Visual style gallery')
+  })
+
+  it('leaves no retired entry name in user-visible copy', () => {
+    const retiredZh = Object.entries(zhCN).filter(([, value]) => value.includes('皮肤'))
+    expect(retiredZh).toEqual([])
+    // Product/package identity may keep the plugin's own name.
+    const productCopy = new Set(['about.plugin', 'diag.header'])
+    const retiredEn = Object.entries(enUS)
+      .filter(([key, value]) => !productCopy.has(key) && /\blivery\b/i.test(value))
+    expect(retiredEn).toEqual([])
+  })
+
+  it('keeps plugin identity copy separate from the entry label', () => {
+    expect(enUS['about.plugin']).toContain('DSH Livery')
+    expect(zhCN['diag.header']).toContain('dsh-livery')
+  })
+})
+
 describe('locale access', () => {
   it('maps DSH locale ids to Intl tags', () => {
     expect(localeTag('zh')).toBe('zh-CN')

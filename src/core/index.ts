@@ -20,6 +20,7 @@ export * from './registry.js'
 export * from './capabilities.js'
 export * from './derive.js'
 export * from './contrast.js'
+export * from './audit.js'
 export * from './render.js'
 export * from './catalog.js'
 

@@ -85,6 +85,9 @@ function bootFor(adapter: AdapterIdentity, skinId = 'fjord', cssHash = ''): Boot
   })
 }
 
+/** Livery count per generated profile (compiler-owned; tests derive, never assume). */
+const LIVERY_COUNT = ALL_PROFILES[0]?.liveries.length ?? 0
+
 function allGeneratedLiveries(): readonly CompiledLivery[] {
   return ALL_PROFILES.flatMap(profile => [...profile.liveries])
 }
@@ -140,16 +143,20 @@ describe('generated catalog profiles', () => {
     }
   })
 
-  it('compiled each profile with ten distinct liveries', () => {
+  it('compiles every profile with the same non-empty set of distinct liveries', () => {
+    const expected = ALL_PROFILES[0]!.liveries.length
+    expect(expected).toBeGreaterThan(0)
+    // The catalog size is compiler-owned; the client derives it, never hardcodes it.
     for (const profile of ALL_PROFILES) {
-      expect(profile.liveries.length, profile.profileId).toBe(10)
-      expect(new Set(profile.liveries.map(livery => livery.id)).size, profile.profileId).toBe(10)
+      expect(profile.liveries.length, profile.profileId).toBe(expected)
+      expect(new Set(profile.liveries.map(livery => livery.id)).size, profile.profileId).toBe(expected)
     }
+    expect(LIVERY_COUNT).toBe(expected)
   })
 
   it('derives cssHash from the exact style text the client concatenates', () => {
     const liveries = allGeneratedLiveries()
-    expect(liveries.length).toBe(20)
+    expect(liveries.length).toBe(LIVERY_COUNT * ALL_PROFILES.length)
     for (const livery of liveries) {
       const text = styleTextOf(livery)
       expect(text.length, livery.id).toBeGreaterThan(0)
@@ -221,8 +228,8 @@ describe('generated catalog profiles', () => {
       }
     }
     expect(missing).toEqual([])
-    // 3 adapters, two sharing a profile: 10 liveries x 4 variants x 3 adapters.
-    expect(checked).toBe(120)
+    // Every certified adapter serves its profile's liveries x 4 locale/mode files.
+    expect(checked).toBe(ADAPTERS.length * LIVERY_COUNT * 4)
   })
 
   it('localizes every tag id used by any profile in both shipped dictionaries', () => {

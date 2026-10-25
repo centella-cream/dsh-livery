@@ -20,12 +20,17 @@
  * 6. A bounded WCAG repair pass (`auditContrast` + `adjustForContrast`) moves
  *    foreground tokens that miss §18.2; explicit manifest overrides win over the
  *    derived values (they are exempt from the repair pass).
- * 7. Emission policy (§8.2 A-tier): only tokens consumed by shipped host
+ * 7. Style system v2 merge order (docs/implementation/style-system.md §2):
+ *    derived colours → `metrics.tokens` (mode-independent) → `surfaceStyle.light`
+ *    or `surfaceStyle.dark` → explicit `variants.<mode>.tokens` (explicit wins).
+ *    `CompiledVariant.tokens` stays the single emitted map the renderer consumes.
+ * 8. Emission policy (§8.2 A-tier): only tokens consumed by shipped host
  *    packages are serialized — every consumed `--dsw-alias-*` /
- *    `--dsw-specific-*` token plus the static steps read directly by components.
- *    The full derived palette is still used for the contrast audit and returned
- *    through `contrast`; unconsumed tokens inherit stock and are reported as
- *    non-blocking diagnostics by the compiler.
+ *    `--dsw-specific-*` token plus the static steps read directly by components,
+ *    plus the style/metric tokens selected by the manifest (shape/elevation/
+ *    material/border + allowed font-ladder overrides). The full derived palette
+ *    is still used for the contrast audit and returned through `contrast`;
+ *    unconsumed colour tokens inherit stock and are reported by the compiler.
  *
  * Every entry point takes the host `StockSnapshot` explicitly (§2 of
  * docs/implementation/multi-version.md): a catalog compiled for one host version
@@ -51,25 +56,10 @@ import {
 } from './color.js'
 import type { StockSnapshot, StockTokenDeclaration } from '../generated/stock.js'
 import { CONTRAST_CHECKS, adjustForContrast, auditContrast, resolveCheckColors } from './contrast.js'
+import { metricsOf, surfaceStyleOf } from './registry.js'
 
 /** Declaration record of one host stock snapshot (mode-independent metadata). */
 export type StockDeclarations = Readonly<Record<string, StockTokenDeclaration>>
-
-/** Material (surfaceStyle soft/glass) tokens that glass makes translucent. */
-export const MATERIAL_LAYER_TOKENS: readonly string[] = [
-  '--dsw-alias-bg-layer-1',
-  '--dsw-alias-bg-layer-2',
-  '--dsw-alias-bg-layer-3',
-  '--dsw-alias-bg-module-platform',
-] as const
-
-/** Per-token alpha used by the `glass` surface style. */
-const GLASS_ALPHA: Readonly<Record<string, number>> = {
-  '--dsw-alias-bg-layer-1': 0.8,
-  '--dsw-alias-bg-layer-2': 0.86,
-  '--dsw-alias-bg-layer-3': 0.92,
-  '--dsw-alias-bg-module-platform': 0.72,
-}
 
 /** Brand / on-accent roles always owned by the livery (even when unconsumed). */
 const ROLE_TOKEN_NAMES: readonly string[] = [
@@ -86,8 +76,6 @@ const ROLE_TOKEN_NAMES: readonly string[] = [
  */
 export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   '--dsw-menu-surface-fill',
-  '--dsw-menu-backdrop-filter',
-  '--dsw-mask-blur',
   '--dsw-focus-ring-color',
   '--dsw-elevation-stroke-color',
   '--dsw-gradient-onboarding-violet-stops',
@@ -154,7 +142,6 @@ export function emittedTokenNames(stock: StockSnapshot): ReadonlySet<string> {
     ...requiredColorTokenNames(stock),
     ...directConsumedStaticTokenNames(stock),
     ...ROLE_TOKEN_NAMES,
-    ...MATERIAL_LAYER_TOKENS,
   ])
 }
 
@@ -292,11 +279,34 @@ function sortedTokens(source: MutableTokens): TokenMap {
   return result
 }
 
+/**
+ * Mode-independent metric font-token overrides for one manifest.
+ *
+ * The manifest picks one metrics profile per locale; both profiles are merged in
+ * deterministic locale order (`zh-CN` then `en-US`, so `en-US` wins on a
+ * collision — designers are expected to pick the same profile for both locales
+ * when the token maps differ). Only consumed host font tokens are allowed, so the
+ * user's content/code font-size setting stays authoritative.
+ */
+function metricTokenOverrides(manifest: LiveryManifest): TokenMap {
+  const merged: Record<string, string> = {}
+  for (const locale of ['zh-CN', 'en-US'] as const) {
+    const metrics = metricsOf(manifest.typography.metrics[locale])
+    for (const [name, value] of Object.entries(metrics.tokens)) merged[name] = value
+  }
+  return merged
+}
+
 // ---------------------------------------------------------------------------
 // Per-mode derivation
 // ---------------------------------------------------------------------------
 
-function deriveVariant(manifest: LiveryManifest, mode: Mode, stock: StockSnapshot): CompiledVariant {
+function deriveVariant(
+  manifest: LiveryManifest,
+  mode: Mode,
+  stock: StockSnapshot,
+  lightEmitted?: TokenMap,
+): CompiledVariant {
   const seeds = manifest.variants[mode].seeds
   const overrides: TokenMap = manifest.variants[mode].tokens ?? {}
   const overridden = new Set<string>(Object.keys(overrides))
@@ -407,17 +417,16 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stock: StockSnapsho
     const value = resolveToken(name)
     if (value !== null) full[name] = value
   }
-  // 5. Surface material recipes are token-only (no selectors).
+  // 5. Style system v2 merge order: metrics.tokens -> surfaceStyle[mode] ->
+  //    explicit manifest overrides (explicit wins). CompiledVariant.tokens stays
+  //    the single emitted map; the renderer body is unchanged.
+  const metricTokens = metricTokenOverrides(manifest)
   const surfaceStyle = manifest.layout.surfaceStyle
-  if (surfaceStyle !== 'solid') {
-    for (const name of MATERIAL_LAYER_TOKENS) {
-      const current = full[name]
-      if (current === undefined) continue
-      const parsed = parseColorWithAlpha(current)
-      if (surfaceStyle === 'soft') full[name] = formatHex(mixOklab(parsed.rgb, text, 0.05))
-      else full[name] = formatCssColor(parsed.rgb, GLASS_ALPHA[name] ?? 0.85)
-    }
-  }
+  const styleTokens = surfaceStyleOf(surfaceStyle)[mode]
+  for (const [name, value] of Object.entries(metricTokens)) full[name] = value
+  for (const [name, value] of Object.entries(styleTokens)) full[name] = value
+  // Re-apply explicit overrides last so they always win over style/metric tokens.
+  for (const [name, value] of Object.entries(overrides)) full[name] = value
 
   // 6. Bounded WCAG repair pass over the foreground tokens of the audit matrix.
   let contrast: readonly ContrastEntry[] = []
@@ -447,19 +456,30 @@ function deriveVariant(manifest: LiveryManifest, mode: Mode, stock: StockSnapsho
   // 7. Emission policy (§8.2): consumed tokens only; everything else inherits
   //    stock and is reported by the compiler as a non-blocking diagnostic.
   const emittedNames = emittedTokenNames(stock)
-  const forced = new Set<string>([
-    ...overridden,
-    ...Object.keys(roleOverrides),
-    ...(surfaceStyle === 'solid' ? [] : MATERIAL_LAYER_TOKENS),
-  ])
+  const forced = new Set<string>([...overridden, ...Object.keys(roleOverrides)])
+  // Style/metric tokens are emitted when they differ from stock (surface `solid`
+  // and legacy metric profiles keep empty maps, so they add no bytes).
+  const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens)])
   const emitted: MutableTokens = {}
   for (const name of Object.keys(full)) {
     const value = full[name]
     if (value === undefined) continue
     if (DELIBERATELY_INHERITED_TOKENS.includes(name)) continue
     const isForced = forced.has(name)
-    if (!isForced && !emittedNames.has(name)) continue
+    if (!isForced && !extraAllowed.has(name) && !emittedNames.has(name)) continue
     if (!isForced && sameAsStock(name, value, declarations, mode)) continue
+    // Compact dark block: a non-forced token with no host dark-scoped
+    // declaration and the same emitted light value is already covered by the
+    // body-scoped light declaration in both modes.
+    if (
+      mode === 'dark' &&
+      !isForced &&
+      lightEmitted !== undefined &&
+      declarations[name]?.darkSelector === null &&
+      lightEmitted[name] === value
+    ) {
+      continue
+    }
     emitted[name] = value
   }
 
@@ -478,9 +498,10 @@ export function deriveLivery(
   manifest: LiveryManifest,
   stock: StockSnapshot,
 ): { readonly light: CompiledVariant; readonly dark: CompiledVariant } {
+  const light = deriveVariant(manifest, 'light', stock)
   return {
-    light: deriveVariant(manifest, 'light', stock),
-    dark: deriveVariant(manifest, 'dark', stock),
+    light,
+    dark: deriveVariant(manifest, 'dark', stock, light.tokens),
   }
 }
 

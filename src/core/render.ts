@@ -64,6 +64,8 @@ export const FONT_ROLE_HOOKS = {
 const FONT_FAMILY_TOKEN = '--dsw-font-family'
 const FONT_BRAND_TOKEN = '--dsw-font-family-brand'
 const CODE_FAMILY_TOKEN = '--dsw-font-markdown-code-font-family'
+/** Livery-owned per-locale content family used to keep the CSS budget small. */
+const CONTENT_FONT_VARIABLE = '--livery-content-font'
 const UI_FAMILY_EXPRESSION = 'var(--dsw-font-family)'
 const CODE_FAMILY_EXPRESSION = 'var(--ds-font-family-code)'
 
@@ -172,10 +174,16 @@ function legacyTypographyDeclarations(
 
   const contentDiffers = contentStack !== uiStack
   if (contentDiffers) {
+    // Bind the content family once per locale and de-reference it from every
+    // Markdown shorthand instead of repeating the stack in each value.
+    declarations.push([CONTENT_FONT_VARIABLE, contentStack])
     for (const name of CONSUMED_MARKDOWN_SHORTHANDS) {
       const stockValue = stockDeclarationValue(stock, name)
       if (stockValue === null || !stockValue.includes(UI_FAMILY_EXPRESSION)) continue
-      declarations.push([name, replaceExpression(stockValue, UI_FAMILY_EXPRESSION, contentStack)])
+      declarations.push([
+        name,
+        replaceExpression(stockValue, UI_FAMILY_EXPRESSION, `var(${CONTENT_FONT_VARIABLE})`),
+      ])
     }
   }
   for (const name of CONSUMED_UI_SHORTHANDS) {

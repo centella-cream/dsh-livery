@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "dracula",
+  "meta": {
+    "name": {
+      "zh-CN": "德古拉",
+      "en-US": "Dracula"
+    },
+    "description": {
+      "zh-CN": "紫与品红交织的夜色，锐利而带着一点戏剧性。",
+      "en-US": "A theatrical violet night, sharp-edged and a little dramatic."
+    },
+    "tags": [
+      "deep",
+      "playful"
+    ],
+    "order": 120
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#6d28d9",
+        "secondary": "#bd93f9",
+        "surface": "#f8f8f2",
+        "text": "#282a36"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#bd93f9",
+        "secondary": "#ff79c6",
+        "surface": "#282a36",
+        "text": "#f8f8f2"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "display-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "punchy",
+      "en-US": "punchy"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "sharp"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

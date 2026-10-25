@@ -357,6 +357,255 @@ function liverySeeds(livery: PreviewLivery, mode: Mode): { readonly accent: stri
 }
 
 /* ------------------------------------------------------------------ */
+/* Style resolution (shape / elevation / type scale)                    */
+/* ------------------------------------------------------------------ */
+
+/** One resolved shadow layer (CSS box-shadow → deterministic feDropShadow). */
+interface ShadowLayer {
+  readonly dx: number
+  readonly dy: number
+  readonly blur: number
+  readonly color: Rgba
+}
+
+/** One resolved type step from a consumed host font shorthand token. */
+interface TypeStep {
+  readonly size: number
+  readonly weight: number | null
+  readonly lineHeight: number
+}
+
+/** Shape / elevation / type facts read from the compiled token map + stock. */
+interface PreviewStyle {
+  readonly radius: {
+    readonly xs: number
+    readonly sm: number
+    readonly md: number
+    readonly lg: number
+    readonly xl: number
+    readonly panel: number
+  }
+  readonly panelShadow: ShadowLayer | null
+  readonly softShadow: ShadowLayer | null
+  /** 0.5 with elevation, 1 for hairline-only (flat/paper) styles. */
+  readonly hairlineWidth: number
+  /** Backdrop blur px from the material filter token (null = opaque). */
+  readonly materialBlur: number | null
+  /** Concrete display family parsed from the brand font token, else UI stack. */
+  readonly brandFont: string | null
+  readonly type: {
+    readonly xxxs: TypeStep
+    readonly xxs: TypeStep
+    readonly xs: TypeStep
+    readonly xsStrong: TypeStep
+    readonly s: TypeStep
+    readonly l: TypeStep
+  }
+}
+
+function tokenValue(tokens: TokenMap, stock: StockSnapshot, name: string, mode: Mode): string | null {
+  const override = tokens[name]
+  if (override !== undefined) return override
+  const declaration = stock.tokens[name]
+  if (declaration === undefined) return null
+  return mode === 'light' ? declaration.light : declaration.dark
+}
+
+function pxOf(value: string | null, fallback: number): number {
+  if (value === null) return fallback
+  const match = /^(-?[\d.]+)px$/.exec(value.trim())
+  if (match === null) return fallback
+  const parsed = Number.parseFloat(match[1] ?? '')
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+/** Split a CSS value on top-level commas (box-shadow / filter lists). */
+function splitTopLevel(value: string): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let current = ''
+  for (const char of value) {
+    if (char === '(') depth += 1
+    if (char === ')') depth = Math.max(0, depth - 1)
+    if (char === ',' && depth === 0) {
+      parts.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  if (current.trim().length > 0) parts.push(current.trim())
+  return parts
+}
+
+function parseShadowLayer(value: string): ShadowLayer | null {
+  const trimmed = value.trim()
+  if (trimmed === 'none' || trimmed === '0') return null
+  const tokens = trimmed.split(/\s+/)
+  if (tokens.length < 3) return null
+  const numbers: number[] = []
+  let color: Rgba | null = null
+  for (const token of tokens) {
+    const px = /^(-?[\d.]+)px$/.exec(token)
+    if (px !== null) {
+      const parsed = Number.parseFloat(px[1] ?? '')
+      if (!Number.isFinite(parsed)) return null
+      numbers.push(parsed)
+      continue
+    }
+    if (token === '0') {
+      numbers.push(0)
+      continue
+    }
+    if (token.startsWith('#')) {
+      color = parsePreviewColor(token)
+      continue
+    }
+    if (/^rgba?\(/.test(token)) {
+      color = parsePreviewColor(token)
+      continue
+    }
+    // var(...) sub-values (stroke ring layers, colours) are resolved by the
+    // renderer itself, not visible in the fixture; skip this layer.
+    return null
+  }
+  if (numbers.length < 3 || color === null) return null
+  const [dx, dy, blur] = numbers
+  if (dx === undefined || dy === undefined || blur === undefined) return null
+  return { dx, dy, blur: Math.max(0, blur), color }
+}
+
+/** Parse the strongest visible layer of a box-shadow / elevation token value. */
+function parseShadow(value: string, stock: StockSnapshot, mode: Mode): ShadowLayer | null {
+  let best: ShadowLayer | null = null
+  for (const layer of splitTopLevel(value)) {
+    let resolved = layer
+    const varMatch = /^var\((--dsw-[a-z0-9-]+)\)$/.exec(layer.trim())
+    if (varMatch !== null) {
+      const referenced = tokenValue({}, stock, varMatch[1] ?? '', mode)
+      if (referenced === null) continue
+      resolved = referenced
+    }
+    const parsed = parseShadowLayer(resolved)
+    if (parsed === null) continue
+    // Prefer the key-light layer (positive y-offset) over the ambient glow layer;
+    // within the same direction prefer the larger blur (more visible elevation).
+    if (best === null) {
+      best = parsed
+      continue
+    }
+    if (parsed.dy > best.dy || (parsed.dy === best.dy && parsed.blur > best.blur)) best = parsed
+  }
+  return best
+}
+
+function resolveShadow(
+  tokens: TokenMap,
+  stock: StockSnapshot,
+  mode: Mode,
+  names: readonly string[],
+): ShadowLayer | null {
+  for (const name of names) {
+    const value = tokenValue(tokens, stock, name, mode)
+    if (value === null) continue
+    return parseShadow(value, stock, mode)
+  }
+  return null
+}
+
+function parseTypeStep(value: string | null, fallback: TypeStep): TypeStep {
+  if (value === null) return fallback
+  const match = /^(?:(\d{3})\s+)?([\d.]+)px\s*\/\s*([\d.]+)px\b/.exec(value.trim())
+  if (match === null) return fallback
+  const weight = match[1] === undefined ? null : Number.parseInt(match[1], 10)
+  const size = Number.parseFloat(match[2] ?? '')
+  const lineHeight = Number.parseFloat(match[3] ?? '')
+  if (!Number.isFinite(size) || !Number.isFinite(lineHeight)) return fallback
+  return { size, weight, lineHeight }
+}
+
+/** First concrete (non-var) family of a font-family token value, if any. */
+function concreteFamily(value: string | null): string | null {
+  if (value === null) return null
+  const withoutVars = value.replace(/var\([^)]*\)/g, '').replace(/\s*,\s*$/, '').trim()
+  if (withoutVars.length === 0) return null
+  if (!/^["'A-Za-z]/.test(withoutVars)) return null
+  return withoutVars
+}
+
+function parseMaterialBlur(value: string | null): number | null {
+  if (value === null) return null
+  const match = /blur\(([\d.]+)px\)/.exec(value)
+  if (match === null) return null
+  const blur = Number.parseFloat(match[1] ?? '')
+  return Number.isFinite(blur) && blur > 0 ? blur : null
+}
+
+function buildStyle(
+  livery: PreviewLivery,
+  mode: Mode,
+  stock: StockSnapshot,
+  uiFont: string,
+): PreviewStyle {
+  const tokens = mode === 'light' ? livery.light.tokens : livery.dark.tokens
+  const radius = {
+    xs: pxOf(tokenValue(tokens, stock, '--dsw-radius-xs', mode), 4),
+    sm: pxOf(tokenValue(tokens, stock, '--dsw-radius-sm', mode), 8),
+    md: pxOf(tokenValue(tokens, stock, '--dsw-radius-md', mode), 12),
+    lg: pxOf(tokenValue(tokens, stock, '--dsw-radius-lg', mode), 16),
+    xl: pxOf(tokenValue(tokens, stock, '--dsw-radius-xl', mode), 20),
+    panel: pxOf(tokenValue(tokens, stock, '--dsw-radius-panel', mode), 28),
+  }
+  // A style that ships `none` for any shadow/elevation token disables elevation
+  // entirely (paper/flat/terminal declare --dsw-shadow-* = none and omit the
+  // --dsw-elevation-* aliases, whose stock fallbacks would otherwise re-add a shadow).
+  const shadowFamilyValues = [
+    '--dsw-shadow-lv1',
+    '--dsw-shadow-lv1-blur',
+    '--dsw-shadow-lv2',
+    '--dsw-shadow-lv3',
+    '--dsw-elevation-panel',
+    '--dsw-elevation-prominent',
+    '--dsw-elevation-soft',
+  ]
+    .map((name) => tokens[name])
+    .filter((value): value is string => value !== undefined)
+  const shadowDisabled = shadowFamilyValues.some((value) => value.trim() === 'none')
+  const panelShadow = shadowDisabled ? null : resolveShadow(tokens, stock, mode, [
+    '--dsw-elevation-panel',
+    '--dsw-shadow-lv2',
+    '--dsw-elevation-prominent',
+    '--dsw-shadow-lv3',
+  ])
+  const softShadow = shadowDisabled
+    ? null
+    : resolveShadow(tokens, stock, mode, ['--dsw-elevation-soft', '--dsw-shadow-lv1', '--dsw-shadow-lv1-blur'])
+  const hasElevation = panelShadow !== null || softShadow !== null
+  return {
+    radius,
+    panelShadow,
+    softShadow,
+    hairlineWidth: hasElevation ? 0.5 : 1,
+    materialBlur: parseMaterialBlur(tokenValue(tokens, stock, '--dsw-menu-backdrop-filter', mode)),
+    brandFont: (() => {
+      const brandValue = tokenValue(tokens, stock, '--dsw-font-family-brand', mode)
+      const concrete = concreteFamily(brandValue)
+      // The brand token embeds `var(--dsw-font-family)`/host hook vars which SVG
+      // cannot resolve; append the resolved UI stack so a display face that is not
+      // installed falls back to the livery's own ui font.
+      return concrete !== null && /var\(/.test(brandValue ?? '') ? `${concrete}, ${uiFont}` : concrete ?? uiFont
+    })(),
+    type: {
+      xxxs: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-xxxs-11', mode), { size: 11, weight: null, lineHeight: 14 }),
+      xxs: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-xxs-12', mode), { size: 12, weight: null, lineHeight: 18 }),
+      xs: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-xs-13', mode), { size: 13, weight: null, lineHeight: 20 }),
+      xsStrong: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-xs-strong-13', mode), { size: 13, weight: 500, lineHeight: 20 }),
+      s: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-s-14', mode), { size: 14, weight: null, lineHeight: 22 }),
+      l: parseTypeStep(tokenValue(tokens, stock, '--dsw-font-l-20', mode), { size: 20, weight: 500, lineHeight: 28 }),
+    },
+  }
+}
+/* ------------------------------------------------------------------ */
 /* SVG primitives                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -464,6 +713,7 @@ function truncateToWidth(content: string, size: number, maxWidth: number): strin
 interface Ctx {
   readonly palette: PreviewPalette
   readonly copy: PreviewCopy
+  readonly style: PreviewStyle
   readonly uiFont: string
   readonly contentFont: string
   readonly codeFont: string
@@ -472,42 +722,61 @@ interface Ctx {
   readonly mode: Mode
   readonly name: string
   readonly surfaceStyle: LiveryManifest['layout']['surfaceStyle']
+  readonly metricsId: string
+}
+
+function clampRadius(radius: number, height: number): number {
+  return Math.max(0, Math.min(radius, height / 2))
+}
+
+function shadowFilterAttribute(ctx: Ctx, layer: 'panel' | 'soft'): string {
+  const shadow = layer === 'panel' ? ctx.style.panelShadow : ctx.style.softShadow
+  if (shadow === null) return ''
+  return ` filter="url(#liveryElevation${layer === 'panel' ? 'Panel' : 'Soft'})"`
 }
 
 function renderSidebar(ctx: Ctx): string[] {
-  const { palette: p, copy, uiFont } = ctx
+  const { palette: p, copy, uiFont, style } = ctx
   const parts: string[] = []
   parts.push(box(0, 0, PREVIEW_SIDEBAR_WIDTH, PREVIEW_HEIGHT, { fill: p.sidebar }))
   parts.push(line(PREVIEW_SIDEBAR_WIDTH - 0.5, 0, PREVIEW_SIDEBAR_WIDTH - 0.5, PREVIEW_HEIGHT, p.borderL2))
 
-  if (ctx.surfaceStyle === 'glass') {
+  if (ctx.surfaceStyle === 'glass' && style.materialBlur !== null) {
     // Translucent material hint on the sidebar, fading out instead of a hard edge.
     parts.push(`<rect x="0" y="0" width="${PREVIEW_SIDEBAR_WIDTH}" height="320" fill="url(#glassGlow)" opacity="0.75"/>`)
   }
 
-  // Brand block: mark + localized livery name.
-  parts.push(dot(28, 30, 10, p.brand))
+  // Brand block: shape follows the radius recipe, name uses the display stack.
+  const markRadius = clampRadius(style.radius.xs, 20)
+  parts.push(box(18, 20, 20, 20, { fill: p.brand, rx: markRadius }))
   parts.push(box(23.5, 26.5, 9, 2.2, { fill: p.labelInverted, rx: 1.1 }))
   parts.push(box(23.5, 30.5, 6, 2.2, { fill: p.labelInverted, rx: 1.1 }))
-  parts.push(text(46, 33, truncateToWidth(ctx.name, 13, 176), { fill: p.labelPrimary, family: uiFont, size: 13, weight: 600 }))
-  parts.push(text(46, 44, copy.appCaption, { fill: p.labelTertiary, family: uiFont, size: 8.5, letterSpacing: 0.8 }))
+  const brandName = truncateToWidth(ctx.name, style.type.s.size, 176)
+  parts.push(text(46, 33, brandName, { fill: p.labelPrimary, family: style.brandFont ?? uiFont, size: style.type.s.size, weight: 600 }))
+  parts.push(text(46, 44, copy.appCaption, { fill: p.labelTertiary, family: uiFont, size: style.type.xxxs.size, letterSpacing: 0.8 }))
 
   // Chat section.
-  parts.push(text(14, 68, copy.sectionChats, { fill: p.labelTertiary, family: uiFont, size: 9.5, letterSpacing: 0.4 }))
+  parts.push(text(14, 68, copy.sectionChats, { fill: p.labelTertiary, family: uiFont, size: style.type.xxxs.size, letterSpacing: 0.4 }))
   let itemY = 74
   for (let index = 0; index < copy.chats.length; index += 1) {
     const label = copy.chats[index] ?? ''
     const active = index === 0
     if (active) {
-      parts.push(box(12, itemY, 216, 30, { fill: p.navActive, rx: 8 }))
-      parts.push(box(12, itemY + 6, 2.5, 18, { fill: p.brand, rx: 1.25 }))
+      parts.push(box(12, itemY, 216, 30, { fill: p.navActive, rx: style.radius.sm }))
+      parts.push(box(12, itemY + 6, 2.5, 18, { fill: p.brand, rx: Math.min(style.radius.xs / 2, 2) }))
     }
-    parts.push(box(24, itemY + 9, 12, 12, { fill: active ? p.brand : p.labelTertiary, rx: 3.5, opacity: active ? 1 : 0.75 }))
     parts.push(
-      text(44, itemY + 20, truncateToWidth(label, 11, 168), {
+      box(24, itemY + 9, 12, 12, {
+        fill: active ? p.brand : p.labelTertiary,
+        rx: Math.min(style.radius.xs * 0.75, 6),
+        opacity: active ? 1 : 0.75,
+      }),
+    )
+    parts.push(
+      text(44, itemY + 20, truncateToWidth(label, style.type.xs.size, 168), {
         fill: active ? p.labelPrimary : p.labelSecondary,
         family: uiFont,
-        size: 11,
+        size: style.type.xs.size,
         weight: active ? 600 : 400,
       }),
     )
@@ -515,56 +784,63 @@ function renderSidebar(ctx: Ctx): string[] {
   }
 
   // Plugin section (token-native standard plugin surface).
-  parts.push(text(14, 190, copy.sectionPlugins, { fill: p.labelTertiary, family: uiFont, size: 9.5, letterSpacing: 0.4 }))
+  parts.push(text(14, 190, copy.sectionPlugins, { fill: p.labelTertiary, family: uiFont, size: style.type.xxxs.size, letterSpacing: 0.4 }))
   itemY = 196
   for (const label of copy.plugins) {
-    parts.push(box(24, itemY + 9, 12, 12, { fill: p.labelTertiary, rx: 3.5, opacity: 0.6 }))
-    parts.push(text(44, itemY + 20, truncateToWidth(label, 11, 168), { fill: p.labelSecondary, family: uiFont, size: 11 }))
+    parts.push(box(24, itemY + 9, 12, 12, { fill: p.labelTertiary, rx: Math.min(style.radius.xs * 0.75, 6), opacity: 0.6 }))
+    parts.push(text(44, itemY + 20, truncateToWidth(label, style.type.xs.size, 168), { fill: p.labelSecondary, family: uiFont, size: style.type.xs.size }))
     itemY += 32
   }
 
   // Sidebar footer: current mode + locale (the two preview axes).
   const modeLabel = ctx.mode === 'light' ? copy.modeLight : copy.modeDark
-  parts.push(box(14, 348, 96, 22, { fill: p.layer1, stroke: p.borderL2, strokeWidth: 1, rx: 11 }))
+  parts.push(box(14, 348, 96, 22, { fill: p.layer1, stroke: p.borderL2, strokeWidth: style.hairlineWidth, rx: clampRadius(style.radius.md, 22) }))
   parts.push(dot(26, 359, 4.5, p.brand))
-  parts.push(text(36, 363, modeLabel, { fill: p.labelSecondary, family: uiFont, size: 9.5, weight: 500 }))
-  parts.push(text(226, 363, copy.localeLabel, { fill: p.labelTertiary, family: uiFont, size: 9.5, anchor: 'end' }))
-  parts.push(text(14, 386, copy.approvalNote, { fill: p.labelCaption, family: uiFont, size: 8.5 }))
+  parts.push(text(36, 363, modeLabel, { fill: p.labelSecondary, family: uiFont, size: style.type.xxxs.size, weight: 500 }))
+  parts.push(text(226, 363, copy.localeLabel, { fill: p.labelTertiary, family: uiFont, size: style.type.xxxs.size, anchor: 'end' }))
+  parts.push(text(14, 386, copy.approvalNote, { fill: p.labelCaption, family: uiFont, size: style.type.xxxs.size }))
   return parts
 }
 
 function renderHeader(ctx: Ctx): string[] {
-  const { palette: p, copy, uiFont } = ctx
+  const { palette: p, copy, uiFont, style } = ctx
   const parts: string[] = []
   parts.push(box(PREVIEW_SIDEBAR_WIDTH, 0, PREVIEW_WIDTH - PREVIEW_SIDEBAR_WIDTH, 41, { fill: p.page }))
   parts.push(line(PREVIEW_SIDEBAR_WIDTH, 40.5, PREVIEW_WIDTH, 40.5, p.borderL1))
-  parts.push(text(256, 26, copy.headerTitle, { fill: p.labelPrimary, family: uiFont, size: 13.5, weight: 600 }))
+  parts.push(text(256, 27, copy.headerTitle, { fill: p.labelPrimary, family: uiFont, size: style.type.l.size, weight: style.type.l.weight ?? 600 }))
 
   const modeLabel = ctx.mode === 'light' ? copy.headerModeLight : copy.headerModeDark
-  const pillWidth = estimateTextWidth(modeLabel, 9.5) + 30
+  const pillWidth = estimateTextWidth(modeLabel, style.type.xxxs.size) + 28
   const pillX = 618 - pillWidth
-  parts.push(box(pillX, 13, pillWidth, 20, { fill: p.layer1, stroke: p.borderL2, strokeWidth: 1, rx: 10 }))
+  parts.push(box(pillX, 13, pillWidth, 20, { fill: p.layer1, stroke: p.borderL2, strokeWidth: style.hairlineWidth, rx: clampRadius(style.radius.md, 20) }))
   parts.push(dot(pillX + 11, 23, 4, p.brand))
-  parts.push(text(pillX + 20, 26.5, modeLabel, { fill: p.labelSecondary, family: uiFont, size: 9.5, weight: 500 }))
+  parts.push(text(pillX + 20, 26.5, modeLabel, { fill: p.labelSecondary, family: uiFont, size: style.type.xxxs.size, weight: 500 }))
   return parts
 }
 
 function renderTranscript(ctx: Ctx): string[] {
-  const { palette: p, copy, uiFont, contentFont, contentLine } = ctx
+  const { palette: p, copy, uiFont, contentFont, contentLine, style } = ctx
   const parts: string[] = []
   const right = 618
   const contentX = 254
 
   // User message: right-aligned bubble with authored native copy.
-  const bubbleSize = 12
-  const bubbleLine = ctx.contentLine
+  const bubbleSize = style.type.s.size
+  const bubbleLine = contentLine
   const bubbleLineWidth = Math.max(...copy.youLines.map((lineText) => estimateTextWidth(lineText, bubbleSize)))
-  const bubbleWidth = Math.min(320, Math.round(bubbleLineWidth + 24))
+  const bubbleWidth = Math.min(340, Math.round(bubbleLineWidth + 24))
   const bubbleHeight = copy.youLines.length * bubbleLine + 16
   const bubbleX = right - bubbleWidth
   const bubbleY = 58
-  parts.push(text(right, 53, copy.you, { fill: p.labelTertiary, family: uiFont, size: 9.5, anchor: 'end' }))
-  parts.push(box(bubbleX, bubbleY, bubbleWidth, bubbleHeight, { fill: p.bubble, stroke: p.borderL1, strokeWidth: 1, rx: 11 }))
+  parts.push(text(right, 53, copy.you, { fill: p.labelTertiary, family: uiFont, size: style.type.xxxs.size, anchor: 'end' }))
+  parts.push(
+    box(bubbleX, bubbleY, bubbleWidth, bubbleHeight, {
+      fill: p.bubble,
+      stroke: p.borderL1,
+      strokeWidth: style.hairlineWidth,
+      rx: clampRadius(style.radius.lg, bubbleHeight),
+    }),
+  )
   copy.youLines.forEach((lineText, index) => {
     parts.push(
       text(bubbleX + 12, bubbleY + 8 + bubbleLine * 0.75 + index * bubbleLine, lineText, {
@@ -576,38 +852,53 @@ function renderTranscript(ctx: Ctx): string[] {
   })
 
   // Assistant message: avatar + native copy.
-  const assistantTop = bubbleY + bubbleHeight + 18
+  const assistantTop = bubbleY + bubbleHeight + 14
   parts.push(dot(contentX + 2, assistantTop + 7, 8, p.brand))
-  parts.push(text(contentX + 17, assistantTop + 10.5, copy.assistant, { fill: p.labelPrimary, family: uiFont, size: 10.5, weight: 600 }))
+  parts.push(
+    text(contentX + 17, assistantTop + 11, copy.assistant, {
+      fill: p.labelPrimary,
+      family: uiFont,
+      size: style.type.xsStrong.size,
+      weight: style.type.xsStrong.weight ?? 600,
+    }),
+  )
   copy.assistantLines.forEach((lineText, index) => {
     parts.push(
-      text(contentX, assistantTop + 27 + index * contentLine, truncateToWidth(lineText, 12, 340), {
+      text(contentX, assistantTop + 26 + index * contentLine, truncateToWidth(lineText, style.type.s.size, 344), {
         fill: p.labelPrimary,
         family: contentFont,
-        size: 12,
+        size: style.type.s.size,
         opacity: index === 1 ? 0.92 : 1,
       }),
     )
   })
 
   // Standard plugin panel card (token-native: layer-1 surface + brand accent).
-  const cardTop = Math.max(assistantTop + 27 + copy.assistantLines.length * contentLine + 18, 186)
-  const cardHeight = 100
+  const cardTop = Math.max(assistantTop + 26 + copy.assistantLines.length * contentLine + 14, 186)
+  const cardHeight = 96
   const cardX = contentX
   const cardWidth = right - contentX
-  parts.push(box(cardX, cardTop, cardWidth, cardHeight, { fill: p.layer1, stroke: p.borderL2, strokeWidth: 1, rx: 10 }))
-  parts.push(box(cardX + 12, cardTop + 12, 18, 18, { fill: p.brand, rx: 5 }))
+  parts.push(
+    `<g${shadowFilterAttribute(ctx, 'panel')}>${box(cardX, cardTop, cardWidth, cardHeight, {
+      fill: p.layer1,
+      stroke: p.borderL2,
+      strokeWidth: style.hairlineWidth,
+      rx: style.radius.md,
+    })}</g>`,
+  )
+  parts.push(box(cardX + 12, cardTop + 12, 18, 18, { fill: p.brand, rx: Math.min(style.radius.xs, 8) }))
   parts.push(box(cardX + 16.5, cardTop + 17.5, 9, 2, { fill: p.labelInverted, rx: 1 }))
   parts.push(box(cardX + 16.5, cardTop + 21.5, 6, 2, { fill: p.labelInverted, rx: 1 }))
-  parts.push(text(cardX + 38, cardTop + 24, copy.panelTitle, { fill: p.labelPrimary, family: uiFont, size: 11.5, weight: 600 }))
+  parts.push(text(cardX + 38, cardTop + 24, copy.panelTitle, { fill: p.labelPrimary, family: uiFont, size: style.type.xsStrong.size, weight: style.type.xsStrong.weight ?? 600 }))
   const badgeLabel = copy.panelBadge
-  const badgeWidth = estimateTextWidth(badgeLabel, 8.5) + 12
-  parts.push(box(cardX + 38 + estimateTextWidth(copy.panelTitle, 11.5) + 8, cardTop + 11, badgeWidth, 15, { fill: p.layer2, rx: 7.5 }))
+  const badgeSize = style.type.xxxs.size
+  const badgeWidth = estimateTextWidth(badgeLabel, badgeSize) + 12
+  parts.push(box(cardX + 38 + estimateTextWidth(copy.panelTitle, style.type.xsStrong.size) + 8, cardTop + 11, badgeWidth, 15, { fill: p.layer2, rx: Math.min(style.radius.sm, 8) }))
   parts.push(
-    text(cardX + 44 + estimateTextWidth(copy.panelTitle, 11.5) + 8, cardTop + 21.5, badgeLabel, {
+    text(cardX + 44 + estimateTextWidth(copy.panelTitle, style.type.xsStrong.size) + 8, cardTop + 21.5, badgeLabel, {
       fill: p.labelTertiary,
       family: uiFont,
-      size: 8.5,
+      size: badgeSize,
     }),
   )
   parts.push(dot(cardX + cardWidth - 58, cardTop + 20, 3.5, p.success))
@@ -615,41 +906,41 @@ function renderTranscript(ctx: Ctx): string[] {
     text(cardX + cardWidth - 14, cardTop + 23, copy.panelStatus, {
       fill: p.labelSecondary,
       family: uiFont,
-      size: 9,
+      size: style.type.xxxs.size,
       anchor: 'end',
     }),
   )
   parts.push(line(cardX, cardTop + 34.5, cardX + cardWidth, cardTop + 34.5, p.borderL1))
 
   copy.panelRows.forEach((rowLabel, index) => {
-    const rowY = cardTop + 51 + index * 21
+    const rowY = cardTop + 50 + index * 20
     parts.push(dot(cardX + 18, rowY - 3, 4.5, index === 0 ? p.success : p.business))
     parts.push(
       text(cardX + 20.5, rowY - 0.4, '✓', { fill: p.labelInverted, family: uiFont, size: 6, anchor: 'middle', weight: 700 }),
     )
-    parts.push(text(cardX + 30, rowY, rowLabel, { fill: p.labelPrimary, family: uiFont, size: 10.5 }))
+    parts.push(text(cardX + 30, rowY, rowLabel, { fill: p.labelPrimary, family: uiFont, size: style.type.xxs.size }))
     parts.push(
       text(cardX + cardWidth - 14, rowY, copy.panelRowValues[index] ?? '', {
         fill: p.labelTertiary,
         family: uiFont,
-        size: 9.5,
+        size: style.type.xxxs.size,
         anchor: 'end',
       }),
     )
   })
 
   // Third row: safe progress demo (no fixed z-index, no animation).
-  const progressY = cardTop + 86
-  parts.push(text(cardX + 30, progressY + 3, copy.panelProgress, { fill: p.labelSecondary, family: uiFont, size: 10 }))
+  const progressY = cardTop + 82
+  parts.push(text(cardX + 30, progressY + 3, copy.panelProgress, { fill: p.labelSecondary, family: uiFont, size: style.type.xxs.size }))
   const barX = cardX + 150
   const barWidth = cardWidth - 150 - 50
-  parts.push(box(barX, progressY - 2, barWidth, 5, { fill: p.layer3, rx: 2.5 }))
-  parts.push(box(barX, progressY - 2, Math.round(barWidth * 0.82), 5, { fill: p.brand, rx: 2.5 }))
+  parts.push(box(barX, progressY - 2, barWidth, 5, { fill: p.layer3, rx: Math.min(style.radius.xs / 2, 2.5) }))
+  parts.push(box(barX, progressY - 2, Math.round(barWidth * 0.82), 5, { fill: p.brand, rx: Math.min(style.radius.xs / 2, 2.5) }))
   parts.push(
     text(cardX + cardWidth - 14, progressY + 3, 'OK', {
       fill: p.labelTertiary,
       family: ctx.codeFont,
-      size: 8.5,
+      size: style.type.xxxs.size,
       anchor: 'end',
     }),
   )
@@ -657,16 +948,23 @@ function renderTranscript(ctx: Ctx): string[] {
 }
 
 function renderComposer(ctx: Ctx): string[] {
-  const { palette: p, copy, uiFont } = ctx
+  const { palette: p, copy, uiFont, style } = ctx
   const parts: string[] = []
   const x = 254
   const width = 364
-  const y = 332
-  const height = 52
-  parts.push(box(x, y, width, height, { fill: p.input, stroke: p.borderL2, strokeWidth: 1, rx: 12 }))
-  parts.push(line(x + 12, y + 12, x + 12, y + 22, p.borderL3))
-  parts.push(text(x + 14, y + 21, copy.placeholder, { fill: p.labelTertiary, family: uiFont, size: 11 }))
-  parts.push(text(x + 14, y + 37, copy.composerHint, { fill: p.labelCaption, family: uiFont, size: 8.5 }))
+  const y = 334
+  const height = 50
+  parts.push(
+    `<g${shadowFilterAttribute(ctx, 'soft')}>${box(x, y, width, height, {
+      fill: p.input,
+      stroke: p.borderL2,
+      strokeWidth: style.hairlineWidth,
+      rx: clampRadius(style.radius.lg, height),
+    })}</g>`,
+  )
+  parts.push(line(x + 12, y + 10, x + 12, y + 20, p.borderL3))
+  parts.push(text(x + 14, y + 19, copy.placeholder, { fill: p.labelTertiary, family: uiFont, size: style.type.xs.size }))
+  parts.push(text(x + 14, y + 34, copy.composerHint, { fill: p.labelCaption, family: uiFont, size: style.type.xxxs.size }))
   parts.push(dot(x + width - 24, y + height / 2, 13, p.brand))
   parts.push(
     `<path d="M ${num(x + width - 24)} ${num(y + height / 2 - 5)} L ${num(x + width - 19)} ${num(y + height / 2)} L ${num(x + width - 24)} ${num(y + height / 2 + 5)}" fill="none" stroke="${toHex(p.labelInverted)}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
@@ -674,27 +972,35 @@ function renderComposer(ctx: Ctx): string[] {
   return parts
 }
 
-function materialDefs(ctx: Ctx): string[] {
-  if (ctx.surfaceStyle !== 'glass') return []
+function shadowFilterDef(id: string, shadow: ShadowLayer): string[] {
   return [
-    '<defs>',
-    '<linearGradient id="glassGlow" x1="0" y1="0" x2="0" y2="1">',
-    `<stop offset="0" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.2"/>`,
-    `<stop offset="0.55" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.08"/>`,
-    `<stop offset="1" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0"/>`,
-    '</linearGradient>',
-    '</defs>',
+    `<filter id="${id}" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">`,
+    `<feDropShadow dx="${num(shadow.dx)}" dy="${num(shadow.dy)}" stdDeviation="${num(shadow.blur / 2)}" flood-color="${toHex(shadow.color)}" flood-opacity="${num(shadow.color.a)}"/>`,
+    '</filter>',
   ]
 }
 
+function materialDefs(ctx: Ctx): string[] {
+  const defs: string[] = []
+  if (ctx.surfaceStyle === 'glass' && ctx.style.materialBlur !== null) {
+    defs.push('<linearGradient id="glassGlow" x1="0" y1="0" x2="0" y2="1">')
+    defs.push(`<stop offset="0" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.2"/>`)
+    defs.push(`<stop offset="0.55" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0.08"/>`)
+    defs.push(`<stop offset="1" stop-color="${toHex(ctx.palette.brand)}" stop-opacity="0"/>`)
+    defs.push('</linearGradient>')
+  }
+  if (ctx.style.panelShadow !== null) defs.push(...shadowFilterDef('liveryElevationPanel', ctx.style.panelShadow))
+  if (ctx.style.softShadow !== null) defs.push(...shadowFilterDef('liveryElevationSoft', ctx.style.softShadow))
+  return defs.length === 0 ? [] : ['<defs>', ...defs, '</defs>']
+}
+
 function materialBackdrop(ctx: Ctx): string[] {
-  if (ctx.surfaceStyle === 'solid') return []
-  if (ctx.surfaceStyle === 'glass') {
+  if (ctx.surfaceStyle === 'glass' && ctx.style.materialBlur !== null) {
     return [
       `<rect x="${PREVIEW_SIDEBAR_WIDTH}" y="0" width="${PREVIEW_WIDTH - PREVIEW_SIDEBAR_WIDTH}" height="220" fill="url(#glassGlow)"/>`,
     ]
   }
-  return [box(248, 46, 384, 276, { fill: ctx.palette.layer1, rx: 18, opacity: 0.55 })]
+  return []
 }
 
 function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, stock: StockSnapshot): string {
@@ -704,10 +1010,12 @@ function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, sto
   const typography = livery.typography
   const metrics = typography.metrics[tag]
   const palette = buildPalette(livery, mode, stock)
-  const contentLine = Math.round(12 * metrics.lineHeight)
+  const style = buildStyle(livery, mode, stock, typography.ui[tag])
+  const contentLine = Math.max(1, Math.round(style.type.s.size * metrics.lineHeight))
   const ctx: Ctx = {
     palette,
     copy,
+    style,
     uiFont: typography.ui[tag],
     contentFont: typography.content[tag],
     codeFont: typography.code,
@@ -716,12 +1024,15 @@ function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, sto
     mode,
     name,
     surfaceStyle: livery.layout.surfaceStyle,
+    metricsId: metrics.id,
   }
 
   const title = `${name} · ${locale === 'zh' ? '中文' : 'English'} · ${mode === 'light' ? 'Light' : 'Dark'}`
-  const description = `${livery.meta.description[tag]} [${livery.id}/${locale}/${mode}] Fixed contract preview rendered from compiled livery tokens.`
+  const description =
+    `${livery.meta.description[tag]} [${livery.id}/${locale}/${mode}] ` +
+    `Fixed contract preview rendered from compiled livery tokens (style=${livery.layout.surfaceStyle}, metrics=${metrics.id}).`
   const parts: string[] = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${PREVIEW_WIDTH}" height="${PREVIEW_HEIGHT}" viewBox="0 0 ${PREVIEW_WIDTH} ${PREVIEW_HEIGHT}" role="img" aria-labelledby="title desc" data-livery="${xmlEscape(livery.id)}" data-locale="${locale}" data-mode="${mode}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${PREVIEW_WIDTH}" height="${PREVIEW_HEIGHT}" viewBox="0 0 ${PREVIEW_WIDTH} ${PREVIEW_HEIGHT}" role="img" aria-labelledby="title desc" data-livery="${xmlEscape(livery.id)}" data-locale="${locale}" data-mode="${mode}" data-surface-style="${xmlEscape(livery.layout.surfaceStyle)}" data-metrics-line-height="${num(metrics.lineHeight)}">`,
     `<title id="title">${xmlEscape(title)}</title>`,
     `<desc id="desc">${xmlEscape(description)}</desc>`,
     ...materialDefs(ctx),

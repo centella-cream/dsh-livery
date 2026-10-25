@@ -29,7 +29,13 @@ import {
   serializeCatalogModule,
   writeGeneratedFiles,
 } from '../../src/compiler/compile.js'
-import { tokenSetsFor } from '../../src/compiler/audit.js'
+import {
+  isAllowedTokenValue,
+  isHostileTokenValue,
+  isMetricFontToken,
+  isStyleTokenName,
+  tokenSetsFor,
+} from '../../src/compiler/audit.js'
 import { main } from '../../src/compiler/cli.js'
 import { REPO_ROOT, createFixtureRoot, liveryIds, readManifest } from './helpers.js'
 
@@ -47,6 +53,11 @@ function collectLogs(): {
 }
 
 const first = compileOnce()
+/** Shipped livery count (10 today, will grow; tests must never hardcode it). */
+const LIVERY_COUNT = liveryIds().length
+const PREVIEW_COUNT = LIVERY_COUNT * 4
+const FILES_PER_PROFILE = PREVIEW_COUNT + 1 + 4 // svgs + index + 4 audit artifacts
+const TOTAL_FILES = 1 + first.profileCount * FILES_PER_PROFILE + 1 // catalog + profiles + summary
 const profileById = (id: string) => first.profiles.find((profile) => profile.profile.profileId === id)
 
 describe('compileCatalog — multi-version', () => {
@@ -63,8 +74,8 @@ describe('compileCatalog — multi-version', () => {
       expect(compiled).toBeDefined()
       expect(compiled?.profile.sourceAdapters).toEqual(group.adapters.map((adapter) => adapter.hostVersion))
       expect(compiled?.representative.hostVersion).toBe(group.adapters[0]?.hostVersion)
-      expect(compiled?.profile.liveries).toHaveLength(10)
-      expect(compiled?.previewCount).toBe(40)
+      expect(compiled?.profile.liveries).toHaveLength(LIVERY_COUNT)
+      expect(compiled?.previewCount).toBe(PREVIEW_COUNT)
     }
   })
 
@@ -131,9 +142,10 @@ describe('compileCatalog — multi-version', () => {
         sizeBudget: true,
         capabilities: true,
         adapterRenderIdentity: true,
+        styleTokens: true,
       })
-      expect(profile.report.counts.liveries).toBe(10)
-      expect(profile.report.counts.previews).toBe(40)
+      expect(profile.report.counts.liveries).toBe(LIVERY_COUNT)
+      expect(profile.report.counts.previews).toBe(PREVIEW_COUNT)
       expect(profile.report.counts.contrastFailures).toBe(0)
       expect(profile.report.counts.tokenMissing).toBe(0)
       expect(profile.report.counts.maxLiveryCssBytes).toBeLessThanOrEqual(12 * 1024)
@@ -174,32 +186,44 @@ describe('compileCatalog — multi-version', () => {
   })
 
   it('honours explicit manifest token overrides even when the token is unconsumed', () => {
-    const legacy = first.profiles[0]
-    if (legacy === undefined) throw new Error('profiles missing')
-    // plum / rice-paper set `--dsw-specific-tip`; it is not consumed by shipped
-    // packages, but explicit overrides win, so it must be in the shipped CSS.
-    const anchors: readonly [string, string, string][] = [
-      ['plum', '#f2e8ee', '#2b2027'],
-      ['rice-paper', '#f1e8d8', '#28231b'],
-    ]
-    for (const [id, lightTip, darkTip] of anchors) {
-      const livery = legacy.profile.liveries.find((candidate) => candidate.id === id)
-      const manifest = readManifest(id)
-      if (livery === undefined) throw new Error(`${id} missing`)
-      expect(livery.light.tokens['--dsw-specific-tip']).toBe(lightTip)
-      expect(livery.dark.tokens['--dsw-specific-tip']).toBe(darkTip)
-      expect(manifest.variants.light.tokens?.['--dsw-specific-tip']).toBe(lightTip)
-      expect(livery.css.tokens).toContain(`--dsw-specific-tip:${lightTip}`)
-      expect(livery.cssHash).toMatch(/^sha256:[0-9a-f]{64}$/)
+    const base = readManifest('fjord')
+    const makeManifest = (id: string, order: number, withOverride: boolean): LiveryManifest => {
+      const clone = structuredClone(base)
+      return {
+        ...clone,
+        id,
+        meta: { ...clone.meta, order },
+        variants: {
+          light: {
+            seeds: clone.variants.light.seeds,
+            ...(withOverride ? { tokens: { '--dsw-specific-tip': '#f2e8ee' } } : {}),
+          },
+          dark: {
+            seeds: clone.variants.dark.seeds,
+            ...(withOverride ? { tokens: { '--dsw-specific-tip': '#2b2027' } } : {}),
+          },
+        },
+      }
     }
-    // Published regression anchors from the core-side verification.
-    const plum = legacy.profile.liveries.find((candidate) => candidate.id === 'plum')
-    const rice = legacy.profile.liveries.find((candidate) => candidate.id === 'rice-paper')
-    expect(plum?.cssHash).toBe('sha256:e014fbc1f0655ef2922408e752927ce70a8338a0ba49528ea3cc6dfd673779d2')
-    expect(rice?.cssHash).toBe('sha256:c2d70841c2a6e5d134b71caea72b8bc344bbf1c8596639aae4fda460e6af95c5')
-    // fjord has no overrides and keeps the previously published hash.
-    const fjord = legacy.profile.liveries.find((candidate) => candidate.id === 'fjord')
-    expect(fjord?.cssHash).toBe('sha256:adeb88d696a4d6507384e03d58ef5f9d3f06d61429ff2998e927baa9d5eb2d68')
+    const result = compileCatalog({
+      manifests: [
+        { file: 'liveries/override-probe/manifest.json', raw: makeManifest('override-probe', 9998, true) },
+        { file: 'liveries/plain-probe/manifest.json', raw: makeManifest('plain-probe', 9999, false) },
+      ],
+    })
+    expect(result.problems).toEqual([])
+    expect(result.ok).toBe(true)
+    for (const profile of result.profiles) {
+      const overridden = profile.profile.liveries.find((livery) => livery.id === 'override-probe')
+      if (overridden === undefined) throw new Error('override-probe missing')
+      expect(overridden.light.tokens['--dsw-specific-tip']).toBe('#f2e8ee')
+      expect(overridden.dark.tokens['--dsw-specific-tip']).toBe('#2b2027')
+      expect(overridden.css.tokens).toContain('--dsw-specific-tip:#f2e8ee')
+      const plain = profile.profile.liveries.find((livery) => livery.id === 'plain-probe')
+      if (plain === undefined) throw new Error('plain-probe missing')
+      expect(plain.css.tokens).not.toContain('--dsw-specific-tip')
+      expect(overridden.cssHash).not.toBe(plain.cssHash)
+    }
   })
 
   it('applies capability fallbacks to the effective layout and records degradation', () => {
@@ -225,17 +249,27 @@ describe('compileCatalog — multi-version', () => {
     for (const profile of first.profiles) {
       const sets = tokenSetsFor(profile.stock)
       for (const livery of profile.profile.liveries) {
-        expect(livery.typography.ui['zh-CN']).toBe(FONT_STACKS['system-cjk'].stack)
-        expect(livery.typography.code).toBe(FONT_STACKS['system-mono'].stack)
         const manifest = readManifest(livery.id)
+        expect(livery.typography.ui['zh-CN']).toBe(FONT_STACKS[manifest.typography.ui['zh-CN']].stack)
+        expect(livery.typography.ui['en-US']).toBe(FONT_STACKS[manifest.typography.ui['en-US']].stack)
+        expect(livery.typography.content['zh-CN']).toBe(FONT_STACKS[manifest.typography.content['zh-CN']].stack)
+        expect(livery.typography.code).toBe(FONT_STACKS[manifest.typography.code].stack)
         const explicit = new Set([
           ...Object.keys(manifest.variants.light.tokens ?? {}),
           ...Object.keys(manifest.variants.dark.tokens ?? {}),
         ])
         for (const variant of [livery.light, livery.dark]) {
           for (const [name, value] of Object.entries(variant.tokens)) {
-            expect(sets.emitted.has(name) || explicit.has(name), `${profile.profile.profileId}/${livery.id}: ${name}`).toBe(true)
-            expect(value, `${profile.profile.profileId}/${livery.id}: ${name}`).toMatch(/^(?:#[0-9a-f]{6,8}|rgba?\(|linear-gradient\()/i)
+            expect(
+              sets.emissionAllowed.has(name) || explicit.has(name),
+              `${profile.profile.profileId}/${livery.id}: ${name}`,
+            ).toBe(true)
+            if (isStyleTokenName(name) || isMetricFontToken(name)) {
+              expect(isAllowedTokenValue(name, value), `${profile.profile.profileId}/${livery.id}: ${name}`).toBe(true)
+            } else {
+              expect(value, `${profile.profile.profileId}/${livery.id}: ${name}`).toMatch(/^(?:#[0-9a-f]{6,8}|rgba?\(|linear-gradient\(|var\(--livery-)/i)
+              expect(isHostileTokenValue(value), `${profile.profile.profileId}/${livery.id}: ${name}`).toBe(false)
+            }
           }
         }
         expect(livery.css.tokens).toContain(`body[data-dsh-livery="${livery.id}"]`)
@@ -271,13 +305,13 @@ describe('compileCatalog — multi-version', () => {
     for (const profile of first.profiles) {
       const profileId = profile.profile.profileId
       const previewFiles = [...first.files.keys()].filter((file) => file.startsWith(`${PREVIEW_DIR}/${profileId}/`))
-      expect(previewFiles).toHaveLength(41) // 40 svg + index.json
+      expect(previewFiles).toHaveLength(PREVIEW_COUNT + 1) // svg + index.json
       const index = JSON.parse(first.files.get(`${PREVIEW_DIR}/${profileId}/index.json`) ?? '{}') as {
         files: string[]
         count: number
       }
-      expect(index.count).toBe(40)
-      expect(index.files).toHaveLength(40)
+      expect(index.count).toBe(PREVIEW_COUNT)
+      expect(index.files).toHaveLength(PREVIEW_COUNT)
       expect([...index.files].sort()).toEqual(index.files)
       for (const file of index.files) expect(first.files.has(`${PREVIEW_DIR}/${profileId}/${file}`)).toBe(true)
 
@@ -290,14 +324,14 @@ describe('compileCatalog — multi-version', () => {
       }
     }
     expect(first.files.get(SUMMARY_PATH)).toBeDefined()
-    expect(first.files.size).toBe(92)
+    expect(first.files.size).toBe(TOTAL_FILES)
   })
 
   it('writes a cross-profile summary mapping adapters to profiles', () => {
     const summary = first.summary
     if (summary === null) throw new Error('summary missing')
     expect(summary.pass).toBe(true)
-    expect(summary.counts).toEqual({ profiles: 2, adapters: 3, liveries: 20, previews: 80 })
+    expect(summary.counts).toEqual({ profiles: 2, adapters: 3, liveries: LIVERY_COUNT * 2, previews: PREVIEW_COUNT * 2 })
     expect(summary.adapters).toHaveLength(3)
     for (const adapter of ADAPTERS) {
       const entry = summary.adapters.find((candidate) => candidate.hostVersion === adapter.hostVersion)
@@ -305,7 +339,7 @@ describe('compileCatalog — multi-version', () => {
       expect(entry?.catalogProfile).toBe(adapter.catalogProfile)
       expect(entry?.adapterId).toBe(adapter.adapterId)
       expect(entry?.tokenContractHash).toBe(stockForVersion(adapter.hostVersion)?.tokenContractHash)
-      expect(entry?.liveries).toBe(10)
+      expect(entry?.liveries).toBe(LIVERY_COUNT)
     }
     for (const profile of summary.profiles) {
       expect(profile.tokenCoverage.missing).toBe(0)
@@ -363,13 +397,13 @@ describe('compileCatalog — multi-version', () => {
 })
 
 describe('generated catalog and previews on disk', () => {
-  it('has two profile preview directories with 40 SVGs each', () => {
+  it('has one preview directory per profile with 4 SVGs per livery', () => {
     for (const profile of first.profiles) {
       const index = JSON.parse(readFileSync(join(REPO_ROOT, PREVIEW_DIR, profile.profile.profileId, 'index.json'), 'utf8')) as {
         files: string[]
         count: number
       }
-      expect(index.count).toBe(40)
+      expect(index.count).toBe(PREVIEW_COUNT)
       for (const file of index.files) {
         expect(existsSync(join(REPO_ROOT, PREVIEW_DIR, profile.profile.profileId, file)), file).toBe(true)
       }

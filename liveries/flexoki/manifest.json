@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "flexoki",
+  "meta": {
+    "name": {
+      "zh-CN": "墨纸",
+      "en-US": "Flexoki"
+    },
+    "description": {
+      "zh-CN": "墨与纸的极致克制：硬边、素色、留白，一切为了文字本身。",
+      "en-US": "Ink and paper at their most restrained: hard edges, plain colour, whitespace for the words."
+    },
+    "tags": [
+      "paper",
+      "ink"
+    ],
+    "order": 220
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#4385be",
+        "secondary": "#ce5d97",
+        "surface": "#fffcf0",
+        "text": "#100f0f"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#4385be",
+        "secondary": "#ce5d97",
+        "surface": "#100f0f",
+        "text": "#cecdc3"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "content": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "editorial",
+      "en-US": "editorial"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "paper"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

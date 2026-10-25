@@ -389,7 +389,7 @@ export function makeLivery(
   return {
     id,
     meta: {
-      name: { 'zh-CN': `皮肤-${id}`, 'en-US': `Livery ${id}` },
+      name: { 'zh-CN': `风格-${id}`, 'en-US': `Visual Style ${id}` },
       description: { 'zh-CN': `描述-${id}`, 'en-US': `Description for ${id}` },
       tags: [...(options.tags ?? ['calm'])],
       order: options.order ?? 10,
@@ -399,8 +399,8 @@ export function makeLivery(
       content: { 'zh-CN': 'content-zh', 'en-US': 'content-en' },
       code: 'code',
       metrics: {
-        'zh-CN': { id: 'cjk-comfortable', lineHeight: 1.55, note: 'test' },
-        'en-US': { id: 'latin-default', lineHeight: 1.45, note: 'test' },
+        'zh-CN': { id: 'cjk-comfortable', lineHeight: 1.55, note: 'test', tokens: {} },
+        'en-US': { id: 'latin-default', lineHeight: 1.45, note: 'test', tokens: {} },
       },
     },
     layout: { density: 'host', conversationWidth: 'host', messageFlow: 'stock', surfaceStyle: 'solid' },

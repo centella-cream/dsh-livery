@@ -7,67 +7,63 @@
       "en-US": "Plum"
     },
     "description": {
-      "zh-CN": "带一点灰调的梅子紫，柔和不甜腻，给界面添一份沉静的书卷气。",
-      "en-US": "A greyed plum with soft, bookish warmth — elegant without ever turning sweet."
+      "zh-CN": "带一点灰调的梅子紫，柔和而不甜腻，为界面铺一层沉静的书卷气。",
+      "en-US": "A greyed plum with a literary calm, sweet enough to warm the page but never sugary."
     },
     "tags": [
       "elegant",
-      "muted"
+      "warm"
     ],
     "order": 20
   },
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#6f4460",
-        "secondary": "#9b7690",
+        "accent": "#7c3f5f",
+        "secondary": "#a07a90",
         "surface": "#f7f2f5",
-        "text": "#2a1c24"
-      },
-      "tokens": {
-        "--dsw-specific-tip": "#f2e8ee"
+        "text": "#2a1c25"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#c98fb4",
-        "secondary": "#a06f8d",
-        "surface": "#1d161b",
-        "text": "#f5eaf1"
-      },
-      "tokens": {
-        "--dsw-specific-tip": "#2b2027"
+        "accent": "#d9a7c1",
+        "secondary": "#9d7890",
+        "surface": "#1f161c",
+        "text": "#f3e9ef"
       }
     }
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "cjk-comfortable",
-      "en-US": "latin-default"
+      "zh-CN": "editorial",
+      "en-US": "editorial"
     }
   },
   "layout": {
     "density": "host",
     "conversationWidth": "host",
     "messageFlow": "stock",
-    "surfaceStyle": "soft"
+    "surfaceStyle": "rounded"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
-      "surface-material",
+      "host-density-tokens",
+      "host-transcript-width",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

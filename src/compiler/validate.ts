@@ -18,7 +18,7 @@
 import Ajv2020 from 'ajv/dist/2020.js'
 import type { ErrorObject, ValidateFunction } from 'ajv'
 import { parseColor } from '../core/color.js'
-import { FONT_STACKS, METRICS, TAGS } from '../core/registry.js'
+import { FONT_STACKS, METRICS, TAGS, SURFACE_STYLE_DEFINITIONS } from '../core/registry.js'
 import type { CapabilityMap, LiveryManifest, LocalizedText } from '../core/types.js'
 import { CAP } from '../core/types.js'
 import { DEFAULT_ADAPTER } from '../generated/contract.js'
@@ -64,6 +64,7 @@ export interface CatalogValidation {
 const KNOWN_TAGS: ReadonlySet<string> = new Set(TAGS.map((tag) => tag.id))
 const KNOWN_FONTS: ReadonlySet<string> = new Set(Object.keys(FONT_STACKS))
 const KNOWN_METRICS: ReadonlySet<string> = new Set(Object.keys(METRICS))
+const KNOWN_SURFACE_STYLES: ReadonlySet<string> = new Set(Object.keys(SURFACE_STYLE_DEFINITIONS))
 const KNOWN_CAPABILITIES: ReadonlySet<string> = new Set(Object.values(CAP) as string[])
 
 const TOKEN_WHITELIST_CACHE = new Map<string, ReadonlySet<string>>()
@@ -264,6 +265,15 @@ export function validateManifest(
         message: `unknown metrics id "${id}"`,
       })
     }
+  }
+
+  const styleId = manifest.layout.surfaceStyle
+  if (!KNOWN_SURFACE_STYLES.has(styleId)) {
+    diagnostics.push({
+      code: 'surface-style.unknown',
+      path: `${file}#/layout/surfaceStyle`,
+      message: `unknown surface style id "${styleId}"`,
+    })
   }
 
   const required = new Set(manifest.compat.requiredCapabilities)

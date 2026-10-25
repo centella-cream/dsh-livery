@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "rose-pine",
+  "meta": {
+    "name": {
+      "zh-CN": "玫瑰松",
+      "en-US": "Rosé Pine"
+    },
+    "description": {
+      "zh-CN": "玫瑰灰与松脂绿的低语，留白充裕，适合慢读与写作。",
+      "en-US": "Rose-grey and pine whispers with generous whitespace, made for unhurried writing."
+    },
+    "tags": [
+      "elegant",
+      "muted"
+    ],
+    "order": 170
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#286983",
+        "secondary": "#907aa9",
+        "surface": "#faf4ed",
+        "text": "#524d74"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#9ccfd8",
+        "secondary": "#c4a7e7",
+        "surface": "#232136",
+        "text": "#e0def4"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "content": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "airy",
+      "en-US": "airy"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "soft"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

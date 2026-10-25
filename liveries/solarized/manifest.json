@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "solarized",
+  "meta": {
+    "name": {
+      "zh-CN": "暗房",
+      "en-US": "Solarized"
+    },
+    "description": {
+      "zh-CN": "在暖白纸面上读铅字的安定感，低饱和、讲究层次。",
+      "en-US": "The steadiness of type on warm paper: low-chroma and carefully layered."
+    },
+    "tags": [
+      "classic",
+      "muted"
+    ],
+    "order": 140
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#268bd2",
+        "secondary": "#2aa198",
+        "surface": "#fdf6e3",
+        "text": "#3f545c"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#268bd2",
+        "secondary": "#2aa198",
+        "surface": "#002b36",
+        "text": "#adbbbb"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "content": {
+      "zh-CN": "serif-cjk",
+      "en-US": "serif-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "editorial",
+      "en-US": "editorial"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "paper"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

@@ -27,6 +27,12 @@ import type {
 import { LIVERY_VERSION } from '../core/types.js'
 import { summarizeContrast } from '../core/contrast.js'
 import { DELIBERATELY_INHERITED_TOKENS } from '../core/derive.js'
+import {
+  CONSUMED_METRIC_FONT_TOKENS,
+  auditStyleCoverage,
+  STYLE_TOKEN_FAMILIES,
+  type LiveryStyleCoverage,
+} from '../core/audit.js'
 import type { StockSnapshot } from '../generated/stock.js'
 import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from './previews.js'
 
@@ -106,6 +112,45 @@ const CORE_INHERITANCE_REASONS: Readonly<Record<string, string>> = {
   '--dsw-alias-file-diff-deleted-marker': 'diff colours are semantic added/deleted hues and are intentionally not re-themed',
 }
 
+/**
+ * Style-system token families (docs/implementation/style-system.md §1) are owned
+ * by `src/core/audit.ts` — the frozen allowlist, value grammar and coverage
+ * facts live there. The compiler only needs the stock-snapshot token names so the
+ * emission allowlist keeps metric/surface-style tokens that core emits.
+ */
+export type { StyleTokenFamily } from '../core/audit.js'
+export {
+  auditStyleCoverage,
+  auditStyleTokens,
+  CONSUMED_METRIC_FONT_TOKENS,
+  isAllowedMetricFontTokenValue,
+  isAllowedStyleTokenValue,
+  isAllowedTokenValue,
+  isHostileTokenValue,
+  isMetricFontToken,
+  isStyleTokenName,
+  STYLE_TOKEN_FAMILIES,
+  styleTokenFamilyOf,
+  type AppliedStyleToken,
+  type LiveryStyleCoverage,
+  type StyleTokenAudit,
+  type StyleTokenIssue,
+} from '../core/audit.js'
+
+const REGISTERED_STYLE_TOKEN_NAMES: readonly string[] = [
+  ...Object.values(STYLE_TOKEN_FAMILIES).flat(),
+  ...CONSUMED_METRIC_FONT_TOKENS,
+]
+
+/** Every registered style-system token name (shape/elevation/material/border/font). */
+export function styleTokenNames(stock: StockSnapshot): ReadonlySet<string> {
+  const names = new Set<string>()
+  for (const name of REGISTERED_STYLE_TOKEN_NAMES) {
+    if (stock.tokens[name] !== undefined) names.add(name)
+  }
+  return names
+}
+
 /** Token sets derived from one host-version stock snapshot. */
 export interface StockTokenSets {
   readonly version: string
@@ -122,6 +167,10 @@ export interface StockTokenSets {
   readonly emitted: ReadonlySet<string>
   /** Required host tokens a livery may deliberately inherit, with reasons. */
   readonly exemptions: ReadonlyMap<string, TokenExemption>
+  /** Style-system family tokens (radius/shadow/elevation/material/border/font). */
+  readonly style: ReadonlySet<string>
+  /** What the compiler may ship: A-tier emitted set ∪ style families. */
+  readonly emissionAllowed: ReadonlySet<string>
 }
 
 const TOKEN_SETS_CACHE = new Map<string, StockTokenSets>()
@@ -175,6 +224,8 @@ export function tokenSetsFor(stock: StockSnapshot): StockTokenSets {
     })
   }
 
+  const style = styleTokenNames(stock)
+  const emissionAllowed = new Set<string>([...emitted, ...style])
   const sets: StockTokenSets = {
     version: stock.version,
     tokenContractHash: stock.tokenContractHash,
@@ -184,6 +235,8 @@ export function tokenSetsFor(stock: StockSnapshot): StockTokenSets {
     directStatics,
     emitted,
     exemptions,
+    style,
+    emissionAllowed,
   }
   TOKEN_SETS_CACHE.set(cacheKey, sets)
   return sets
@@ -252,10 +305,14 @@ export function exemptionDetails(tokens: readonly string[], sets: StockTokenSets
 }
 
 /** Derived tokens intentionally left at their stock value (non-blocking). */
-export function inheritedUnconsumedTokens(derived: Iterable<string>, sets: StockTokenSets): string[] {
+export function inheritedUnconsumedTokens(
+  derived: Iterable<string>,
+  sets: StockTokenSets,
+  explicitOverrideNamesHint: ReadonlySet<string> = new Set(),
+): string[] {
   const inherited: string[] = []
   for (const name of new Set(derived)) {
-    if (!sets.emitted.has(name)) inherited.push(name)
+    if (!sets.emissionAllowed.has(name) && !explicitOverrideNamesHint.has(name)) inherited.push(name)
   }
   return inherited.sort()
 }
@@ -273,7 +330,7 @@ export function selectEmittedVariant(
 ): CompiledVariant {
   const tokens: Record<string, string> = {}
   for (const [name, value] of Object.entries(variant.tokens)) {
-    if (sets.emitted.has(name) || explicitOverrides.has(name)) tokens[name] = value
+    if (sets.emissionAllowed.has(name) || explicitOverrides.has(name)) tokens[name] = value
   }
   return { seeds: variant.seeds, tokens, contrast: variant.contrast }
 }
@@ -631,6 +688,7 @@ export function buildTokenCoverageArtifact(
   liveries: readonly CompiledLivery[],
   context: ArtifactContext,
   derivedTokenNames: Iterable<string>,
+  explicitOverrideNames: ReadonlySet<string> = new Set(),
 ): TokenCoverageArtifact {
   const sets = context.tokenSets
   const aggregate = coverCatalog(liveries, sets)
@@ -643,7 +701,7 @@ export function buildTokenCoverageArtifact(
       missing: coverage.missing,
     }
   })
-  const inheritedUnconsumed = inheritedUnconsumedTokens(derivedTokenNames, sets)
+  const inheritedUnconsumed = inheritedUnconsumedTokens(derivedTokenNames, sets, explicitOverrideNames)
   return {
     schemaVersion: 1,
     generator: GENERATOR,
@@ -887,7 +945,35 @@ export interface LiveryReportEntry {
   readonly contrast: { readonly total: number; readonly failures: number }
   readonly tokenCoverage: { readonly covered: number; readonly inherited: number; readonly missing: readonly string[] }
   readonly cssSafety: CssSafetyReport
+  readonly style: {
+    readonly surfaceStyle: string
+    readonly metrics: { readonly 'zh-CN': string; readonly 'en-US': string }
+    readonly fonts: {
+      readonly ui: { readonly 'zh-CN': string; readonly 'en-US': string }
+      readonly content: { readonly 'zh-CN': string; readonly 'en-US': string }
+      readonly code: string
+    }
+    /** Core-owned style coverage facts (shape/elevation/material/border + metrics). */
+    readonly coverage: LiveryStyleCoverage
+    readonly families: readonly string[]
+    readonly tokenCount: number
+    readonly tokens: readonly string[]
+    readonly metricFontTokens: readonly string[]
+    readonly violations: readonly string[]
+    readonly pass: boolean
+  }
   readonly degraded: readonly CapabilityDegrade[]
+}
+
+/** Manifest-declared style identity (ids only; values live in the registries). */
+export interface ManifestStyleInfo {
+  readonly surfaceStyle: string
+  readonly metrics: { readonly 'zh-CN': string; readonly 'en-US': string }
+  readonly fonts: {
+    readonly ui: { readonly 'zh-CN': string; readonly 'en-US': string }
+    readonly content: { readonly 'zh-CN': string; readonly 'en-US': string }
+    readonly code: string
+  }
 }
 
 export interface AdapterEntry {
@@ -926,6 +1012,9 @@ export interface CatalogReport {
     readonly cssBytes: number
     readonly maxLiveryCssBytes: number
     readonly maxBootCssBytes: number
+    /** Emitted style-system token overlay (shape/elevation/material/border/type). */
+    readonly styleTokenTotal: number
+    readonly styleTokenViolations: number
   }
   readonly gates: {
     readonly validation: boolean
@@ -935,6 +1024,7 @@ export interface CatalogReport {
     readonly sizeBudget: boolean
     readonly capabilities: boolean
     readonly adapterRenderIdentity: boolean
+    readonly styleTokens: boolean
   }
   readonly previews: {
     readonly directory: string
@@ -962,6 +1052,9 @@ export interface CatalogReportOptions {
   readonly adapterEntries: readonly AdapterEntry[]
   readonly derivedTokenNames: Iterable<string>
   readonly adapterRenderIdentity: boolean
+  /** Manifest-declared style identity per livery id (ids, not values). */
+  readonly manifestStyles: ReadonlyMap<string, ManifestStyleInfo>
+  readonly explicitOverrideNames: ReadonlySet<string>
 }
 
 /** Build artifacts/liveries/<profileId>/report.json content. */
@@ -974,6 +1067,8 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
     const lightContrast = modeContrast(livery.light.contrast)
     const darkContrast = modeContrast(livery.dark.contrast)
     const liveryCoverage = coverTokens(liveryTokenNames(livery), sets)
+    const styleCoverage = auditStyleCoverage(livery.light, livery.dark)
+    const manifestStyle = options.manifestStyles.get(livery.id)
     return {
       id: livery.id,
       name: livery.meta.name,
@@ -1013,6 +1108,22 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
         missing: liveryCoverage.missing,
       },
       cssSafety: css.safety,
+      style: {
+        surfaceStyle: manifestStyle?.surfaceStyle ?? livery.layout.surfaceStyle,
+        metrics: manifestStyle?.metrics ?? { 'zh-CN': livery.typography.metrics['zh-CN'].id, 'en-US': livery.typography.metrics['en-US'].id },
+        fonts: manifestStyle?.fonts ?? {
+          ui: { 'zh-CN': '', 'en-US': '' },
+          content: { 'zh-CN': '', 'en-US': '' },
+          code: '',
+        },
+        coverage: styleCoverage,
+        families: styleCoverage.families,
+        tokenCount: styleCoverage.tokens.length,
+        tokens: styleCoverage.tokens,
+        metricFontTokens: styleCoverage.metricFontTokens,
+        violations: styleCoverage.rejected.map((issue) => `${issue.token} ${issue.reason}`),
+        pass: styleCoverage.pass,
+      },
       degraded: livery.audit.degraded,
     }
   })
@@ -1021,7 +1132,13 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
   const cssBytes = entries.reduce((total, entry) => total + entry.css.total, 0)
   const maxLiveryCssBytes = Math.max(0, ...entries.map((entry) => entry.css.total))
   const maxBootCssBytes = Math.max(0, ...bootCss.map((entry) => Buffer.byteLength(entry.css, 'utf8')))
-  const inheritedUnconsumed = inheritedUnconsumedTokens(options.derivedTokenNames, sets)
+  const inheritedUnconsumed = inheritedUnconsumedTokens(
+    options.derivedTokenNames,
+    sets,
+    options.explicitOverrideNames,
+  )
+  const styleTokenTotal = entries.reduce((total, entry) => total + entry.style.tokenCount, 0)
+  const styleTokenViolations = entries.reduce((total, entry) => total + entry.style.violations.length, 0)
   return {
     schemaVersion: 1,
     generator: GENERATOR,
@@ -1048,6 +1165,8 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
       cssBytes,
       maxLiveryCssBytes,
       maxBootCssBytes,
+      styleTokenTotal,
+      styleTokenViolations,
     },
     gates: {
       validation: true,
@@ -1057,6 +1176,7 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
       sizeBudget: maxLiveryCssBytes <= SIZE_BUDGETS.liveryBytes && maxBootCssBytes <= SIZE_BUDGETS.bootBytes,
       capabilities: entries.every((entry) => entry.degraded.every((degrade) => degrade.fallback !== 'none')),
       adapterRenderIdentity: options.adapterRenderIdentity,
+      styleTokens: entries.every((entry) => entry.style.pass),
     },
     previews: {
       directory: options.previewDirectory,
@@ -1106,6 +1226,7 @@ export interface SummaryProfileEntry {
   }
   readonly contrast: { readonly total: number; readonly failures: number; readonly pass: boolean }
   readonly cssSafety: { readonly pass: boolean }
+  readonly style: { readonly tokenTotal: number; readonly violations: number; readonly pass: boolean }
 }
 
 export interface SummaryAdapterEntry extends AdapterEntry {
@@ -1161,6 +1282,11 @@ export function buildSummaryArtifact(sources: readonly SummaryProfileSource[]): 
     },
     contrast: { total: source.contrast.summary.total, failures: source.contrast.summary.failures, pass: source.contrast.pass },
     cssSafety: { pass: source.cssSafety.pass },
+    style: {
+      tokenTotal: source.report.counts.styleTokenTotal,
+      violations: source.report.counts.styleTokenViolations,
+      pass: source.report.gates.styleTokens,
+    },
   }))
   const adapters: SummaryAdapterEntry[] = sources.flatMap((source) =>
     source.adapters.map((adapter) => ({ ...adapter, liveries: source.profile.liveries.length })),
@@ -1173,7 +1299,8 @@ export function buildSummaryArtifact(sources: readonly SummaryProfileSource[]): 
         profile.cssSafety.pass &&
         profile.gates.validation &&
         profile.gates.sizeBudget &&
-        profile.gates.adapterRenderIdentity,
+        profile.gates.adapterRenderIdentity &&
+        profile.gates.styleTokens,
     ) && adapters.length > 0
   return {
     schemaVersion: 1,

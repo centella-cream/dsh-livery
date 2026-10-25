@@ -75,19 +75,44 @@ describe('material media fallbacks', () => {
     const glassCss = renderMaterialCss(glassParts.livery, glassParts.capabilities)
     expect(glassCss).toContain('@media (prefers-reduced-transparency: reduce)')
     const reducedSection = glassCss.slice(glassCss.indexOf('prefers-reduced-transparency'))
-    expect(reducedSection).not.toContain('rgba(')
     expect(reducedSection).toContain('body[data-dsh-livery="fixture-slate-glass"]{')
     expect(reducedSection).toContain('[data-ds-dark-theme]{')
+    // Style system v2: authored blur material and the host stock menu blur are
+    // both forced back to `none` under reduced transparency.
+    expect(reducedSection).toContain('--dsw-mask-blur:none')
+    expect(reducedSection).toContain('--dsw-menu-backdrop-filter:none')
 
     const solidParts = layoutParts(SOLID)
     const solidCss = renderMaterialCss(solidParts.livery, solidParts.capabilities)
     expect(solidCss).not.toContain('prefers-reduced-transparency')
   })
 
-  it('soft material stays opaque so it needs no reduced-transparency override', () => {
+  it('surface styles without authored filters need no reduced-transparency override', () => {
     const { build, livery, capabilities } = layoutParts(SOFT)
     expect(build.evaluation.effectiveLayout.surfaceStyle).toBe('soft')
     expect(renderMaterialCss(livery, capabilities)).not.toContain('prefers-reduced-transparency')
+    // `terminal` authors `none` material: no filter function, so no override.
+    const terminalManifest = FIXTURE_MANIFESTS.find((manifest) => manifest.id === 'fixture-slate-glass')!
+    const terminalBuild = buildFixture({ ...terminalManifest, layout: { ...terminalManifest.layout, surfaceStyle: 'terminal' } })
+    const terminalCss = renderMaterialCss(
+      { id: terminalBuild.renderable.id, layout: terminalBuild.renderable.layout, light: terminalBuild.light, dark: terminalBuild.dark },
+      terminalBuild.evaluation.map,
+    )
+    expect(terminalCss).not.toContain('prefers-reduced-transparency')
+  })
+
+  it('new v2 surface styles contribute their allowed token families only', () => {
+    for (const styleId of ['flat', 'sharp', 'rounded', 'paper', 'elevated', 'terminal'] as const) {
+      const base = FIXTURE_MANIFESTS.find((manifest) => manifest.id === 'fixture-fjord')!
+      const manifest = { ...base, layout: { ...base.layout, surfaceStyle: styleId } }
+      const build = buildFixture(manifest)
+      const css = renderMaterialCss(
+        { id: build.renderable.id, layout: build.renderable.layout, light: build.light, dark: build.dark },
+        build.evaluation.map,
+      )
+      expect(css).not.toContain('!important')
+      expect(css).not.toContain('@layer ')
+    }
   })
 
   it('maps author tokens to system colours under forced colors', () => {

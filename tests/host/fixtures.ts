@@ -33,7 +33,9 @@ export const FIXTURE_BOOT_HASH = 'sha256:0123456789abcdef0123456789abcdef'
 
 /** Typography metrics fixture used by the compiled-livery fixture. */
 function metrics(id: MetricsDefinition['id'], lineHeight: number): MetricsDefinition {
-  return { id, lineHeight, note: 'fixture' }
+  // `tokens` carries mode-independent style-token overrides (style system v2);
+  // the fixture livery needs none, but the type requires the field.
+  return { id, lineHeight, tokens: {}, note: 'fixture' }
 }
 
 /** One contract-complete compiled livery. Overrides patch the fields a test cares about. */

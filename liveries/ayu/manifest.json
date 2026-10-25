@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "ayu",
+  "meta": {
+    "name": {
+      "zh-CN": "亚由",
+      "en-US": "Ayu"
+    },
+    "description": {
+      "zh-CN": "温暖的橙光压在深蓝上，紧凑而明快，像深夜里的一盏台灯。",
+      "en-US": "Warm orange on deep blue: compact and bright, a desk lamp at midnight."
+    },
+    "tags": [
+      "warm",
+      "tech"
+    ],
+    "order": 210
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#ff9940",
+        "secondary": "#399ee6",
+        "surface": "#fafafa",
+        "text": "#51565b"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#ffcc66",
+        "secondary": "#73b8ff",
+        "surface": "#0b0e14",
+        "text": "#bfbdb6"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "content": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "compact",
+      "en-US": "compact"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "elevated"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

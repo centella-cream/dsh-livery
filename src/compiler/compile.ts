@@ -44,6 +44,7 @@ import { stockForVersion } from '../generated/stock.js'
 import type { StockSnapshot } from '../generated/stock.js'
 import {
   auditLiveryCss,
+  auditStyleCoverage,
   buildCatalogReport,
   buildContrastArtifact,
   buildCssSafetyArtifact,
@@ -52,7 +53,6 @@ import {
   coverTokens,
   inheritedUnconsumedTokens,
   liveryTokenNames,
-  selectEmittedVariant,
   summarizeLiveryContrast,
   tokenSetsFor,
   type AdapterEntry,
@@ -60,6 +60,7 @@ import {
   type CatalogReport,
   type CompileProblem,
   type ContrastArtifact,
+  type ManifestStyleInfo,
   type CssSafetyArtifact,
   type StockTokenSets,
   type SummaryArtifact,
@@ -294,11 +295,6 @@ function byteLength(text: string): number {
   return Buffer.byteLength(text, 'utf8')
 }
 
-/** Names explicitly overridden by the manifest author for one mode. */
-function explicitOverrideNames(manifest: LiveryManifest, mode: 'light' | 'dark'): ReadonlySet<string> {
-  return new Set(Object.keys(manifest.variants[mode].tokens ?? {}))
-}
-
 function compileOne(
   manifest: LiveryManifest,
   stock: StockSnapshot,
@@ -310,12 +306,11 @@ function compileOne(
   const evaluation = evaluateCapabilities(capabilities as ContractCapabilityFacts, manifest)
   const effectiveManifest: LiveryManifest = { ...manifest, layout: evaluation.effectiveLayout }
   const derived = deriveLivery(effectiveManifest, stock)
-  // Emission policy (plan §8.2 computed per stock snapshot): ship the consumed
-  // token set plus any explicit author override ("explicit overrides win").
-  const variants = {
-    light: selectEmittedVariant(derived.light, tokenSets, explicitOverrideNames(manifest, 'light')),
-    dark: selectEmittedVariant(derived.dark, tokenSets, explicitOverrideNames(manifest, 'dark')),
-  }
+  // Emission policy is core-owned (docs/implementation/style-system.md): derive
+  // already emits exactly the A-tier colour set + registered style/metric tokens +
+  // explicit author overrides. The compiler must not filter that map again, or a
+  // private typography binding / non-colour style token could be dropped.
+  const variants = derived
   const derivedTokenNames = [...new Set([...Object.keys(derived.light.tokens), ...Object.keys(derived.dark.tokens)])].sort()
   const renderable = {
     id: manifest.id,
@@ -365,6 +360,18 @@ function compileOne(
   }
   const livery: CompiledLivery = { ...base, hash: hashLivery(base) }
 
+  const styleCoverage = auditStyleCoverage(variants.light, variants.dark)
+  if (!styleCoverage.pass) {
+    problems.push({
+      code: 'style.unsafe',
+      path: `liveries/${manifest.id}/manifest.json`,
+      message: `style-system token value(s) outside the frozen grammar: ${styleCoverage.rejected
+        .slice(0, 6)
+        .map((issue) => `${issue.token} ${issue.reason}`)
+        .join(', ')}`,
+    })
+  }
+
   const failureRoles = audit.contrast.filter((entry) => !entry.pass).map((entry) => `${entry.role} (${entry.ratio} < ${entry.min})`)
   if (failureRoles.length > 0) {
     problems.push({
@@ -407,14 +414,10 @@ function renderCssForAdapter(
   manifest: LiveryManifest,
   stock: StockSnapshot,
   capabilities: CapabilityMap,
-  tokenSets: StockTokenSets,
 ): { readonly css: LiveryCss; readonly cssHash: string } {
   const evaluation = evaluateCapabilities(capabilities as ContractCapabilityFacts, manifest)
   const derived = deriveLivery({ ...manifest, layout: evaluation.effectiveLayout }, stock)
-  const variants = {
-    light: selectEmittedVariant(derived.light, tokenSets, explicitOverrideNames(manifest, 'light')),
-    dark: selectEmittedVariant(derived.dark, tokenSets, explicitOverrideNames(manifest, 'dark')),
-  }
+  const variants = derived
   const css = renderLiveryCss(
     {
       id: manifest.id,
@@ -612,6 +615,27 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     }
   }
 
+  const manifestStyles = new Map<string, ManifestStyleInfo>(
+    manifests.map((manifest) => [
+      manifest.id,
+      {
+        surfaceStyle: manifest.layout.surfaceStyle,
+        metrics: { 'zh-CN': manifest.typography.metrics['zh-CN'], 'en-US': manifest.typography.metrics['en-US'] },
+        fonts: {
+          ui: { 'zh-CN': manifest.typography.ui['zh-CN'], 'en-US': manifest.typography.ui['en-US'] },
+          content: { 'zh-CN': manifest.typography.content['zh-CN'], 'en-US': manifest.typography.content['en-US'] },
+          code: manifest.typography.code,
+        },
+      },
+    ]),
+  )
+  const explicitOverrideNames = new Set<string>(
+    manifests.flatMap((manifest) => [
+      ...Object.keys(manifest.variants.light.tokens ?? {}),
+      ...Object.keys(manifest.variants.dark.tokens ?? {}),
+    ]),
+  )
+
   const sortedManifests = [...manifests].sort((a, b) =>
     a.meta.order === b.meta.order ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : a.meta.order - b.meta.order,
   )
@@ -712,13 +736,12 @@ export function compileCatalog(options: CompileOptions): CompileResult {
         })
         continue
       }
-      const adapterSets = tokenSetsFor(adapterStock)
       for (const manifest of sortedManifests) {
         const expected = cores.find((core) => core.livery.id === manifest.id)
         if (expected === undefined) continue
         let rendered: { css: LiveryCss; cssHash: string }
         try {
-          rendered = renderCssForAdapter(manifest, adapterStock, adapter.capabilities, adapterSets)
+          rendered = renderCssForAdapter(manifest, adapterStock, adapter.capabilities)
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error)
           adapterRenderIdentity = false
@@ -748,6 +771,7 @@ export function compileCatalog(options: CompileOptions): CompileResult {
       liveries,
       context,
       [...new Set(cores.flatMap((core) => core.derivedTokenNames))].sort(),
+      explicitOverrideNames,
     )
     const cssSafety = buildCssSafetyArtifact(
       catalog,
@@ -769,11 +793,14 @@ export function compileCatalog(options: CompileOptions): CompileResult {
       adapterEntries,
       derivedTokenNames: [...new Set(cores.flatMap((core) => core.derivedTokenNames))].sort(),
       adapterRenderIdentity,
+      manifestStyles,
+      explicitOverrideNames,
     })
 
     const derivedUnconsumed = inheritedUnconsumedTokens(
       cores.flatMap((core) => core.derivedTokenNames),
       tokenSets,
+      explicitOverrideNames,
     )
     const mandatoryProblems: CompileProblem[] = []
     if (!contrast.pass) {
@@ -795,6 +822,13 @@ export function compileCatalog(options: CompileOptions): CompileResult {
         code: 'css.gate',
         path: `[${profileId}] ${ARTIFACT_DIR}/${profileId}/css-safety.json`,
         message: 'CSS safety or size budget gate failed',
+      })
+    }
+    if (!report.gates.styleTokens) {
+      mandatoryProblems.push({
+        code: 'style.gate',
+        path: `[${profileId}] ${ARTIFACT_DIR}/${profileId}/report.json`,
+        message: `${report.counts.styleTokenViolations} style-system token value(s) outside the frozen grammar`,
       })
     }
     if (liveries.some((livery) => livery.audit.degraded.some((entry) => entry.fallback === 'none'))) {

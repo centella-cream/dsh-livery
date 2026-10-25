@@ -7,8 +7,8 @@
       "en-US": "Sakura"
     },
     "description": {
-      "zh-CN": "樱色轻快明亮，柔粉落在浅色表面上，气氛活泼却不过分甜。",
-      "en-US": "Light, quick sakura pink on pale surfaces — playful without being sugary."
+      "zh-CN": "樱花粉的透明感，圆润而轻盈，适合轻松、有创意的会话。",
+      "en-US": "Sheer sakura pink with rounded corners: light, friendly, made for playful sessions."
     },
     "tags": [
       "playful",
@@ -19,50 +19,51 @@
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#a04f6f",
-        "secondary": "#d490a8",
-        "surface": "#fdf2f5",
-        "text": "#2e1b22"
+        "accent": "#b0526f",
+        "secondary": "#c98fa4",
+        "surface": "#fbf3f5",
+        "text": "#2f1c23"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#e6a0bb",
-        "secondary": "#bf7e97",
-        "surface": "#1e151a",
-        "text": "#fbeef3"
+        "accent": "#e59ab0",
+        "secondary": "#b97890",
+        "surface": "#1e1619",
+        "text": "#f6e8ee"
       }
     }
   },
   "typography": {
     "ui": {
       "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "en-US": "rounded-latin"
     },
     "content": {
       "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "en-US": "rounded-latin"
     },
     "code": "system-mono",
     "metrics": {
-      "zh-CN": "airy",
-      "en-US": "airy"
+      "zh-CN": "comfortable",
+      "en-US": "comfortable"
     }
   },
   "layout": {
     "density": "host",
     "conversationWidth": "host",
-    "messageFlow": "separated",
-    "surfaceStyle": "soft"
+    "messageFlow": "stock",
+    "surfaceStyle": "rounded"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
-      "host-message-flow",
-      "surface-material",
+      "host-density-tokens",
+      "host-transcript-width",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

@@ -122,7 +122,7 @@ describe('settings page server render', () => {
     expect(html).toContain('data-state="active"')
     expect(html).toContain('data-testid="livery-thumb"')
     expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
-    expect(html).toContain('aria-label="Livery fjord"')
+    expect(html).toContain('aria-label="Visual Style fjord"')
     expect(html).toContain('data-testid="livery-search"')
     expect(html).toContain('data-testid="livery-tag"')
     expect(html).toContain('data-tag="calm"')
@@ -170,7 +170,7 @@ describe('settings page server render', () => {
 
   it('localizes card names, thumbnails and labels for zh', () => {
     const html = render({ ...READY, locale: 'zh' }, 'zh')
-    expect(html).toContain('aria-label="皮肤-fjord"')
+    expect(html).toContain('aria-label="风格-fjord"')
     expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-zh-light.svg`)
     expect(html).toContain(zhCN['gallery.title'])
     expect(html).not.toContain(enUS['gallery.title'])

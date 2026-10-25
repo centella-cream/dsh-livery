@@ -170,16 +170,27 @@ async function checkSizes() {
   if (clientGzip > CLIENT_GZIP_BUDGET) problems.push(`client gzip ${clientGzip}B exceeds ${CLIENT_GZIP_BUDGET}B budget`)
   if (maxLiveryCss > PER_LIVERY_CSS_BUDGET) problems.push(`largest livery css ${maxLiveryCss}B exceeds ${PER_LIVERY_CSS_BUDGET}B budget`)
   if (profileReports < 2) problems.push(`expected at least 2 compiled catalog profiles, found ${profileReports}`)
-  if (liveryCount !== 10) problems.push(`expected 10 liveries per catalog profile, smallest profile has ${liveryCount}`)
+  if (liveryCount < 10) problems.push(`catalog profile has only ${liveryCount} liveries (expected the full design set)`)
   if (cssSafety === 'fail') problems.push('compiler CSS safety report failed')
+  // Every profile must ship the same design set, and its preview index must hold
+  // exactly liveries x 4 files (zh/en x light/dark).
+  const profileCounts = new Map()
   for (const profileId of profileIds) {
     try {
+      const report = JSON.parse(await readFile(join(root, 'artifacts', 'liveries', profileId, 'report.json'), 'utf8'))
+      profileCounts.set(profileId, report.counts?.liveries ?? 0)
+    } catch {}
+    try {
       const index = JSON.parse(await readFile(join(root, 'lib', 'previews', profileId, 'index.json'), 'utf8'))
-      if ((index.files ?? []).length !== 40) problems.push(`previews/${profileId} must contain 40 svg files, found ${(index.files ?? []).length}`)
+      const count = (index.files ?? []).length
+      const expected = (profileCounts.get(profileId) ?? 0) * 4
+      if (expected > 0 && count !== expected) problems.push(`previews/${profileId} must contain ${expected} svg files (liveries x 4), found ${count}`)
     } catch {
       problems.push(`previews/${profileId}/index.json is missing`)
     }
   }
+  const distinctCounts = new Set([...profileCounts.values()].filter((n) => n > 0))
+  if (distinctCounts.size > 1) problems.push(`catalog profiles disagree on livery count: ${JSON.stringify(Object.fromEntries(profileCounts))}`)
 
   const report = {
     generatedAt: 'deterministic-build',

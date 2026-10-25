@@ -17,6 +17,7 @@ import {
   xmlEscape,
   type PreviewLivery,
 } from '../../src/compiler/previews.js'
+import { METRICS, SURFACE_STYLE_DEFINITIONS } from '../../src/core/registry.js'
 import { REPO_ROOT, CJK_PATTERN, checkWellFormedXml, liveryIds, readManifest } from './helpers.js'
 
 const result = compileFromDisk(REPO_ROOT)
@@ -29,6 +30,8 @@ function requireResult(): NonNullable<typeof result.profiles[number]>[] {
 }
 
 const profiles = requireResult()
+const LIVERY_COUNT = liveryIds().length
+const PREVIEW_COUNT = LIVERY_COUNT * 4
 
 function previewSource(profileIndex: number, id: string): PreviewLivery {
   const profile = profiles[profileIndex]
@@ -84,8 +87,8 @@ describe('preview rendering (multi-profile)', () => {
           files.push(entry.file)
         }
       }
-      expect(files).toHaveLength(40)
-      expect(profile.previewCount).toBe(40)
+      expect(files).toHaveLength(PREVIEW_COUNT)
+      expect(profile.previewCount).toBe(PREVIEW_COUNT)
     }
   })
 
@@ -212,8 +215,8 @@ describe('preview rendering (multi-profile)', () => {
       const indexJson = result.files.get(`${directory}/index.json`)
       expect(indexJson, directory).toBeDefined()
       const index = JSON.parse(indexJson ?? '{}') as { files: string[]; count: number }
-      expect(index.count).toBe(40)
-      expect(index.files).toHaveLength(40)
+      expect(index.count).toBe(PREVIEW_COUNT)
+      expect(index.files).toHaveLength(PREVIEW_COUNT)
       for (const file of index.files) {
         const svg = result.files.get(`${directory}/${file}`)
         expect(svg, file).toBeDefined()
@@ -221,6 +224,148 @@ describe('preview rendering (multi-profile)', () => {
       }
     }
     expect(existsInFiles('lib/previews')).toBe(true)
+  })
+})
+
+/** Every (profile, livery, locale, mode) SVG, for style-difference assertions. */
+function allSvgs(): { readonly profileIndex: number; readonly id: string; readonly locale: 'zh' | 'en'; readonly mode: 'light' | 'dark'; readonly svg: string }[] {
+  const out: { profileIndex: number; id: string; locale: 'zh' | 'en'; mode: 'light' | 'dark'; svg: string }[] = []
+  for (const [index, profile] of profiles.entries()) {
+    for (const id of liveryIds()) {
+      const source = previewSource(index, id)
+      for (const locale of PREVIEW_LOCALES) {
+        for (const mode of PREVIEW_MODES) {
+          out.push({ profileIndex: index, id, locale, mode, svg: renderPreview(source, locale, mode, profile.stock) })
+        }
+      }
+    }
+  }
+  return out
+}
+
+function attrValues(svg: string, attribute: string): number[] {
+  const values: number[] = []
+  const pattern = new RegExp(`${attribute}="([0-9.]+)"`, 'g')
+  let match = pattern.exec(svg)
+  while (match !== null) {
+    values.push(Number.parseFloat(match[1] ?? ''))
+    match = pattern.exec(svg)
+  }
+  return values
+}
+
+describe('style-system visual differentiation', () => {
+  const profile = profiles[0]
+  if (profile === undefined) throw new Error('no profile')
+
+  const styleOf = (id: string): string => {
+    const livery = profile.profile.liveries.find((candidate) => candidate.id === id)
+    if (livery === undefined) throw new Error(`${id} missing`)
+    return livery.layout.surfaceStyle
+  }
+
+  it('exposes surface style and metrics line-height on the root element', () => {
+    for (const entry of allSvgs()) {
+      expect(entry.svg).toContain(`data-locale="${entry.locale}"`)
+      expect(entry.svg).toMatch(/data-surface-style="[a-z]+"/)
+      expect(entry.svg).toMatch(/data-metrics-line-height="[0-9.]+"/)
+      const declared = readManifest(entry.id).layout.surfaceStyle
+      expect(entry.svg).toContain(`data-surface-style="${declared}"`)
+    }
+  })
+
+  it('renders corner radii from the compiled radius tokens (distinct across styles)', () => {
+    const byStyle = new Map<string, Set<string>>()
+    for (const entry of allSvgs()) {
+      if (entry.locale !== 'zh' || entry.mode !== 'light') continue
+      const style = styleOf(entry.id)
+      const radii = new Set(attrValues(entry.svg, 'rx').map(String))
+      byStyle.set(style, radii)
+    }
+    expect(byStyle.size).toBeGreaterThanOrEqual(2)
+    // At least two styles must render a different radius profile (stock vs recipe).
+    const signatures = [...byStyle.values()].map((radii) => [...radii].sort().join(','))
+    expect(new Set(signatures).size).toBeGreaterThan(1)
+    // Rounding is data-driven, not a constant: every style's radii are legal px.
+    for (const entry of allSvgs()) {
+      for (const rx of attrValues(entry.svg, 'rx')) expect(rx).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it('renders elevation only via deterministic feDropShadow, hairline strokes otherwise', () => {
+    let withShadow = 0
+    let hairlineOnly = 0
+    for (const entry of allSvgs()) {
+      const filterCount = (entry.svg.match(/<filter /g) ?? []).length
+      const dropShadows = (entry.svg.match(/<feDropShadow /g) ?? []).length
+      expect(filterCount).toBe(dropShadows)
+      // No other SVG filter primitives or external image assets.
+      expect(entry.svg).not.toContain('feGaussianBlur')
+      expect(entry.svg).not.toContain('feBlend')
+      expect(entry.svg).not.toContain('<image')
+      const styleDefinition = SURFACE_STYLE_DEFINITIONS[styleOf(entry.id) as keyof typeof SURFACE_STYLE_DEFINITIONS]
+      expect(styleDefinition).toBeDefined()
+      const livery = profile.profile.liveries.find((candidate) => candidate.id === entry.id)
+      if (livery === undefined) throw new Error(`${entry.id} missing`)
+      const tokens = entry.mode === 'light' ? livery.light.tokens : livery.dark.tokens
+      const shadowOptOut = Object.entries(tokens).some(
+        ([name, value]) => /^--dsw-(shadow|elevation)-/.test(name) && value.trim() === 'none',
+      )
+      if (shadowOptOut) {
+        hairlineOnly += 1
+        expect(dropShadows, `${entry.id}: shadow opt-out renders no elevation`).toBe(0)
+      } else {
+        withShadow += 1
+        expect(dropShadows, `${entry.id}: elevation renders feDropShadow`).toBeGreaterThan(0)
+        expect(entry.svg).toContain('flood-color=')
+        expect(entry.svg).toContain('flood-opacity=')
+      }
+    }
+    expect(withShadow).toBeGreaterThan(0)
+    // The current shipped set is solid/soft/glass; once flat/paper/terminal styles
+    // ship, they must render hairline strokes with no elevation filter.
+    const usesShadowlessStyle = profile.profile.liveries.some((livery) =>
+      ['flat', 'paper', 'terminal'].includes(livery.layout.surfaceStyle),
+    )
+    if (usesShadowlessStyle) expect(hairlineOnly).toBeGreaterThan(0)
+  })
+
+  it('uses the type scale from consumed font shorthand tokens when metrics differ', () => {
+    const usedMetrics = new Set<string>()
+    const sizesByMetrics = new Map<string, Set<string>>()
+    for (const entry of allSvgs()) {
+      if (entry.locale !== 'zh' || entry.mode !== 'light') continue
+      const livery = profile.profile.liveries.find((candidate) => candidate.id === entry.id)
+      if (livery === undefined) throw new Error(`${entry.id} missing`)
+      const metricsId = livery.typography.metrics['zh-CN'].id
+      usedMetrics.add(metricsId)
+      sizesByMetrics.set(metricsId, new Set(attrValues(entry.svg, 'font-size').map(String)))
+    }
+    expect(sizesByMetrics.size).toBe(usedMetrics.size)
+    // If the used metrics profiles carry different font-size tokens, the rendered
+    // type scale must differ; otherwise the stock scale is intentionally shared.
+    const tokenScales = new Set(
+      [...usedMetrics].map((id) => JSON.stringify(METRICS[id as keyof typeof METRICS]?.tokens ?? {})),
+    )
+    if (tokenScales.size > 1) {
+      const signatures = new Set([...sizesByMetrics.values()].map((sizes) => [...sizes].sort().join(',')))
+      expect(signatures.size).toBeGreaterThan(1)
+    }
+    // The brand/display font stack is used for the livery name in the fixture.
+    for (const entry of allSvgs()) expect(entry.svg).toContain('font-family=')
+  })
+
+  it('keeps every SVG byte-stable across repeated renders', () => {
+    for (const [index, profile] of profiles.entries()) {
+      const id = liveryIds()[0]
+      if (id === undefined) throw new Error('no liveries')
+      const source = previewSource(index, id)
+      for (const locale of PREVIEW_LOCALES) {
+        for (const mode of PREVIEW_MODES) {
+          expect(renderPreview(source, locale, mode, profile.stock)).toBe(renderPreview(source, locale, mode, profile.stock))
+        }
+      }
+    }
   })
 })
 

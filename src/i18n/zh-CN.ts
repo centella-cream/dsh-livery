@@ -9,20 +9,20 @@ import type { LiveryKey } from './en-US.js'
 
 export const zhCN: Record<LiveryKey, string> = {
   // Settings section shell / header.
-  'section.label': '皮肤',
-  'section.title': '皮肤',
+  'section.label': '视觉风格',
+  'section.title': '视觉风格',
   'section.subtitle': '为整个会话挑选颜色、字体与安全布局。',
-  'section.loading': '正在加载皮肤…',
+  'section.loading': '正在加载视觉风格…',
 
   // Sidebar plugin-navigation row + full-page panel.
-  'panel.label': '皮肤',
-  'panel.title': '皮肤',
+  'panel.label': '视觉风格',
+  'panel.title': '视觉风格',
   'panel.description': '为整个会话挑选颜色、字体与安全布局。',
 
   // Current livery summary card.
-  'current.title': '当前皮肤',
+  'current.title': '当前视觉风格',
   'current.stockName': '默认外观',
-  'current.stockDescription': 'DSH 自带外观，未应用任何皮肤。',
+  'current.stockDescription': 'DSH 自带外观，未应用任何视觉风格。',
   'current.applied': '已应用',
   'current.previewing': '正在预览「{name}」',
   'current.incompatible': '当前宿主不支持',
@@ -33,7 +33,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'current.previewNotice': '当前只是预览，应用后才会保存。',
 
   // Search and tag filters.
-  'search.label': '搜索皮肤',
+  'search.label': '搜索视觉风格',
   'search.placeholder': '按名称、ID 或标签搜索',
   'search.clear': '清空搜索',
   'filter.label': '按标签筛选',
@@ -42,16 +42,16 @@ export const zhCN: Record<LiveryKey, string> = {
   'filter.none': '暂无标签',
 
   // Gallery.
-  'gallery.title': '可用皮肤',
-  'gallery.aria': '皮肤画廊',
+  'gallery.title': '可用视觉风格',
+  'gallery.aria': '视觉风格画廊',
   'gallery.stockAria': '默认外观卡片',
-  'gallery.count': '{count} 套皮肤',
-  'gallery.countOne': '1 套皮肤',
+  'gallery.count': '{count} 种视觉风格',
+  'gallery.countOne': '1 种视觉风格',
   'gallery.stockCard': '默认外观',
-  'gallery.stockDescription': '不使用皮肤，保持 DSH 自带外观。',
+  'gallery.stockDescription': '不使用视觉风格，保持 DSH 自带外观。',
 
   // Search empty state.
-  'empty.title': '没有匹配的皮肤',
+  'empty.title': '没有匹配的视觉风格',
   'empty.body': '换一个名称、ID 或标签试试。',
   'empty.action': '清除筛选',
 
@@ -71,13 +71,13 @@ export const zhCN: Record<LiveryKey, string> = {
   // Transient preview bar.
   'preview.title': '正在预览「{name}」',
   'preview.body': '应用之前不会保存任何更改。',
-  'preview.apply': '应用此皮肤',
+  'preview.apply': '应用此视觉风格',
   'preview.cancel': '取消预览',
 
   // Actions.
   'action.restoreStock': '恢复默认外观',
   'action.restoreTitle': '恢复默认外观',
-  'action.restoreBody': '将应用 DSH 自带外观，并移除当前皮肤。',
+  'action.restoreBody': '将应用 DSH 自带外观，并移除当前视觉风格。',
   'action.restoreConfirm': '恢复默认',
   'action.cancel': '取消',
   'action.close': '关闭',
@@ -85,21 +85,21 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // Write feedback.
   'write.applying': '正在应用…',
-  'write.refused': '宿主没有接受这套皮肤。',
+  'write.refused': '宿主没有接受这套视觉风格。',
   'write.transport': '无法连接宿主。',
-  'write.rolledBack': '预览已回退到当前已应用的皮肤。',
+  'write.rolledBack': '预览已回退到当前已应用的视觉风格。',
 
   // Page states.
-  'state.loading': '正在加载皮肤…',
-  'state.offlineTitle': '皮肤目录暂不可用',
+  'state.loading': '正在加载视觉风格…',
+  'state.offlineTitle': '视觉风格目录暂不可用',
   'state.offlineBody': '首帧颜色仍会生效。画廊需要本地目录接口。',
   'state.incompatibleTitle': '宿主版本不兼容',
-  'state.incompatibleBody': '宿主与本客户端约定的契约不一致。皮肤不会介入，保持默认外观。',
-  'state.degradedTitle': '皮肤已降级',
+  'state.incompatibleBody': '宿主与本客户端约定的契约不一致。视觉风格不会介入，保持默认外观。',
+  'state.degradedTitle': '视觉风格已降级',
   'state.degradedBody': '部分能力不可用，因此只应用能够安全生效的层；颜色仍会正常显示。',
-  'state.configUnavailable': '宿主当前未提供皮肤设置。',
-  'state.readOnly': '当前部署以只读方式保存设置，可以预览皮肤但无法保存。',
-  'state.catalogEmpty': '尚未安装任何皮肤。',
+  'state.configUnavailable': '宿主当前未提供视觉风格设置。',
+  'state.readOnly': '当前部署以只读方式保存设置，可以预览视觉风格但无法保存。',
+  'state.catalogEmpty': '尚未安装任何视觉风格。',
 
   // Self-check panel.
   'check.title': '自检',
@@ -142,8 +142,8 @@ export const zhCN: Record<LiveryKey, string> = {
   'check.host': '宿主版本',
   'check.mode': '颜色模式',
   'check.locale': '语言',
-  'check.configured': '配置中的皮肤',
-  'check.effective': '实际应用的皮肤',
+  'check.configured': '配置中的视觉风格',
+  'check.effective': '实际应用的视觉风格',
   'check.catalog': '目录',
   'check.profile': '目录分组',
   'check.catalogLoaded': '已加载',
@@ -171,6 +171,12 @@ export const zhCN: Record<LiveryKey, string> = {
   'tag.contrast': '高对比',
   'tag.classic': '古典',
   'tag.playful': '活泼',
+  'tag.retro': '复古',
+  'tag.paper': '纸感',
+  'tag.ink': '墨感',
+  'tag.neon': '霓虹',
+  'tag.organic': '自然',
+  'tag.tech': '科技',
 
   // Capability display names (stable ids live in the generated contract).
   'capability.host-density-tokens': '密度',
@@ -185,7 +191,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'check.optionalInfo': '可选布局能力在当前宿主不可用：{items}；已回退到宿主布局。',
 
   // Keyboard hint.
-  'hint.keyboard': '使用方向键在皮肤之间移动，按回车预览。',
+  'hint.keyboard': '使用方向键在视觉风格之间移动，按回车预览。',
 
   // Diagnostics report.
   'diag.header': 'DSH Livery（dsh-livery）诊断信息',

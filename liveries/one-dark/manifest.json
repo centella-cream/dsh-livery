@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "one-dark",
+  "meta": {
+    "name": {
+      "zh-CN": "原子暗色",
+      "en-US": "One Dark"
+    },
+    "description": {
+      "zh-CN": "经典编辑器暗色：中性、紧凑、无装饰，让代码与文字站在前面。",
+      "en-US": "The classic editor dark: neutral, compact, unadorned, with code up front."
+    },
+    "tags": [
+      "tech",
+      "neutral"
+    ],
+    "order": 200
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#4078f2",
+        "secondary": "#a626a4",
+        "surface": "#fafafa",
+        "text": "#383a42"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#61afef",
+        "secondary": "#c678dd",
+        "surface": "#282c34",
+        "text": "#b5bcc9"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "humanist-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "technical",
+      "en-US": "technical"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "flat"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

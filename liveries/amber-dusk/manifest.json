@@ -7,41 +7,41 @@
       "en-US": "Amber Dusk"
     },
     "description": {
-      "zh-CN": "琥珀色的黄昏余温，暖而不刺眼，让对话区像被灯下照亮一样松软。",
-      "en-US": "The last light of an amber evening: warm, low, and easy on the eyes as the day winds down."
+      "zh-CN": "琥珀色的黄昏余温，暖而不刺眼，让对话区域像被灯下照暖一样松软。",
+      "en-US": "The warm afterglow of amber dusk: gentle on the eyes and soft underfoot."
     },
     "tags": [
       "warm",
-      "muted"
+      "classic"
     ],
     "order": 30
   },
   "variants": {
     "light": {
       "seeds": {
-        "accent": "#8a571c",
-        "secondary": "#c0904f",
-        "surface": "#faf4ea",
-        "text": "#2c2115"
+        "accent": "#9a6a1f",
+        "secondary": "#b99b5e",
+        "surface": "#f9f4e8",
+        "text": "#2e2416"
       }
     },
     "dark": {
       "seeds": {
-        "accent": "#e0a45e",
-        "secondary": "#b98550",
-        "surface": "#1d1811",
-        "text": "#f7efe3"
+        "accent": "#e0b25f",
+        "secondary": "#a98c55",
+        "surface": "#1e1911",
+        "text": "#f1e7d6"
       }
     }
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
-      "en-US": "system-latin"
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
     },
     "code": "system-mono",
     "metrics": {
@@ -50,20 +50,20 @@
     }
   },
   "layout": {
-    "density": "comfortable",
+    "density": "host",
     "conversationWidth": "host",
-    "messageFlow": "separated",
-    "surfaceStyle": "soft"
+    "messageFlow": "stock",
+    "surfaceStyle": "elevated"
   },
   "compat": {
     "requiredCapabilities": [
       "theme-css",
-      "host-font-family"
+      "host-font-family",
+      "surface-material"
     ],
     "optionalCapabilities": [
       "host-density-tokens",
-      "host-message-flow",
-      "surface-material",
+      "host-transcript-width",
       "reduced-transparency",
       "forced-colors",
       "reduced-motion"

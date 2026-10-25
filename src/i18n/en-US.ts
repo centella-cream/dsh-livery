@@ -11,20 +11,20 @@
  */
 export const enUS = {
   // Settings section shell / header.
-  'section.label': 'Livery',
-  'section.title': 'Livery',
+  'section.label': 'Visual Style',
+  'section.title': 'Visual Style',
   'section.subtitle': 'Choose the colors, type, and safe layout the whole conversation wears.',
-  'section.loading': 'Loading liveries…',
+  'section.loading': 'Loading visual styles…',
 
   // Sidebar plugin-navigation row + full-page panel.
-  'panel.label': 'Livery',
-  'panel.title': 'Livery',
+  'panel.label': 'Visual Style',
+  'panel.title': 'Visual Style',
   'panel.description': 'Choose the colors, type, and safe layout the whole conversation wears.',
 
   // Current livery summary card.
-  'current.title': 'Current livery',
+  'current.title': 'Current visual style',
   'current.stockName': 'Stock appearance',
-  'current.stockDescription': 'The built-in DSH look. No livery is applied.',
+  'current.stockDescription': 'The built-in DSH look. No visual style is applied.',
   'current.applied': 'Applied',
   'current.previewing': 'Previewing {name}',
   'current.incompatible': 'Unavailable on this host',
@@ -35,7 +35,7 @@ export const enUS = {
   'current.previewNotice': 'This is only a preview. Apply it to keep it.',
 
   // Search and tag filters.
-  'search.label': 'Search liveries',
+  'search.label': 'Search visual styles',
   'search.placeholder': 'Search by name, ID, or tag',
   'search.clear': 'Clear search',
   'filter.label': 'Filter by tag',
@@ -44,16 +44,16 @@ export const enUS = {
   'filter.none': 'No tags',
 
   // Gallery.
-  'gallery.title': 'Available liveries',
-  'gallery.aria': 'Livery gallery',
+  'gallery.title': 'Available visual styles',
+  'gallery.aria': 'Visual style gallery',
   'gallery.stockAria': 'Stock appearance card',
-  'gallery.count': '{count} liveries',
-  'gallery.countOne': '1 livery',
+  'gallery.count': '{count} visual styles',
+  'gallery.countOne': '1 visual style',
   'gallery.stockCard': 'Stock appearance',
-  'gallery.stockDescription': 'No livery: the built-in DSH look.',
+  'gallery.stockDescription': 'No visual style: the built-in DSH look.',
 
   // Search empty state.
-  'empty.title': 'No liveries match',
+  'empty.title': 'No visual styles match',
   'empty.body': 'Try a different name, ID, or tag.',
   'empty.action': 'Clear filters',
 
@@ -73,13 +73,13 @@ export const enUS = {
   // Transient preview bar.
   'preview.title': 'Previewing {name}',
   'preview.body': 'Nothing is saved until you apply it.',
-  'preview.apply': 'Apply livery',
+  'preview.apply': 'Apply visual style',
   'preview.cancel': 'Cancel preview',
 
   // Actions.
   'action.restoreStock': 'Restore stock appearance',
   'action.restoreTitle': 'Restore stock appearance',
-  'action.restoreBody': 'This applies the built-in DSH look and removes the current livery.',
+  'action.restoreBody': 'This applies the built-in DSH look and removes the current visual style.',
   'action.restoreConfirm': 'Restore stock',
   'action.cancel': 'Cancel',
   'action.close': 'Close',
@@ -87,21 +87,21 @@ export const enUS = {
 
   // Write feedback.
   'write.applying': 'Applying…',
-  'write.refused': 'The host did not accept this livery.',
+  'write.refused': 'The host did not accept this visual style.',
   'write.transport': 'The host could not be reached.',
-  'write.rolledBack': 'The preview was rolled back to the applied livery.',
+  'write.rolledBack': 'The preview was rolled back to the applied visual style.',
 
   // Page states.
-  'state.loading': 'Loading liveries…',
-  'state.offlineTitle': 'Livery catalog unavailable',
+  'state.loading': 'Loading visual styles…',
+  'state.offlineTitle': 'Visual style catalog unavailable',
   'state.offlineBody': 'First-frame colors are still active. The gallery needs the local catalog route.',
   'state.incompatibleTitle': 'Incompatible host build',
-  'state.incompatibleBody': 'The host and this client disagree on the same contract. Livery stays out of the way and the stock appearance is kept.',
-  'state.degradedTitle': 'Degraded livery',
+  'state.incompatibleBody': 'The host and this client disagree on the same contract. Visual Style stays out of the way and the stock appearance is kept.',
+  'state.degradedTitle': 'Degraded visual style',
   'state.degradedBody': 'Some capabilities are unavailable, so only the layers that can work safely are applied. Colors keep working.',
-  'state.configUnavailable': 'The host is not serving livery settings right now.',
-  'state.readOnly': 'This deployment stores settings read-only, so liveries can be previewed but not saved.',
-  'state.catalogEmpty': 'No liveries are installed.',
+  'state.configUnavailable': 'The host is not serving visual-style settings right now.',
+  'state.readOnly': 'This deployment stores settings read-only, so visual styles can be previewed but not saved.',
+  'state.catalogEmpty': 'No visual styles are installed.',
 
   // Self-check panel.
   'check.title': 'Self-check',
@@ -144,8 +144,8 @@ export const enUS = {
   'check.host': 'Host',
   'check.mode': 'Color mode',
   'check.locale': 'Locale',
-  'check.configured': 'Configured livery',
-  'check.effective': 'Applied livery',
+  'check.configured': 'Configured visual style',
+  'check.effective': 'Applied visual style',
   'check.catalog': 'Catalog',
   'check.profile': 'Catalog profile',
   'check.catalogLoaded': 'Loaded',
@@ -173,6 +173,12 @@ export const enUS = {
   'tag.contrast': 'High contrast',
   'tag.classic': 'Classic',
   'tag.playful': 'Playful',
+  'tag.retro': 'Retro',
+  'tag.paper': 'Paper',
+  'tag.ink': 'Ink',
+  'tag.neon': 'Neon',
+  'tag.organic': 'Organic',
+  'tag.tech': 'Tech',
 
   // Capability display names (stable ids live in the generated contract).
   'capability.host-density-tokens': 'density',
@@ -187,7 +193,7 @@ export const enUS = {
   'check.optionalInfo': 'Optional layout capabilities are unavailable on this host: {items}. The host layout is used instead.',
 
   // Keyboard hint.
-  'hint.keyboard': 'Use the arrow keys to move between liveries and Enter to preview.',
+  'hint.keyboard': 'Use the arrow keys to move between visual styles and Enter to preview.',
 
   // Diagnostics report (copied to the clipboard; technical but still localized).
   'diag.header': 'DSH Livery (dsh-livery) diagnostics',

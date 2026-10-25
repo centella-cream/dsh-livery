@@ -129,7 +129,7 @@ describe('main-panel page server render', () => {
     const html = render({ ...READY, locale: 'zh' }, 'zh')
     expect(html).toContain(zhCN['panel.title'])
     expect(html).toContain(zhCN['panel.description'])
-    expect(html).toContain('aria-label="皮肤-fjord"')
+    expect(html).toContain('aria-label="风格-fjord"')
     expect(html).not.toContain(enUS['panel.description'])
   })
 

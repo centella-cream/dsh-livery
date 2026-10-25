@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "catppuccin",
+  "meta": {
+    "name": {
+      "zh-CN": "猫布奇诺",
+      "en-US": "Catppuccin"
+    },
+    "description": {
+      "zh-CN": "奶油质感的柔彩，圆润、亲和，让长时间对话也保持轻松。",
+      "en-US": "Creamy pastels with pill-soft corners that keep long chats relaxed."
+    },
+    "tags": [
+      "playful",
+      "calm"
+    ],
+    "order": 150
+  },
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#1e66f5",
+        "secondary": "#8839ef",
+        "surface": "#eff1f5",
+        "text": "#4c4f69"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#89b4fa",
+        "secondary": "#cba6f7",
+        "surface": "#1e1e2e",
+        "text": "#cdd6f4"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "rounded-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "rounded-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "comfortable",
+      "en-US": "comfortable"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "rounded"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  }
+}

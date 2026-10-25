@@ -70,8 +70,8 @@ describe('catalog ordering and tags', () => {
 
 describe('localized metadata fallback chain', () => {
   it('uses the active full locale first', () => {
-    expect(localizedName(CATALOG.liveries[0]!, 'zh')).toContain('皮肤')
-    expect(localizedName(CATALOG.liveries[0]!, 'en')).toContain('Livery')
+    expect(localizedName(CATALOG.liveries[0]!, 'zh')).toContain('风格')
+    expect(localizedName(CATALOG.liveries[0]!, 'en')).toContain('Visual Style')
     expect(localizedDescription(CATALOG.liveries[0]!, 'zh')).toContain('描述')
   })
 
@@ -98,9 +98,9 @@ describe('gallery search and tag filter', () => {
   })
 
   it('matches the localized name of either shipped locale', () => {
-    const byZh = filterLiveries(CATALOG.liveries, { query: '皮肤-fjord', tagId: undefined }, LABELS)
+    const byZh = filterLiveries(CATALOG.liveries, { query: '风格-fjord', tagId: undefined }, LABELS)
     expect(byZh.map(livery => livery.id)).toEqual(['fjord'])
-    const byEn = filterLiveries(CATALOG.liveries, { query: 'Livery midnight', tagId: undefined }, LABELS)
+    const byEn = filterLiveries(CATALOG.liveries, { query: 'Visual Style midnight', tagId: undefined }, LABELS)
     expect(byEn.map(livery => livery.id)).toEqual(['midnight'])
   })
 

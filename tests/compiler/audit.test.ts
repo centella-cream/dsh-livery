@@ -16,7 +16,16 @@ import {
   exemptionDetails,
   inheritedUnconsumedTokens,
   liveryTokenNames,
+  auditStyleCoverage,
+  auditStyleTokens,
+  isAllowedMetricFontTokenValue,
+  isAllowedStyleTokenValue,
+  isAllowedTokenValue,
+  isHostileTokenValue,
+  isMetricFontToken,
+  isStyleTokenName,
   selectEmittedVariant,
+  styleTokenFamilyOf,
   tokenSetsFor,
   type ArtifactContext,
   type StockTokenSets,
@@ -190,6 +199,82 @@ describe('token coverage per host token contract', () => {
   })
 })
 
+describe('style-system coverage (core audit)', () => {
+  it('maps registered style tokens to their families and keeps them emittable', () => {
+    expect(styleTokenFamilyOf('--dsw-radius-md')).toBe('shape')
+    expect(styleTokenFamilyOf('--dsw-corner-shape')).toBe('shape')
+    expect(styleTokenFamilyOf('--dsw-shadow-lv2')).toBe('elevation')
+    expect(styleTokenFamilyOf('--dsw-elevation-panel')).toBe('elevation')
+    expect(styleTokenFamilyOf('--dsw-menu-backdrop-filter')).toBe('material')
+    expect(styleTokenFamilyOf('--dsw-focus-ring-width')).toBe('material')
+    expect(styleTokenFamilyOf('--dsw-alias-border-l2')).toBe('border')
+    expect(styleTokenFamilyOf('--dsw-alias-bg-base')).toBeNull()
+    expect(styleTokenFamilyOf('--dsw-font-s-14')).toBeNull()
+    expect(isStyleTokenName('--dsw-radius-md')).toBe(true)
+    expect(isMetricFontToken('--dsw-font-s-14')).toBe(true)
+    expect(isMetricFontToken('--dsw-font-family-brand')).toBe(true)
+    expect(isMetricFontToken('--dsw-alias-bg-base')).toBe(false)
+    // Style tokens are not part of the A-tier required set but are allowed by the
+    // emission policy because they are registered families/metric font tokens.
+    expect(RC2_SETS.emitted.has('--dsw-radius-md')).toBe(false)
+    expect(RC2_SETS.emissionAllowed.has('--dsw-radius-md')).toBe(true)
+    expect(RC2_SETS.emissionAllowed.has('--dsw-shadow-lv2')).toBe(true)
+    expect(RC2_SETS.emissionAllowed.has('--dsw-font-s-14')).toBe(true)
+    const variant = {
+      ...EMPTY_VARIANT,
+      tokens: { '--dsw-alias-bg-base': '#f0f3f6', '--dsw-radius-md': '2px', '--dsw-shadow-lv2': 'none', '--dsw-unconsumed-extra': 'red' },
+    }
+    const trimmed = selectEmittedVariant(variant, RC2_SETS)
+    expect(trimmed.tokens).toEqual({ '--dsw-alias-bg-base': '#f0f3f6', '--dsw-radius-md': '2px', '--dsw-shadow-lv2': 'none' })
+  })
+
+  it('validates style-system values against the frozen grammar', () => {
+    expect(isAllowedStyleTokenValue('--dsw-radius-md', '2px')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-radius-md', '0.5px')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-radius-md', '0')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-corner-shape', 'superellipse(1.5)')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-shadow-lv2', 'none')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-shadow-lv2', '0 2px 8px 0 #0000000d')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-elevation-panel', 'var(--dsw-elevation-stroke), 0 4px 16px 0 #00000008')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-menu-backdrop-filter', 'blur(40px) saturate(150%)')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-alias-border-l2', 'rgba(0, 0, 0, 0.14)')).toBe(true)
+    expect(isAllowedStyleTokenValue('--dsw-font-s-14', '12px/18px var(--dsw-font-family)')).toBe(false)
+    expect(isAllowedMetricFontTokenValue('--dsw-font-s-14', '12px/18px var(--dsw-font-family)')).toBe(true)
+    expect(isAllowedMetricFontTokenValue('--dsw-font-family-brand', '"Montserrat", var(--dsw-font-family)')).toBe(true)
+    expect(isAllowedTokenValue('--dsw-radius-lg', 'url(https://evil.example/x.png)')).toBe(false)
+    for (const value of ['url(https://evil.example/x.png)', '@import "x.css"', 'red !important', '<script>', 'expression(alert(1))', 'javascript:alert(1)']) {
+      expect(isHostileTokenValue(value), value).toBe(true)
+    }
+    expect(isHostileTokenValue('4px\n5px')).toBe(true)
+    expect(isHostileTokenValue('var(--livery-content-font)')).toBe(true)
+  })
+
+  it('audits emitted style coverage per livery', () => {
+    const light = {
+      ...EMPTY_VARIANT,
+      tokens: {
+        '--dsw-radius-md': '2px',
+        '--dsw-shadow-lv2': 'none',
+        '--dsw-alias-border-l2': '#0000001a',
+        '--dsw-alias-bg-base': '#ffffff',
+      },
+    }
+    const dark = { ...EMPTY_VARIANT, tokens: { '--dsw-radius-md': '4px', '--dsw-font-s-14': '12px/18px var(--dsw-font-family)' } }
+    const audit = auditStyleCoverage(light, dark)
+    expect(audit.pass).toBe(true)
+    expect(audit.families).toEqual(['border', 'elevation', 'shape'])
+    expect(audit.tokens).toEqual(['--dsw-alias-border-l2', '--dsw-radius-md', '--dsw-shadow-lv2'])
+    expect(audit.metricFontTokens).toEqual(['--dsw-font-s-14'])
+    expect(audit.rejected).toEqual([])
+    const oneMap = auditStyleTokens(light.tokens)
+    expect(oneMap.pass).toBe(true)
+    expect(oneMap.applied).toHaveLength(3)
+    const hostile = auditStyleCoverage({ ...light, tokens: { ...light.tokens, '--dsw-radius-lg': 'url(https://x/y.png)' } }, dark)
+    expect(hostile.pass).toBe(false)
+    expect(hostile.rejected[0]?.token).toBe('--dsw-radius-lg')
+  })
+})
+
 describe('CSS safety', () => {
   it('passes clean scoped sheets, including :root:lang and @layer compat rules', () => {
     const result = safetyFor(`${CLEAN_LIVERY_CSS}\n${CLEAN_TYPOGRAPHY_CSS}`)
@@ -288,8 +373,8 @@ describe('contrast and coverage artifacts', () => {
         content: { 'zh-CN': 'content', 'en-US': 'content' },
         code: 'code',
         metrics: {
-          'zh-CN': { id: 'cjk-comfortable', lineHeight: 1.55, note: '' },
-          'en-US': { id: 'latin-default', lineHeight: 1.45, note: '' },
+          'zh-CN': { id: 'cjk-comfortable', lineHeight: 1.55, note: '', tokens: {} },
+          'en-US': { id: 'latin-default', lineHeight: 1.45, note: '', tokens: {} },
         },
       },
       layout: { density: 'host', conversationWidth: 'host', messageFlow: 'stock', surfaceStyle: 'solid' },

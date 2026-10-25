@@ -24,15 +24,22 @@ presenter, and restores stock immediately when disabled.
   (`--dsh-font-family-text/code`) and a separate compiled catalog profile, shared
   byte-identically by the two 0.2.1 builds.
 * Languages: `zh` / `en`.
-* 10 built-in dual-mode liveries; the compiler derives full light/dark token
-  pairs from four seed colors and gates every palette on a contrast matrix.
+* **24 built-in dual-mode liveries** designed across five visual axes: palette,
+  typography (10 local-only font stacks + type-scale metrics), module shape
+  (`--dsw-radius-*` / `--dsw-corner-shape`), elevation/material
+  (shadows, `none`-shadow paper styles, glass backdrop blur) and border
+  treatment. 12 palettes are inspired by permissively licensed open-source themes
+  (see `NOTICE.md`), 10 are original, and 2 are original Chinese-aesthetic
+  designs (青瓷 Celadon, 朱砂 Cinnabar). The compiler derives full light/dark
+  token pairs from four seed colors per mode and gates every palette on a
+  contrast matrix (2 832 assertions per profile, 0 failures).
 
 ## Install (Web Profile)
 
 ```bash
 pnpm build
 pnpm pack
-dsh plugin --profile web add ./dsh-livery-0.2.2.tgz   # Web Profile (0.2.0-rc.2 / 0.2.1-rc.2)
+dsh plugin --profile web add ./dsh-livery-0.3.0.tgz   # Web Profile (0.2.0-rc.2 / 0.2.1-rc.2)
 dsh web                                               # then open the printed URL
 # Desktop Profile 0.2.1-rc.3: install through the Desktop app's plugin manager
 # (the app runtime enforces the exact engines.dsh allowlist at install time).
@@ -41,18 +48,20 @@ dsh web                                               # then open the printed UR
 ### Where to find it
 
 After installing, open DSH and look at the **left sidebar above the Workspace
-section**: the Livery entry sits in the plugin-navigation group next to 插件 /
-自动化任务 / 上下文观察 (zh: 皮肤, en: Livery). Click it to open the full-page
-gallery, preview, apply, restore and self-check UI — it is no longer inside the
-Settings page.
+section**: the entry sits in the plugin-navigation group next to 插件 /
+自动化任务 / 上下文洞察 (zh: **视觉风格**, en: **Visual Style**). Click it to open
+the full-page gallery with 24 styles, search/tag filters, preview, apply, restore
+and self-check — it is no longer inside the Settings page. The module shapes,
+typography, elevation and background material change with the selected style.
 
 Panel navigation exists since DSH `0.1.5-alpha.2` (first release line
 `0.1.5-rc.1`). On hosts without it the plugin automatically falls back to the
 legacy Settings page entry (设置 → 皮肤); certified hosts always use the sidebar
 entry.
 
-Settings → Livery picks a livery (transactional preview, then one config
-mutation), or restores stock.
+Picking a style is transactional: preview is transient, Apply performs one config
+mutation, and Restore default appearance removes it. The module shapes,
+typography, elevation and background material change with the selected style.
 
 ## Develop
 
@@ -63,7 +72,7 @@ pnpm liveries:compile
 pnpm audit:css && pnpm audit:contrast && pnpm audit:tokens
 pnpm build
 pnpm pack:check
-node scripts/acceptance-web.mjs --tgz ./dsh-livery-0.1.0.tgz
+node scripts/acceptance-web.mjs --tgz ./dsh-livery-0.3.0.tgz
 ```
 
 The Web-profile acceptance harness creates an isolated `DSH_HOME` under
