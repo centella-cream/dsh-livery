@@ -15,6 +15,7 @@ import {
   shortHash,
 } from './model.js'
 import type { LiveryLocaleId, LiveryRuntimeSnapshot } from './model.js'
+import { isCompatIdentity } from './ui/compat.js'
 
 /** Dictionary-bound translate function (the slot `t` seat has this shape). */
 export type DiagnosticsTranslate = (key: LiveryKey, params?: Record<string, unknown>) => string
@@ -101,6 +102,9 @@ export function formatDiagnostics(
     line(t, t('check.profile'), snapshot.catalogProfile ?? t('diag.none')),
     line(t, t('check.locale'), snapshot.locale),
     line(t, t('check.mode'), snapshot.themeMode === 'dark' ? t('mode.dark') : t('mode.light')),
+    ...(isCompatIdentity(snapshot.identity)
+      ? [line(t, t('check.compatMode'), t('check.compatModeValue', { hostVersion: snapshot.identity.hostVersion }))]
+      : []),
   ]))
 
   lines.push(...section(t('diag.boot'), [

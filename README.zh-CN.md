@@ -1,48 +1,60 @@
-# DSH Livery
+# DSH Visual Studio（dsh-livery）
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DeepSeek Harness](https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--rc.2%20%7C%200.2.1--rc.3-6d6df6.svg)](#支持的宿主版本)
+[![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#宿主支持与版本策略)
 
-**为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 提供 24 套内置视觉风格。**
-DSH Livery 只做「风格」：配色、字体、模块造型、层次与材质——以契约约束的插件形式实现，
-不接管宿主主题、不注册主题、不绘制窗口 chrome。
+**DeepSeek Harness 的视觉工作室**：24 套契约约束的风格、带在线图片搜索与虚化/磨砂效果的壁纸工作室、
+以及经过策展的画廊——以插件形式提供视觉层，而**不是接管宿主主题**。
 
 [English](README.md) · [中文](README.zh-CN.md)
 
 ![24 套内置风格](docs/assets/gallery-24-light.jpg)
 
-## 为什么是 DSH Livery
+## 为什么不是"又一个皮肤"
 
-很多皮肤插件会接管宿主主题、注册自己的主题 id、绘制窗口 chrome 或注入大范围 CSS。
-DSH Livery 刻意收窄了边界：
+普通皮肤插件常常接管宿主主题、注册自己的主题 id、绘制窗口 chrome、注入大范围 CSS——这正是它们在
+DSH 更新后容易失效的原因。DSH Visual Studio 选择了相反的取舍：
 
-- **契约约束。** 只支持精确宿主版本（`0.2.0-rc.2`、`0.2.1-rc.2`、`0.2.1-rc.3`），
-  六类冻结契约哈希 + 汇总哈希；未知宿主 fail-closed 回退原生外观，不做猜测。
-- **纯 token 渲染。** 每套风格只输出一组 light/dark 语义 token 用于首帧，客户端命中时
-  零 CSS 文本写入；不注册主题、不调用 `setTheme`、不写 `data-ds-*`、不画窗口 chrome。
-- **一级入口。** 主页面左侧栏「视觉风格」插件面板，与插件/自动化任务/上下文洞察同级，
-  不再藏在设置页。
-- **预览语言 tab。** 缩略图可「跟随 DSH」或固定为 中文 / English，方便在不切换应用语言
-  的情况下检查两种语言的字体风格；应用后的风格始终按宿主语言匹配字体。
-- **诚实降级。** 宿主不存在的能力（如结构性布局 hook）在自检中如实展示，不伪造。
-
-## 风格
-
-24 套风格在五个维度上产生差异：
-
-| 维度 | 变化内容 |
+| 普通皮肤插件 | DSH Visual Studio |
 |---|---|
-| 配色 | 每模式 4 个 OKLab 种子 → 完整语义 token，逐项过对比度（每 profile 2,832 条断言，0 失败） |
-| 字体 | 10 个纯本地字体栈（系统/人文/宋体/显示体/圆体/等宽）+ 9 个排版尺度 |
-| 模块造型 | `--dsw-radius-*`、`--dsw-corner-shape`，从 2–6px 锐角到 16–32px 圆角 |
-| 层次/材质 | 9 种表面配方：纸感/扁平发丝描边、高浮起阴影、玻璃 `backdrop-filter` |
-| 边框 | 边框色、focus ring、强调用的细线处理 |
+| 接管 `ctx.theme`、注册主题、调用 `setTheme` | 每套风格只输出一组作用域内的语义 token；从不注册/拥有宿主主题 |
+| 绘制窗口 chrome（标题栏、浮层） | 从不绘制 chrome，窗口归宿主所有 |
+| 大量选择器 CSS，宿主重构即失效 | 纯 token 渲染 + body 作用域壁纸层；不使用宿主组件选择器 |
+| DSH 一更新就失效或半失效 | **认证矩阵**覆盖精确版本 + **兼容模式**覆盖范围内的新版本，明确标注、不会硬失效 |
+| "相信我"的主题 | 冻结契约哈希、loader-ABI 检查、对比度/CSS 审计、公开验收矩阵 |
 
-10 套为原创；12 套受宽松许可的开源配色启发（Nord、Dracula、Gruvbox、Solarized、
-Catppuccin、Tokyo Night、Rosé Pine、Everforest、Kanagawa、One Dark、Ayu、Flexoki，
-许可与归属见 [NOTICE.md](NOTICE.md)）；另有 2 套中式原创（青瓷、朱砂）。所有配色都重新
-推导进 DSH 的 token 体系，不是像素级复刻。
+区别在于：这是带工程保证的**视觉系统**，不是一份样式表——24 套五维设计、壁纸工作室、策展画廊，以及
+能跟上 DSH 更新的版本策略。
+
+## 功能
+
+- **24 套风格、五个维度**：配色（OKLab 种子 → 完整明暗 token）、字体（10 个纯本地字体栈 + 9 种排版尺度）、
+  模块造型（`--dsw-radius-*`、`--dsw-corner-shape`）、层次/材质（纸感/扁平发丝面板、高浮起卡片、玻璃虚化）、
+  边框/focus 处理。10 套原创 + 12 套受开源配色启发（MIT/Apache-2.0，见 [NOTICE](NOTICE.md)）+ 2 套中式原创
+  （青瓷、朱砂）。
+- **壁纸工作室**：8 套内置 CSS 壁纸；在线搜索（Openverse CC0/PDM）与随机刷新（Picsum）；自定义 https 图片
+  URL；虚化 0–24px、暗化 0–70%、磨砂 0–100%（面板半透明透出壁纸）。仅在用户主动操作时联网，选择保存在本地。
+- **策展画廊**：风格按六个家族分组（静谧 / 自然 / 明亮 / 复古 / 霓虹 / 深色），主筛选优先，完整标签收进
+  「更多筛选」；预览语言 tab 可在 跟随 DSH / 中文 / English 之间切换缩略图。
+- **一级入口**：左侧栏插件面板（**视觉风格**，含第二 tab **壁纸**），与插件/自动化任务/上下文洞察同级。
+- **诚实降级**：缺失的宿主能力与未认证模式都在自检中展示，不伪造。
+
+![壁纸工作室](docs/assets/wallpaper.jpg)
+
+## 宿主支持与版本策略
+
+`engines.dsh` 声明兼容范围 **`>=0.2.0-rc.2 <1.0.0`**，范围内分两层：
+
+| 层级 | 宿主版本 | 保证 |
+|---|---|---|
+| **已认证** | DSH `0.2.0-rc.2`、`0.2.1-rc.2`、`0.2.1-rc.3` | 精确六类哈希契约、loader-ABI 检查、完整验收矩阵（Web + Desktop runtime + 真实 Electron 渲染器） |
+| **兼容模式** | 范围内其他可读版本 | 用最新认证契约尽力渲染，面板与自检明确标注"未认证"；不会硬失效 |
+| **拒绝** | 范围外或不可读版本 | fail-closed 回退原生外观，零注入 |
+
+认证表示"在该精确版本上验证通过"，不表示"只能装在那里"。新 DSH 版本加入认证矩阵后会自动从兼容模式
+升级为已认证。机制见 [docs/design/multi-version.md](docs/design/multi-version.md)，当前矩阵见
+[docs/verification.md](docs/verification.md)。
 
 ![风格差异](docs/assets/style-differences.jpg)
 
@@ -52,49 +64,40 @@ Catppuccin、Tokyo Night、Rosé Pine、Everforest、Kanagawa、One Dark、Ayu�
 
 ```bash
 pnpm build && pnpm pack                 # 或使用已发布的 dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.4.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.5.0.tgz
 dsh web                                 # 打开命令输出的地址
 ```
 
 ### Desktop Profile（0.2.1-rc.3）
 
-通过 DeepSeek Harness Desktop 应用的插件管理器安装。应用运行时会在安装时强制校验
-`engines.dsh`；本包声明 `0.2.0-rc.2 || 0.2.1-rc.2 || 0.2.1-rc.3`。
+通过 DeepSeek Harness Desktop 应用的插件管理器安装；应用运行时会强制校验 `engines.dsh`。
 
 ## 使用
 
-打开左侧栏，在「工作区」上方点击 **视觉风格**（英文界面为 **Visual Style**）。
-预览是临时的；「应用」只写入一次配置；「恢复默认外观」可移除。选中后整个应用的配色、
-字体与模块设计随之变化。画廊工具栏的「预览语言」可在 跟随 DSH / 中文 / English 之间切换
-（仅预览图；应用后按 DSH 语言匹配字体）。
+打开左侧栏，在「工作区」上方点击 **视觉风格**。页面有两个 tab：
+
+- **视觉风格**：预览（临时）、应用（只写一次配置）、恢复默认外观；家族分组 + 搜索 +「更多筛选」；
+  预览语言 tab。
+- **壁纸**：选内置壁纸、在线搜索/刷新、粘贴自定义 https URL，然后调节虚化/暗化/磨砂。壁纸保存在浏览器，
+  重启后仍然生效。
+
+风格与壁纸相互独立：切换风格不会丢掉壁纸。
+
+![入口与画廊](docs/assets/livery-panel.jpg)
 
 ![预览语言](docs/assets/preview-language.jpg)
-
-![入口与面板](docs/assets/livery-panel.jpg)
-
-## 支持的宿主版本
-
-| DSH 版本 | Adapter | 状态 |
-|---|---|---|
-| `0.2.0-rc.2` | `dsh-0.2.0-rc.2-r1` | Web/Chrome 已认证；Desktop 待验证 |
-| `0.2.1-rc.2` | `dsh-0.2.1-rc.2-r1` | Web/Chrome 已认证；Edge/Desktop 待验证 |
-| `0.2.1-rc.3` | `dsh-0.2.1-rc.3-r1` | Desktop packaged runtime + 真实 Electron 渲染器已验证；原生窗口 chrome 待验证 |
-
-验收矩阵见 [docs/verification.md](docs/verification.md)，机器可读状态见
-[contracts/dsh/support-matrix.proposed.json](contracts/dsh/support-matrix.proposed.json)，
-多版本设计见 [docs/design/multi-version.md](docs/design/multi-version.md)。
 
 ## 仓库结构
 
 | 路径 | 内容 |
 |---|---|
-| `src/core` | 颜色推导、对比度、token 渲染、注册表、风格审计 |
-| `src/compiler` | manifest 校验、预览、审计、编译器 CLI |
-| `src/host` | Cordis 宿主插件：门禁、首帧注入、catalog/预览路由 |
-| `src/client` | 浏览器插件：握手、运行时、设置 UI、侧栏面板 |
+| `src/core` | 颜色推导、对比度、token 渲染、注册表、风格审计、兼容版本范围 |
+| `src/compiler` | Manifest 校验、预览、审计、编译器 CLI |
+| `src/host` | Cordis 宿主插件：认证/兼容门禁、首帧注入、catalog/预览路由 |
+| `src/client` | 浏览器插件：握手、运行时、风格画廊、壁纸工作室、设置 UI |
 | `src/contract` | 契约快照/diff、adapter 生成、支持矩阵门禁 |
 | `src/generated` | 已提交的生成物：契约、stock token 快照、编译后的 catalog |
-| `liveries/` | 24 套内置风格 manifest（schema：`schemas/livery.schema.json`） |
+| `liveries/` | 24 套内置风格 manifest（`schemas/livery.schema.json`） |
 | `contracts/` | 冻结的宿主契约快照与支持矩阵 |
 | `scripts/` | 构建/CLI 工具与浏览器验收 harness |
 | `tests/` | 单元、编译器、宿主、客户端、契约与浏览器 harness 测试 |
@@ -112,33 +115,35 @@ pnpm test:loader-abi
 pnpm adapter:check
 ```
 
-契约快照、stock token 与编译后的 catalog 已提交，因此没有本地 DSH 安装也能 `pnpm build`。
-重新生成宿主契约需要对应 DSH 版本，见 [docs/design/multi-version.md](docs/design/multi-version.md)。
-
-浏览器验收（需要本地 DSH、系统 Chrome 与已打包的 tarball）：
+契约、stock token 与编译后的 catalog 已提交，因此没有本地 DSH 安装也能 `pnpm build`。浏览器验收
+（需要本地 DSH、系统 Chrome 与已打包 tarball）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.4.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.4.0.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.5.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.5.0.tgz      # 薄封装
 ```
+
+## 验收
+
+当前认证矩阵（0.5.0）：Web `0.2.1-rc.2` 隔离全量与真实 profile 克隆；Desktop `0.2.1-rc.3` packaged
+web carrier 与真实 Electron 渲染器；仓库门禁包含 `tsc`、600+ 测试、对比度/token/CSS 审计、loader ABI
+与打包检查。原始证据在本地 `artifacts/` 生成、不提交。详见 [docs/verification.md](docs/verification.md)。
 
 ## 参与贡献
 
 - [贡献指南](CONTRIBUTING.zh-CN.md) · [Contributing](CONTRIBUTING.md)
-- [行为准则](CODE_OF_CONDUCT.md)
-- [安全策略](SECURITY.md)
-- [支持](SUPPORT.md)
+- [行为准则](CODE_OF_CONDUCT.md) · [安全策略](SECURITY.md) · [支持](SUPPORT.md)
 
 提交保持一句话简洁（`feat:`、`fix:`、`docs:`、`test:`、`chore:`）。
 
 ## 文档
 
 - [文档索引](docs/README.md)
-- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本](docs/design/multi-version.md) · [实现计划](docs/design/implementation-plan.md)
+- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本与兼容](docs/design/multi-version.md) · [视觉工作室 v2](docs/design/visual-studio-v2.md) · [实现计划](docs/design/implementation-plan.md)
 - 研究：[宿主契约](docs/research/host-contract.md) · [客户端契约](docs/research/client-contract.md) · [设计参考](docs/research/design-references.md)
 - [验收总结](docs/verification.md)
 
 ## 许可证
 
-MIT，见 [LICENSE](LICENSE)。配色归属见 [NOTICE.md](NOTICE.md)。所有预览图与截图均由
-插件自身 token 数据生成；不捆绑任何第三方图片或字体。
+MIT，见 [LICENSE](LICENSE)。配色归属见 [NOTICE.md](NOTICE.md)。预览图与内置壁纸均由插件自身数据生成，
+不捆绑第三方图片或字体。可选的壁纸工作室仅在用户主动操作时加载第三方图片（见 [SECURITY.md](SECURITY.md)）。

@@ -1,9 +1,10 @@
 # DSH Livery — implementation interfaces (freeze v1)
 
 Status: frozen for parallel implementation. Any change requires the Lead to update this
-file and notify every owner. Certified host matrix (exact versions only):
+file and notify every owner. Certified host matrix (exact versions):
 `0.2.0-rc.2` (adapter `dsh-0.2.0-rc.2-r1`), `0.2.1-rc.2` (`dsh-0.2.1-rc.2-r1`),
-`0.2.1-rc.3` (`dsh-0.2.1-rc.3-r1`). Multi-version mechanics:
+`0.2.1-rc.3` (`dsh-0.2.1-rc.3-r1`). Install-time compatibility range:
+`>=0.2.0-rc.2 <1.0.0` (see §4 compat mode and `docs/design/multi-version.md`). Multi-version mechanics:
 [docs/design/multi-version.md](multi-version.md).
 
 ## 1. Module boundaries
@@ -152,8 +153,21 @@ pre-loader gate accepts the host:
 3. `{ kind: 'html', placement: 'body', html: '<script>…setAttribute…</script>' }` —
    sets `body[data-dsh-livery]` and `body[data-dsh-livery-hash]` before app scripts.
 
-Gate failure (unknown version / adapter / required contract mismatch / no active
-livery / invalid compiled artifact): **no rows are pushed at all**; stock remains.
+Gate failure (unreadable/out-of-range version / adapter mismatch / required
+contract mismatch / no active livery / invalid compiled artifact): **no rows are
+pushed at all**; stock remains.
+
+**Compatibility mode (round 7):** a readable observed version inside the
+compatibility range `>=0.2.0-rc.2 <1.0.0` without a certified adapter resolves to
+the synthetic identity `dsh-compat` using the **newest certified contract**:
+`{ adapterId: 'dsh-compat', hostVersion: observed, contractHash: <newest>,
+catalogProfile: <newest profile>, capabilities: <newest adapter's> }`. The Host
+injects the newest compiled catalog and sets `payload.compat = true`; diagnostics
+carry a `compat.mode` line. The Client accepts that triple only when `compat` is
+true, the observed version is inside the same range, and the catalog repeats the
+same contract/profile; the self-check shows an unverified-compat notice. Because
+the range is still `<1.0.0`, a future 1.x host requires an explicit support
+decision rather than being silently accepted.
 
 Client (`src/client/runtime.ts`) reads `globalThis.__DSH_LIVERY_BOOT__`, fetches
 `BootPayload.catalogUrl` once (lazily, starts on `start()` after settings load), and:
@@ -218,6 +232,37 @@ shipped Plugins page uses:
 
 Search matches: localized name (current locale first, both locales), id, localized tag
 labels in the active locale, English name.
+
+## 6b. Visual-studio UI contract (round 7, v0.5)
+
+The page has two top-level tabs: **视觉风格 / Visual styles** and **壁纸 / Wallpapers**
+(`livery-page-tab-style`, `livery-page-tab-wallpaper`). Style tab keeps the
+24-style gallery; gallery UX (task-19):
+
+- primary filter row: `all` + six style families (`calm/nature/light/retro/vivid/dark`;
+  `livery-family-chip`, `data-family`, `aria-pressed`); the 16 tag chips live behind
+  `更多筛选 / More filters` (`livery-more-filters`, `aria-expanded`, `aria-controls`).
+- the gallery is one `role=listbox` (`livery-gallery`) of six `role=group` sections
+  in family order (`livery-family`, `livery-family-<id>`, `data-family`); cards stay
+  `role=option` (`livery-card`, `data-livery-id`, `data-state`); one global roving
+  focus index keeps ←/→/↑/↓/Home/End/Enter semantics across sections.
+- preview-language tab (`livery-locale-tab`, `livery-locale-follow|zh|en`) unchanged.
+
+Wallpaper tab (client-only, no host config/boot): 8 built-in CSS wallpapers
+(`wallpaper-builtin`, `data-wallpaper-id`), blur/dim/frost sliders
+(`wallpaper-blur|dim|frost`), custom https URL (`wallpaper-url`, `wallpaper-url-apply`),
+optional online search via Openverse (`wallpaper-search`, `wallpaper-refresh`) and
+random via Picsum (`wallpaper-random`), result cards (`wallpaper-result`), status and
+attribution (`wallpaper-status`, `wallpaper-attribution`). Persistence is
+`localStorage['dsh-livery.wallpaper.v1']`. Application: one plugin-owned
+`<style data-plugin-css="dsh-livery/wallpaper">` + `body[data-dsh-wallpaper]`, only
+body pseudo-element layers (`::before` image with blur, `::after` dim veil) and
+`color-mix` overrides of the active livery background tokens for frost; no host
+component selectors, no `!important`.
+
+Compatibility mode: when the host payload has `compat: true` (see §4), the panel shows
+an unverified-compat notice/tag and the self-check adds `compat.mode`; applied styles
+come from the newest certified contract.
 
 ## 7. Generated artifacts (build-time, committed)
 

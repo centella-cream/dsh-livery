@@ -1,3 +1,4 @@
+import { DSH_COMPAT_RANGE, isCompatibleHostVersion } from '../core/compat.js'
 /**
  * Contract / adapter / support-matrix CLI.
  *
@@ -282,16 +283,20 @@ async function commandAdapterCheck(context: CliContext, parsed: ParsedArgs): Pro
     }
   }
   const pkg = await readJson<{ engines?: { dsh?: string } }>(join(context.cwd, 'package.json'))
-  const allowlist = snapshots.map((snapshot) => snapshot.hostVersion).join(' || ')
-  if (pkg.engines?.dsh !== allowlist) {
-    problems.push(`package.json engines.dsh must be the exact allowlist "${allowlist}", got "${String(pkg.engines?.dsh)}"`)
+  if (pkg.engines?.dsh !== DSH_COMPAT_RANGE) {
+    problems.push(`package.json engines.dsh must be the compatibility range "${DSH_COMPAT_RANGE}", got "${String(pkg.engines?.dsh)}"`)
+  }
+  for (const snapshot of snapshots) {
+    if (!isCompatibleHostVersion(snapshot.hostVersion)) {
+      problems.push(`certified contract ${snapshot.hostVersion} is outside the compatibility range`)
+    }
   }
   if (problems.length > 0) {
     for (const problem of problems) context.error(`adapter:check: FAIL ${problem}`)
     return 1
   }
   context.log(`adapter:check: OK ${selected.map((snapshot) => snapshot.adapterId).join(', ')}`)
-  context.log(`adapter:check: exact allowlist ${allowlist}`)
+  context.log(`adapter:check: compatibility range ${DSH_COMPAT_RANGE} covering ${selected.map((snapshot) => snapshot.hostVersion).join(', ')}`)
   return 0
 }
 

@@ -154,9 +154,20 @@ describe('resolveAdapter', () => {
     expect(resolveAdapter()).toEqual(FIRST_ADAPTER)
   })
 
-  it('returns undefined for an uncertified version', () => {
+  it('returns undefined for an out-of-range version', () => {
     setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
     expect(resolveAdapter()).toBeUndefined()
+  })
+
+  it('resolves the synthetic compat adapter for an in-range uncertified version', () => {
+    const newest = ADAPTERS[ADAPTERS.length - 1]
+    if (newest === undefined) return
+    setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '0.3.0-rc.1' })
+    const adapter = resolveAdapter()
+    expect(adapter?.adapterId).toBe('dsh-compat')
+    expect(adapter?.hostVersion).toBe('0.3.0-rc.1')
+    expect(adapter?.contractHash).toBe(newest.contractHash)
+    expect(adapter?.catalogProfile).toBe(newest.catalogProfile)
   })
 })
 
@@ -168,7 +179,19 @@ describe('bootStateForConfig', () => {
     expect(state.gate.codes).toContain('gate.version-unknown')
   })
 
-  it('fails closed for an uncertified host version', () => {
+  it.skipIf(!COMPILED)('boots in compat mode for an in-range uncertified version', () => {
+    setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '0.3.0-rc.1' })
+    const state = bootStateForConfig({ skinId: { get: () => 'fjord' } } as unknown as LiveryHostConfig)
+    expect(state.gate.accepted).toBe(true)
+    expect(state.compat).toBe(true)
+    expect(state.payload.compat).toBe(true)
+    expect(state.payload.adapterId).toBe('dsh-compat')
+    expect(state.payload.hostVersion).toBe('0.3.0-rc.1')
+    expect(state.rows).toHaveLength(3)
+    expect(state.diagnostics.join('\n')).toContain('compat.mode')
+  })
+
+  it('fails closed for an out-of-range host version', () => {
     setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '9.9.9' })
     const state = bootStateForConfig(Config() as LiveryHostConfig)
     expect(state.gate.accepted).toBe(false)

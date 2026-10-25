@@ -11,7 +11,7 @@
  * visibility); every skin decision lives in the runtime and every DOM write
  * outside React lives in the presenter.
  */
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState, useSyncExternalStore } from 'react'
 import { Button, Modal, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   isStock,
@@ -24,8 +24,10 @@ import {
 import type { LiveryRuntimeApi, PreviewLocaleChoice } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import { capabilityList } from './capability-names.js'
+import { isCompatIdentity } from './compat.js'
 import { Gallery } from './Gallery.js'
 import { SelfCheck } from './SelfCheck.js'
+import { WallpaperPanel } from './WallpaperPanel.js'
 
 /** Toast state; `seq` remounts the banner so the same text can re-show. */
 interface ToastState {
@@ -37,6 +39,8 @@ interface ToastState {
 export interface LiveryWorkspaceProps {
   readonly t: LiveryTranslate
   readonly runtime: LiveryRuntimeApi
+  /** Initial top-level tab (tests/deep links); defaults to the visual styles tab. */
+  readonly initialTab?: 'style' | 'wallpaper'
 }
 
 /**
@@ -44,7 +48,7 @@ export interface LiveryWorkspaceProps {
  * @param props - locale `t` seat and the runtime face.
  * @returns the workspace element, wrapping summary through self-check.
  */
-export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Element {
+export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps): JSX.Element {
   // Bound wrappers: `subscribe`/`getSnapshot` are class methods and would lose
   // `this` if passed straight through; the wrappers are stable per runtime.
   const subscribe = useCallback(
@@ -61,6 +65,8 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
   const [confirmRestore, setConfirmRestore] = useState(false)
   const [toast, setToast] = useState<ToastState | undefined>(undefined)
   const [previewLocaleChoice, setPreviewLocaleChoice] = useState<PreviewLocaleChoice>('follow')
+  const [tab, setTab] = useState<'style' | 'wallpaper'>(initialTab ?? 'style')
+  const tabIdBase = useId()
 
   // Theme observation and preview rollback live exactly as long as the page.
   useEffect(() => runtime.observeTheme(), [runtime])
@@ -117,6 +123,50 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
 
   return (
     <div className="livery-workspace" data-testid="livery-section">
+      <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
+        {(['style', 'wallpaper'] as const).map(id => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            className="livery-chip"
+            id={`${tabIdBase}-tab-${id}`}
+            data-testid={`livery-page-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls={`${tabIdBase}-panel-${id}`}
+            onClick={() => setTab(id)}
+          >
+            {t(id === 'style' ? 'tab.style' : 'tab.wallpaper')}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'wallpaper'
+        ? (
+          <div
+            role="tabpanel"
+            id={`${tabIdBase}-panel-wallpaper`}
+            aria-labelledby={`${tabIdBase}-tab-wallpaper`}
+            data-testid="livery-tabpanel-wallpaper"
+          >
+            <WallpaperPanel t={t} snapshot={snapshot} />
+          </div>
+        )
+        : (
+          <div
+            role="tabpanel"
+            id={`${tabIdBase}-panel-style`}
+            aria-labelledby={`${tabIdBase}-tab-style`}
+            data-testid="livery-tabpanel-style"
+          >
+            {isCompatIdentity(snapshot.identity) && (
+              <div className="livery-notice livery-notice--warn" data-testid="livery-compat-notice" role="status">
+                <div className="livery-notice__copy">
+                  <span className="livery-notice__title">{t('state.compatMode')}</span>
+                  <span className="livery-notice__body">{t('state.compatModeBody')}</span>
+                </div>
+              </div>
+            )}
       {loading && (
         <div className="livery-loading" data-testid="livery-loading" role="status">
           {t('state.loading')}
@@ -156,6 +206,7 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
                 <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>
               )}
               {degraded && <Tag tone="warning">{t('current.degraded')}</Tag>}
+              {isCompatIdentity(snapshot.identity) && <Tag tone="warning">{t('state.compatMode')}</Tag>}
               {snapshot.invalidSkinId !== undefined && (
                 <Tag tone="danger">{t('current.incompatible')}</Tag>
               )}
@@ -311,6 +362,9 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
           </footer>
         </>
       )}
+
+          </div>
+        )}
 
       <Modal
         open={confirmRestore}

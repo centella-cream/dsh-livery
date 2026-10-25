@@ -72,20 +72,10 @@ async function packCheck(args) {
       problems.push(`package.json files must not include ${forbidden}/`)
     }
   }
-  // Exact allowlist: every certified contract version, joined with ` || `.
-  let expectedAllowlist
-  try {
-    const { readdir: readDir } = await import('node:fs/promises')
-    expectedAllowlist = (await readDir(join(root, 'contracts', 'dsh'), { withFileTypes: true }))
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .sort()
-      .join(' || ')
-  } catch {
-    expectedAllowlist = ''
-  }
-  if (pkg.engines?.dsh !== expectedAllowlist) {
-    problems.push(`engines.dsh must be the exact allowlist "${expectedAllowlist}", got ${String(pkg.engines?.dsh)}`)
+  // Install-time compatibility range; the certified matrix lives in contracts/.
+  const compatRange = '>=0.2.0-rc.2 <1.0.0'
+  if (pkg.engines?.dsh !== compatRange) {
+    problems.push(`engines.dsh must be the compatibility range "${compatRange}", got ${String(pkg.engines?.dsh)}`)
   }
   if (typeof pkg.engines?.node !== 'string' || !pkg.engines.node.includes('^22.23.1') || !pkg.engines.node.includes('^24.21.0')) {
     problems.push(`engines.node must cover the certified runtimes, got ${String(pkg.engines?.node)}`)

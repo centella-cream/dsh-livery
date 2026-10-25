@@ -40,10 +40,16 @@ import {
 } from '../core/types.js'
 import { findLivery, renderBootCssFromCatalog } from '../core/catalog.js'
 import {
+  ADAPTERS,
   SUPPORTED_HOST_VERSIONS,
   adapterForVersion,
   type AdapterRecord,
 } from '../generated/contract.js'
+import {
+  COMPAT_ADAPTER_ID,
+  DSH_COMPAT_RANGE,
+  isCompatibleHostVersion,
+} from '../core/compat.js'
 import { buildCatalog } from './catalog.js'
 import { normalizeSkinId } from './config.js'
 import {
@@ -75,6 +81,10 @@ export interface GateResult {
   /** Stable codes for every failed check; empty when accepted. */
   readonly codes: readonly string[]
   readonly profileKind: ProfileKind
+  /** True when the adapter is the synthetic compat adapter (absent = false). */
+  readonly compat?: boolean
+  /** Compatibility range declared by `engines.dsh` (absent = stock policy). */
+  readonly compatRange?: string
   /** Version reported by the live harness, or `null` when it cannot be read. */
   readonly observedHostVersion: string | null
   /** Exact certified host versions this build may style. */
@@ -101,8 +111,10 @@ export interface BootState {
   readonly rows: readonly IndexInjection[]
   readonly payload: BootPayload
   readonly gate: GateResult
-  /** Adapter the observed host resolved to, `undefined` for uncertified builds. */
+  /** Adapter the observed host resolved to (synthetic in compat mode), `undefined` when closed. */
   readonly adapter: AdapterRecord | undefined
+  /** True when serving an uncertified version inside the compatibility range. */
+  readonly compat: boolean
   /** Capability map the gate evaluated (the adapter's; empty when unresolved). */
   readonly capabilities: CapabilityMap
   /** Same list as `payload.diagnostics`, exposed for direct assertions. */
@@ -140,6 +152,37 @@ function normalizeObservedVersion(version: string | null | undefined): string | 
   if (typeof version !== 'string') return null
   const trimmed = version.trim()
   return trimmed === '' ? null : trimmed
+}
+
+/**
+ * Resolve a readable host version to an adapter.
+ *
+ * Exact certified versions resolve through the generated registry. A version
+ * inside the compatibility range without a certified adapter gets the newest
+ * certified contract under the synthetic `dsh-compat` identity, so newer DSH
+ * builds keep a working (unverified) visual layer instead of failing closed.
+ * @param observedHostVersion - readable host version, or null.
+ * @returns resolved adapter and whether it is the compat adapter.
+ */
+export function resolveAdapterForVersion(
+  observedHostVersion: string | null,
+): { readonly adapter: AdapterRecord | undefined; readonly compat: boolean } {
+  const exact = adapterForVersion(observedHostVersion ?? undefined)
+  if (exact !== undefined) return { adapter: exact, compat: false }
+  if (observedHostVersion !== null && isCompatibleHostVersion(observedHostVersion)) {
+    const newest = ADAPTERS[ADAPTERS.length - 1]
+    if (newest !== undefined) {
+      return {
+        adapter: {
+          ...newest,
+          adapterId: COMPAT_ADAPTER_ID,
+          hostVersion: observedHostVersion,
+        },
+        compat: true,
+      }
+    }
+  }
+  return { adapter: undefined, compat: false }
 }
 
 /**
@@ -259,7 +302,11 @@ export function computeBootState(input: BootStateInput): BootState {
   const observedHostVersion = normalizeObservedVersion(input.observedHostVersion)
   // Production path: registry lookup. The override exists only so adapter
   // fixtures can be exercised without mutating the generated registry.
-  const adapter = input.adapter ?? adapterForVersion(observedHostVersion ?? undefined)
+  const resolution = input.adapter !== undefined
+    ? { adapter: input.adapter, compat: false }
+    : resolveAdapterForVersion(observedHostVersion)
+  const adapter = resolution.adapter
+  const compat = resolution.compat
 
   const codes: string[] = []
 
@@ -360,6 +407,8 @@ export function computeBootState(input: BootStateInput): BootState {
     accepted: gateAccepted,
     codes,
     profileKind: input.profileKind,
+    compat,
+    compatRange: DSH_COMPAT_RANGE,
     observedHostVersion,
     supportedHostVersions: SUPPORTED_HOST_VERSIONS,
     adapterId: adapter?.adapterId ?? '',
@@ -379,6 +428,7 @@ export function computeBootState(input: BootStateInput): BootState {
     contractHash: gate.contractHash,
     catalogProfile: gate.catalogProfile,
     profileKind: input.profileKind,
+    compat,
     accepted,
     skinId: activeSkinId,
     cssHash: accepted ? bootHash : '',
@@ -408,6 +458,7 @@ export function computeBootState(input: BootStateInput): BootState {
     payload,
     gate,
     adapter,
+    compat,
     capabilities,
     diagnostics,
   }

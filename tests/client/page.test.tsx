@@ -112,7 +112,7 @@ describe('settings page server render', () => {
     expect(html).not.toContain('data-testid="livery-gallery"')
   })
 
-  it('renders the current summary and the 10-card gallery hooks', () => {
+  it('renders the current summary and family-grouped gallery hooks', () => {
     const html = render(READY)
     expect(html).toContain('data-testid="livery-current"')
     expect(html).toContain('data-testid="livery-gallery"')
@@ -124,8 +124,14 @@ describe('settings page server render', () => {
     expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
     expect(html).toContain('aria-label="Visual Style fjord"')
     expect(html).toContain('data-testid="livery-search"')
-    expect(html).toContain('data-testid="livery-tag"')
-    expect(html).toContain('data-tag="calm"')
+    // Family chips are the primary filter row; tag chips live behind 更多筛选.
+    expect(html.match(/data-testid="livery-family-chip"/g)).toHaveLength(7)
+    expect(html).toContain('data-family="all"')
+    expect(html).toContain('data-testid="livery-more-filters"')
+    expect(html).not.toContain('data-testid="livery-tag"')
+    // Both fixture styles are calm-family, so one presentation section wraps them.
+    expect(html.match(/data-testid="livery-family"/g)).toHaveLength(1)
+    expect(html).toContain('data-testid="livery-family-calm"')
     expect(html).toContain('data-testid="livery-restore"')
     expect(html).toContain('data-testid="livery-selfcheck"')
     expect(html).toContain('data-testid="livery-selfcheck-toggle"')

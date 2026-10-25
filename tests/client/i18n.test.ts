@@ -36,11 +36,13 @@ describe('dictionary key parity', () => {
       'src/client/ui/SelfCheck.tsx',
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
+      'src/client/ui/WallpaperPanel.tsx',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
+      'src/client/ui/families.ts',
     ]
-    const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability'
+    const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability|family|wallpaper|tab'
     const pattern = new RegExp(`['"]((?:${prefixes})\\.[A-Za-z0-9.]+)['"]`, 'g')
     const known = new Set(EN_KEYS)
     const referenced = new Map<string, string>()
@@ -65,9 +67,11 @@ describe('dictionary key parity', () => {
       'src/client/ui/SelfCheck.tsx',
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
+      'src/client/ui/WallpaperPanel.tsx',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
+      'src/client/ui/families.ts',
     ]
     const han = /[\u3400-\u4dbf\u4e00-\u9fff]/
     const offenders = files.filter(file => han.test(readFileSync(join(process.cwd(), file), 'utf8')))

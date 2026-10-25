@@ -180,3 +180,28 @@ plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
   real window session is driven; the report must say so.
 - Support matrix: new entries stay `draft`/`g0-g5-passed` until their evidence lands;
   no G6 claim, no formal `support-matrix.json`.
+
+
+## Certified matrix vs compatibility mode (round 7 policy)
+
+The original policy was exact-version only. That made every DSH update a hard
+failure, so install-time compatibility is now expressed as a **range** while the
+certified matrix stays exact:
+
+- `engines.dsh` = `>=0.2.0-rc.2 <1.0.0` (install allowed, older builds rejected).
+- Exact versions in `contracts/dsh/<version>/` keep their frozen six hashes and
+  full verification evidence — the **certified matrix**.
+- A readable version inside the range without a certified adapter is served in
+  **compat mode**: the host synthesizes `{ adapterId: 'dsh-compat',
+  hostVersion: observed, contractHash: <newest certified contract>,
+  catalogProfile: <newest catalog profile>, capabilities: <newest adapter's> }`,
+  injects the newest compiled catalog and sets `payload.compat = true`. The client
+  accepts the compat triple only when the payload flag is set, the version is in
+  range and the catalog repeats the same contract/profile. The self-check marks it
+  as unverified.
+- Unreadable or out-of-range versions still fail closed with zero rows.
+
+Certification therefore means "verified on this exact build", not "installable".
+A future DSH release keeps a working, clearly-labelled best-effort visual layer
+instead of disabling the plugin; when a release is added to the matrix it moves
+from compat to certified automatically through the generated adapter registry.

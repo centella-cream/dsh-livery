@@ -1,53 +1,75 @@
-# DSH Livery
+# DSH Visual Studio (dsh-livery)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DeepSeek Harness](https://img.shields.io/badge/DSH-0.2.0--rc.2%20%7C%200.2.1--rc.2%20%7C%200.2.1--rc.3-6d6df6.svg)](#supported-hosts)
+[![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
 
-**24 built-in visual styles for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).**
-DSH Livery changes palette, typography, module shape, elevation and material — as a
-contract-bound plugin that never takes ownership of the host theme or redraws window
-chrome.
+A **visual studio for DeepSeek Harness**: 24 contract-gated styles, a wallpaper
+studio with online image search and blur/frost effects, and a curated gallery —
+packaged as a plugin that adds a visual layer **instead of hijacking the host
+theme**.
 
 [English](README.md) · [中文](README.zh-CN.md)
 
 ![24 built-in styles](docs/assets/gallery-24-light.jpg)
 
-## Why DSH Livery
+## Why not "just another skin"
 
-Most skin plugins own the host theme, register their own theme IDs, paint window
-chrome, or inject broad CSS. DSH Livery is deliberately narrower:
+Ordinary skin plugins often own the host theme, register their own theme ids, paint
+window chrome, and inject broad CSS — which is exactly what makes them fragile
+across DSH updates. DSH Visual Studio takes the opposite trade:
 
-- **Contract-bound.** Exact host builds only (`0.2.0-rc.2`, `0.2.1-rc.2`,
-  `0.2.1-rc.3`), six frozen contract hashes plus an aggregate hash. Unknown hosts
-  fail closed to stock — nothing is guessed or approximated.
-- **Token-only rendering.** One scoped semantic token pair per style
-  (`light`/`dark`) is emitted for the first frame and adopted by the client with
-  zero CSS-text writes. No `ctx.theme.register`/`setTheme`, no `data-ds-*` writes,
-  no window-chrome drawing.
-- **First-class entry.** A main-page plugin panel in the left sidebar
-  (**视觉风格 / Visual Style**), next to Plugins / Automation / Context — not buried
-  in Settings.
-- **Honest degradation.** Host capabilities that do not exist (e.g. structural
-  layout hooks) are reported in self-check instead of faked.
-
-## Styles
-
-The gallery ships 24 light/dark styles that differ on five axes:
-
-| Axis | What changes |
+| Typical skin plugin | DSH Visual Studio |
 |---|---|
-| Palette | 4 OKLab seeds per mode → full semantic token set, contrast-gated (2,832 assertions per profile, 0 failures) |
-| Typography | 10 local-only font stacks (system, humanist, serif, display, rounded, mono) + 9 type-scale profiles |
-| Module shape | `--dsw-radius-*` and `--dsw-corner-shape` from 2–6 px sharp to 16–32 px round |
-| Elevation / material | 9 surface recipes: flat/paper hairline borders, elevated shadows, glass `backdrop-filter` |
-| Borders | Border tints, focus rings and hairline emphasis per style |
+| Takes over `ctx.theme`, registers themes, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
+| Paints window chrome (title bars, overlays) | Never draws chrome; the host owns the window |
+| Wide selector-based CSS that breaks on host refactors | Token-only rendered CSS + a body-scoped wallpaper layer; no host component selectors |
+| Breaks (or half-works) when DSH changes | Certified matrix for exact builds **plus a compatibility mode for newer in-range builds** — clearly labelled, never a hard break |
+| "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits, and a published acceptance matrix |
 
-Ten styles are original. Twelve are inspired by permissively licensed open-source
-palettes — Nord, Dracula, Gruvbox, Solarized, Catppuccin, Tokyo Night, Rosé Pine,
-Everforest, Kanagawa, One Dark, Ayu and Flexoki — with attributions and licences in
-[NOTICE.md](NOTICE.md); two are original Chinese-aesthetic designs (Celadon 青瓷,
-Cinnabar 朱砂). Palettes are re-derived into DSH's token system, not pixel-exact ports.
+The difference is a **visual system with engineering guarantees**, not a stylesheet:
+24 designed styles across five axes, a wallpaper studio, a curated gallery, and a
+version policy that survives DSH updates.
+
+## Features
+
+- **24 styles, five visual axes.** Palette (OKLab seeds → full light/dark token
+  set), typography (10 local-only font stacks + 9 type scales), module shape
+  (`--dsw-radius-*`, `--dsw-corner-shape`), elevation/material (flat/paper hairline
+  panels, elevated cards, glass blur), and border/focus treatment. 10 original
+  designs + 12 open-source-inspired palettes (MIT/Apache-2.0, see [NOTICE](NOTICE.md))
+  + 2 original Chinese-aesthetic designs (Celadon 青瓷, Cinnabar 朱砂).
+- **Wallpaper studio.** 8 built-in CSS wallpapers; online search (Openverse CC0/PDM)
+  and random refresh (Picsum); custom https image URL; blur 0–24 px, dim 0–70 %,
+  frost 0–100 % (translucent panels over the wallpaper). User-initiated requests
+  only, stored locally.
+- **Curated gallery.** Styles grouped into six families (Calm / Nature / Light /
+  Retro / Vivid / Dark), primary filters first, the full tag vocabulary behind
+  "More filters"; a preview-language tab switches thumbnails between Follow DSH /
+  Chinese / English.
+- **First-class entry.** A left-sidebar plugin panel (**视觉风格 / Visual styles**,
+  with a second **壁纸 / Wallpapers** tab), next to Plugins / Automation / Context.
+- **Honest degradation.** Missing host capabilities and unverified modes are shown
+  in the self-check instead of being faked.
+
+![Wallpaper studio](docs/assets/wallpaper.jpg)
+
+## Host support and version policy
+
+`engines.dsh` declares the compatibility range **`>=0.2.0-rc.2 <1.0.0`**. Inside
+it there are two tiers:
+
+| Tier | Host builds | Guarantees |
+|---|---|---|
+| **Certified** | DSH `0.2.0-rc.2`, `0.2.1-rc.2`, `0.2.1-rc.3` | Exact six-hash contract, loader-ABI check, full acceptance matrix (Web + Desktop runtime + real Electron renderer) |
+| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest certified contract; clearly marked "unverified" in the panel and self-check; no hard failure |
+| **Rejected** | Versions outside the range or unreadable | Fail closed to the stock appearance, zero injected rows |
+
+Certification means "verified on that exact build", not "installable only there".
+When a new DSH build is added to the certified matrix it moves from compat to
+certified automatically. See
+[docs/design/multi-version.md](docs/design/multi-version.md) for the mechanism and
+[docs/verification.md](docs/verification.md) for the current matrix.
 
 ![Style differences](docs/assets/style-differences.jpg)
 
@@ -57,57 +79,45 @@ Cinnabar 朱砂). Palettes are re-derived into DSH's token system, not pixel-exa
 
 ```bash
 pnpm build && pnpm pack                 # or use a released dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.4.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.5.0.tgz
 dsh web                                 # open the printed URL
 ```
 
 ### Desktop Profile (0.2.1-rc.3)
 
 Install through the DeepSeek Harness Desktop app's plugin manager. The app runtime
-enforces `engines.dsh` at install time; this package declares
-`0.2.0-rc.2 || 0.2.1-rc.2 || 0.2.1-rc.3`.
+enforces `engines.dsh` at install time.
 
 ## Usage
 
-Open the left sidebar, look above the **Workspace** section and click
-**视觉风格** (Chinese) or **Visual Style** (English). Preview is transient; **Apply**
-performs exactly one configuration mutation; **Restore default appearance** removes
-it. The selected style changes palette, typography and module design across the
-whole app.
+Open the left sidebar, click **视觉风格 / Visual styles** above the Workspace
+section. Two tabs:
+
+- **视觉风格 / Visual styles** — preview (transient), Apply (one config mutation),
+  Restore default appearance; family sections + search + "More filters"; preview
+  language tab.
+- **壁纸 / Wallpapers** — pick a built-in wallpaper, search or refresh online, paste a
+  custom https URL, then tune blur / dim / frost. Wallpaper choices are stored in the
+  browser and survive restarts.
+
+Applying a style and applying a wallpaper are independent: wallpapers keep working
+when you switch styles.
+
+![Entry and gallery](docs/assets/livery-panel.jpg)
 
 ![Preview language](docs/assets/preview-language.jpg)
-
-The gallery toolbar also has a **Preview language** control (Follow DSH /
-Chinese / English) that switches only the thumbnail SVG locale. Style names,
-descriptions and all other copy stay in the host language, and applying a style
-always matches the style fonts to the current DSH language.
-
-![Entry and panel](docs/assets/livery-panel.jpg)
-
-## Supported hosts
-
-| DSH build | Adapter | Status |
-|---|---|---|
-| `0.2.0-rc.2` | `dsh-0.2.0-rc.2-r1` | Web/Chrome certified; Desktop pending |
-| `0.2.1-rc.2` | `dsh-0.2.1-rc.2-r1` | Web/Chrome certified; Edge/Desktop pending |
-| `0.2.1-rc.3` | `dsh-0.2.1-rc.3-r1` | Desktop packaged runtime + real Electron renderer verified; native window chrome pending |
-
-See [docs/verification.md](docs/verification.md) for the acceptance matrix,
-[contracts/dsh/support-matrix.proposed.json](contracts/dsh/support-matrix.proposed.json)
-for the machine-readable status, and [docs/design/multi-version.md](docs/design/multi-version.md)
-for the multi-version design.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `src/core` | Colour derivation, contrast, token renderer, registries, style audit |
+| `src/core` | Colour derivation, contrast, token renderer, registries, style audit, compatibility range |
 | `src/compiler` | Manifest validation, previews, audits, compiler CLI |
-| `src/host` | Cordis host plugin: gate, first-frame injection, catalog/preview routes |
-| `src/client` | Browser plugin: handshake, runtime, settings UI, sidebar panel |
-| `src/contract` | Contract snapshot/diff tooling, adapter generator, support matrix gate |
+| `src/host` | Cordis host plugin: certified/compat gate, first-frame injection, catalog/preview routes |
+| `src/client` | Browser plugin: handshake, runtime, style gallery, wallpaper studio, settings UI |
+| `src/contract` | Contract snapshot/diff tooling, adapter generator, support-matrix gate |
 | `src/generated` | Committed generated contracts, stock snapshots and compiled catalogs |
-| `liveries/` | 24 built-in style manifests (schema: `schemas/livery.schema.json`) |
+| `liveries/` | 24 built-in style manifests (`schemas/livery.schema.json`) |
 | `contracts/` | Frozen host contract snapshots and support matrix |
 | `scripts/` | Build/CLI tooling and the browser acceptance harness |
 | `tests/` | Unit, compiler, host, client, contract and browser-harness suites |
@@ -126,34 +136,39 @@ pnpm adapter:check
 ```
 
 The generated contracts, stock token snapshots and compiled catalogs are committed,
-so `pnpm build` works without a local DSH install. To regenerate host contracts you
-need the matching DSH build — see [docs/design/multi-version.md](docs/design/multi-version.md).
-
-Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
+so `pnpm build` works without a local DSH install. Browser acceptance (needs a local
+DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.4.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.4.0.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.5.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.5.0.tgz      # thin wrapper
 ```
+
+## Verification
+
+Current certified matrix (release 0.5.0): Web `0.2.1-rc.2` isolated full run and a
+real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
+renderer; repo gates include `tsc`, 600+ tests, contrast/token/CSS audits, loader ABI
+and package checks. Raw evidence is generated locally under `artifacts/` and is not
+committed. Details and honest limitations: [docs/verification.md](docs/verification.md).
 
 ## Contributing
 
 - [Contributing guide](CONTRIBUTING.md) · [贡献指南](CONTRIBUTING.zh-CN.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security policy](SECURITY.md)
-- [Support](SUPPORT.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md) · [Security policy](SECURITY.md) · [Support](SUPPORT.md)
 
-Commits are kept to a single concise line (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+Commits are one concise line (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 
 ## Documentation
 
 - [Docs index](docs/README.md)
-- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version](docs/design/multi-version.md) · [implementation plan](docs/design/implementation-plan.md)
+- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version & compat](docs/design/multi-version.md) · [visual studio v2](docs/design/visual-studio-v2.md) · [implementation plan](docs/design/implementation-plan.md)
 - Research: [host contract](docs/research/host-contract.md) · [client contract](docs/research/client-contract.md) · [design references](docs/research/design-references.md)
 - [Verification summary](docs/verification.md)
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Palette attributions are listed in [NOTICE.md](NOTICE.md).
-All preview thumbnails and screenshots are generated from the plugin's own token
-data; no third-party images or fonts are bundled.
+MIT — see [LICENSE](LICENSE). Palette attributions are in [NOTICE.md](NOTICE.md).
+Preview thumbnails and built-in wallpapers are generated from the plugin's own data;
+no third-party images or fonts are bundled. The optional wallpaper studio loads
+third-party images only on explicit user action (see [SECURITY.md](SECURITY.md)).

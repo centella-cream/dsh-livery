@@ -10,7 +10,7 @@
 export const SCHEMA_VERSION = 1 as const
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.4.0' as const
+export const LIVERY_VERSION = '0.5.0' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always
@@ -362,6 +362,11 @@ export interface BootPayload {
   /** Catalog profile id this host's compiled CSS/previews belong to. */
   readonly catalogProfile: string
   readonly profileKind: 'web' | 'desktop'
+  /**
+   * True when the host is inside the compatibility range but uncertified;
+   * the UI keeps working and the self-check marks it as unverified.
+   */
+  readonly compat?: boolean
   /** Whether the pre-loader gate accepted the host; false = no boot rows. */
   readonly accepted: boolean
   readonly skinId: LiveryId | StockId

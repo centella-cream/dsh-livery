@@ -4,11 +4,12 @@
 
 | Version | Supported |
 |---|---|
-| `0.3.x` | Yes |
-| `< 0.3` | No (pre-release development builds) |
+| `0.5.x` | Yes |
+| `< 0.5` | No (pre-release development builds) |
 
-Supported host builds are listed in [README.md](README.md#supported-hosts).
-Uncertified hosts fail closed to stock.
+Certified host builds and the compatibility policy are documented in
+[README.md](README.md#supported-hosts). Hosts outside the compatibility range fail
+closed to stock; in-range uncertified hosts run in clearly-labelled compat mode.
 
 ## Reporting a vulnerability
 
@@ -24,7 +25,14 @@ the affected version, host build and impact. We aim to acknowledge reports withi
 DSH Livery is a browser/host plugin that emits scoped CSS custom properties and a
 small first-frame payload. It:
 
-- makes **no network requests** and loads no remote fonts, images or scripts;
+- **styles are offline**: no remote fonts or scripts, and no network requests for
+  visual styles or previews;
+- **the optional wallpaper studio is the only networked feature**: user-initiated
+  searches call `api.openverse.org` (CC0/PDM image search) and `picsum.photos`
+  (random wallpapers), and a user-supplied https image URL is loaded as the
+  wallpaper background. No telemetry, no background requests, no API keys; the
+  search query and image URL are the only data sent/loaded. Wallpaper choices are
+  stored locally in `localStorage`, not in the profile;
 - ships no secrets and writes only the plugin's own configuration field
   (`skinId`) plus scoped `style` elements/attributes it owns;
 - fails closed on unknown host versions/contract hashes rather than guessing;
@@ -38,6 +46,9 @@ Reports about DeepSeek Harness itself should go to the upstream project.
 - 支持版本：`0.3.x`；更早版本为开发预发布，不提供安全修复。
 - 报告方式：**不要开公开 issue**，请使用 GitHub 私有漏洞报告（Security → Report a
   vulnerability），附复现步骤、版本、宿主 build 与影响；我们计划 7 天内响应。
-- 范围说明：本插件不发起网络请求、不加载远程字体/图片/脚本、不附带密钥；只写自己的配置
-  字段与自有的作用域样式；未知宿主版本会 fail-closed。插件不是沙箱边界，运行在 DSH 插件
-  运行时的信任模型内。DSH 本身的漏洞请反馈给上游项目。
+- 范围说明：风格层完全离线（不加载远程字体/脚本/图片）；唯一的联网功能是**壁纸工作室**，
+  由用户主动触发：搜索调用 `api.openverse.org`（CC0/PDM 图片）、随机调用
+  `picsum.photos`、自定义 https 图片 URL 作为背景。无遥测、无后台请求、无 API key；
+  网络仅发送搜索词/加载所选图片 URL。壁纸选择保存在浏览器 `localStorage`，写入 profile
+  的仍只有 `skinId`。插件不是沙箱边界，运行在 DSH 插件运行时的信任模型内。DSH 本身的漏洞
+  请反馈给上游项目。

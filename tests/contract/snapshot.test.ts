@@ -145,7 +145,7 @@ describe('frozen multi-version contracts', () => {
       engines?: { dsh?: string; node?: string }
       dsh?: { client?: { platform?: string; external?: string[] } }
     }
-    expect(pkg.engines?.dsh).toBe(CERTIFIED_VERSIONS.join(' || '))
+    expect(pkg.engines?.dsh).toBe('>=0.2.0-rc.2 <1.0.0')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')
     expect(pkg.dsh?.client?.external).toEqual([])

@@ -25,9 +25,9 @@ import type { Context } from '@deepseek-ai/cordis'
 // require DSH packages at runtime.
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import { ENTRY_ID } from '../core/types.js'
-import { adapterForVersion, type AdapterRecord } from '../generated/contract.js'
-import { computeBootState, type BootState, type ProfileKind } from './boot.js'
-import { formatGateLogLine } from './diagnostics.js'
+import type { AdapterRecord } from '../generated/contract.js'
+import { computeBootState, resolveAdapterForVersion, type BootState, type ProfileKind } from './boot.js'
+import { formatCompatLogLine, formatGateLogLine } from './diagnostics.js'
 import { readSkinId, type LiveryHostConfig } from './config.js'
 import { registerLiveryRoutes } from './routes.js'
 
@@ -151,7 +151,7 @@ export function resolveHostEnvironment(): Promise<HostEnvironment> {
  * @returns the certified adapter, or `undefined` when the version is unknown/uncertified.
  */
 export function resolveAdapter(): AdapterRecord | undefined {
-  return adapterForVersion(resolvedEnvironment?.observedHostVersion ?? undefined)
+  return resolveAdapterForVersion(resolvedEnvironment?.observedHostVersion ?? null).adapter
 }
 
 /**
@@ -188,6 +188,28 @@ export function bootStateForConfig(
  * @param ctx - owning Host context.
  * @param state - closed boot state.
  */
+let lastLoggedCompatLine: string | undefined
+
+/**
+ * Log the uncertified compatibility mode once per distinct host build.
+ * @param ctx - owning Host context.
+ * @param state - accepted compat boot state.
+ */
+function logCompatOnce(ctx: Context, state: BootState): void {
+  const line = formatCompatLogLine(state.gate)
+  if (line === lastLoggedCompatLine) return
+  lastLoggedCompatLine = line
+  try {
+    ctx.logger.warn(line)
+  } catch {
+    try {
+      console.warn(line)
+    } catch {
+      // Logging is best-effort, like every other diagnostic path.
+    }
+  }
+}
+
 function logGateFailureOnce(ctx: Context, state: BootState): void {
   const line = formatGateLogLine(state.gate)
   if (line === lastLoggedGateLine) return
@@ -232,6 +254,7 @@ export function apply(ctx: Context, config: LiveryHostConfig): void {
     }
     // A later failure after a success should warn again.
     lastLoggedGateLine = undefined
+    if (state.compat) logCompatOnce(ctx, state)
     if (state.accepted) table.push(...state.rows)
   })
 

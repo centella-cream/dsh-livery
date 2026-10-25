@@ -29,9 +29,11 @@ import { bootIdentity, checkBoot, checkCatalog, readBootPayload } from './handsh
 import type { BootCheck } from './handshake.js'
 import { LiveryPanelIcon } from './LiveryPanelIcon.js'
 import { LiveryPanelPage } from './LiveryPanelPage.js'
+import { isStock } from './model.js'
 import type { RuntimeIdentity } from './model.js'
 import { PANEL_ID, PANEL_NAVIGATION_GRACE_MS, PANEL_ROW_ORDER } from './navigation.js'
 import { createPresenter } from './presenter.js'
+import { createWallpaperController, setWallpaperController } from './wallpaper/controller.js'
 import { createLiveryRuntime } from './runtime.js'
 import type { ConfigFormLike, LocaleSource, ThemeSource } from './runtime.js'
 import { LiverySettingsPage } from './ui/LiverySettingsPage.js'
@@ -147,6 +149,30 @@ export function apply(ctx: Context): void {
     runtime.start()
     return () => runtime.dispose()
   }, 'livery: runtime')
+
+  // Wallpaper is a client-only layer: mounted at plugin scope (not page scope) so
+  // it survives navigation/reloads and is torn down only when the plugin unloads.
+  // It never reads or writes host configuration or the boot payload.
+  ctx.effect(() => {
+    const wallpaper = createWallpaperController()
+    setWallpaperController(wallpaper)
+    const syncLiveryTokens = (): void => {
+      const snapshot = runtime.getSnapshot()
+      const id = snapshot.effectiveId
+      const livery = id === undefined || isStock(id)
+        ? undefined
+        : snapshot.catalog?.liveries.find(candidate => candidate.id === id)
+      wallpaper.setTokens(livery?.light.tokens, livery?.dark.tokens)
+    }
+    const unsubscribe = runtime.subscribe(syncLiveryTokens)
+    syncLiveryTokens()
+    wallpaper.start()
+    return () => {
+      unsubscribe()
+      wallpaper.dispose()
+      setWallpaperController(undefined)
+    }
+  }, 'livery: wallpaper')
 
   // Contribution composition: certified hosts expose the plugin-navigation
   // pattern (a `sidebar.panellist` row selecting a keyed `main` panel) and get

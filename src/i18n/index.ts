@@ -120,6 +120,11 @@ export const SHARED_VALUE_KEYS: readonly LiveryKey[] = [
   'diag.count',
   // Proper noun: the language's own name is identical in every dictionary.
   'gallery.localeEn',
+  // Pure format templates/placeholders: identical by design.
+  'wallpaper.px',
+  'wallpaper.percent',
+  'wallpaper.customPlaceholder',
+  'wallpaper.attribution',
 ]
 
 /**

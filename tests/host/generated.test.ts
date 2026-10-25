@@ -278,8 +278,8 @@ describe.skipIf(!COMPILED)('generated boot per adapter', () => {
     }
   })
 
-  it('fails closed with zero rows on every uncertified version', () => {
-    for (const version of ['9.9.9', '0.2.2-rc.1', '0.2.1-rc.4', '0.2.0']) {
+  it('fails closed with zero rows on out-of-range versions', () => {
+    for (const version of ['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1']) {
       const state = realBootState(version, 'fjord')
       expect(state.gate.accepted, version).toBe(false)
       expect(state.rows, version).toEqual([])
@@ -289,6 +289,19 @@ describe.skipIf(!COMPILED)('generated boot per adapter', () => {
     const unknown = computeBootState({ skinId: 'fjord', profileKind: 'web', observedHostVersion: null })
     expect(unknown.rows).toEqual([])
     expect(unknown.gate.codes).toContain('gate.version-unknown')
+  })
+
+  it('serves in-range uncertified versions through the synthetic compat adapter', () => {
+    for (const version of ['0.2.2-rc.1', '0.2.1-rc.4', '0.2.0', '0.3.0-rc.1']) {
+      const state = realBootState(version, 'fjord')
+      expect(state.gate.accepted, version).toBe(true)
+      expect(state.compat, version).toBe(true)
+      expect(state.payload.compat, version).toBe(true)
+      expect(state.payload.adapterId, version).toBe('dsh-compat')
+      expect(state.payload.hostVersion, version).toBe(version)
+      expect(state.rows.map((row) => row.kind), version).toEqual(['html', 'global', 'script'])
+      expect(state.diagnostics.join('\n'), version).toContain('compat.mode')
+    }
   })
 
   it('every profile livery declares only capabilities its adapters provide', () => {

@@ -119,6 +119,7 @@ describe('computeBootState — acceptance per certified adapter', () => {
       contractHash: adapter.contractHash,
       catalogProfile: adapter.catalogProfile,
       profileKind: 'web',
+      compat: false,
       accepted: true,
       skinId: 'ivory-slate',
       cssHash: FIXTURE_BOOT_HASH,
@@ -226,14 +227,32 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     expect(state.diagnostics.join('\n')).toContain('gate.version-unknown')
   })
 
-  it.each(['9.9.9', '0.3.0-rc.1', '0.2.1'])(
-    'rejects uncertified version %s with zero rows',
+  it.each(['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1', 'not-a-version'])(
+    'rejects out-of-range version %s with zero rows',
     (version) => {
       const state = computeBootState(unresolvedInput(version))
-      expect(state.gate.accepted).toBe(false)
+      expect(state.gate.accepted, version).toBe(false)
       expect(state.rows).toEqual([])
       expect(state.gate.codes).toContain('gate.version-mismatch')
-      expect(state.diagnostics.join('\n')).toContain('certified')
+      expect(state.diagnostics.join('\n')).toContain('compatible versions')
+    },
+  )
+
+  it.each(['0.3.0-rc.1', '0.2.1', '0.2.2-rc.1', '0.2.0'])(
+    'accepts in-range uncertified version %s with the synthetic compat adapter',
+    (version) => {
+      const state = computeBootState({ ...unresolvedInput(version), skinId: 'fjord' })
+      expect(state.gate.accepted, version).toBe(true)
+      expect(state.accepted, version).toBe(true)
+      expect(state.compat, version).toBe(true)
+      expect(state.payload.compat, version).toBe(true)
+      expect(state.gate.adapterId, version).toBe('dsh-compat')
+      expect(state.payload.hostVersion, version).toBe(version)
+      expect(state.rows.map((row) => row.kind), version).toEqual(['html', 'global', 'script'])
+      expect(state.gate.codes, version).toEqual([])
+      expect(state.adapter?.adapterId, version).toBe('dsh-compat')
+      expect(state.diagnostics.join('\n'), version).toContain('compat.mode')
+      expect(state.diagnostics.join('\n'), version).toContain(version)
     },
   )
 

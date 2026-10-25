@@ -32,6 +32,57 @@ export const zhCN: Record<LiveryKey, string> = {
   'current.tagsLabel': '标签',
   'current.previewNotice': '当前只是预览，应用后才会保存。',
 
+  // Page tabs.
+  'tab.label': '视觉工作室标签页',
+  'tab.style': '视觉风格',
+  'tab.wallpaper': '壁纸',
+
+  // Wallpaper studio.
+  'wallpaper.hint': '客户端背景层，不修改宿主配置，仅在应用视觉风格后从界面表面透出。',
+  'wallpaper.builtinTitle': '内置壁纸',
+  'wallpaper.effects': '效果',
+  'wallpaper.blur': '模糊',
+  'wallpaper.dim': '变暗',
+  'wallpaper.frost': '表面霜化',
+  'wallpaper.frostHint': '让已应用视觉风格的界面表面透出壁纸。',
+  'wallpaper.reset': '重置效果',
+  'wallpaper.clear': '移除壁纸',
+  'wallpaper.px': '{value} px',
+  'wallpaper.percent': '{value}%',
+  'wallpaper.customTitle': '自定义图片地址',
+  'wallpaper.customHint': '仅支持 https，最多 2048 个字符。',
+  'wallpaper.customPlaceholder': 'https://example.com/wallpaper.jpg',
+  'wallpaper.customApply': '使用图片',
+  'wallpaper.url.empty': '请输入图片地址。',
+  'wallpaper.url.tooLong': '地址超过 2048 个字符。',
+  'wallpaper.url.notHttps': '仅支持 https 图片地址。',
+  'wallpaper.url.credentials': '不允许在地址中携带账号密码。',
+  'wallpaper.url.invalid': '这不像一个有效的图片地址。',
+  'wallpaper.onlineTitle': '在线搜索',
+  'wallpaper.onlineHint': '仅把关键词发送到 Openverse（CC0/PDM）；仅在点击搜索、换一批或随机时发起请求。',
+  'wallpaper.searchPlaceholder': '搜索 CC0 图片…',
+  'wallpaper.search': '搜索',
+  'wallpaper.refresh': '换一批',
+  'wallpaper.random': '随机',
+  'wallpaper.loading': '正在加载壁纸…',
+  'wallpaper.empty': '没有找到壁纸，换个关键词试试。',
+  'wallpaper.error': '壁纸服务没有响应，请重试。',
+  'wallpaper.offline': '网络不可用，内置壁纸仍可使用。',
+  'wallpaper.attribution': '{title} · {creator} · {license} · {source}',
+  'wallpaper.attributionUnknown': '作者未知',
+  'wallpaper.licenseUnknown': '许可未知',
+  'wallpaper.customSelected': '自定义地址',
+  'wallpaper.resultsLabel': '在线壁纸结果',
+  'wallpaper.stockNote': '应用视觉风格之前，界面表面保持不透明。',
+  'wallpaper.builtin.aurora': '极光',
+  'wallpaper.builtin.dusk': '暮色',
+  'wallpaper.builtin.mist': '薄雾',
+  'wallpaper.builtin.paper': '纸纹',
+  'wallpaper.builtin.ink': '水墨',
+  'wallpaper.builtin.ember': '余烬',
+  'wallpaper.builtin.sea': '深海',
+  'wallpaper.builtin.mono': '黑白',
+
   // Search and tag filters.
   'search.label': '搜索视觉风格',
   'search.placeholder': '按名称、ID 或标签搜索',
@@ -40,6 +91,9 @@ export const zhCN: Record<LiveryKey, string> = {
   'filter.all': '全部',
   'filter.clear': '清除筛选',
   'filter.none': '暂无标签',
+  'filter.familyLabel': '风格分组',
+  'filter.more': '更多筛选',
+  'filter.fewer': '收起筛选',
 
   // Gallery.
   'gallery.title': '可用视觉风格',
@@ -95,6 +149,10 @@ export const zhCN: Record<LiveryKey, string> = {
   'write.rolledBack': '预览已回退到当前已应用的视觉风格。',
 
   // Page states.
+  'state.compatMode': '兼容模式（未认证）',
+  'state.compatModeBody': '当前 DSH 版本不在认证矩阵内；仅应用安全的 token 样式，功能可用但没有认证保证。',
+  'check.compatMode': '兼容模式',
+  'check.compatModeValue': '未认证（{hostVersion}）',
   'state.loading': '正在加载视觉风格…',
   'state.offlineTitle': '视觉风格目录暂不可用',
   'state.offlineBody': '首帧颜色仍会生效。画廊需要本地目录接口。',
@@ -164,6 +222,14 @@ export const zhCN: Record<LiveryKey, string> = {
   // Modes.
   'mode.light': '浅色',
   'mode.dark': '深色',
+
+  // Gallery style families (derived from tags; presentation-only).
+  'family.calm': '静谧',
+  'family.nature': '自然',
+  'family.retro': '复古',
+  'family.dark': '深色',
+  'family.light': '明亮',
+  'family.vivid': '霓虹',
 
   // Tag labels.
   'tag.calm': '安静',

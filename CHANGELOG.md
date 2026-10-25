@@ -2,6 +2,41 @@
 
 All notable changes to DSH Livery are recorded here.
 
+## [0.5.0] — unreleased
+
+DSH Visual Studio round: version policy, wallpaper studio and gallery redesign
+from user feedback.
+
+### Added
+
+- **Compatibility mode + range policy.** `engines.dsh` is now
+  `>=0.2.0-rc.2 <1.0.0`. Exact certified builds keep the frozen-contract path;
+  readable uncertified versions inside the range resolve to the synthetic
+  `dsh-compat` adapter using the newest certified contract (payload
+  `compat: true`, `compat.mode` diagnostics, client banner + self-check row).
+  Out-of-range/unreadable hosts still fail closed. See
+  `docs/design/multi-version.md`.
+- **Wallpaper studio (client-only).** Second page tab 壁纸/Wallpapers: 8 built-in
+  CSS wallpapers, online search (Openverse CC0/PDM) and random refresh (Picsum),
+  custom https URL, blur 0–24px / dim 0–70% / frost 0–100% effects, localStorage
+  persistence (`dsh-livery.wallpaper.v1`), one plugin-owned wallpaper style layer
+  (`style[data-plugin-css="dsh-livery/wallpaper"]` + `body[data-dsh-wallpaper]`)
+  with body pseudo-elements and `color-mix` frost over the active style tokens.
+  Network requests are user-initiated only (see SECURITY.md).
+- **Gallery redesign:** six style families (calm/nature/light/retro/vivid/dark)
+  with family-grouped sections, primary family chips, the 16-tag vocabulary behind
+  a 更多筛选/More filters toggle, and one global roving-focus list.
+- Banner/self-check/diagnostics for unverified compatibility mode
+  (`livery-compat-notice`, `livery-compat-selfcheck`).
+
+### Changed
+
+- Plugin version `0.4.0` → `0.5.0`; tarball `dsh-livery-0.5.0.tgz`.
+- Client gzip budget raised 25,600 B → 32,768 B for the wallpaper studio
+  (current gzip 29,628 B; documented deviation in build/gates).
+- README repositioned as **DSH Visual Studio** (visual system + wallpapers +
+  verification policy) rather than a plain skin, with certified-vs-compat table.
+
 ## [0.4.0] — unreleased
 
 ### Added

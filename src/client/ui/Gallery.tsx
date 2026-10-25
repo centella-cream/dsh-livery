@@ -1,11 +1,14 @@
 /**
- * The livery gallery: search + tag filters + a roving-focus card grid.
+ * The visual-style gallery: search, style-family filters, optional tag filters
+ * and family-grouped cards with one global roving focus.
  *
- * Cards are `role="option"` members of one `role="listbox"`; the actions that
- * mutate state (apply / cancel / restore) are real `<button>` elements owned by
- * the page. Clicking or pressing Enter on a card previews it immediately.
+ * Cards are `role="option"` members of a single `role="listbox"`; the family
+ * sections are presentation-only `role="group"` wrappers, so ArrowLeft/Right,
+ * ArrowUp/Down, Home/End and Enter/Space keep working across section boundaries
+ * exactly as they did in the flat grid. The actions that mutate state
+ * (apply / cancel / restore) are real `<button>` elements owned by the page.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent, Ref } from 'react'
 import type { CompiledLivery } from '../../core/types.js'
 import { formatNumber } from '../../i18n/index.js'
@@ -23,6 +26,14 @@ import {
 } from '../model.js'
 import type { LiveryFilter, LiveryRuntimeSnapshot, PreviewLocaleChoice, TagLabels } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
+import {
+  cardKeyTarget,
+  familyLabelKey,
+  flattenGroups,
+  groupByFamily,
+  STYLE_FAMILIES,
+} from './families.js'
+import type { StyleFamilyId } from './families.js'
 
 /** Props of the gallery region. */
 export interface GalleryProps {
@@ -35,6 +46,10 @@ export interface GalleryProps {
   readonly previewLocaleChoice: PreviewLocaleChoice
   readonly previewLocale: 'zh' | 'en'
   readonly onPreviewLocaleChange: (choice: PreviewLocaleChoice) => void
+  /** Initial family selection (deep links/tests); `undefined` = All. */
+  readonly initialFamily?: StyleFamilyId | undefined
+  /** Start with the tag-filter row revealed (deep links/tests). */
+  readonly initialMoreFiltersOpen?: boolean | undefined
 }
 
 /** Visual state recorded on each card for diagnostics and black-box tests. */
@@ -164,8 +179,8 @@ function SkinCard({
 }
 
 /**
- * Read the current column count of the responsive grid without caching layout.
- * Only runs on an arrow-key press while the settings page is open.
+ * Read the current column count of one family grid without caching layout.
+ * Only runs on an arrow-key press while the panel is open.
  */
 function columnCount(grid: HTMLElement | null): number {
   if (grid === null || typeof window === 'undefined') return 1
@@ -175,13 +190,14 @@ function columnCount(grid: HTMLElement | null): number {
 }
 
 /**
- * Render the search/filter toolbar and the card grid.
+ * Render the search/filter toolbar and the family-grouped card list.
  * @param props - gallery properties; see {@link GalleryProps}.
  * @returns the gallery region.
  */
 export function Gallery({
   t, snapshot, filter, onFilterChange, onPreview,
   previewLocaleChoice, previewLocale, onPreviewLocaleChange,
+  initialFamily, initialMoreFiltersOpen = false,
 }: GalleryProps): JSX.Element {
   const allLiveries = useMemo(
     () => sortLiveries(snapshot.catalog?.liveries ?? []),
@@ -189,53 +205,70 @@ export function Gallery({
   )
   const tagIds = useMemo(() => collectTagIds(allLiveries), [allLiveries])
   const labelById = useMemo(() => tagLabels(t), [t])
-  const visible = useMemo(
+  const filtered = useMemo(
     () => filterLiveries(allLiveries, filter, labelById),
     [allLiveries, filter, labelById],
   )
+  const [activeFamily, setActiveFamily] = useState<StyleFamilyId | undefined>(initialFamily)
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(initialMoreFiltersOpen)
+  const groups = useMemo(() => groupByFamily(filtered, activeFamily), [filtered, activeFamily])
+  const flat = useMemo(() => flattenGroups(groups), [groups])
   const [focusIndex, setFocusIndex] = useState(0)
-  const gridRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<Array<HTMLDivElement | null>>([])
+  const familyIdBase = useId()
 
   useEffect(() => {
-    if (focusIndex >= visible.length) setFocusIndex(0)
-  }, [focusIndex, visible.length])
+    if (focusIndex >= flat.length) setFocusIndex(0)
+  }, [focusIndex, flat.length])
 
   const focusCard = (index: number): void => {
-    const bounded = Math.max(0, Math.min(visible.length - 1, index))
+    const bounded = Math.max(0, Math.min(flat.length - 1, index))
     setFocusIndex(bounded)
     cardRefs.current[bounded]?.focus()
   }
 
   const onCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, index: number): void => {
-    const last = visible.length - 1
-    const columns = columnCount(gridRef.current)
-    let next: number
-    switch (event.key) {
-      case 'ArrowRight': next = index + 1; break
-      case 'ArrowLeft': next = index - 1; break
-      case 'ArrowDown': next = index + columns; break
-      case 'ArrowUp': next = index - columns; break
-      case 'Home': next = 0; break
-      case 'End': next = last; break
-      case 'Enter':
-      case ' ': {
-        const livery = visible[index]
-        if (livery === undefined) return
-        event.preventDefault()
-        if (liveryAvailability(livery, snapshot.capabilities).applicable) onPreview(livery.id)
-        return
-      }
-      default: return
+    if (event.key === 'Enter' || event.key === ' ') {
+      const livery = flat[index]
+      if (livery === undefined) return
+      event.preventDefault()
+      if (liveryAvailability(livery, snapshot.capabilities).applicable) onPreview(livery.id)
+      return
     }
+    const grid = event.currentTarget.parentElement
+    const target = cardKeyTarget(event.key, index, flat.length, columnCount(grid))
+    if (target === undefined) return
     event.preventDefault()
-    focusCard(next)
+    focusCard(target)
   }
 
-  const countText = visible.length === 1
+  const countText = flat.length === 1
     ? t('gallery.countOne')
-    : t('gallery.count', { count: formatNumber(snapshot.locale, visible.length) })
-  const filtering = filter.query.trim().length > 0 || filter.tagId !== undefined
+    : t('gallery.count', { count: formatNumber(snapshot.locale, flat.length) })
+  const filtering = filter.query.trim().length > 0
+    || filter.tagId !== undefined
+    || activeFamily !== undefined
+
+  const clearFilters = (): void => {
+    onFilterChange({ query: '', tagId: undefined })
+    setActiveFamily(undefined)
+  }
+
+  const toggleFamily = (family: StyleFamilyId | undefined): void => {
+    setActiveFamily(previous => (family !== undefined && previous === family ? undefined : family))
+  }
+
+  const toggleMoreFilters = (): void => {
+    setMoreFiltersOpen((open) => {
+      // A tag filter that is about to become invisible would silently narrow the
+      // gallery, so collapsing the row clears it.
+      if (open && filter.tagId !== undefined) onFilterChange({ ...filter, tagId: undefined })
+      return !open
+    })
+  }
+
+  // Global card index across family sections: sections are presentation-only.
+  let cursor = 0
 
   return (
     <>
@@ -261,17 +294,51 @@ export function Gallery({
             </Button>
           )}
         </div>
-        {tagIds.length > 0 && (
-          <div className="livery-filters" role="group" aria-label={t('filter.label')}>
-            <span className="livery-filters__label">{t('filter.label')}</span>
+
+        <div className="livery-filters" role="group" aria-label={t('filter.familyLabel')}>
+          <button
+            type="button"
+            className="livery-chip"
+            data-testid="livery-family-chip"
+            data-family="all"
+            aria-pressed={activeFamily === undefined}
+            onClick={() => toggleFamily(undefined)}
+          >
+            {t('filter.all')}
+          </button>
+          {STYLE_FAMILIES.map(family => (
             <button
+              key={family}
               type="button"
               className="livery-chip"
-              aria-pressed={filter.tagId === undefined}
-              onClick={() => onFilterChange({ ...filter, tagId: undefined })}
+              data-testid="livery-family-chip"
+              data-family={family}
+              aria-pressed={activeFamily === family}
+              onClick={() => toggleFamily(family)}
             >
-              {t('filter.all')}
+              {t(familyLabelKey(family))}
             </button>
+          ))}
+          <button
+            type="button"
+            className="livery-chip livery-more-toggle"
+            data-testid="livery-more-filters"
+            aria-expanded={moreFiltersOpen}
+            aria-controls="livery-more-tags"
+            onClick={toggleMoreFilters}
+          >
+            {t(moreFiltersOpen ? 'filter.fewer' : 'filter.more')}
+          </button>
+        </div>
+
+        {moreFiltersOpen && (
+          <div
+            id="livery-more-tags"
+            className="livery-filters"
+            role="group"
+            aria-label={t('filter.label')}
+          >
+            <span className="livery-filters__label">{t('filter.label')}</span>
             {tagIds.map(tag => (
               <button
                 key={tag}
@@ -320,17 +387,13 @@ export function Gallery({
         <span className="livery-gallery-head__count">{countText}</span>
       </div>
 
-      {visible.length === 0
+      {flat.length === 0
         ? (
           <div className="livery-empty" data-testid="livery-empty">
             <span className="livery-empty__title">{t('empty.title')}</span>
             <span className="livery-empty__body">{t('empty.body')}</span>
             {filtering && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onFilterChange({ query: '', tagId: undefined })}
-              >
+              <Button variant="outline" size="sm" onClick={clearFilters}>
                 {t('empty.action')}
               </Button>
             )}
@@ -338,36 +401,60 @@ export function Gallery({
         )
         : (
           <div
-            ref={(element) => { gridRef.current = element }}
             role="listbox"
             aria-label={t('gallery.aria')}
-            className="livery-grid"
+            className="livery-gallery-groups"
             data-testid="livery-gallery"
           >
-            {visible.map((livery, index) => {
-              const availability = liveryAvailability(livery, snapshot.capabilities)
-              const state = cardState(snapshot, livery, availability.applicable)
-              const selected = snapshot.previewId === livery.id
-                || (snapshot.phase !== 'previewing' && snapshot.confirmedId === livery.id)
+            {groups.map(group => {
+              const headingId = `${familyIdBase}-${group.family}`
+              const sectionStart = cursor
+              cursor += group.liveries.length
               return (
-                <SkinCard
-                  key={livery.id}
-                  t={t}
-                  livery={livery}
-                  labelById={labelById}
-                  locale={snapshot.locale}
-                  previewLocale={previewLocale}
-                  mode={snapshot.themeMode}
-                  previewsBase={snapshot.catalog?.previewsBase ?? ''}
-                  index={index}
-                  focusIndex={focusIndex}
-                  selected={selected}
-                  state={state}
-                  cardRef={(element) => { cardRefs.current[index] = element }}
-                  onKeyDown={onCardKeyDown}
-                  onFocus={setFocusIndex}
-                  onPreview={onPreview}
-                />
+                <section
+                  key={group.family}
+                  className="livery-family"
+                  data-testid={`livery-family-${group.family}`}
+                  data-family={group.family}
+                  role="group"
+                  aria-labelledby={headingId}
+                >
+                  <h4 id={headingId} className="livery-family__head" data-testid="livery-family">
+                    <span>{t(familyLabelKey(group.family))}</span>
+                    <span className="livery-family__count">
+                      {formatNumber(snapshot.locale, group.liveries.length)}
+                    </span>
+                  </h4>
+                  <div className="livery-grid">
+                    {group.liveries.map((livery, memberIndex) => {
+                      const index = sectionStart + memberIndex
+                      const availability = liveryAvailability(livery, snapshot.capabilities)
+                      const state = cardState(snapshot, livery, availability.applicable)
+                      const selected = snapshot.previewId === livery.id
+                        || (snapshot.phase !== 'previewing' && snapshot.confirmedId === livery.id)
+                      return (
+                        <SkinCard
+                          key={livery.id}
+                          t={t}
+                          livery={livery}
+                          labelById={labelById}
+                          locale={snapshot.locale}
+                          previewLocale={previewLocale}
+                          mode={snapshot.themeMode}
+                          previewsBase={snapshot.catalog?.previewsBase ?? ''}
+                          index={index}
+                          focusIndex={focusIndex}
+                          selected={selected}
+                          state={state}
+                          cardRef={(element) => { cardRefs.current[index] = element }}
+                          onKeyDown={onCardKeyDown}
+                          onFocus={setFocusIndex}
+                          onPreview={onPreview}
+                        />
+                      )
+                    })}
+                  </div>
+                </section>
               )
             })}
           </div>

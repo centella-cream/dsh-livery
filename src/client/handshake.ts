@@ -11,6 +11,7 @@
  * Pure functions — no DOM, no fetch, no Cordis.
  */
 import type { AdapterIdentity } from '../generated/contract.js'
+import { COMPAT_ADAPTER_ID, isCompatibleHostVersion } from '../core/compat.js'
 import type { BootPayload, LiveryCatalog } from '../core/types.js'
 import { BOOT_GLOBAL, ENTRY_ID, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../core/types.js'
 
@@ -30,6 +31,8 @@ export interface BootCheck {
   readonly payload: BootPayload | undefined
   /** Certified adapter identity whose triple the payload matched, when it matched one. */
   readonly adapter: AdapterIdentity | undefined
+  /** True when the host is inside the compatibility range but uncertified. */
+  readonly compat?: boolean
   /** Human-readable reasons, used for diagnostics only. */
   readonly reasons: readonly string[]
 }
@@ -66,6 +69,7 @@ function bootShapeProblems(raw: RawRecord): string[] {
   }
   if (typeof raw.pluginVersion !== 'string') problems.push('boot payload: pluginVersion is not a string')
   if (typeof raw.accepted !== 'boolean') problems.push('boot payload: accepted is not a boolean')
+  if (raw.compat !== undefined && typeof raw.compat !== 'boolean') problems.push('boot payload: compat is not a boolean')
   if (!Array.isArray(raw.diagnostics)) problems.push('boot payload: diagnostics is not an array')
   return problems
 }
@@ -112,23 +116,28 @@ export function findAdapter(
  */
 export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): BootCheck {
   if (raw === undefined) {
-    return { kind: 'absent', payload: undefined, adapter: undefined, reasons: ['no first-frame payload'] }
+    return { kind: 'absent', payload: undefined, adapter: undefined, compat: false, reasons: ['no first-frame payload'] }
   }
   const record = asRecord(raw)
   if (record === undefined) {
-    return { kind: 'mismatch', payload: undefined, adapter: undefined, reasons: ['boot payload is not an object'] }
+    return { kind: 'mismatch', payload: undefined, adapter: undefined, compat: false, reasons: ['boot payload is not an object'] }
   }
   const problems = bootShapeProblems(record)
   if (problems.length > 0) {
-    return { kind: 'mismatch', payload: undefined, adapter: undefined, reasons: problems }
+    return { kind: 'mismatch', payload: undefined, adapter: undefined, compat: false, reasons: problems }
   }
   const payload = record as unknown as BootPayload
   const adapter = findAdapter(adapters, payload.hostVersion, payload.adapterId, payload.contractHash)
-  if (adapter === undefined) {
+  const compat = adapter === undefined
+    && payload.compat === true
+    && payload.adapterId === COMPAT_ADAPTER_ID
+    && isCompatibleHostVersion(payload.hostVersion)
+  if (adapter === undefined && !compat) {
     return {
       kind: 'mismatch',
       payload,
       adapter: undefined,
+      compat: false,
       reasons: [
         'uncertified host build: '
         + `hostVersion=${payload.hostVersion} adapterId=${payload.adapterId} contractHash=${payload.contractHash}`,
@@ -142,21 +151,28 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
   if (payload.entryId !== ENTRY_ID) {
     reasons.push(`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`)
   }
-  if (payload.catalogProfile !== adapter.catalogProfile) {
-    reasons.push(`catalog profile mismatch: host=${payload.catalogProfile} certified=${adapter.catalogProfile}`)
+  if (compat) {
+    const contractMatch = adapters.some(candidate => candidate.contractHash === payload.contractHash
+      && candidate.catalogProfile === payload.catalogProfile)
+    if (!contractMatch) {
+      reasons.push(`compat payload names an unknown contract/profile: ${payload.contractHash} / ${payload.catalogProfile}`)
+    }
+  } else if (payload.catalogProfile !== adapter!.catalogProfile) {
+    reasons.push(`catalog profile mismatch: host=${payload.catalogProfile} certified=${adapter!.catalogProfile}`)
   }
   if (reasons.length > 0) {
-    return { kind: 'mismatch', payload, adapter: undefined, reasons }
+    return { kind: 'mismatch', payload, adapter: adapter ?? undefined, compat, reasons }
   }
   if (!payload.accepted) {
     return {
       kind: 'absent',
       payload,
-      adapter,
+      adapter: adapter ?? undefined,
+      compat,
       reasons: ['host gate did not accept first-frame injection'],
     }
   }
-  return { kind: 'valid', payload, adapter, reasons: [] }
+  return { kind: 'valid', payload, adapter: adapter ?? undefined, compat, reasons: [] }
 }
 
 /**
@@ -165,6 +181,15 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
  * @returns the certified identity, or undefined when no certified host is known.
  */
 export function bootIdentity(boot: BootCheck): HostIdentity | undefined {
+  const payload = boot.payload
+  if (payload !== undefined) {
+    return {
+      hostVersion: payload.hostVersion,
+      adapterId: payload.adapterId,
+      contractHash: payload.contractHash,
+      catalogProfile: payload.catalogProfile,
+    }
+  }
   if (boot.adapter === undefined) return undefined
   return {
     hostVersion: boot.adapter.hostVersion,
@@ -215,7 +240,12 @@ export function checkCatalog(raw: unknown, expectation: CatalogExpectation): Cat
     return { catalog: undefined, adapter: undefined, reasons: ['catalog envelope is malformed'] }
   }
   const adapter = findAdapter(expectation.adapters, raw.hostVersion, raw.adapterId, raw.contractHash)
-  if (adapter === undefined) {
+  const compat = adapter === undefined
+    && raw.adapterId === COMPAT_ADAPTER_ID
+    && isCompatibleHostVersion(raw.hostVersion)
+    && expectation.adapters.some(candidate => candidate.contractHash === raw.contractHash
+      && candidate.catalogProfile === raw.catalogProfile)
+  if (adapter === undefined && !compat) {
     return {
       catalog: undefined,
       adapter: undefined,
@@ -226,12 +256,13 @@ export function checkCatalog(raw: unknown, expectation: CatalogExpectation): Cat
     }
   }
   const reasons: string[] = []
-  if (raw.catalogProfile !== adapter.catalogProfile) {
-    reasons.push(`catalog profile mismatch: catalog=${raw.catalogProfile} certified=${adapter.catalogProfile}`)
+  const profile = adapter?.catalogProfile ?? raw.catalogProfile
+  if (!compat && raw.catalogProfile !== profile) {
+    reasons.push(`catalog profile mismatch: catalog=${raw.catalogProfile} certified=${profile}`)
   }
-  const previewsBase = expectedPreviewsBase(adapter.catalogProfile)
+  const previewsBase = expectedPreviewsBase(profile)
   if (raw.previewsBase !== previewsBase) {
-    reasons.push(`catalog previewsBase mismatch: catalog=${raw.previewsBase} certified=${previewsBase}`)
+    reasons.push(`catalog previewsBase mismatch: catalog=${raw.previewsBase} expected=${previewsBase}`)
   }
   if (expectation.expected !== undefined) {
     const expected = expectation.expected

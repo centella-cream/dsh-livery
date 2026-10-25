@@ -34,6 +34,57 @@ export const enUS = {
   'current.tagsLabel': 'Tags',
   'current.previewNotice': 'This is only a preview. Apply it to keep it.',
 
+  // Page tabs.
+  'tab.label': 'Visual studio tabs',
+  'tab.style': 'Visual styles',
+  'tab.wallpaper': 'Wallpapers',
+
+  // Wallpaper studio.
+  'wallpaper.hint': 'Client-side backdrop; it never changes host configuration and only shows through surfaces while a visual style is active.',
+  'wallpaper.builtinTitle': 'Built-in wallpapers',
+  'wallpaper.effects': 'Effects',
+  'wallpaper.blur': 'Blur',
+  'wallpaper.dim': 'Dim',
+  'wallpaper.frost': 'Frost surfaces',
+  'wallpaper.frostHint': 'Show the wallpaper through active visual-style surfaces.',
+  'wallpaper.reset': 'Reset effects',
+  'wallpaper.clear': 'Remove wallpaper',
+  'wallpaper.px': '{value} px',
+  'wallpaper.percent': '{value}%',
+  'wallpaper.customTitle': 'Custom image URL',
+  'wallpaper.customHint': 'https only, up to 2048 characters.',
+  'wallpaper.customPlaceholder': 'https://example.com/wallpaper.jpg',
+  'wallpaper.customApply': 'Use image',
+  'wallpaper.url.empty': 'Enter an image URL.',
+  'wallpaper.url.tooLong': 'The URL is longer than 2048 characters.',
+  'wallpaper.url.notHttps': 'Only https image URLs are allowed.',
+  'wallpaper.url.credentials': 'URLs with embedded credentials are not allowed.',
+  'wallpaper.url.invalid': 'That does not look like a valid image URL.',
+  'wallpaper.onlineTitle': 'Search online',
+  'wallpaper.onlineHint': 'Only your query is sent to Openverse (CC0/PDM). Requests run only when you click Search, Refresh or Random.',
+  'wallpaper.searchPlaceholder': 'Search CC0 images…',
+  'wallpaper.search': 'Search',
+  'wallpaper.refresh': 'Refresh',
+  'wallpaper.random': 'Random',
+  'wallpaper.loading': 'Loading wallpapers…',
+  'wallpaper.empty': 'No wallpapers found. Try another search.',
+  'wallpaper.error': 'The wallpaper service did not answer. Try again.',
+  'wallpaper.offline': 'No network connection. Built-in wallpapers still work.',
+  'wallpaper.attribution': '{title} by {creator} · {license} · {source}',
+  'wallpaper.attributionUnknown': 'Unknown creator',
+  'wallpaper.licenseUnknown': 'Unknown licence',
+  'wallpaper.customSelected': 'Custom URL',
+  'wallpaper.resultsLabel': 'Online wallpaper results',
+  'wallpaper.stockNote': 'Surfaces stay opaque until a visual style is applied.',
+  'wallpaper.builtin.aurora': 'Aurora',
+  'wallpaper.builtin.dusk': 'Dusk',
+  'wallpaper.builtin.mist': 'Mist',
+  'wallpaper.builtin.paper': 'Paper',
+  'wallpaper.builtin.ink': 'Ink',
+  'wallpaper.builtin.ember': 'Ember',
+  'wallpaper.builtin.sea': 'Sea',
+  'wallpaper.builtin.mono': 'Mono',
+
   // Search and tag filters.
   'search.label': 'Search visual styles',
   'search.placeholder': 'Search by name, ID, or tag',
@@ -42,6 +93,9 @@ export const enUS = {
   'filter.all': 'All',
   'filter.clear': 'Clear filters',
   'filter.none': 'No tags',
+  'filter.familyLabel': 'Style family',
+  'filter.more': 'More filters',
+  'filter.fewer': 'Fewer filters',
 
   // Gallery.
   'gallery.title': 'Available visual styles',
@@ -97,6 +151,10 @@ export const enUS = {
   'write.rolledBack': 'The preview was rolled back to the applied visual style.',
 
   // Page states.
+  'state.compatMode': 'Compatibility mode (unverified)',
+  'state.compatModeBody': 'This DSH build is outside the certified matrix. Only token-safe styling is applied; everything works, but it is not certified.',
+  'check.compatMode': 'Compatibility mode',
+  'check.compatModeValue': 'Unverified ({hostVersion})',
   'state.loading': 'Loading visual styles…',
   'state.offlineTitle': 'Visual style catalog unavailable',
   'state.offlineBody': 'First-frame colors are still active. The gallery needs the local catalog route.',
@@ -166,6 +224,14 @@ export const enUS = {
   // Modes.
   'mode.light': 'Light',
   'mode.dark': 'Dark',
+
+  // Gallery style families (derived from tags; presentation-only).
+  'family.calm': 'Calm',
+  'family.nature': 'Nature',
+  'family.retro': 'Retro',
+  'family.dark': 'Dark',
+  'family.light': 'Light',
+  'family.vivid': 'Vivid',
 
   // Tag labels (stable ids live in the manifests; display names live here).
   'tag.calm': 'Calm',

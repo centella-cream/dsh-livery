@@ -159,6 +159,74 @@ describe('bootIdentity', () => {
   })
 })
 
+describe('checkBoot — compatibility mode (in-range but uncertified host)', () => {
+  const newest = ADAPTER_021_3
+  function compatPayload(overrides = {}) {
+    return makeBootPayload({
+      hostVersion: '0.3.0-rc.1',
+      adapterId: 'dsh-compat',
+      contractHash: newest.contractHash,
+      catalogProfile: newest.catalogProfile,
+      compat: true,
+      ...overrides,
+    })
+  }
+
+  it('accepts a compat payload that names the newest certified contract/profile', () => {
+    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('valid')
+    expect(check.compat).toBe(true)
+    expect(check.adapter).toBeUndefined()
+    expect(check.reasons).toEqual([])
+    expect(bootIdentity(check)).toEqual({
+      hostVersion: '0.3.0-rc.1',
+      adapterId: 'dsh-compat',
+      contractHash: newest.contractHash,
+      catalogProfile: newest.catalogProfile,
+    })
+  })
+
+  it('rejects compat mode outside the declared range', () => {
+    for (const version of ['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1']) {
+      const check = checkBoot(compatPayload({ hostVersion: version }), ADAPTER_IDENTITIES)
+      expect(check.kind, version).toBe('mismatch')
+      expect(check.compat, version).toBeFalsy()
+    }
+  })
+
+  it('rejects a compat payload that names an unknown contract/profile', () => {
+    const check = checkBoot(compatPayload({ contractHash: 'sha256:unknown' }), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('mismatch')
+    expect(check.reasons.join(' ')).toContain('compat payload')
+  })
+
+  it('accepts a catalog for the accepted compat identity', () => {
+    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
+    const expected = bootIdentity(check)
+    const catalog = {
+      ...makeCatalog(undefined, undefined, newest),
+      adapterId: 'dsh-compat',
+      hostVersion: '0.3.0-rc.1',
+    }
+    const result = checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected })
+    expect(result.catalog).toBeDefined()
+    expect(result.reasons).toEqual([])
+  })
+
+  it('rejects a compat catalog for a different profile', () => {
+    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
+    const catalog = {
+      ...makeCatalog(undefined, undefined, newest),
+      adapterId: 'dsh-compat',
+      hostVersion: '0.3.0-rc.1',
+      catalogProfile: ADAPTER_020.catalogProfile,
+      previewsBase: expectedPreviewsBase(ADAPTER_020.catalogProfile),
+    }
+    expect(checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected: bootIdentity(check) }).catalog)
+      .toBeUndefined()
+  })
+})
+
 describe('checkCatalog — certified identity + profile', () => {
   it('accepts a catalog for every certified adapter', () => {
     for (const adapter of ADAPTER_IDENTITIES) {
