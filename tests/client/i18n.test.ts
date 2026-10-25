@@ -35,9 +35,12 @@ describe('dictionary key parity', () => {
       'src/client/settings/Gallery.tsx',
       'src/client/settings/SelfCheck.tsx',
       'src/client/settings/LiverySettingsPage.tsx',
+      'src/client/settings/LiveryWorkspace.tsx',
+      'src/client/LiveryPanelPage.tsx',
+      'src/client/LiveryPanelIcon.tsx',
       'src/client/settings/capability-names.ts',
     ]
-    const prefixes = 'section|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability'
+    const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability'
     const pattern = new RegExp(`['"]((?:${prefixes})\\.[A-Za-z0-9.]+)['"]`, 'g')
     const known = new Set(EN_KEYS)
     const referenced = new Map<string, string>()
@@ -61,6 +64,9 @@ describe('dictionary key parity', () => {
       'src/client/settings/Gallery.tsx',
       'src/client/settings/SelfCheck.tsx',
       'src/client/settings/LiverySettingsPage.tsx',
+      'src/client/settings/LiveryWorkspace.tsx',
+      'src/client/LiveryPanelPage.tsx',
+      'src/client/LiveryPanelIcon.tsx',
       'src/client/settings/capability-names.ts',
     ]
     const han = /[\u3400-\u4dbf\u4e00-\u9fff]/

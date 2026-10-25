@@ -24,6 +24,7 @@ import type {
   LiveryCatalog,
   TokenCoverageReport,
 } from '../core/types.js'
+import { LIVERY_VERSION } from '../core/types.js'
 import { summarizeContrast } from '../core/contrast.js'
 import { DELIBERATELY_INHERITED_TOKENS } from '../core/derive.js'
 import type { StockSnapshot } from '../generated/stock.js'
@@ -1031,7 +1032,7 @@ export function buildCatalogReport(options: CatalogReportOptions): CatalogReport
     adapterId: context.adapterId,
     contractHash: context.contractHash,
     tokenContractHash: sets.tokenContractHash,
-    compilerVersion: '0.1.0',
+    compilerVersion: LIVERY_VERSION,
     sourceAdapters: context.sourceAdapters,
     adapters: options.adapterEntries,
     counts: {

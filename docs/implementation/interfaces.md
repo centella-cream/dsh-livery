@@ -179,22 +179,36 @@ Client (`src/client/runtime.ts`) reads `globalThis.__DSH_LIVERY_BOOT__`, fetches
 
 - `GET /livery/api/catalog` → `LiveryCatalog` JSON, `cache-control: no-store`,
   same-origin GET only; 405 otherwise. Read-only, no secrets.
-- `GET /livery/assets/previews/<file>.svg` → `image/svg+xml`, path is a whitelist
-  lookup against `lib/previews/index.json` (no filesystem traversal). 404 on unknown.
-  File-name convention (frozen): `<id>-<zh|en>-<light|dark>.svg`, e.g.
-  `fjord-zh-light.svg`. The client derives the URL from this convention and falls back
-  to a token-swatch mockup on image error; `lib/previews/index.json` is the host's
-  authoritative whitelist.
+- `GET /livery/assets/previews/<catalogProfile>/<file>.svg` → `image/svg+xml`; the
+  path is a whitelist lookup against that profile's
+  `lib/previews/<catalogProfile>/index.json` (no filesystem traversal; other profiles
+  404). 404 on unknown. File-name convention (frozen):
+  `<id>-<zh|en>-<light|dark>.svg`, e.g. `fjord-zh-light.svg`. The client builds the
+  URL from `LiveryCatalog.previewsBase` and falls back to a token-swatch mockup on
+  image error; the per-profile index is the host's authoritative whitelist.
 - Anything else: not handled by Livery.
 
-## 6. Settings page contract (Client)
+## 6. Client UI entry contract
 
-Registered into slot `settings.section` with `id: 'livery'`, `order: 25`,
-`locale: LOCALE_NS`. Component receives `{ close }` owner props. States required:
-`loading`, stock, normal gallery, search-empty, thumbnail-error, incompatible livery,
-checking/self-check partial failure, previewing, write-failure, diagnostics-copied.
-Gallery: keyboard roving focus (←→↑↓/Home/End/Enter), `aria-selected`, visible focus.
-All copy from `src/i18n`; no hard-coded Chinese in default UI or English in default UI.
+The primary entry is a **main-page panel plus a left-sidebar row**, the same shape the
+shipped Plugins page uses:
+
+- `main` keyed slot occupant with `key: PANEL_ID ('livery')`, `locale: LOCALE_NS`.
+- `sidebar.panellist` list row: `id: PANEL_ID`, `order: 30` (after 插件 0 /
+  自动化任务 10 / 上下文观察 20), `locale: LOCALE_NS`, `label: () => t('panel.label')`
+  (zh 皮肤 / en Livery), icon component receiving `{ size, active }`.
+- Hosts without panel navigation (pre-DSH `0.1.5-alpha.2`) fall back to the legacy
+  `settings.section` entry (`id: 'livery'`, `order: 25`, owner props `{ close }`). The
+  capability is probed synchronously with `ctx.slots.spec('sidebar.panellist')` /
+  `spec('main')`; no host-version strings. On panel-nav hosts the settings section must
+  not be registered.
+- UI states required (identical in both containers): `loading`, stock, normal gallery,
+  search-empty, thumbnail-error, incompatible livery, checking/self-check partial
+  failure, previewing, write-failure, diagnostics-copied. The main-panel page renders
+  its own title/description and a scrollable body; the fallback section keeps the
+  settings shell chrome.
+- Gallery: keyboard roving focus (←→↑↓/Home/End/Enter), `aria-selected`, visible focus.
+  All copy from `src/i18n`; no hard-coded Chinese in default UI or English in default UI.
 
 Search matches: localized name (current locale first, both locales), id, localized tag
 labels in the active locale, English name.

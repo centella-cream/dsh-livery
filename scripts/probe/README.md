@@ -13,11 +13,19 @@ harness drives the system Chrome through `channel: 'chrome'`.
 | `dsh-home.mjs` | isolated `DSH_HOME` preparation, official `dsh plugin --profile web add/remove` calls, profile patch/patch-locale edits, plugin-manager log capture |
 | `boot.mjs` | spawns `dsh --profile web --no-open --port 0`, parses the printed `dsh web: http://127.0.0.1:<port>/?token=<hex>` line, waits for readiness, stops with SIGTERM and proves the port closed |
 | `http.mjs` | raw HTTP probes: token→303→cookie, 401/403 browser-trust fence on `/api`, client-bundle route, catalog/preview routes |
-| `browser.mjs` | Playwright session/recorders, first-paint rAF recorder, settings-dialog navigation, gallery/search/control helpers, CDP filmstrip, computed-theme/CSS snapshots, clipboard probe |
+| `browser.mjs` | Playwright session/recorders, first-paint rAF recorder, **sidebar panellist + main-panel navigation** (`openLiveryDetailed`/`openLivery`/`inspectPanellist`/`readMainColumnState`), legacy settings-dialog fallback helpers, gallery/search/control helpers, CDP filmstrip, computed-theme/CSS snapshots, clipboard probe |
 | `labels.mjs` | frozen zh/en settings copy + tag labels used for accessible-name queries and search assertions |
 | `labels-runtime.mjs` | `--labels <file|json>` override loading |
 | `checks.mjs` | the assertions themselves (handshake, catalog, stock baseline, settings UI flow, tokens/dark mode, fonts/locale, self-check, first paint, restore, uninstall residue) |
 | `report.mjs` | assembles `probe.json` / `console.json` / `timings.json` and renders the Markdown report under `docs/verification/` |
+
+## Fast nav smoke
+
+`node scripts/acceptance-web.mjs --tgz <tgz> --quick` installs, boots, checks
+the catalog and then exercises the sidebar-panel navigation + gallery/preview/
+apply flow only (~40 s). Use it to validate a new client build's navigation
+registration before paying for the full acceptance run (fonts, first paint,
+dark mode, responsive, restore stock, uninstall lifecycle).
 
 ## Useful environment facts (verified on this machine, DSH 0.2.0-rc.2)
 
@@ -40,6 +48,13 @@ harness drives the system Chrome through `channel: 'chrome'`.
 - The profile patch (`profiles/web/cordis.patch.yml`) hot-reloads: flipping the
   pinned `locale` preference between `zh` and `en` needs a page reload but no
   process restart.
-- A fresh isolated home shows two first-run overlays (预览版说明 → 继续, API-key
-  onboarding → 稍后配置); the harness dismisses them and also suppresses the
-  welcome notice through the profile patch to keep settings automation stable.
+- A fresh isolated home shows first-run overlays (welcome notice / API-key
+  onboarding); the harness dismisses them through Escape/label matching.
+- **Livery navigation (round 4):** the Livery entry is a left-sidebar
+  `sidebar.panellist` row (`id`/panel key `livery`, order 30, zh 皮肤 / en
+  Livery) addressing a `main` keyed page. The old `settings.section` page is a
+  fallback for hosts without panel navigation and must stay unregistered on
+  certified hosts; the harness asserts both states. Shell selectors:
+  `[data-slot="sidebar"] nav[aria-label="全局面板"] button[aria-label="皮肤"]`
+  (selected row carries `aria-current="page"`), main column `[data-slot="main"]`,
+  workspace section `[data-slot="sidebar.workspaces"]`.

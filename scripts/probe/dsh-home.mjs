@@ -261,6 +261,24 @@ export async function cloneProfileIntoHome({ source, home, name = 'web' }) {
     const repairedManifest = { ...manifest, dependencies }
     await writeFile(manifestPath, `${JSON.stringify(repairedManifest, null, 2)}\n`, 'utf8')
   }
+  // The cloned pnpm lockfile records local tarballs as paths relative to the
+  // SOURCE profile directory. After the copy those resolve somewhere else and
+  // pnpm fails with ERR_PNPM_TARBALL_READ_LOCAL_TARBALL while adding a package.
+  // Re-anchor every relative `file:` reference at the source profile directory
+  // and store it as an absolute path so the clone stays self-consistent.
+  const lockPath = path.join(destDir, 'pnpm-lock.yaml')
+  let lockRepairs = 0
+  if (exists(lockPath)) {
+    const lockText = await readFile(lockPath, 'utf8')
+    const rewritten = lockText.replace(/(file:)(\.\.?\/[^'"\s,)\]]+)/g, (match, prefix, relativeTarget) => {
+      // Manifests store absolute paths; lockfiles relativise them against the
+      // profile that created them. Anchoring at the source dir reproduces that.
+      const absolute = path.resolve(sourceDir, relativeTarget)
+      lockRepairs += 1
+      return `${prefix}${absolute}`
+    })
+    if (rewritten !== lockText) await writeFile(lockPath, rewritten, 'utf8')
+  }
   return {
     source: sourceDir,
     destDir,
@@ -269,6 +287,7 @@ export async function cloneProfileIntoHome({ source, home, name = 'web' }) {
     bundles: manifest.dsh?.profile?.bundles ?? [],
     patchFile: path.join(destDir, 'cordis.patch.yml'),
     repairs,
+    lockRepairs,
   }
 }
 

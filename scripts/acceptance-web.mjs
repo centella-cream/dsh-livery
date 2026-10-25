@@ -57,7 +57,7 @@ import {
   checkResponsive,
   checkRestoreStock,
   checkSelfCheck,
-  checkSettingsFlow,
+  checkLiveryPanelFlow,
   checkStockInitial,
   checkUninstallResidue,
   collectProfileEvidence,
@@ -98,7 +98,9 @@ Options:
   --pw-core <path>        playwright-core index.mjs to import
   --dsh-bin <path>        dsh executable (default: PATH)
   --headed                Show the Chrome window (debugging only)
-  --unsafe-mutate         In --reuse mode allow settings writes (apply/restore)
+  --unsafe-mutate         In --reuse mode allow config writes (apply/restore)
+  --quick                 Fast nav smoke: install/boot/catalog + sidebar-panel checks only
+                          (gallery/preview/apply + nav; no fonts/first-paint/lifecycle)
   --no-report             Do not write the Markdown report
   --no-clean              Keep the isolated home even without --keep (alias)
   -h, --help              This help
@@ -126,7 +128,7 @@ function buildKnownLimitations(ctx, adapter) {
   const sourceKind = adapter?.sourceKind ?? 'unknown-source'
   const limitations = [
     `HONEST GAP — IMPLEMENTATION_PLAN.md §20 "at least one safe layout capability actually effective" cannot be met on DSH ${version}: the certified adapter (${sourceKind}) exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.`,
-    'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → settings apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).',
+    'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → panel config apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).',
     '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
     `DSH ${version} serves client bundles only through boot-graph grouped URLs (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (asserted as a documented warning).`,
     'No Playwright browser download is used: the harness drives the system Chrome through channel: \'chrome\' (web carrier) or connects over CDP to the Electron renderer (desktop).',
@@ -148,7 +150,7 @@ async function main() {
   let options
   try {
     options = parseArgs(argv, {
-      booleans: ['keep', 'headed', 'unsafe-mutate', 'no-report', 'no-clean', 'help'],
+      booleans: ['keep', 'headed', 'unsafe-mutate', 'no-report', 'no-clean', 'help', 'quick'],
       strings: [
         'tgz',
         'dsh-home',
@@ -237,6 +239,7 @@ async function main() {
       bootTimeout,
       dshBin: resolveDshBin(options['dsh-bin']),
       keep,
+      quick: Boolean(options.quick),
       allowMutations: Boolean(options['unsafe-mutate']),
       headed: Boolean(options.headed),
       pwCore: options['pw-core'],
@@ -337,6 +340,7 @@ async function main() {
           : `${ctx.config.expectedVersion ?? 'web'}-web-chrome`
       }
       ctx.knownLimitations = buildKnownLimitations(ctx, adapter)
+      if (ctx.config.quick) ctx.knownLimitations.unshift('QUICK MODE — this run exercised install/boot/catalog + sidebar-panel navigation only (no fonts, first-paint, dark mode, responsive, restore stock or uninstall lifecycle). Use a full run for acceptance evidence.')
       if (!reuse) {
         if (!(await access(tgz).then(() => true, () => false))) failStartup(`tarball not found: ${tgz}`)
         const manifest = await readTarballManifest(tgz)
@@ -470,7 +474,13 @@ async function main() {
     }
 
     // ------------------------------------------------------------- probe
-    const probeGroups = [
+    const quick = ctx.config.quick
+    const probeGroups = quick
+      ? [
+          ['catalog', async () => checkCatalog(ctx)],
+          ['nav', async () => checkLiveryPanelFlow(ctx)],
+        ]
+      : [
       ['trust', async () => {
         const cookieJar = await session.context.cookies()
         const cookieHeader = cookieJar.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ')
@@ -486,7 +496,7 @@ async function main() {
       ...(ctx.config.liveryMode
         ? [
             ['catalog', async () => checkCatalog(ctx)],
-            ['settings', async () => checkSettingsFlow(ctx)],
+            ['nav', async () => checkLiveryPanelFlow(ctx)],
             ['theme', async () => checkAppliedTheme(ctx)],
             ['fonts', async () => checkFonts(ctx)],
             ['selfcheck', async () => checkSelfCheck(ctx)],
@@ -556,7 +566,10 @@ async function main() {
     }
 
     // ----------------------------------------------------------- lifecycle
-    {
+    if (quick) {
+      ctx.runner.skip('lifecycle.install-uninstall', 'official install → boot → uninstall → restart residue', 'quick mode: lifecycle phase not exercised (bounded nav smoke)')
+      ctx.runner.skip('lifecycle.sigterm', 'SIGTERM stops the service and closes the port', 'quick mode: lifecycle phase not exercised')
+    } else {
       const p = phase('lifecycle')
       try {
         await checkUninstallResidue(ctx)

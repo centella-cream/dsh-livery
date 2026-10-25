@@ -7,7 +7,7 @@ surfaces), neither of which is claimed.**
 
 | Item | Value |
 |---|---|
-| Artifact | `dsh-livery-0.1.0.tgz` · sha256 `19dc6895e8986fab1581c2b22da10e0507811e94f5596a2f32a82fe02b60ac0b` · 257,022 B · 107 files |
+| Artifact | `dsh-livery-0.2.2.tgz` · sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17` · 258,064 B · 107 files |
 | Certified hosts | `0.2.0-rc.2`, `0.2.1-rc.2` (npm/CLI) and `0.2.1-rc.3` (Desktop app.asar runtime) |
 | Adapters | `dsh-0.2.0-rc.2-r1`, `dsh-0.2.1-rc.2-r1`, `dsh-0.2.1-rc.3-r1` |
 | Catalog profiles | `sha256:4c5ee1a2…` (0.2.0 only), `sha256:060e80ef…` (0.2.1-rc.2 + rc.3, byte-identical) |
@@ -166,3 +166,29 @@ node scripts/acceptance-web.mjs --reuse <token-url> --out artifacts/acceptance/r
 
 Evidence index: `artifacts/release/evidence-index.json`; per-run probes, screenshots
 and filmstrips live under `artifacts/acceptance/<host>/`.
+
+
+---
+
+# Round 4 — sidebar plugin-navigation entry (0.2.2)
+
+User-directed UI round: the Livery entry moved from the Settings page into DSH's
+main-page left-sidebar plugin navigation (same pattern as 插件 / 自动化任务 /
+上下文洞察). Full capability research, implementation contract and evidence:
+[sidebar-navigation.md](sidebar-navigation.md).
+
+- Capability exists since DSH `0.1.5-alpha.2`; Livery uses inject-first
+  registration + 1500 ms Settings fallback, so activation order cannot pick the
+  entry point (two defects found and fixed during live validation: 0.2.1
+  receiver-loss on `slots.spec`, 0.2.2 synchronous-probe timing;
+  both superseded records retained under `artifacts/acceptance/pkg-0.2.(0, 1)/`).
+- Package: `dsh-livery-0.2.2.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
+- Live real Web Profile check (official install, real browser): **11/11 PASS** —
+  sidebar rows 插件/自动化任务/上下文洞察/皮肤, page gallery/preview/self-check,
+  no Settings section (`artifacts/acceptance/real-web-profile/`).
+- Certified matrix on the same sha:
+  web 0.2.1-rc.2 isolated **127/0/3/1**; real-web clone **128/0/3/2**;
+  0.2.1-rc.3 packaged carrier **127/0/3/1**; 0.2.1-rc.3 real Electron renderer
+  **22/0/1** (native chrome still explicitly unverified).
+- Repo gates: tsc 0, vitest 547/547, 92 generated files / 2 profiles, all audits,
+  loader-ABI 12/12, adapter/pack/lint green; client bundle 20,927 B gzip.

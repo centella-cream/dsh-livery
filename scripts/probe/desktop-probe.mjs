@@ -63,10 +63,12 @@ import {
   captureScreenshot,
   dismissFirstRunDialogs,
   findControl,
-  findLiverySection,
   installFirstPaintRecorder,
-  openSettingsDetailed,
+  inspectPanellist,
+  liveryPanelVisible,
+  openLiveryDetailed,
   readFirstPaintSamples,
+  readMainColumnState,
   readGallery,
   readPaintTimings,
   readThemeSnapshot,
@@ -394,16 +396,30 @@ async function main() {
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-stock-desktop.png'), { label: 'desktop stock' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'stock' }))
 
-    // Settings → Livery gallery + preview / apply.
-    const opened = await openSettingsDetailed(page)
-    runner.pass('desktop.settings-launches', 'Livery settings page is reachable in the desktop shell', `launcher=${opened.via}`)
-    const section = await findLiverySection(page, { labels: PAGE_LABELS, catalog, locale: 'zh' })
-    expect(runner, 'desktop.livery-section', 'Livery section is registered in the desktop settings page', section.found, `nav label "${section.navLabel}"`)
+    // Sidebar panellist row → Livery main panel (desktop shell).
+    const stockPanellist = await inspectPanellist(page)
+    const stockRow = (stockPanellist.rows ?? []).find((candidate) => [PAGE_LABELS.section, 'Livery'].includes(candidate.ariaLabel ?? candidate.label))
+    expect(
+      runner,
+      'desktop.sidebar-entry',
+      'Livery is registered as a left-sidebar plugin navigation row in the desktop shell',
+      Boolean(stockRow) && stockRow.hasPanellistSlot === true && stockRow.hasIcon === true,
+      stockRow ? `row #${stockRow.index} label "${stockRow.ariaLabel ?? stockRow.label}" panellistSlot=${stockRow.hasPanellistSlot} icon=${stockRow.hasIcon}` : `rows: ${(stockPanellist.rows ?? []).map((candidate) => candidate.ariaLabel ?? candidate.label).join(', ') || '(none)'}`,
+    )
+    const opened = await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
+    const desktopMain = await readMainColumnState(page)
+    expect(
+      runner,
+      'desktop.main-panel',
+      'selecting the sidebar row opens the Livery main panel (conversation replaced) in the desktop shell',
+      opened.via === 'sidebar-panellist' && desktopMain.liveryPanelVisible && desktopMain.conversationComposerVisible === false && desktopMain.selectedRowLabel === PAGE_LABELS.section,
+      `via=${opened.via} panelVisible=${desktopMain.liveryPanelVisible} conversationVisible=${desktopMain.conversationComposerVisible} selected="${desktopMain.selectedRowLabel}"`,
+    )
     await page.waitForFunction(() => document.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length >= 10, undefined, { timeout: 20_000 }).catch(() => {})
     const cards = await readGallery(page)
     const liveryCards = cards.filter((card) => card.id !== 'stock')
-    expect(runner, 'desktop.gallery', 'gallery renders the 10 compiled liveries', liveryCards.length >= 10, `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`)
-    await captureScreenshot(page, path.join(screensDir, 'zh-gallery-desktop.png'), { label: 'desktop gallery' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'gallery' }))
+    expect(runner, 'desktop.gallery', 'Livery panel renders the 10 compiled liveries', liveryCards.length >= 10, `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`)
+    await captureScreenshot(page, path.join(screensDir, 'zh-panel-gallery-desktop.png'), { label: 'desktop livery panel gallery' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'panel-gallery' }))
 
     const pair = chooseSkinPair(catalog)
     ctx.state.skinPair = pair
@@ -550,8 +566,7 @@ async function main() {
 
     // Self-check identity in the desktop renderer.
     await dismissFirstRunDialogs(page)
-    await openSettingsDetailed(page)
-    await findLiverySection(page, { labels: PAGE_LABELS, catalog, locale: 'zh' })
+    await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
     const selfCheck = await findControl(page, { testId: 'livery-selfcheck-toggle', names: [PAGE_LABELS.selfCheck], exact: false })
     if (selfCheck.locator) {
       const expanded = await selfCheck.locator.getAttribute('aria-expanded').catch(() => null)

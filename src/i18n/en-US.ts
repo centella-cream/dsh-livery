@@ -16,6 +16,11 @@ export const enUS = {
   'section.subtitle': 'Choose the colors, type, and safe layout the whole conversation wears.',
   'section.loading': 'Loading liveries…',
 
+  // Sidebar plugin-navigation row + full-page panel.
+  'panel.label': 'Livery',
+  'panel.title': 'Livery',
+  'panel.description': 'Choose the colors, type, and safe layout the whole conversation wears.',
+
   // Current livery summary card.
   'current.title': 'Current livery',
   'current.stockName': 'Stock appearance',

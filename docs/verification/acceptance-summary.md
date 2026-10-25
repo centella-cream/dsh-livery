@@ -139,3 +139,23 @@ Electron renderer was driven; desktop third-party coexistence
 and recorded as an attempt; G6/formal support matrix not claimed; layout capability
 gate and wallpaper/import limitations unchanged. See
 `artifacts/release/known-limitations.md`.
+
+
+---
+
+# Round 4 — sidebar entry + 0.2.2 matrix
+
+`dsh-livery-0.2.2.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17` · plugin 0.2.2 · client 20,927 B gzip.
+
+| Host | Profile / runtime | Result | Evidence |
+|---|---|---|---|
+| 0.2.1-rc.2 | Web/Chrome, isolated full | **127 pass / 0 fail / 3 skip / 1 warn** | `artifacts/acceptance/pkg-0.2.2/web-0.2.1-rc.2/` |
+| 0.2.1-rc.2 | Web/Chrome, real Web Profile clone | **128 / 0 / 3 / 2** | `artifacts/acceptance/pkg-0.2.2/web-real-profile-clone/` |
+| 0.2.1-rc.3 | Desktop packaged runtime, web carrier | **127 / 0 / 3 / 1** | `artifacts/acceptance/pkg-0.2.2/web-carrier-0.2.1-rc.3/` |
+| 0.2.1-rc.3 | Desktop Profile, real Electron renderer | **22 / 0 / 1** (native chrome unverified) | `artifacts/acceptance/pkg-0.2.2/desktop-0.2.1-rc.3/` |
+| 0.2.1-rc.2 | **User's real `~/.dsh/profiles/web` (live)** | **11 / 0** | `artifacts/acceptance/real-web-profile/` |
+
+The Livery entry now lives in the left sidebar above 工作区 (皮肤/Livery, order 30)
+instead of the Settings page; the Settings section is not registered on these hosts
+and only serves as the pre-`0.1.5-alpha.2` fallback. Evidence and capability history:
+[sidebar-navigation.md](sidebar-navigation.md).

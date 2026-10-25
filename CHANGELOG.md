@@ -2,6 +2,60 @@
 
 All notable changes to DSH Livery are recorded here.
 
+## [0.2.2] — unreleased
+
+User-directed UI round: the Livery entry moves out of the Settings page into DSH's
+main-page left-sidebar plugin navigation (the same pattern as 插件 / 自动化任务 /
+上下文观察).
+
+### Added
+
+- Main-page panel (`main` keyed slot, key `livery`) with the full gallery/preview/
+  apply/restore/self-check UI, plus a `sidebar.panellist` row (order 30, label
+  皮肤/Livery, active-state icon).
+- Forward-compatible entry detection: panel navigation exists since DSH
+  `0.1.5-alpha.2` (verified from published sidebar/layout packages); on older hosts
+  the plugin falls back to the legacy `settings.section` page instead of failing.
+- Research note documenting the capability history
+  (`docs/research/client-contract.md` §4) and the entry contract
+  (`docs/implementation/interfaces.md` §6).
+
+### Changed
+
+- Plugin version `0.1.0` → `0.2.2`; tarball name `dsh-livery-0.2.2.tgz`.
+- On panel-navigation hosts the Settings → 皮肤 section is no longer registered
+  (single entry point, no duplicate navigation).
+
+### Verified
+
+- Package `dsh-livery-0.2.2.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
+- Sidebar entry accepted on all four targets: Web 0.2.1-rc.2 isolated 127/0/3/1,
+  real-web-profile clone 128/0/3/2, Desktop 0.2.1-rc.3 packaged runtime 127/0/3/1,
+  Desktop 0.2.1-rc.3 real Electron renderer 22/0/1 (native chrome/DPI/vibrancy
+  still explicitly unverified). Live run on the user's real Web Profile: 11/11.
+- Repo gates: tsc 0, vitest 547/547, 92 generated files / 2 profiles, all audits,
+  loader-ABI 12/12, client 20,927 B gzip.
+
+### Fixed in 0.2.1/0.2.2 (found while validating on the real Web Profile)
+
+- 0.2.1: the capability probe for the new slots extracted the service method and
+  lost its receiver, which threw during plugin activation on 0.2.1 hosts.
+- 0.2.2: replaced the synchronous availability probe with inject-first registration
+  (`ctx.slots.inject` for `main` and `sidebar.panellist`) plus a 1500 ms grace-period
+  fallback to the legacy Settings page; a late declaration retires the fallback, so
+  plugin activation order can never decide the entry point or take the shell down.
+- Live verification on the user's real Web Profile (`~/.dsh/profiles/web`, DSH
+  0.2.1-rc.2, dsh-charter + dsh-context + dsh-vscode-bridge installed): official
+  plugin-manager install, sidebar rows 插件/自动化任务/上下文洞察/**皮肤**, page
+  gallery/preview/self-check all pass (11/11), Settings no longer contains an active
+  皮肤 section.
+
+### Unchanged
+
+- Host adapters/contracts (0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.3), catalog profiles,
+  previews, self-check capability facts, fail-closed handshake and all acceptance
+  gates.
+
 ## [0.1.0] — unreleased
 
 First release line. Certified host builds (exact versions): DeepSeek Harness

@@ -85,6 +85,35 @@ describe('multi-version architecture guards', () => {
     expect(gallery).toContain('previewUrl(')
   })
 
+  it('imports shell slot contracts type-only (no runtime require of layout/sidebar/slots)', () => {
+    const valueImport = /import\s*\{[^}]*\}\s*from\s*'(?:@deepseek-ai\/dsh-client-ui-(?:layout|sidebar|slots)|@deepseek-ai\/dsh-client-store)(?:\/client)?'/
+    const offenders = clientSources().filter(file => valueImport.test(read(file)))
+    expect(offenders).toEqual([])
+    const panelDeps = ['@deepseek-ai/dsh-client-ui-layout/client', '@deepseek-ai/dsh-client-ui-sidebar/client']
+    for (const file of clientSources()) {
+      const source = read(file)
+      for (const dep of panelDeps) {
+        if (!source.includes(dep)) continue
+        expect(source, `${file} imports ${dep}`).toMatch(new RegExp(`import type[^\\n]*from '${dep.replace(/[/.]/g, '\\$&')}'`))
+      }
+    }
+  })
+
+  it('decides the contribution by inject + grace timer, never a synchronous slot probe', () => {
+    const indexSource = read(join('src', 'client', 'index.tsx'))
+    // inject is the source of truth: activation order differs across profiles.
+    expect(indexSource).toContain("ctx.slots.inject('sidebar.panellist'")
+    expect(indexSource).toContain("ctx.slots.inject('main'")
+    expect(indexSource).toContain('PANEL_NAVIGATION_GRACE_MS')
+    expect(indexSource).toContain('setTimeout(')
+    expect(indexSource).not.toContain('panelNavigationAvailability')
+    expect(indexSource).not.toMatch(/spec\?\.|slots\.spec/)
+    const navigation = read(join('src', 'client', 'navigation.ts'))
+    expect(navigation).toContain("'sidebar.panellist'")
+    expect(navigation).toContain("'main'")
+    expect(navigation).toContain('PANEL_NAVIGATION_GRACE_MS')
+  })
+
   it('drives capability display/decisions from the catalog capability map', () => {
     const selfCheck = read(join('src', 'client', 'settings', 'SelfCheck.tsx'))
     expect(selfCheck).toContain('snapshot.capabilities')

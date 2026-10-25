@@ -32,11 +32,24 @@ presenter, and restores stock immediately when disabled.
 ```bash
 pnpm build
 pnpm pack
-dsh plugin --profile web add ./dsh-livery-0.1.0.tgz   # Web Profile (0.2.0-rc.2 / 0.2.1-rc.2)
-dsh --profile web --no-open
+dsh plugin --profile web add ./dsh-livery-0.2.2.tgz   # Web Profile (0.2.0-rc.2 / 0.2.1-rc.2)
+dsh web                                               # then open the printed URL
 # Desktop Profile 0.2.1-rc.3: install through the Desktop app's plugin manager
 # (the app runtime enforces the exact engines.dsh allowlist at install time).
 ```
+
+### Where to find it
+
+After installing, open DSH and look at the **left sidebar above the Workspace
+section**: the Livery entry sits in the plugin-navigation group next to 插件 /
+自动化任务 / 上下文观察 (zh: 皮肤, en: Livery). Click it to open the full-page
+gallery, preview, apply, restore and self-check UI — it is no longer inside the
+Settings page.
+
+Panel navigation exists since DSH `0.1.5-alpha.2` (first release line
+`0.1.5-rc.1`). On hosts without it the plugin automatically falls back to the
+legacy Settings page entry (设置 → 皮肤); certified hosts always use the sidebar
+entry.
 
 Settings → Livery picks a livery (transactional preview, then one config
 mutation), or restores stock.

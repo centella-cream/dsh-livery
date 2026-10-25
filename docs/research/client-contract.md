@@ -156,6 +156,20 @@ Settings section — `ctx.slots.register({name:'main', key:'plugins', locale, st
 (`:3770-3776`); declarations `DSH/dsh-client-ui-layout/lib/types/client/index.d.ts:48-56`,
 `DSH/dsh-client-ui-sidebar/lib/types/client/contract/slots.d.ts:46-52`.
 
+**Availability across host versions (verified from published packages on npm, 2026-10-25):**
+`sidebar.panellist` (the left-sidebar global-panel row list) and the keyed `main` panel seat
+first appear in `@deepseek-ai/dsh-client-ui-sidebar@0.1.5-alpha.2`; `0.1.5-alpha.1` and earlier
+(`0.1.3-alpha.2`, …) do not declare it. The sidebar 0.1.5-alpha.2 README already documents the
+full pattern ("Plugins add an icon component to the root-scoped `sidebar.panellist` list with an
+`id`, optional `order`, and a string or locale-aware `label`. The same id addresses the component
+registered in the layout's root-scoped `main` keyed slot"; `ctx.layout.selectPanel` exists in
+`dsh-client-ui-layout@0.1.5-alpha.2`). The shipped Plugin manager (`dsh-client-ui-plugin-manager`)
+is first published at `0.1.6-alpha.2` and uses exactly this pattern (order 0; schedule order 10;
+dsh-context/上下文观察 order 20 in the user's profile). Therefore **DSH ≥ 0.1.5-alpha.2 has panel
+navigation; the first release line is 0.1.5-rc.1**. Livery prefers this entry whenever the slots
+exist (`ctx.slots.spec('sidebar.panellist')` / `spec('main')`) and keeps the `settings.section`
+page only as the fallback for hosts without it.
+
 ## 5. Locale
 
 - Ids: `LOCALE_IDS = ['zh','en']`, `BuiltInLocaleId = 'zh'|'en'`, `FALLBACK_LOCALE='en'` (`DSH/dsh-client-locale/lib/types/locale-settings.d.ts:8-11`, `.../client/index.d.ts:82`). Not `zh-CN`.

@@ -6,7 +6,7 @@
  * adapter in `sourceAdapters` serves these exact CSS bytes and previews.
  * Source manifests: `liveries/<id>/manifest.json`.
  * 
- * compilerVersion: 0.1.0
+ * compilerVersion: 0.2.2
  * profiles: sha256:4c5ee1a20f2974a53037a2ee4d2daa71f9f4600c9f004f0b35592b1ff413d602, sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50
  * 
  * `liveries:check` fails the build if this file drifts from the manifests.
@@ -18,7 +18,7 @@ export type CatalogProfile = CatalogProfileData
 
 export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
   "sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50": {
-    "compiledAt": "2026-04-30T07:40:12.000Z",
+    "compiledAt": "2026-08-16T05:00:26.000Z",
     "liveries": [
       {
         "audit": {
@@ -25477,10 +25477,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
       "0.2.1-rc.2",
       "0.2.1-rc.3"
     ],
-    "sourceHash": "sha256:0a034fdcd7f86ce6ea4b6e69cdda705b9c6a62f49430a966844caebc1e3fe8b2"
+    "sourceHash": "sha256:4c5b96eaf624b61f9cc1eec387b47b4f376dcef5d41119a2a8f531ade590156a"
   },
   "sha256:4c5ee1a20f2974a53037a2ee4d2daa71f9f4600c9f004f0b35592b1ff413d602": {
-    "compiledAt": "2026-08-17T12:09:19.000Z",
+    "compiledAt": "2026-03-07T08:06:52.000Z",
     "liveries": [
       {
         "audit": {
@@ -50998,7 +50998,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.0-rc.2"
     ],
-    "sourceHash": "sha256:37b0166f6be31d0d819e9190ba0b5e62231c5558dc3ff49e326a2c347d2e7746"
+    "sourceHash": "sha256:e1e6479ccd04983dd956069f51ee5f2dcab7821084b51430a024d664ca5b9eb1"
   }
 }
 

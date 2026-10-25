@@ -30,14 +30,14 @@ import { SelfCheck } from '../../src/client/settings/SelfCheck.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
 import { LIVERY_VERSION } from '../../src/core/types.js'
-import type { LiveryPageProps } from '../../src/client/platform.js'
+import type { LiveryPageProps, LiverySettingsPageProps } from '../../src/client/platform.js'
 import { enUS, zhCN } from '../../src/i18n/index.js'
 import { ADAPTER_021_2, adapterRecordOf, makeCatalog, makeLivery, TEST_ADAPTER, TEST_PREVIEWS_BASE } from './fixtures.js'
 
 const IDENTITY = {
   adapterId: TEST_ADAPTER.adapterId,
   contractHash: TEST_ADAPTER.contractHash,
-  pluginVersion: '0.1.0',
+  pluginVersion: '0.2.0',
   hostVersion: TEST_ADAPTER.hostVersion,
 }
 
@@ -64,13 +64,14 @@ function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
 }
 
 function render(snapshot: LiveryRuntimeSnapshot, locale: 'zh' | 'en' = 'en'): string {
-  return renderToStaticMarkup(
-    <LiverySettingsPage
-      t={translate(locale === 'zh' ? zhCN : enUS)}
-      close={() => undefined}
-      runtime={fakeRuntime(snapshot)}
-    />,
-  )
+  // The shell also passes the global standard-hook seat (usePanelInfo); the page
+  // never reads it, so the render fixture omits it behind the composed type.
+  const props = {
+    t: translate(locale === 'zh' ? zhCN : enUS),
+    close: () => undefined,
+    runtime: fakeRuntime(snapshot),
+  } as unknown as LiverySettingsPageProps
+  return renderToStaticMarkup(<LiverySettingsPage {...props} />)
 }
 
 const base = createInitialSnapshot(IDENTITY, {

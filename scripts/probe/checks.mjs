@@ -22,8 +22,16 @@ import {
   openSettings,
   openSettingsDetailed,
   readFirstPaintSamples,
+  inspectPanellist,
+  liveryPanelRoot,
+  liveryPanelVisible,
+  openLiveryDetailed,
+  PANEL_NAV_VIA,
   readGallery,
   readLiveryCssRules,
+  readMainColumnState,
+  readSettingsSectionLabels,
+  returnToConversation,
   readObserverReport,
   readPaintTimings,
   readThemeSnapshot,
@@ -481,6 +489,17 @@ export async function checkStockInitial(ctx) {
   expect(runner, 'stock.host-theme-source', 'host theme source is system (preference untouched)', snapshot.themeSource === 'system' && snapshot.darkAttribute === null, `html[data-ds-theme-source]=${snapshot.themeSource} body[data-ds-dark-theme]=${snapshot.darkAttribute}`)
   const profile = config.mode === 'isolated' ? await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web') : { hasThemeRow: false, text: '' }
   expect(runner, 'stock.no-theme-write', 'no ui-theme row was written to the profile patch', profile.hasThemeRow === false, profile.hasThemeRow ? 'profile patch contains an ui-theme row' : 'no ui-theme row in profile patch')
+  // The navigation entry is client-registered regardless of the configured
+  // skin, so it must already exist on a stock start.
+  const stockPanellist = await inspectPanellist(page).catch(() => ({ rows: [] }))
+  const stockRow = (stockPanellist.rows ?? []).find((candidate) => [labelsFor('zh').section, labelsFor('en').section].includes(candidate.ariaLabel ?? candidate.label))
+  expect(
+    runner,
+    'nav.sidebar-entry-present-stock',
+    'Livery sidebar row is present on a stock start (client navigation registration)',
+    Boolean(stockRow) && stockRow.hasPanellistSlot === true && stockRow.hasIcon === true && stockRow.selected === false,
+    stockRow ? `row #${stockRow.index} label "${stockRow.ariaLabel ?? stockRow.label}" panellistSlot=${stockRow.hasPanellistSlot} icon=${stockRow.hasIcon} selected=${stockRow.selected}` : `rows: ${(stockPanellist.rows ?? []).map((candidate) => candidate.ariaLabel ?? candidate.label).join(', ') || '(none)'}`,
+  )
   state.stockObserverReport = await readObserverReport(page)
   state.stockObserverCount = state.stockObserverReport.wholeDocument
   // Dark stock baseline: some tokens are intentionally inherited from stock per
@@ -523,22 +542,25 @@ export async function waitForStock(page, { timeoutMs = 15_000 } = {}) {
 async function waitForGallery(page, { timeoutMs = 20_000 } = {}) {
   await page.waitForFunction(
     () => {
-      const dialog = document.querySelector('[role="dialog"]')
-      if (!dialog) return false
-      const cards = dialog.querySelectorAll('[data-testid="livery-card"][data-livery-id]')
+      // The Livery workspace lives on the main-panel page now (legacy hosts keep
+      // it in the settings dialog), so look at the whole document.
+      const cards = document.querySelectorAll('[data-testid="livery-card"][data-livery-id]')
       if (cards.length > 0) return true
-      const error = dialog.querySelector('[data-testid="livery-error"]')
-      return Boolean(error)
+      return Boolean(document.querySelector('[data-testid="livery-error"]'))
     },
     undefined,
     { timeout: timeoutMs },
   )
   return page.evaluate(() => {
-    const dialog = document.querySelector('[role="dialog"]')
+    const root =
+      document.querySelector('[data-slot="main"] [data-testid="livery-panel"]') ??
+      document.querySelector('[data-slot="main"] [data-testid="livery-section"]') ??
+      document.querySelector('[role="dialog"]') ??
+      document
     return {
-      cards: dialog?.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length ?? 0,
-      error: dialog?.querySelector('[data-testid="livery-error"]')?.textContent ?? null,
-      loading: dialog?.textContent?.includes('正在加载') || dialog?.textContent?.includes('Loading liveries'),
+      cards: root.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length,
+      error: root.querySelector('[data-testid="livery-error"]')?.textContent ?? null,
+      loading: (root.textContent ?? '').includes('正在加载') || (root.textContent ?? '').includes('Loading liveries'),
     }
   })
 }
@@ -566,51 +588,122 @@ export function chooseSkinPair(catalog) {
 }
 
 /**
- * The full settings UI acceptance flow: open the section, gallery, search,
- * keyboard roving focus, transient preview + cancel, apply + persistence.
+ * The Livery main-panel acceptance flow (sidebar `sidebar.panellist` row + `main`
+ * keyed page): nav entry/selection, gallery, search, keyboard roving focus,
+ * transient preview + cancel, apply + persistence. Also proves the legacy
+ * settings.section entry is NOT registered on panel-navigation hosts.
  */
-export async function checkSettingsFlow(ctx) {
+export async function checkLiveryPanelFlow(ctx) {
   const { runner, session, config, state } = ctx
   const { page } = session
   const catalog = state.catalog
   if (!catalog) {
-    runner.skip('settings.section', 'Livery settings section opens', 'catalog unavailable')
+    runner.skip('nav.sidebar-entry', 'Livery is reachable from the left-sidebar plugin navigation', 'catalog unavailable')
     return
   }
   await waitForAppReady(page)
   state.actualLocale = await detectUiLocale(page)
   const uiLabels = labelsFor(state.actualLocale)
   state.dismissedDialogs = await dismissFirstRunDialogs(page)
-  await capture(page, ctx, { state: 'home-before-settings' })
+  await capture(page, ctx, { state: 'home' })
 
+  // ---- sidebar panellist entry + main-panel selection ----
   let opened
   try {
-    opened = await openSettingsDetailed(page)
+    opened = await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale, timeoutMs: 25_000 })
   } catch (error) {
-    runner.fail('settings.opens', 'settings dialog opens', String(error))
+    runner.fail('nav.sidebar-entry', 'Livery is reachable from the left-sidebar plugin navigation', String(error))
     return
   }
-  state.settingsVia = opened.via
-  runner.pass('settings.opens', 'settings dialog opens', `settings dialog visible (launcher path: ${opened.via})`, { via: opened.via })
-  runner.pass('settings.launcher-path', 'settings launcher resolved on this shell version', `path=${opened.via}`)
-
-  const section = await findLiverySection(page, { labels: uiLabels, catalog, locale: state.actualLocale, timeoutMs: 25_000 })
-  state.section = section
-  if (!section.found) {
-    runner.fail('settings.livery-section', 'Livery settings section is registered and opens', `nav entries tried: ${section.tried.map((entry) => `${entry.label}=${entry.found}`).join(', ')}`)
-    await closeSettings(page)
-    return
-  }
-  runner.pass('settings.livery-section', 'Livery settings section is registered and opens', `nav label "${section.navLabel}" (index ${section.navIndex}), marker ${section.marker.selector}`, section)
-  const sectionCopyMatches = [labelsFor('zh').section, labelsFor('en').section].some(
-    (label) => normalizeCopy(section.navLabel) === normalizeCopy(label),
+  state.liveryNav = opened
+  const shippedLabels = [labelsFor('zh').section, labelsFor('en').section]
+  const expectedLabel = uiLabels.section
+  const row = opened.row ?? null
+  const rowLabel = row?.ariaLabel ?? row?.label ?? null
+  expect(
+    runner,
+    'nav.sidebar-entry',
+    'Livery row is registered in the left-sidebar plugin navigation (aria-label + icon + panellist slot)',
+    opened.via === PANEL_NAV_VIA && Boolean(row) && rowLabel === expectedLabel && row.hasIcon && row.hasPanellistSlot,
+    opened.via === PANEL_NAV_VIA
+      ? `row #${opened.rowIndex} aria-label "${rowLabel}" icon=${row?.hasIcon} panellistSlot=${row?.hasPanellistSlot} (page locale ${state.actualLocale})`
+      : `expected the sidebar.panellist path on a certified host, got "${opened.via}"`,
+    { panellist: opened.panellist, expectedLabel, shippedLabels },
+  )
+  const rows = opened.panellist?.rows ?? []
+  const knownPluginRows = ['插件', '自动化任务', '上下文观察', 'Plugins', 'Automation', 'Scheduled tasks', 'Context']
+  const otherPluginIndexes = rows
+    .filter((candidate) => candidate.index !== opened.rowIndex && knownPluginRows.includes(candidate.ariaLabel ?? candidate.label))
+    .map((candidate) => candidate.index)
+  expect(
+    runner,
+    'nav.row-order',
+    'Livery row comes after the existing plugin rows (order 30)',
+    opened.via === PANEL_NAV_VIA && otherPluginIndexes.every((index) => opened.rowIndex > index),
+    `row #${opened.rowIndex}; existing plugin rows at ${JSON.stringify(otherPluginIndexes)}; rows: ${rows.map((candidate) => candidate.ariaLabel ?? candidate.label).join(', ')}`,
+  )
+  const workspacesPresent = opened.panellist?.workspacesPresent === true
+  // DOM order is the semantic proof (the panellist nav precedes the workspace
+  // region); geometry is recorded as supporting evidence because the shell's
+  // grid can report the workspace wrapper at a container-relative top.
+  const geometryOk =
+    !workspacesPresent ||
+    !row ||
+    opened.panellist?.workspacesTop === null ||
+    opened.panellist?.workspacesHeight === 0 ||
+    row.top < opened.panellist.workspacesTop
+  expect(
+    runner,
+    'nav.above-workspaces',
+    'Livery row sits above the workspace section in the sidebar',
+    opened.panellist?.navBeforeWorkspaces === true && geometryOk,
+    `navBeforeWorkspaces=${opened.panellist?.navBeforeWorkspaces} rowTop=${row?.top} workspacesTop=${opened.panellist?.workspacesTop} workspacesHeight=${opened.panellist?.workspacesHeight}`,
+  )
+  const mainColumn = await readMainColumnState(page)
+  expect(
+    runner,
+    'nav.main-panel',
+    'selecting the row opens the Livery main-panel page in the main column',
+    opened.selected === true && mainColumn.liveryPanelVisible && mainColumn.selectedRowLabel === expectedLabel,
+    `row selected=${opened.selected}; main panel visible=${mainColumn.liveryPanelVisible}; selected row "${mainColumn.selectedRowLabel}"; main children=${mainColumn.mainChildCount}`,
+    { mainColumn },
   )
   expect(
     runner,
-    'settings.section-label',
-    'section nav label matches the shipped zh/en copy',
-    sectionCopyMatches,
-    `nav label "${section.navLabel}" (page locale "${state.actualLocale}") vs shipped "皮肤"/"Livery"`,
+    'nav.conversation-hidden',
+    'the conversation is replaced while the Livery panel is selected',
+    mainColumn.conversationComposerVisible === false && mainColumn.conversationCopyVisible === false,
+    `composer visible=${mainColumn.conversationComposerVisible}; conversation copy visible=${mainColumn.conversationCopyVisible}; body starts: ${oneLine(mainColumn.bodyTextStart, 120)}`,
+  )
+  await capture(page, ctx, { state: 'panel' })
+
+  // ---- legacy settings.section must NOT be registered on panel-nav hosts ----
+  try {
+    const settingsOpened = await openSettingsDetailed(page)
+    const sectionLabels = await readSettingsSectionLabels(page)
+    const liverySectionInSettings = await page.locator('[role="dialog"] [data-testid="livery-panel"], [role="dialog"] [data-testid="livery-section"]').count()
+    const legacyLabelPresent = sectionLabels.some((label) => shippedLabels.some((shipped) => normalizeCopy(label) === normalizeCopy(shipped)))
+    expect(
+      runner,
+      'nav.settings-section-absent',
+      'legacy settings.section Livery entry is NOT registered on panel-navigation hosts',
+      settingsOpened.via !== null && !legacyLabelPresent && liverySectionInSettings === 0,
+      `settings launcher path=${settingsOpened.via}; section labels=[${sectionLabels.map((label) => label.trim()).join(', ')}]; livery nodes in settings dialog=${liverySectionInSettings}`,
+      { sectionLabels },
+    )
+    runner.pass('nav.settings-open-path', 'settings dialog is still usable for the absence assertion', `launcher path=${settingsOpened.via}`, { via: settingsOpened.via })
+    await closeSettings(page)
+  } catch (error) {
+    runner.fail('nav.settings-section-absent', 'legacy settings.section Livery entry is NOT registered on panel-navigation hosts', `could not open settings to prove absence: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  // Closing the modal must leave the Livery panel selected.
+  const afterSettings = await readMainColumnState(page)
+  expect(
+    runner,
+    'nav.panel-still-selected',
+    'closing the settings dialog returns to the selected Livery panel',
+    afterSettings.liveryPanelVisible === true && afterSettings.selectedRowLabel === expectedLabel,
+    `panel visible=${afterSettings.liveryPanelVisible}; selected row "${afterSettings.selectedRowLabel}"`,
   )
 
   const galleryState = await waitForGallery(page)
@@ -638,7 +731,7 @@ export async function checkSettingsFlow(ctx) {
   expect(runner, 'gallery.thumbnails', 'every livery card shows a loaded preview thumbnail', thumbCount === liveryCards.length && brokenThumbs.length === 0, `${thumbCount}/${liveryCards.length} thumbs, broken: ${brokenThumbs.map((card) => card.id).join(', ') || 'none'}`)
   const errorState = await page.locator('[data-testid="livery-error"]').count().catch(() => 0)
   expect(runner, 'gallery.no-error-state', 'gallery is not in an error/catalog-unavailable state', errorState === 0, `${errorState} livery-error node(s)`)
-  await capture(page, ctx, { state: 'gallery' })
+  await capture(page, ctx, { state: 'panel-gallery' })
 
   // ---- search (localized name / id / tag / empty) ----
   const search = await findSearchInput(page, { labels: uiLabels })
@@ -669,16 +762,16 @@ export async function checkSettingsFlow(ctx) {
       const ok = scenario.expectCard ? match : filteredLiveries.length > 0 && filteredLiveries.length < liveryCards.length
       expect(runner, `search.${scenario.name}`, `search: ${scenario.assertion}`, ok, `query "${scenario.query}" → ${filteredLiveries.length} card(s): ${filteredLiveries.map((card) => card.id).join(', ') || '(none)'}`)
     }
-    await capture(page, ctx, { state: 'gallery-search-tag' })
+    await capture(page, ctx, { state: 'panel-gallery-search-tag' })
     await search.locator.fill('zzzz-no-such-livery')
     await sleep(350)
     const emptyState = await page.evaluate(() => {
-      const dialog = document.querySelector('[role="dialog"]')
-      const cards = dialog?.querySelectorAll('[data-testid="livery-card"][data-livery-id]') ?? []
-      return { cards: cards.length, text: (dialog?.innerText ?? '').slice(0, 400) }
+      const panel = document.querySelector('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"], [data-testid="livery-section"]')
+      const cards = panel?.querySelectorAll('[data-testid="livery-card"][data-livery-id]') ?? []
+      return { cards: cards.length, text: (panel?.innerText ?? '').slice(0, 400) }
     })
     expect(runner, 'search.empty-state', 'search-empty state renders for an unknown query', emptyState.cards === 0 && /没有|无匹配|No liveries match|No matching|empty/i.test(emptyState.text), `${emptyState.cards} card(s) remain; panel text: ${oneLine(emptyState.text, 220)}`)
-    await capture(page, ctx, { state: 'gallery-search-empty' })
+    await capture(page, ctx, { state: 'panel-gallery-search-empty' })
     await search.locator.fill('')
     await sleep(300)
   }
@@ -713,7 +806,6 @@ export async function checkSettingsFlow(ctx) {
   const before = await readThemeSnapshot(page)
   const previewCard = page.locator(`[data-testid="livery-card"][data-livery-id="${pair.preview}"]`).first()
   if (!(await previewCard.count())) {
-    await closeSettings(page)
     runner.fail('preview.previewing', 'previewing a different skin updates tokens transiently', `card for "${pair.preview}" not found`)
     return
   }
@@ -725,7 +817,7 @@ export async function checkSettingsFlow(ctx) {
   expect(runner, 'preview.previewing', 'previewing a different skin sets the preview attribute and tokens', preview.bodyAttribute === pair.preview && tokenMatches(preview, expectedPreview), `body attr=${preview.bodyAttribute} tokens=${JSON.stringify(pickTokens(preview))} expected=${JSON.stringify(expectedPreview)}`)
   expect(runner, 'preview.style-element', 'preview uses a transient Livery style element', preview.liveryStyles.length > before.liveryStyles.length, `${before.liveryStyles.length} → ${preview.liveryStyles.length} livery style element(s)`)
   expect(runner, 'preview.card-state', 'the previewed card reports the previewing state', (await readCardState(page, pair.preview)) === 'preview', `data-state=${await readCardState(page, pair.preview)}`)
-  await capture(page, ctx, { state: 'previewing', mode: 'light' })
+  await capture(page, ctx, { state: 'panel-previewing', mode: 'light' })
 
   const cancel = await findControl(page, { testId: 'livery-cancel', names: [uiLabels.cancel], exact: false })
   if (!cancel.locator) {
@@ -740,8 +832,7 @@ export async function checkSettingsFlow(ctx) {
   }
 
   if (config.mode === 'reuse' && !config.allowMutations) {
-    runner.skip('apply.persists', 'Apply commits the skin through the host settings and persists', 'reuse mode is read-only (--unsafe-mutate opts in)')
-    await closeSettings(page)
+    runner.skip('apply.persists', 'Apply commits the skin through the host config and persists', 'reuse mode is read-only (--unsafe-mutate opts in)')
     const active = (await readThemeSnapshot(page)).bodyAttribute
     state.appliedSkin = active && active !== 'stock' ? active : null
     return
@@ -755,7 +846,6 @@ export async function checkSettingsFlow(ctx) {
   const applyControl = await findControl(page, { testId: 'livery-apply', names: [uiLabels.apply], exact: false })
   if (!applyControl.locator) {
     runner.fail('apply.control', 'Apply control is present', 'apply button not found')
-    await closeSettings(page)
     return
   }
   await applyControl.locator.click()
@@ -776,14 +866,14 @@ export async function checkSettingsFlow(ctx) {
   const degradedNotices = await page.locator('[data-testid="livery-degraded"]').count()
   expect(
     runner,
-    'settings.no-degraded-notice',
-    'optional-only capability fallbacks do not surface as a degraded notice (runtime stays ready)',
+    'panel.no-degraded-notice',
+    'optional-only capability fallbacks do not surface as a degraded notice on the Livery page (runtime stays ready)',
     degradedNotices === 0,
     `${degradedNotices} livery-degraded notice(s) with all required capabilities available`,
   )
   const offlineNotices = await page.locator('[data-testid="livery-offline"]').count()
-  expect(runner, 'settings.no-offline-notice', 'the settings page is not in catalog-unavailable state', offlineNotices === 0, `${offlineNotices} livery-offline notice(s)`)
-  await capture(page, ctx, { state: 'applied', mode: 'light' })
+  expect(runner, 'panel.no-offline-notice', 'the Livery page is not in catalog-unavailable state', offlineNotices === 0, `${offlineNotices} livery-offline notice(s)`)
+  await capture(page, ctx, { state: 'panel-applied', mode: 'light' })
 
   if (config.mode === 'isolated') {
     let patchAfter = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
@@ -840,7 +930,23 @@ export async function checkSettingsFlow(ctx) {
     Boolean(bootPayloadAfter) && bootPayloadAfter.skinId === pair.applied,
     `handshake.skinId=${bootPayloadAfter?.skinId ?? '(missing)'} (expected ${pair.applied})`,
   )
-  await capture(page, ctx, { state: 'applied-after-reload', mode: 'light' })
+  // Reload returns to the conversation; re-open the Livery panel to prove the
+  // persisted skin renders through the new navigation entry.
+  const reopened = await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale }).catch((error) => ({ error }))
+  if (!reopened?.error) {
+    state.panelAfterReload = reopened
+    const mainAfterReload = await readMainColumnState(page)
+    expect(
+      runner,
+      'nav.panel-after-reload',
+      'after a hard reload the Livery panel opens again from the sidebar row and shows the persisted skin',
+      reopened.via === PANEL_NAV_VIA && mainAfterReload.liveryPanelVisible && mainAfterReload.selectedRowLabel === uiLabels.section,
+      `via=${reopened.via}; panel visible=${mainAfterReload.liveryPanelVisible}; selected "${mainAfterReload.selectedRowLabel}"`,
+    )
+  } else {
+    runner.fail('nav.panel-after-reload', 'after a hard reload the Livery panel opens again from the sidebar row and shows the persisted skin', String(reopened.error))
+  }
+  await capture(page, ctx, { state: 'panel-applied-after-reload', mode: 'light' })
 }
 
 async function focusedCardId(page) {
@@ -1161,14 +1267,19 @@ export async function checkFonts(ctx) {
     if (enSnapshot === null) enSnapshot = await readThemeSnapshot(page)
     const en = fontExpectationsOf(ctx, livery, 'en')
     assertFontsForLocale(runner, ctx, en, enSnapshot, 'fonts.en-latin', `en page resolves the livery latin stack (${strategy})`)
-    await capture(page, ctx, { locale: 'en', state: 'applied', mode: 'light' })
-    // English gallery copy/state
-    await openSettings(page)
+    await capture(page, ctx, { locale: 'en', state: 'panel-applied', mode: 'light' })
+    // English sidebar entry + panel copy
     const enLabels = labelsFor('en')
-    const enSection = await findLiverySection(page, { labels: enLabels, catalog: state.catalog, locale: 'en' })
-    expect(runner, 'locale.en-gallery', 'English settings gallery renders with English section copy', enSection.found && normalizeCopy(enSection.navLabel) === normalizeCopy(enLabels.section), `nav label "${enSection.navLabel}" (expected "${enLabels.section}")`)
-    await capture(page, ctx, { locale: 'en', state: 'gallery' })
-    await closeSettings(page)
+    const enOpened = await openLiveryDetailed(page, { labels: enLabels, locale: 'en' })
+    const enRowLabel = enOpened.row?.ariaLabel ?? enOpened.row?.label ?? null
+    expect(
+      runner,
+      'locale.en-gallery',
+      'English shell shows the Livery sidebar entry and English panel copy',
+      enOpened.via === PANEL_NAV_VIA && enRowLabel === enLabels.section,
+      `sidebar row label "${enRowLabel}" (expected "${enLabels.section}"); via=${enOpened.via}`,
+    )
+    await capture(page, ctx, { locale: 'en', state: 'panel-gallery' })
   } finally {
     await restoreLocaleZh(ctx)
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 }).catch(() => {})
@@ -1200,18 +1311,23 @@ export async function checkSelfCheck(ctx) {
     return
   }
   await waitForAppReady(page)
+  // The fonts group ends with a locale flip + reload; let the locale/theme
+  // settle before interacting, then clear any late first-run overlay that can
+  // re-appear on a cloned profile without credentials.
+  await page.waitForFunction(() => Boolean(document.documentElement.lang), undefined, { timeout: 10_000 }).catch(() => {})
+  await sleep(350)
+  await dismissFirstRunDialogs(page)
   const uiLocale = await detectUiLocale(page)
   state.actualLocale = uiLocale
   const uiLabels = labelsFor(uiLocale)
   try {
-    await openSettings(page)
+    await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale })
   } catch (error) {
     runner.fail('selfcheck.panel', 'self-check panel reports capability availability', String(error))
     return
   }
-  const section = await findLiverySection(page, { labels: uiLabels, catalog: state.catalog, locale: uiLocale })
-  if (!section.found) {
-    runner.fail('selfcheck.panel', 'self-check panel reports capability availability', 'Livery section not found')
+  if (!(await liveryPanelVisible(page))) {
+    runner.fail('selfcheck.panel', 'self-check panel reports capability availability', 'Livery panel not visible')
     return
   }
   let selfCheck = await findControl(page, { testId: 'livery-selfcheck-toggle', names: [uiLabels.selfCheck], exact: false })
@@ -1222,9 +1338,26 @@ export async function checkSelfCheck(ctx) {
   }
   if (selfCheck.locator) {
     const expanded = await selfCheck.locator.getAttribute('aria-expanded').catch(() => null)
-    if (expanded !== 'true') await selfCheck.locator.click().catch(() => {})
+    if (expanded !== 'true') {
+      await selfCheck.locator.scrollIntoViewIfNeeded().catch(() => {})
+      try {
+        await selfCheck.locator.click({ timeout: 8_000 })
+      } catch {
+        await selfCheck.locator.evaluate((element) => element.click()).catch(() => {})
+      }
+    }
+    // The panel body renders capability rows only after expansion; on a
+    // real-profile clone with extra plugins the React commit can take longer.
+    await page
+      .waitForSelector('[data-testid="livery-capability"]', { state: 'visible', timeout: 10_000 })
+      .catch(() => {})
+    const nowExpanded = await selfCheck.locator.getAttribute('aria-expanded').catch(() => null)
+    if (nowExpanded !== 'true') await selfCheck.locator.evaluate((element) => element.click()).catch(() => {})
+    await page
+      .waitForSelector('[data-testid="livery-capability"]', { state: 'visible', timeout: 8_000 })
+      .catch(() => {})
   }
-  await sleep(500)
+  await sleep(400)
   const panel = await readSelfCheck(page)
   state.selfCheck = panel
   const capabilityRows = panel.capabilities
@@ -1273,7 +1406,6 @@ export async function checkSelfCheck(ctx) {
   if (!state.appliedSkin) {
     runner.skip('selfcheck.contrast', 'self-check reports 0 contrast failures', 'no active livery presented (stock)')
     runner.skip('selfcheck.css-safety', 'self-check reports 0 !important / 0 hash selectors', 'no active livery presented (stock)')
-    await closeSettings(page)
     return
   }
   expect(
@@ -1342,7 +1474,27 @@ export async function checkSelfCheck(ctx) {
         }
       }
     })
-    await copy.locator.click()
+    // A late onboarding modal can cover the main panel on a cloned profile
+    // without credentials; dismiss and retry, falling back to a JS click.
+    let copyClicked = false
+    for (let attempt = 0; attempt < 3 && !copyClicked; attempt += 1) {
+      await dismissFirstRunDialogs(page)
+      try {
+        await copy.locator.click({ timeout: 6_000 })
+        copyClicked = true
+      } catch {
+        try {
+          await copy.locator.evaluate((element) => element.click())
+          copyClicked = true
+        } catch {
+          await sleep(300)
+        }
+      }
+    }
+    if (!copyClicked) {
+      const overlays = await page.evaluate(() => [...document.querySelectorAll('[role="presentation"], [aria-hidden="true"]')].map((element) => ({ cls: String(element.className).slice(0, 80), text: (element.textContent ?? '').trim().slice(0, 120) })).slice(0, 5))
+      runner.fail('selfcheck.copy-diagnostics', 'copy diagnostics produces diagnostics text', `copy button was not clickable after 3 overlay-recovery attempts; overlays=${JSON.stringify(overlays)}`)
+    }
     await sleep(400)
     const captured = await page.evaluate(() => window.__CLIPBOARD_CAPTURED__)
     const clipboard = await page.evaluate(async (fallbackText) => {
@@ -1367,9 +1519,8 @@ export async function checkSelfCheck(ctx) {
     } else {
       expect(runner, 'selfcheck.copy-diagnostics', 'copy diagnostics produces diagnostics text', toast, `clipboard unreadable (${clipboard.error ?? 'unknown'}); "diagnostics copied" toast=${toast}`)
     }
-    await capture(page, ctx, { state: 'diagnostics-copied', mode: 'light' })
+    await capture(page, ctx, { state: 'panel-diagnostics-copied', mode: 'light' })
   }
-  await closeSettings(page)
 }
 
 async function readSelfCheck(page) {
@@ -1535,13 +1686,23 @@ export async function checkRestoreStock(ctx) {
     return
   }
   await waitForAppReady(page)
+  // The fonts group ends with a locale flip + reload; let the locale/theme
+  // settle before interacting, then clear any late first-run overlay that can
+  // re-appear on a cloned profile without credentials.
+  await page.waitForFunction(() => Boolean(document.documentElement.lang), undefined, { timeout: 10_000 }).catch(() => {})
+  await sleep(350)
+  await dismissFirstRunDialogs(page)
   const uiLocale = await detectUiLocale(page)
   state.actualLocale = uiLocale
   const uiLabels = labelsFor(uiLocale)
-  await openSettings(page)
-  const section = await findLiverySection(page, { labels: uiLabels, catalog: state.catalog, locale: uiLocale })
-  if (!section.found) {
-    runner.fail('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', 'Livery section not found')
+  try {
+    await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale })
+  } catch (error) {
+    runner.fail('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', String(error))
+    return
+  }
+  if (!(await liveryPanelVisible(page))) {
+    runner.fail('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', 'Livery panel not visible')
     return
   }
   const restore = await findControl(page, { testId: 'livery-restore', names: [uiLabels.restoreStock], exact: false })
@@ -1553,7 +1714,6 @@ export async function checkRestoreStock(ctx) {
   if (restoreDisabled || !state.appliedSkin) {
     runner.skip('restore.stock', 'Restore stock appearance removes the livery and returns stock tokens', `restore control is disabled (already stock / no applied skin): disabled=${restoreDisabled}; appliedSkin=${state.appliedSkin ?? '(none)'}`)
     runner.skip('restore.persists', 'stock restore survives a hard reload', 'already on stock appearance')
-    await closeSettings(page)
     return
   }
   await restore.locator.click()
@@ -1595,8 +1755,7 @@ export async function checkRestoreStock(ctx) {
     { actual: actualTokens, expected: expectedStock },
   )
   expect(runner, 'restore.no-styles', 'Restore removes Livery-owned style elements', stock.liveryStyles.length === 0, `${stock.liveryStyles.length} livery style element(s)`)
-  await capture(page, ctx, { state: 'stock', mode: 'light' })
-  await closeSettings(page)
+  await capture(page, ctx, { state: 'panel-stock', mode: 'light' })
   await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
   await waitForBootGraph(page)
   await waitForAppReady(page)

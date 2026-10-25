@@ -14,6 +14,11 @@ export const zhCN: Record<LiveryKey, string> = {
   'section.subtitle': '为整个会话挑选颜色、字体与安全布局。',
   'section.loading': '正在加载皮肤…',
 
+  // Sidebar plugin-navigation row + full-page panel.
+  'panel.label': '皮肤',
+  'panel.title': '皮肤',
+  'panel.description': '为整个会话挑选颜色、字体与安全布局。',
+
   // Current livery summary card.
   'current.title': '当前皮肤',
   'current.stockName': '默认外观',

@@ -145,6 +145,12 @@ plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
 - Self-check shows the live host version, adapter id, contract hash and catalog
   profile; capability rows come from the catalog's capability map (so on 0.2.1 it
   additionally lists `host-font-role-hooks: available`).
+- **Entry point:** the primary UI is a main-page panel (`main` keyed, key `livery`)
+  plus a `sidebar.panellist` row (order 30, after 插件 0 / 自动化任务 10 / 上下文观察
+  20; label 皮肤/Livery) — the same integration as the shipped Plugins page. The old
+  `settings.section` page remains only as a fallback for hosts without panel
+  navigation (pre-`0.1.5-alpha.2`). See `docs/research/client-contract.md` §4 for the
+  version history of this capability.
 - If the boot payload/catalog identity is not in the registry: fail closed to stock,
   remove boot style/attributes, report the mismatch.
 

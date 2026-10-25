@@ -17,7 +17,9 @@ const CHECK_AREA_TITLES = {
   previews: 'Preview assets',
   handshake: 'First-frame handshake',
   stock: 'Stock baseline',
-  settings: 'Settings section',
+  nav: 'Navigation (sidebar panellist + main panel)',
+  panel: 'Livery panel page',
+  settings: 'Settings dialog (absence assertions)',
   gallery: 'Gallery',
   search: 'Search',
   keyboard: 'Keyboard navigation',
@@ -274,7 +276,7 @@ function groupedChecks(report) {
  */
 export const PLAN20_ROWS = [
   {
-    criterion: 'Exact DSH 0.2.0-rc.2 install + certified contract hash',
+    criterion: 'Exact certified host install + certified contract hash',
     checks: ['boot.graph-entry', 'bundle.serves-client-js', 'handshake.applied-boot', 'catalog.schema', 'catalog.livery-hashes'],
   },
   {
@@ -286,8 +288,8 @@ export const PLAN20_ROWS = [
     checks: ['boot.graph-entry', 'bundle.serves-client-js', 'handshake.certified-adapter'],
   },
   {
-    criterion: 'zh-CN + en-US settings UI and previews complete',
-    checks: ['settings.livery-section', 'settings.section-label', 'gallery.cards', 'search.name', 'keyboard.arrow-right', 'fonts.en-latin', 'locale.en-gallery', 'preview.previewing'],
+    criterion: 'zh-CN + en-US Livery UI and previews complete (sidebar navigation entry)',
+    checks: ['nav.sidebar-entry', 'nav.main-panel', 'gallery.cards', 'search.name', 'keyboard.arrow-right', 'fonts.en-latin', 'locale.en-gallery', 'preview.previewing'],
   },
   {
     criterion: 'At least 10 double-mode liveries',
@@ -301,7 +303,7 @@ export const PLAN20_ROWS = [
   {
     criterion: 'At least one safe layout capability actually effective',
     checks: [],
-    note: 'HONEST GAP: DSH 0.2.0-rc.2 exposes no public density / transcript-width / message-flow hook. Livery degrades layout to host/stock and lists the unavailable capabilities in the self-check; no fake compensation is shipped. Wallpaper is removed from schema v1.',
+    note: 'HONEST GAP: the certified hosts expose no public density / transcript-width / message-flow hook. Livery degrades layout to host/stock and lists the unavailable capabilities in the self-check; no fake compensation is shipped. Wallpaper is removed from schema v1.',
   },
   {
     criterion: 'Follows host light/dark without changing host preference',
@@ -318,6 +320,11 @@ export const PLAN20_ROWS = [
   {
     criterion: 'All contrast gates pass',
     checks: ['catalog.contrast-zero-failures', 'selfcheck.contrast'],
+  },
+  {
+    criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',
+    checks: ['nav.sidebar-entry', 'nav.row-order', 'nav.above-workspaces', 'nav.conversation-hidden', 'nav.settings-section-absent'],
+    note: 'sidebar.panellist row (id/panel key livery, order 30, zh 皮肤 / en Livery) + main keyed page; legacy settings.section must stay unregistered on panel-navigation hosts',
   },
   {
     criterion: 'Preview is transient; Apply is one durable mutation; restore stock works',

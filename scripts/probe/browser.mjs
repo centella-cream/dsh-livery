@@ -544,6 +544,232 @@ export async function findLiverySection(page, { labels = LABELS.zh, catalog, loc
   return { found: false, tried }
 }
 
+// ---------------------------------------------------------------------------
+// Main-panel navigation (sidebar.panellist + `main` keyed panel page)
+//
+// Layout shell (verified DSH 0.2.1-rc.2 base install):
+//   <div data-slot="sidebar">
+//     <nav class="…_panelList" aria-label="全局面板">
+//       <button class="…_panelRow" aria-label="插件"><div data-slot="sidebar.panellist">…</div>…</button>
+//     </nav>
+//     <div data-slot="sidebar.workspaces">…</div>
+//   </div>
+// Selected row: aria-current="page" + active class. The `main` keyed slot
+// replaces the conversation under <div data-slot="main">.
+// ---------------------------------------------------------------------------
+
+/** The left sidebar root. */
+export function sidebarRoot(page) {
+  return page.locator('[data-slot="sidebar"]').first()
+}
+
+/** The global panel list navigation inside the sidebar. */
+export function sidebarPanelNav(page) {
+  return page.locator('[data-slot="sidebar"] nav[aria-label="全局面板"], [data-slot="sidebar"] nav[aria-label="Global panels"]').first()
+}
+
+/** Every registered panellist row (buttons inside the panel list nav). */
+export function sidebarPanellistRows(page) {
+  return sidebarPanelNav(page).locator('button')
+}
+
+/** The Livery main-panel page root (new marker, legacy settings content root, or shell marker). */
+export function liveryPanelRoot(page) {
+  return page
+    .locator('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"], [data-slot="main"] [data-plugin-panel="true"]')
+    .first()
+}
+
+/** Structured snapshot of the sidebar panel list plus the workspace section. */
+export async function inspectPanellist(page) {
+  return page.evaluate(() => {
+    const sidebar = document.querySelector('[data-slot="sidebar"]')
+    if (!sidebar) return { found: false, rows: [] }
+    const nav = sidebar.querySelector('nav[aria-label="全局面板"], nav[aria-label="Global panels"], nav')
+    const workspaces = sidebar.querySelector('[data-slot="sidebar.workspaces"]')
+    const rows = [...(nav?.querySelectorAll('button') ?? [])].map((button, index) => {
+      const rect = button.getBoundingClientRect()
+      return {
+        index,
+        label: (button.textContent ?? '').trim(),
+        ariaLabel: button.getAttribute('aria-label'),
+        selected: button.getAttribute('aria-current') === 'page',
+        hasPanellistSlot: Boolean(button.querySelector('[data-slot="sidebar.panellist"]')),
+        hasIcon: Boolean(button.querySelector('svg')),
+        top: Math.round(rect.top),
+        height: Math.round(rect.height),
+      }
+    })
+    const workspacesRect = workspaces?.getBoundingClientRect()
+    return {
+      found: true,
+      rows,
+      workspacesPresent: Boolean(workspaces),
+      workspacesTop: workspacesRect ? Math.round(workspacesRect.top) : null,
+      workspacesHeight: workspacesRect ? Math.round(workspacesRect.height) : null,
+      /** DOM order: does the panellist nav precede the workspace section? */
+      navBeforeWorkspaces: Boolean(nav && workspaces && (nav.compareDocumentPosition(workspaces) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0),
+    }
+  })
+}
+
+/** `openLiveryDetailed` path value for the sidebar panellist entry. */
+export const PANEL_NAV_VIA = 'sidebar-panellist'
+
+/** Candidate labels for the Livery row in either shipped locale. */
+function panellistLabels(labels, locale) {
+  const candidates = [labels?.section, LABELS.zh.section, LABELS.en.section].filter(Boolean)
+  return [...new Set(candidates)]
+}
+
+/** Whether the main column currently shows the Livery panel page. */
+export async function liveryPanelVisible(page) {
+  const root = liveryPanelRoot(page)
+  return (await root.count().catch(() => 0)) > 0 && (await root.isVisible().catch(() => false))
+}
+
+/**
+ * Open the Livery main panel through the sidebar panellist row.
+ *
+ * Records which path succeeded (`sidebar-panellist` for certified hosts, or
+ * `settings-fallback` for pre-panel-navigation hosts), the row order, the
+ * resolved locale label and whether the conversation was replaced.
+ */
+export async function openLiveryDetailed(page, { labels = LABELS.zh, locale = 'zh', timeoutMs = 25_000 } = {}) {
+  await dismissFirstRunDialogs(page)
+  await clearOverlayDialogs(page)
+  if (await liveryPanelVisible(page)) {
+    const panellist = await inspectPanellist(page)
+    const selected = panellist.rows.find((row) => row.selected) ?? null
+    return { via: 'already-open', row: selected, panellist }
+  }
+  const before = await inspectPanellist(page)
+  const candidates = panellistLabels(labels, locale)
+  const nav = sidebarPanelNav(page)
+  let rowIndex = -1
+  let rowLabel = null
+  if ((await nav.count().catch(() => 0)) > 0) {
+    const buttons = nav.locator('button')
+    const count = await buttons.count().catch(() => 0)
+    for (let index = 0; index < count; index += 1) {
+      const button = buttons.nth(index)
+      const aria = await button.getAttribute('aria-label').catch(() => null)
+      const text = ((await button.innerText().catch(() => '')) || '').trim()
+      const matches = candidates.some((candidate) => aria === candidate || text === candidate)
+      if (!matches) continue
+      rowIndex = index
+      rowLabel = aria ?? text
+      try {
+        await button.click({ timeout: Math.min(timeoutMs, 8_000) })
+      } catch {
+        await button.evaluate((element) => element.click()).catch(() => {})
+      }
+      break
+    }
+  }
+  if (rowIndex === -1) {
+    // Legacy hosts without panel navigation register a settings.section page.
+    if (!(await settingsDialog(page).count())) {
+      try {
+        await openSettingsDetailed(page)
+        const section = await findLiverySection(page, { labels, locale, timeoutMs })
+        if (section.found) return { via: 'settings-fallback', row: null, panellist: before, section }
+      } catch {
+        /* fall through to the error below */
+      }
+    }
+    throw new Error(`Livery panellist row not found in the sidebar (labels tried: ${candidates.join(' / ')}); rows: ${before.rows.map((row) => row.ariaLabel ?? row.label).join(', ') || '(none)'}`)
+  }
+  // Selected row state and the main column swap are both observable shell facts.
+  const selected = await page
+    .waitForFunction(
+      (index) => {
+        const sidebar = document.querySelector('[data-slot="sidebar"]')
+        const buttons = [...(sidebar?.querySelectorAll('nav button') ?? [])]
+        return buttons[index]?.getAttribute('aria-current') === 'page'
+      },
+      rowIndex,
+      { timeout: Math.min(timeoutMs, 10_000) },
+    )
+    .then(() => true)
+    .catch(() => false)
+  await page
+    .waitForFunction(
+      () => Boolean(document.querySelector('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"]')),
+      undefined,
+      { timeout: Math.min(timeoutMs, 15_000) },
+    )
+    .catch(() => {})
+  const after = await inspectPanellist(page)
+  return {
+    via: 'sidebar-panellist',
+    row: after.rows[rowIndex] ?? null,
+    rowIndex,
+    rowLabel,
+    selected,
+    panellistBefore: before,
+    panellist: after,
+  }
+}
+
+/** Open the Livery main panel; returns the page locator. */
+export async function openLivery(page, options = {}) {
+  const opened = await openLiveryDetailed(page, options)
+  if (opened.via === 'settings-fallback') {
+    return page.locator('[role="dialog"] [data-testid="livery-section"]').first()
+  }
+  return liveryPanelRoot(page)
+}
+
+/** Return from the Livery panel to the conversation (New Session / 新会话). */
+export async function returnToConversation(page) {
+  const button = page.locator('button[aria-label="新建会话"], button[aria-label="New session"], button[aria-label="新会话"]').first()
+  if (await button.count().catch(() => 0)) {
+    await button.click({ timeout: 8_000 }).catch(() => {})
+    await sleep(400)
+  }
+}
+
+/** Renderer facts proving the panel replaced the conversation in the main column. */
+export async function readMainColumnState(page) {
+  return page.evaluate(() => {
+    const main = document.querySelector('[data-slot="main"]')
+    const livery = document.querySelector('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"]')
+    const selectedRow = [...document.querySelectorAll('[data-slot="sidebar"] nav button')].find((button) => button.getAttribute('aria-current') === 'page')
+    const mainText = main?.innerText ?? ''
+    const editables = [...(main?.querySelectorAll('textarea, input, [contenteditable="true"], [role="textbox"]') ?? [])].filter((element) => {
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
+    })
+    const composerHint = editables.some((element) =>
+      /描述你想要构建|构建的内容|What do you want to build|Describe (what|your)|Send a message/i.test(
+        `${element.getAttribute('placeholder') ?? ''} ${element.getAttribute('aria-label') ?? ''} ${element.getAttribute('data-placeholder') ?? ''}`,
+      ),
+    )
+    // The conversation surface shows the empty-new-session copy when no session
+    // content exists; panel pages replace it entirely.
+    const conversationCopy = /探索未至之境|Start exploring|描述你想要构建的内容|What do you want to build/i.test(mainText)
+    return {
+      mainPresent: Boolean(main),
+      mainChildCount: main ? main.children.length : 0,
+      liveryPanelVisible: Boolean(livery) && (livery.getBoundingClientRect().width > 0),
+      selectedRowLabel: selectedRow ? (selectedRow.getAttribute('aria-label') ?? (selectedRow.textContent ?? '').trim()) : null,
+      conversationComposerVisible: composerHint || conversationCopy,
+      conversationCopyVisible: conversationCopy,
+      editableCount: editables.length,
+      liveryPanelCount: document.querySelectorAll('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"]').length,
+      bodyTextStart: (document.body.innerText ?? '').slice(0, 160),
+    }
+  })
+}
+
+/** Labels rendered by the settings dialog navigation (used to prove the old section is gone). */
+export async function readSettingsSectionLabels(page) {
+  const { nav } = settingsNav(page)
+  if (!(await nav.count().catch(() => 0))) return []
+  return nav.locator('button').allInnerTexts().catch(() => [])
+}
+
 /** Gallery cards (stock card included), via the stable test hooks. */
 export function galleryCards(page) {
   const cards = page.locator('[data-testid="livery-card"][data-livery-id]')
