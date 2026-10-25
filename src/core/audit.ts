@@ -13,7 +13,7 @@
  * - hostile values (`url(`, `@`, `!important`, selectors, `<`, newlines, …) are
  *   rejected;
  * - metric overrides are limited to the consumed host font tokens listed in
- *   docs/implementation/style-system.md (user content/code font-size tokens stay
+ *   docs/design/style-system.md (user content/code font-size tokens stay
  *   authoritative).
  *
  * The audit is pure and deterministic; colour-token coverage accounting stays in

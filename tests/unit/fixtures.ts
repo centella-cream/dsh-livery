@@ -208,7 +208,7 @@ export const OVERRIDE_MANIFEST: LiveryManifest = makeManifest(
 
 
 // ---------------------------------------------------------------------------
-// Style system v2 fixtures (docs/implementation/style-system.md)
+// Style system v2 fixtures (docs/design/style-system.md)
 // ---------------------------------------------------------------------------
 
 /** The seven new local-only font ids paired into plausible livery pairings. */

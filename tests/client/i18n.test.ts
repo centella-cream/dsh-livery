@@ -32,13 +32,13 @@ describe('dictionary key parity', () => {
     const files = [
       'src/client/index.tsx',
       'src/client/diagnostics.ts',
-      'src/client/settings/Gallery.tsx',
-      'src/client/settings/SelfCheck.tsx',
-      'src/client/settings/LiverySettingsPage.tsx',
-      'src/client/settings/LiveryWorkspace.tsx',
+      'src/client/ui/Gallery.tsx',
+      'src/client/ui/SelfCheck.tsx',
+      'src/client/ui/LiverySettingsPage.tsx',
+      'src/client/ui/LiveryWorkspace.tsx',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
-      'src/client/settings/capability-names.ts',
+      'src/client/ui/capability-names.ts',
     ]
     const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability'
     const pattern = new RegExp(`['"]((?:${prefixes})\\.[A-Za-z0-9.]+)['"]`, 'g')
@@ -61,13 +61,13 @@ describe('dictionary key parity', () => {
       'src/client/runtime.ts',
       'src/client/presenter.ts',
       'src/client/diagnostics.ts',
-      'src/client/settings/Gallery.tsx',
-      'src/client/settings/SelfCheck.tsx',
-      'src/client/settings/LiverySettingsPage.tsx',
-      'src/client/settings/LiveryWorkspace.tsx',
+      'src/client/ui/Gallery.tsx',
+      'src/client/ui/SelfCheck.tsx',
+      'src/client/ui/LiverySettingsPage.tsx',
+      'src/client/ui/LiveryWorkspace.tsx',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
-      'src/client/settings/capability-names.ts',
+      'src/client/ui/capability-names.ts',
     ]
     const han = /[\u3400-\u4dbf\u4e00-\u9fff]/
     const offenders = files.filter(file => han.test(readFileSync(join(process.cwd(), file), 'utf8')))

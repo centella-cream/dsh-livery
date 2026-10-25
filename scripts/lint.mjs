@@ -18,7 +18,7 @@ async function walk(directory, files = []) {
     return files
   }
   for (const entry of entries) {
-    if (['node_modules', 'lib', 'artifacts', '.tmp', '.git', 'references', 'research'].includes(entry.name)) continue
+    if (['node_modules', 'lib', 'artifacts', '.tmp', '.git', 'references', 'research', '.local-archive'].includes(entry.name)) continue
     const path = join(directory, entry.name)
     if (entry.isDirectory()) await walk(path, files)
     else files.push(path)
@@ -32,11 +32,11 @@ const sourceFiles = files.filter((file) => /\.(ts|tsx|mjs|js|json|yml|yaml|md)$/
 for (const file of sourceFiles) {
   const text = await readFile(file, 'utf8')
   const rel = relative(root, file)
-  if (rel.startsWith('docs/research/') || rel.startsWith('docs/verification/')) continue
+  if (rel.startsWith('docs/research/') || rel.startsWith('docs/verification.md')) continue
   if (rel.startsWith('references/') || rel.startsWith('research/')) continue
   // Development-only helpers may probe a local DSH install path; shipped sources
   // and packaging must never carry absolute host paths.
-  const localProbe = rel.startsWith('tests/') || rel.startsWith('scripts/probe/')
+  const localProbe = rel.startsWith('tests/') || rel.startsWith('scripts/acceptance/probe/')
   if (/\/Users\/[^/\s"'`]+/u.test(text) && !localProbe && !rel.startsWith('docs/')) {
     problems.push(`${rel}: contains an absolute user path`)
   }
@@ -89,7 +89,7 @@ try {
 }
 
 // Documentation required by the plan.
-for (const file of ['docs/implementation/interfaces.md', 'LICENSE', 'README.md', 'schemas/livery.schema.json']) {
+for (const file of ['docs/design/interfaces.md', 'docs/verification.md', 'README.md', 'README.zh-CN.md', 'CONTRIBUTING.md', 'CONTRIBUTING.zh-CN.md', 'SECURITY.md', 'CODE_OF_CONDUCT.md', 'LICENSE', 'schemas/livery.schema.json']) {
   try {
     await stat(join(root, file))
   } catch {

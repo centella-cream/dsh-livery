@@ -20,7 +20,7 @@
  * 6. A bounded WCAG repair pass (`auditContrast` + `adjustForContrast`) moves
  *    foreground tokens that miss §18.2; explicit manifest overrides win over the
  *    derived values (they are exempt from the repair pass).
- * 7. Style system v2 merge order (docs/implementation/style-system.md §2):
+ * 7. Style system v2 merge order (docs/design/style-system.md §2):
  *    derived colours → `metrics.tokens` (mode-independent) → `surfaceStyle.light`
  *    or `surfaceStyle.dark` → explicit `variants.<mode>.tokens` (explicit wins).
  *    `CompiledVariant.tokens` stays the single emitted map the renderer consumes.
@@ -33,7 +33,7 @@
  *    unconsumed colour tokens inherit stock and are reported by the compiler.
  *
  * Every entry point takes the host `StockSnapshot` explicitly (§2 of
- * docs/implementation/multi-version.md): a catalog compiled for one host version
+ * docs/design/multi-version.md): a catalog compiled for one host version
  * can never derive against another version's token values. No module-global
  * stock table survives. This module imports the frozen snapshot *types* only and
  * must never be reachable from the Client/Host runtime bundles.

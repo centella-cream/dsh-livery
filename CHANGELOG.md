@@ -52,7 +52,7 @@ user.
   differences (serif vs sans font stack, radius 6px vs 24px, different surface
   backgrounds, glass backdrop material); stock restored afterwards.
 - Full four-target acceptance matrix is re-run and reported in
-  `docs/verification/`.
+  `docs/verification.md`.
 
 ## [0.2.2] — unreleased
 
@@ -70,7 +70,7 @@ main-page left-sidebar plugin navigation (the same pattern as 插件 / 自动化
   the plugin falls back to the legacy `settings.section` page instead of failing.
 - Research note documenting the capability history
   (`docs/research/client-contract.md` §4) and the entry contract
-  (`docs/implementation/interfaces.md` §6).
+  (`docs/design/interfaces.md` §6).
 
 ### Changed
 
@@ -188,6 +188,6 @@ the Desktop `0.2.1-rc.3` runtime (`dsh-0.2.1-rc.3-r1`).
   proposed support matrix keeps those targets pending.
 - Host-level density/transcript-width/message-flow capability is unavailable in DSH
   `0.2.0-rc.2`; those recipes degrade to host/stock and are reported in self-check.
-  See `docs/verification/phase0-contract.md`.
+  See `docs/verification.md`.
 - Wallpaper and custom `.dshlivery` import are not part of `schemaVersion: 1`
   (Phase 0 background-layer verification did not pass inside the public contract).

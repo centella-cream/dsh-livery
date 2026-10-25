@@ -306,7 +306,7 @@ function compileOne(
   const evaluation = evaluateCapabilities(capabilities as ContractCapabilityFacts, manifest)
   const effectiveManifest: LiveryManifest = { ...manifest, layout: evaluation.effectiveLayout }
   const derived = deriveLivery(effectiveManifest, stock)
-  // Emission policy is core-owned (docs/implementation/style-system.md): derive
+  // Emission policy is core-owned (docs/design/style-system.md): derive
   // already emits exactly the A-tier colour set + registered style/metric tokens +
   // explicit author overrides. The compiler must not filter that map again, or a
   // private typography binding / non-colour style token could be dropped.
@@ -494,7 +494,7 @@ ${banner}
  */
 import type { CatalogProfileData } from '../core/types.js'
 
-/** One render-equivalent catalog profile (see docs/implementation/multi-version.md §4). */
+/** One render-equivalent catalog profile (see docs/design/multi-version.md §4). */
 export type CatalogProfile = CatalogProfileData
 `
   return `${header}

@@ -7,7 +7,7 @@
  * this module (it needs the frozen stock snapshot of the target host version).
  *
  * Every render entry point takes the host `StockSnapshot` explicitly (§2 of
- * docs/implementation/multi-version.md): a catalog compiled for one host version
+ * docs/design/multi-version.md): a catalog compiled for one host version
  * can never render against another version's token values.
  *
  * Output contract (frozen):

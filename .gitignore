@@ -11,7 +11,9 @@ test-results/
 # Local tooling / heavy research inputs
 .pnpm-store/
 references/
+.local-archive/
 research/profile-probe/.npm-cache/
 research/profile-probe/.run/
 research/profile-probe/.pw-browsers/
 .pnp*
+pnpm-workspace.yaml

@@ -9,7 +9,7 @@
  */
 import { useId } from 'react'
 import type { LiveryPanelPageProps } from './platform.js'
-import { LiveryWorkspace } from './settings/LiveryWorkspace.js'
+import { LiveryWorkspace } from './ui/LiveryWorkspace.js'
 
 /**
  * Render the Livery main-panel page.

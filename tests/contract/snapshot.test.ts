@@ -9,10 +9,11 @@ import type { AdapterManifest, ContractSnapshot, SupportMatrix } from '../../src
 
 const workspace = process.cwd()
 const CERTIFIED_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3']
-const installCandidates = [
-  process.env.DSH_INSTALL,
-  '/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh',
-].filter((value): value is string => typeof value === 'string' && value !== '')
+// Optional local verification: set DSH_INSTALL to a matching @deepseek-ai/dsh
+// package root (e.g. `.../node_modules/@deepseek-ai/dsh`). CI skips these checks.
+const installCandidates = [process.env.DSH_INSTALL].filter(
+  (value): value is string => typeof value === 'string' && value !== '',
+)
 
 async function readContract(version: string): Promise<ContractSnapshot> {
   return JSON.parse(await readFile(join(workspace, 'contracts', 'dsh', version, 'contract.json'), 'utf8')) as ContractSnapshot

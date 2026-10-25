@@ -8,7 +8,7 @@
  * material / border token families validated by `src/core/audit.ts`, plus radius
  * scale values already consumed by the host.
  *
- * Frozen contract: docs/implementation/style-system.md §1.
+ * Frozen contract: docs/design/style-system.md §1.
  */
 
 import type {
@@ -83,20 +83,20 @@ export const FONT_STACKS: Readonly<Record<FontId, FontStackDefinition>> = {
 /**
  * Typography metric profiles. `lineHeight` is design metadata (the host owns
  * body leading); `tokens` are the mode-independent consumed font-token overrides
- * allowed by docs/implementation/style-system.md §1. Legacy profiles keep empty
+ * allowed by docs/design/style-system.md §1. Legacy profiles keep empty
  * token maps so existing liveries keep their established rendering bytes.
  */
 export const METRICS: Readonly<Record<MetricsId, MetricsDefinition>> = {
   'cjk-comfortable': {
     id: 'cjk-comfortable',
     lineHeight: 1.55,
-    note: 'Comfortable CJK body leading target (IMPLEMENTATION_PLAN.md §11.1).',
+    note: 'Comfortable CJK body leading target (docs/design/implementation-plan.md §11.1).',
     tokens: {},
   },
   'latin-default': {
     id: 'latin-default',
     lineHeight: 1.45,
-    note: 'Default Latin body leading target (IMPLEMENTATION_PLAN.md §11.2).',
+    note: 'Default Latin body leading target (docs/design/implementation-plan.md §11.2).',
     tokens: {},
   },
   /** Legacy-compatible alias of `cjk-comfortable` for the v2 design table. */

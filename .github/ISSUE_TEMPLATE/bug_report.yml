@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a reproducible problem with DSH Livery
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. For security issues, do **not** use this form — see
+        [SECURITY.md](../../SECURITY.md).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install ... into profile ...
+        2. Open the sidebar entry ...
+        3. Apply style ...
+    validations:
+      required: true
+  - type: dropdown
+    id: host-version
+    attributes:
+      label: DSH host build
+      options:
+        - 0.2.0-rc.2
+        - 0.2.1-rc.2
+        - 0.2.1-rc.3 (Desktop)
+        - other (please specify below)
+    validations:
+      required: true
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Profile
+      options:
+        - Web Profile
+        - Desktop Profile
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: DSH Livery version
+      description: From the self-check panel or `package.json`.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser/Electron version, Node version, installed plugins.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste the self-check "Copy diagnostics" output and any console errors.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: This is not a security vulnerability (see SECURITY.md otherwise).
+          required: true

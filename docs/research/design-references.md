@@ -43,7 +43,7 @@ repositories. The two original entries below are authored for this project.
 
 ## Style axes used to differentiate the 24 designs
 
-Every livery differs on at least three axes (see `docs/implementation/style-system.md`):
+Every livery differs on at least three axes (see `docs/design/style-system.md`):
 
 1. **Palette** — light + dark seeds (accent / secondary / surface / text), each
    contrast-repaired by the compiler.

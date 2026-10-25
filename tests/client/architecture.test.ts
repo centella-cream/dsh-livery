@@ -77,10 +77,10 @@ describe('multi-version architecture guards', () => {
   })
 
   it('never builds a preview URL by concatenating the route prefix in the UI', () => {
-    const offenders = clientSources().filter(file => file.startsWith(join('src', 'client', 'settings'))
+    const offenders = clientSources().filter(file => file.startsWith(join('src', 'client', 'ui'))
       && read(file).includes('PREVIEW_ROUTE_PREFIX'))
     expect(offenders).toEqual([])
-    const gallery = read(join('src', 'client', 'settings', 'Gallery.tsx'))
+    const gallery = read(join('src', 'client', 'ui', 'Gallery.tsx'))
     expect(gallery).toContain('previewsBase')
     expect(gallery).toContain('previewUrl(')
   })
@@ -115,7 +115,7 @@ describe('multi-version architecture guards', () => {
   })
 
   it('drives capability display/decisions from the catalog capability map', () => {
-    const selfCheck = read(join('src', 'client', 'settings', 'SelfCheck.tsx'))
+    const selfCheck = read(join('src', 'client', 'ui', 'SelfCheck.tsx'))
     expect(selfCheck).toContain('snapshot.capabilities')
     const runtime = read(join('src', 'client', 'runtime.ts'))
     expect(runtime).toContain('catalog.capabilities')

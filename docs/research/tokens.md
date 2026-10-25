@@ -1,6 +1,6 @@
 # DSH 0.2.0-rc.2 theme tokens & public hooks
 
-Authoritative inventory for the `dsh-livery` theme work. Machine-readable data: [`tokens.json`](../../research/tokens.json) (403 tokens, 601 declarations), [`public-hooks.json`](../../research/public-hooks.json), plus pretty-printed sheets in `research/extracted/*.css` and the extraction/verification scripts in `research/scripts/`. All values below were extracted from the installed `@deepseek-ai/dsh-client-ui-theme` 0.2.0-rc.2 bundle and re-checked declaration-by-declaration against it (`verify-tokens.mjs`: 807 checks, 0 failures).
+Authoritative inventory for the `dsh-livery` theme work: 403 tokens and 601 declarations. All values below were extracted from the installed `@deepseek-ai/dsh-client-ui-theme` 0.2.0-rc.2 bundle and re-checked declaration-by-declaration against it (807 checks, 0 failures). The raw extraction caches (`tokens.json`, `public-hooks.json`, pretty-printed sheets and extraction scripts) are local research artifacts and are intentionally not committed; the numbers below are the reviewed result.
 
 ## How tokens are declared and injected
 

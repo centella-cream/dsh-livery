@@ -32,8 +32,8 @@
         "artifacts/contracts/0.2.0-rc.2/hashes.json",
         "artifacts/contracts/0.2.0-rc.2/provenance.json",
         "artifacts/liveries/sha256:4c5ee1a20f2974a53037a2ee4d2daa71f9f4600c9f004f0b35592b1ff413d602/report.json",
-        "docs/verification/phase0-contract.md",
-        "docs/verification/web-acceptance.md"
+        "docs/verification.md",
+        "docs/verification.md"
       ],
       "notes": [
         "Round 2 evidence: isolated full Web acceptance 110/0/3/2 plus real-web-profile clone 80/0/7/2 on the previous single-version package.",
@@ -72,8 +72,8 @@
         "artifacts/contracts/0.2.1-rc.2/hashes.json",
         "artifacts/contracts/0.2.1-rc.2/provenance.json",
         "artifacts/liveries/summary.json",
-        "docs/verification/web-acceptance-0.2.1-rc.2.md",
-        "docs/verification/web-acceptance-0.2.1-rc.2-real-profile-clone.md"
+        "docs/verification.md",
+        "docs/verification.md"
       ],
       "notes": [
         "Certified on tarball sha256 99fa98c7ee9c08d2eecda3b1c43aa3e51a42d32b373974231d365a8023c00e18 (pre-certification package; a release repack follows the matrix promotion).",
@@ -111,7 +111,7 @@
         "artifacts/contracts/0.2.1-rc.3/provenance.json",
         "contracts/dsh/0.2.1-rc.3/contract.json",
         "contracts/dsh/0.2.1-rc.3/adapter.json",
-        "docs/verification/web-acceptance-0.2.1-rc.3-runtime-carrier.md"
+        "docs/verification.md"
       ],
       "notes": [
         "Contract certified from the packaged Electron app.asar (DSH 0.2.1-rc.3, Electron 44.7.0, bundled Node 24.21.0); missing type documents supplemented from the same published npm version and recorded in source.prepared.",

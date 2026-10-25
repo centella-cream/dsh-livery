@@ -34,7 +34,7 @@ import { PANEL_ID, PANEL_NAVIGATION_GRACE_MS, PANEL_ROW_ORDER } from './navigati
 import { createPresenter } from './presenter.js'
 import { createLiveryRuntime } from './runtime.js'
 import type { ConfigFormLike, LocaleSource, ThemeSource } from './runtime.js'
-import { LiverySettingsPage } from './settings/LiverySettingsPage.js'
+import { LiverySettingsPage } from './ui/LiverySettingsPage.js'
 
 /** Nav position: after models (10), plugins (15), agent presets (20). */
 export const LIVERY_SETTINGS_ORDER = 25

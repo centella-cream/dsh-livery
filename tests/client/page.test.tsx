@@ -25,8 +25,8 @@ vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
     writeClipboard: async () => true,
   }
 })
-import { LiverySettingsPage } from '../../src/client/settings/LiverySettingsPage.js'
-import { SelfCheck } from '../../src/client/settings/SelfCheck.js'
+import { LiverySettingsPage } from '../../src/client/ui/LiverySettingsPage.js'
+import { SelfCheck } from '../../src/client/ui/SelfCheck.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
 import { LIVERY_VERSION } from '../../src/core/types.js'

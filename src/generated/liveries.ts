@@ -13,12 +13,12 @@
  */
 import type { CatalogProfileData } from '../core/types.js'
 
-/** One render-equivalent catalog profile (see docs/implementation/multi-version.md §4). */
+/** One render-equivalent catalog profile (see docs/design/multi-version.md §4). */
 export type CatalogProfile = CatalogProfileData
 
 export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
   "sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50": {
-    "compiledAt": "2026-07-24T05:58:20.000Z",
+    "compiledAt": "2026-11-14T17:25:38.000Z",
     "liveries": [
       {
         "audit": {
@@ -61847,10 +61847,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
       "0.2.1-rc.2",
       "0.2.1-rc.3"
     ],
-    "sourceHash": "sha256:93aaf6fc2010fc4d6c4822e36001f8e63502ba78821726b899816487e6bc9598"
+    "sourceHash": "sha256:6ae624922f3534617b2dbe2fa908015c61b67083b2da728717053cd68ac457b7"
   },
   "sha256:4c5ee1a20f2974a53037a2ee4d2daa71f9f4600c9f004f0b35592b1ff413d602": {
-    "compiledAt": "2026-03-29T11:04:30.000Z",
+    "compiledAt": "2026-03-05T23:01:19.000Z",
     "liveries": [
       {
         "audit": {
@@ -123822,7 +123822,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.0-rc.2"
     ],
-    "sourceHash": "sha256:2067b9bedb8f27b8e69bda6f7deaec919c65316150da32d4e1ad8d5b6593ef30"
+    "sourceHash": "sha256:f0ee123f850e3a78a568b7df7a0c3ff7997fdd4028861bd938df9d9ce9606cce"
   }
 }
 

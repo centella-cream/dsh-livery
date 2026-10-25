@@ -3,9 +3,9 @@
 Implementation-grade contract for a third-party **browser** plugin ("livery"). Every claim is cited `path:line`;
 anything not verified against first-party files is marked **UNVERIFIED**.
 
-**Paths**: `DSH/` = `/Users/ryanzhang/.local/share/fnm/node-versions/v22.23.1/installation/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/`;
+**Paths**: `DSH/` = `$DSH_INSTALL/node_modules/@deepseek-ai/`;
 `FE/` = `DSH/dsh-web-frontend/dist/assets/index-5SrrfWpU.js` (minified shell, boot+seed all on line 126);
-`CHARTER/` = `/Users/ryanzhang/Personal/openprojects/dsh-charter/` (working reference plugin). Host `0.2.0-rc.2`, React 18.3.1.
+`CHARTER/` = `<charter-repo>/` (working reference plugin). Host `0.2.0-rc.2`, React 18.3.1.
 
 ## 0. Load-bearing facts (10 lines)
 

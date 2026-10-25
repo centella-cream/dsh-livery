@@ -31,7 +31,7 @@ if (command === undefined) {
 } else if (command === 'pack:check') {
   process.exitCode = await packCheck(rest)
 } else if (command === 'smoke:profile' || command === 'test:runtime:web') {
-  const script = join(root, 'scripts', 'acceptance-web.mjs')
+  const script = join(root, 'scripts', 'acceptance', 'web.mjs')
   const child = spawn(process.execPath, [script, ...rest], { cwd: root, stdio: 'inherit' })
   process.exitCode = await new Promise((resolveExit) => {
     child.on('exit', (code) => resolveExit(code ?? 1))

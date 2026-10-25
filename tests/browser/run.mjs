@@ -3,7 +3,7 @@
  * Standalone browser-acceptance runner (no vitest — plain `node`).
  *
  * This is a thin, discoverable entry point; the real harness is
- * `scripts/acceptance-web.mjs`, which owns the isolated DSH_HOME, the official
+ * `scripts/acceptance/web.mjs`, which owns the isolated DSH_HOME, the official
  * plugin install lifecycle, the boot, the Playwright checks and the evidence
  * report.
  *
@@ -23,14 +23,14 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const REPO = path.resolve(HERE, '..', '..')
-const HARNESS = path.join(REPO, 'scripts', 'acceptance-web.mjs')
-const CHARTER_TGZ = path.join(process.env.HOME ?? '', 'Personal/openprojects/dsh-charter/dist/dsh-charter-0.1.0-rc.2.tgz')
+const HARNESS = path.join(REPO, 'scripts', 'acceptance', 'web.mjs')
+const CHARTER_TGZ = process.env.DSH_CHARTER_TGZ ?? path.join(REPO, '.tmp', 'charter', 'dsh-charter-0.1.0-rc.2.tgz')
 
 const argv = process.argv.slice(2)
 const desktopIndex = argv.indexOf('--desktop')
 if (desktopIndex !== -1) {
   argv.splice(desktopIndex, 1)
-  const probe = path.join(REPO, 'scripts', 'probe', 'desktop-probe.mjs')
+  const probe = path.join(REPO, 'scripts', 'acceptance', 'probe', 'desktop-probe.mjs')
   const forwarded = argv[0] === '--' ? argv.slice(1) : argv
   const desktopChild = spawn(process.execPath, [probe, ...forwarded], { cwd: REPO, stdio: 'inherit', env: process.env })
   desktopChild.on('exit', (code, signal) => {
@@ -64,7 +64,7 @@ if (smokeIndex !== -1) {
     '--json',
     path.join(REPO, 'artifacts/acceptance/harness-smoke/probe.json'),
     '--report',
-    path.join(REPO, 'docs/verification/harness-smoke.md'),
+    path.join(REPO, 'docs/verification.md'),
   )
 }
 

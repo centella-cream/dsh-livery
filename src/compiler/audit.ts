@@ -1,7 +1,7 @@
 /**
  * Build-time audits: token coverage, CSS safety and contrast.
  *
- * Multi-version rule (docs/implementation/multi-version.md §2): every audit is
+ * Multi-version rule (docs/design/multi-version.md §2): every audit is
  * relative to one explicit `StockSnapshot`. The required-token set, the direct
  * static bridge set and every documented inheritance/exemption is computed from
  * that snapshot's `referencedBy` data — never from a global token table and never
@@ -113,7 +113,7 @@ const CORE_INHERITANCE_REASONS: Readonly<Record<string, string>> = {
 }
 
 /**
- * Style-system token families (docs/implementation/style-system.md §1) are owned
+ * Style-system token families (docs/design/style-system.md §1) are owned
  * by `src/core/audit.ts` — the frozen allowlist, value grammar and coverage
  * facts live there. The compiler only needs the stock-snapshot token names so the
  * emission allowlist keeps metric/surface-style tokens that core emits.
