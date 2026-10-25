@@ -69,13 +69,46 @@ unrelated entry did not activate (warn). Evidence:
 
 121 passed / 0 failed / 3 expected skips / 1 warning. The Desktop app's own
 0.2.1-rc.3 runtime was resolved from the packaged `app.asar` (`sourceKind:
-packaged-app`, adapter `dsh-0.2.1-rc.3-r1`, contract
-`sha256:d246181d…`) and exercised through its web carrier: certified identity,
-boot rows, CSS/hash equality, catalog/previews, settings UI, theme/fonts, first
-paint, lifecycle residue. Official plugin-manager install acceptance also passed
-(exit 0, no version exemption). Evidence:
+packaged-app`, adapter `dsh-0.2.1-rc.3-r1`, contract `sha256:d246181d…`) and
+exercised through its web carrier. Evidence:
 `artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/`,
 `docs/verification/web-acceptance-0.2.1-rc.3-runtime-carrier.md`.
+
+### Desktop Profile 0.2.1-rc.3 — real Electron renderer (macOS)
+
+**22 passed / 0 failed / 1 documented skip / 0 warnings.** The real DeepSeek
+Harness Electron application (0.2.1-rc.3, Electron 44.7.0, Node 24.21.0,
+Chrome 152, window 1280×820 @ DPR 2) was launched with an isolated `/tmp`
+desktop home and driven through Playwright `_electron`:
+
+- official plugin-manager install exit 0 with no version exemption (both catalog
+  profiles installed); a synthetic 0.2.0-only plugin is rejected, proving the
+  rc.3 `engines.dsh` gate; CLI boot of the desktop profile is refused by design;
+- boot graph lists `dsh-livery`; stock start has no livery attributes/styles;
+- settings → 皮肤 → 10-livery gallery; preview plum is transient, cancel restores;
+  Apply writes exactly one `- id: livery` config row; a fresh application launch
+  delivers the certified rc.3 boot payload (accepted, `profileKind=desktop`)
+  ~907 ms after launch; boot↔body↔catalog hash equality holds;
+- light/dark tokens, documented `--dsh-font-family-text/-code` role hooks,
+  self-check identity/capabilities and restore-stock all behave in the real
+  renderer; 8 renderer screenshots archived.
+
+**Not verified for desktop** (explicit): native traffic lights/leading, vibrancy,
+Dock/rightbar native window states, OS-level DPI beyond `window.devicePixelRatio`,
+and the packaged Chromium sandbox/GPU path (automation ran with
+`--no-sandbox --disable-gpu` in this file-sandboxed session). Pre-paint rAF
+sampling on the native startup path is a documented skip (host owns boot-ready
+injection; boot-payload availability is asserted instead). The user's running
+instance was untouched. `desktop.macos` remains **pending**, not a support claim.
+Evidence: `artifacts/acceptance/0.2.1-rc.3-desktop/`,
+`docs/verification/desktop-acceptance-0.2.1-rc.3.md`.
+
+Coexistence with the user's real desktop plugin stack (old `dsh-skin`,
+`dsh-charter`, `dsh-context`) is **runtime-unverified**: cloning the real desktop
+profile fails official install with `ERR_PNPM_UNEXPECTED_STORE` (the Desktop-bundled
+pnpm refuses the user store the clone's node_modules came from). The attempt and
+exact blocker are recorded, not hidden:
+`docs/verification/desktop-acceptance-0.2.1-rc.3-coexistence-clone.md`.
 
 ### Round-2 evidence (0.2.0-rc.2 Web/Chrome) still stands
 

@@ -1,15 +1,37 @@
 # Verification — Web profile acceptance
 
-> **Latest full run (shipped bytes): PASS — 110 passed / 0 failed / 3 skipped /
-> 2 warnings.** Tarball `dsh-livery-0.1.0.tgz` sha256
-> `3000f199f7aea7aa3b2db47af4b88f9a68acf44326cb007fbf893fc2bd55fdeb`; see
-> [web-acceptance.md](web-acceptance.md) for the auto-filled evidence.
-> Real-profile-equivalent clone run: 80 passed / 0 failed / 7 skipped /
-> 2 warnings in [web-acceptance-real-profile-clone.md](web-acceptance-real-profile-clone.md).
-> The 3 skips are the stock-boot handshake rows (host intentionally emits zero
-> rows for `skinId: stock`; re-asserted as `handshake.applied-boot` after Apply),
-> and the 2 warnings are the documented rc.2 grouped-bundle-URL deviation and
-> the 8,665 B active CSS (above the 8 KB target, under the 12 KB hard cap).
+> ## Certified host matrix — acceptance evidence (round 3)
+>
+> Shipped package: `dsh-livery-0.1.0.tgz` sha256
+> `19dc6895e8986fab1581c2b22da10e0507811e94f5596a2f32a82fe02b60ac0b`
+> (runtime bytes identical to `14327502…`; only certification JSON changed).
+>
+> | target | host / adapter / catalog profile | result | evidence |
+> |---|---|---|---|
+> | Web Profile (npm CLI) | 0.2.1-rc.2 · `dsh-0.2.1-rc.2-r1` · `sha256:060e80ef…` | **PASS 121 / 0 / 3 / 1** | [web-acceptance-0.2.1-rc.2.md](web-acceptance-0.2.1-rc.2.md) · `artifacts/acceptance/0.2.1-rc.2-web/` |
+> | Web real-profile clone (byte-clone of `~/.dsh/profiles/web`) | 0.2.1-rc.2 · same adapter · same profile | **PASS 121 / 0 / 3 / 3** | [web-acceptance-0.2.1-rc.2-real-profile-clone.md](web-acceptance-0.2.1-rc.2-real-profile-clone.md) · `artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone/` |
+> | Desktop app runtime serving a Web carrier (bundled rc.3 CLI) | 0.2.1-rc.3 · `dsh-0.2.1-rc.3-r1` · `sha256:060e80ef…` | **PASS 121 / 0 / 3 / 1** | [web-acceptance-0.2.1-rc.3-runtime-carrier.md](web-acceptance-0.2.1-rc.3-runtime-carrier.md) · `artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/` |
+> | Desktop app — real Electron renderer (isolated app launch, CDP/Playwright) | 0.2.1-rc.3 · same adapter · same profile | **PASS 22 / 0 / 1** (renderer evidence; native window chrome NOT verified) | [desktop-acceptance-0.2.1-rc.3.md](desktop-acceptance-0.2.1-rc.3.md) · `artifacts/acceptance/0.2.1-rc.3-desktop/` |
+> | Web Profile (npm CLI) | 0.2.0-rc.2 · `dsh-0.2.0-rc.2-r1` · `sha256:4c5ee1a2…` | **PASS 110 / 0 / 3 / 2** (round-2 evidence retained) | [web-acceptance.md](web-acceptance.md) · `artifacts/acceptance/` |
+>
+> 3 skips in each Web run are the stock-boot handshake rows (the host emits zero
+> rows for `skinId: stock`; re-asserted as `handshake.applied-boot` after Apply).
+> Web warnings: the documented rc.2/rc.3 grouped-bundle-URL deviation; the clone
+> run additionally records its local dependency-spec repair and one
+> non-activating cloned bundle. Desktop renderer: 1 skip = pre-paint rAF
+> sampling on the native startup path (host-owned boot-ready injection;
+> Playwright attaches after window creation).
+>
+> **Desktop honesty:** adapted and renderer-verified, but `desktop.macos` stays
+> pending in the support matrix: native traffic lights/leading, vibrancy, Dock
+> window states, OS DPI behaviour and the packaged Chromium sandbox/GPU path are
+> NOT verified. The desktop composition cannot be booted by the CLI; all runtime
+> evidence comes from launching the real Electron application with an isolated
+> DSH_HOME/user-data-dir. See the desktop report's scope statement. Coexistence
+> with `dsh-skin` in a cloned real desktop profile could not be exercised at
+> runtime (bundled pnpm 11 refuses the cloned profile's foreign store location);
+> the attempt and blocker are recorded in
+> `artifacts/acceptance/0.2.1-rc.3-desktop-clone/probe.json`.
 
 This directory holds the evidence reports for the DSH Livery Web-profile
 acceptance harness. The harness is a **black-box** test: it installs the packed
@@ -41,11 +63,39 @@ node scripts/acceptance-web.mjs --reuse "http://127.0.0.1:<port>/?token=<hex>"
 
 # 4. Harness mechanics smoke against the dsh-charter fixture (generic mode).
 node tests/browser/run.mjs --smoke
+
+# 5. Certified-matrix runs by version (evidence paths used above).
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.1.0.tgz \
+  --out artifacts/acceptance/0.2.1-rc.2-web \
+  --json artifacts/acceptance/0.2.1-rc.2-web/probe.json \
+  --report docs/verification/web-acceptance-0.2.1-rc.2.md
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.1.0.tgz \
+  --clone-from "$HOME/.dsh/profiles/web" \
+  --out artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone \
+  --json artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone/probe.json \
+  --report docs/verification/web-acceptance-0.2.1-rc.2-real-profile-clone.md
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.1.0.tgz \
+  --dsh-bin "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
+  --dsh-home /tmp/dsh-livery-rc3-web-home --expect-version 0.2.1-rc.3 \
+  --expect-profile-kind desktop \
+  --out artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier \
+  --report docs/verification/web-acceptance-0.2.1-rc.3-runtime-carrier.md
+
+# 6. Real Electron desktop renderer probe (isolated /tmp DSH_HOME + user-data-dir;
+#    never touches the user's running app; renderer screenshots only).
+node scripts/probe/desktop-probe.mjs --tgz dsh-livery-0.1.0.tgz \
+  --out artifacts/acceptance/0.2.1-rc.3-desktop \
+  --report docs/verification/desktop-acceptance-0.2.1-rc.3.md
 ```
 
-Requirements: Node 22.19+, `dsh` 0.2.0-rc.2 on `PATH`, system Google Chrome,
+Requirements: Node 22.19+, a certified `dsh` CLI on `PATH` (0.2.0-rc.2 /
+0.2.1-rc.2) or the Desktop app runtime (0.2.1-rc.3), system Google Chrome,
 `playwright-core` in `node_modules` (`pnpm install`). **No browser download is
-ever needed** — the harness launches `channel: 'chrome'`.
+ever needed** — Web runs drive `channel: 'chrome'`; Desktop runs launch the real
+Electron app through Playwright `_electron`. Expectations are registry-driven:
+`scripts/probe/certified-adapters.mjs` mirrors `src/generated/contract.ts`, so a
+run asserts the live `(hostVersion, adapterId, contractHash, catalogProfile)`
+quadruple and per-profile preview base rather than hardcoded versions.
 
 Isolation: the isolated run creates `.tmp/acceptance/dsh-home` inside the repo
 and refuses any path outside `.tmp/`. The user's real `~/.dsh` is never written.

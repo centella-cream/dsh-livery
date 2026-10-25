@@ -1,3 +1,18 @@
+# Desktop coexistence attempt — REAL desktop profile clone (round 3)
+
+> **THIS RUN IS A RECORDED ATTEMPT, NOT A PASS.** Goal: exercise Livery together
+> with the user's real desktop-profile plugins (`dsh-skin`, `dsh-charter`,
+> `dsh-context`, agent-team profile) inside the real Electron renderer.
+> Blocker: the cloned profile's `node_modules` was created by the user's pnpm
+> store and the Desktop-bundled pnpm 11 refuses it
+> (`ERR_PNPM_UNEXPECTED_STORE`), so the official `plugin add` could not complete
+> in the clone; the app then launched without `dsh-livery` (boot graph row
+> absent, catalog route 404). This is an environment/clone constraint, not a
+> plugin failure: the same install succeeds in a fresh isolated desktop profile
+> (see [desktop-acceptance-0.2.1-rc.3.md](desktop-acceptance-0.2.1-rc.3.md)).
+> Coexistence with third-party first-paint plugins therefore remains
+> **runtime-unverified** and is reported as such; nothing is hidden.
+
 # Desktop-profile acceptance evidence — DSH Livery on DSH 0.2.1-rc.3 (Electron app runtime)
 
 Run `2026-10-25T04-02-46-448Z-desktop` · **3 passed / 5 failed / 0 skipped / 1 warnings** · RESULT: FAIL

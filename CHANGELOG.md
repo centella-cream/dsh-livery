@@ -64,8 +64,14 @@ the Desktop `0.2.1-rc.3` runtime (`dsh-0.2.1-rc.3-r1`).
 - 0.2.1-rc.2 Web/Chrome: 121/0/3/1 isolated full acceptance and 121/0/3/3 on a clone of
   the real Web Profile.
 - 0.2.1-rc.3 Desktop packaged runtime: official plugin-manager install acceptance plus
-  121/0/3/1 runtime acceptance through the packaged web carrier. Native Electron window
-  surfaces remain unverified (explicit gap).
+  121/0/3/1 runtime acceptance through the packaged web carrier.
+- 0.2.1-rc.3 Desktop Profile, real Electron renderer (macOS): 22/0/1 — boot graph,
+  catalog identity, settings/gallery, preview/apply-persist, relaunch boot payload,
+  light/dark tokens, documented font role hooks, self-check and restore-stock verified
+  in the real application. Native window chrome/vibrancy/DPI beyond devicePixelRatio
+  and the packaged GPU/sandbox path remain unverified (explicit gap); real-profile
+  plugin coexistence is blocked by a pnpm-store clone constraint and recorded as an
+  attempt.
 - 0.2.0-rc.2 Web/Chrome round-2 evidence remains valid (110/0/3/2 isolated, 80/0/7/2 clone).
 - Repo gates: tsc clean, 527/527 tests, 2 catalog profiles / 92 generated files in sync,
   0 contrast failures per profile, CSS under the 12 KiB hard cap, client gzip 20,282 B.

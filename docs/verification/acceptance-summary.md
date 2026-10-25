@@ -122,6 +122,7 @@ Final artifact: `dsh-livery-0.1.0.tgz` sha256 `19dc6895e8986fab1581c2b22da10e050
 | `0.2.1-rc.2` | Web/Chrome, isolated full acceptance | **121 pass / 0 fail / 3 skip / 1 warn** | `artifacts/acceptance/0.2.1-rc.2-web/` |
 | `0.2.1-rc.2` | Web/Chrome, user Web Profile clone | **121 pass / 0 fail / 3 skip / 3 warn** | `artifacts/acceptance/0.2.1-rc.2-web-real-profile-clone/` |
 | `0.2.1-rc.3` | Desktop packaged-app runtime, headless web carrier | **121 pass / 0 fail / 3 skip / 1 warn** | `artifacts/acceptance/0.2.1-rc.3-runtime-web-carrier/` |
+| `0.2.1-rc.3` | **Desktop Profile, real Electron renderer (macOS)** | **22 pass / 0 fail / 1 documented skip** | `artifacts/acceptance/0.2.1-rc.3-desktop/` |
 | `0.2.0-rc.2` | Web/Chrome (round 2, unchanged) | **110 pass / 0 fail / 3 skip / 2 warn** + clone 80/0/7/2 | `artifacts/acceptance/` (round-2 dirs) |
 
 Repo gates on the final state: tsc 0 errors, vitest 527/527, 92 generated files across
@@ -131,7 +132,10 @@ per profile, loader-ABI/adapter-check/pack-check/lint green, client gzip 20,282 
 (25,600 B budget).
 
 Certification gaps are explicit: Web/Edge pending; native Electron window surfaces
-(caption/traffic lights/DPI/vibrancy) pending — the packaged runtime was verified via
-its web carrier only; G6/formal support matrix not claimed; layout capability gate and
-wallpaper/import limitations unchanged. See
+(traffic lights/leading/vibrancy/native Dock states/OS DPI beyond devicePixelRatio)
+and the packaged Chromium sandbox/GPU path remain unverified even though the real
+Electron renderer was driven; desktop third-party coexistence
+(`dsh-skin`/`dsh-charter`/`dsh-context`) is blocked by a clone/pnpm-store constraint
+and recorded as an attempt; G6/formal support matrix not claimed; layout capability
+gate and wallpaper/import limitations unchanged. See
 `artifacts/release/known-limitations.md`.

@@ -10,6 +10,7 @@
  *   node tests/browser/run.mjs --tgz dist/dsh-livery-0.1.0.tgz
  *   node tests/browser/run.mjs --reuse "http://127.0.0.1:3080/?token=…"
  *   node tests/browser/run.mjs --smoke          # charter fixture smoke (mechanics only)
+ *   node tests/browser/run.mjs --desktop        # real Electron desktop renderer probe
  *
  * Any extra arguments are forwarded verbatim, e.g.:
  *   node tests/browser/run.mjs --tgz dist/x.tgz -- --keep --locale en
@@ -26,6 +27,21 @@ const HARNESS = path.join(REPO, 'scripts', 'acceptance-web.mjs')
 const CHARTER_TGZ = path.join(process.env.HOME ?? '', 'Personal/openprojects/dsh-charter/dist/dsh-charter-0.1.0-rc.2.tgz')
 
 const argv = process.argv.slice(2)
+const desktopIndex = argv.indexOf('--desktop')
+if (desktopIndex !== -1) {
+  argv.splice(desktopIndex, 1)
+  const probe = path.join(REPO, 'scripts', 'probe', 'desktop-probe.mjs')
+  const forwarded = argv[0] === '--' ? argv.slice(1) : argv
+  const desktopChild = spawn(process.execPath, [probe, ...forwarded], { cwd: REPO, stdio: 'inherit', env: process.env })
+  desktopChild.on('exit', (code, signal) => {
+    if (signal) process.kill(process.pid, signal)
+    else process.exit(code ?? 2)
+  })
+  desktopChild.on('error', (error) => {
+    console.error(`failed to start desktop probe: ${error.message}`)
+    process.exit(2)
+  })
+} else {
 const smokeIndex = argv.indexOf('--smoke')
 const presetArgs = []
 if (smokeIndex !== -1) {
@@ -66,3 +82,4 @@ child.on('error', (error) => {
   console.error(`failed to start harness: ${error.message}`)
   process.exit(2)
 })
+}
