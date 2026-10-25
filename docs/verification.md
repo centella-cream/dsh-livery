@@ -1,7 +1,12 @@
 # Verification
 
+> **Release status: not released.** The current candidate passes the checks below on
+> the platforms listed, but no combination has passed G6; Desktop macOS/Windows,
+> Web Edge, native window gates and the full release gates remain open. This page is
+> candidate evidence, not a certification.
+
 DSH Livery is validated against **exact, frozen host builds** and refuses to style
-anything it has not been certified against. This page summarises the acceptance
+anything it has not been measured against. This page summarises the acceptance
 evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
 screenshots/probes are generated locally under `artifacts/` (not committed).
 
@@ -174,7 +179,7 @@ releases.
 
 ## Repo gates on the same tree
 
-- `tsc --noEmit` clean, `vitest run` 661 tests green.
+- `tsc --noEmit` clean, `vitest run` 690 tests green (1 optional skip).
 - `liveries:check`: 24 styles across 2 catalog profiles.
 - Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
 - Per-livery CSS under the 12 KiB hard cap; **client gzip 36,333 B** (48 KiB

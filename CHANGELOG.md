@@ -74,6 +74,14 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0` (unreleased)**; tarball
   `dsh-livery-0.1.0.tgz`.
+- **Release posture (round 14):** no build has passed G6, so the project is a
+  release candidate, not a release. README/support wording now says candidate /
+  draft and the compatibility range is explicitly not a support guarantee. The
+  package is marked `private`, `prepublishOnly` runs the support-matrix and
+  release gates, and a tagged release workflow runs `pnpm verify`, both gates and
+  the packaging check. Community docs and `docs/` are included in the package so
+  README links resolve on npm; the bundled `@deepseek-ai/schemastery` MIT licence
+  is reproduced in NOTICE.
 - Client gzip budget raised to 32 KiB for the wallpaper studio (actual 29,628 B),
   then to 48 KiB for the round-9 expansion (actual 35,062 B); CLIENT_CSS budget
   9 KiB (actual 8,449 B).

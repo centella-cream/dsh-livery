@@ -2,10 +2,15 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#宿主支持与版本策略)
+[![DSH](https://img.shields.io/badge/DSH-0.2.x%20candidate%20%2B%200.x%20compat-6d6df6.svg)](#宿主支持与版本策略)
 
 **DeepSeek Harness 的视觉风格插件**：24 套受契约约束的风格、带在线图片搜索和虚化/磨砂效果的壁纸工作室，
 以及按风格分组的画廊。它以插件形式提供视觉层，**不接管宿主主题**。
+
+> **发布状态：未发布。** 当前候选构建只通过了项目内的 G0–G5 检查和 Web/Chrome 验收。
+> Desktop macOS/Windows、Web Edge、原生窗口门禁和 G6 仍未完成，因此
+> `pnpm gate:support-matrix` 与 `pnpm gate:release` 都会失败。请不要把此包当作已认证的
+> 正式发布版本。
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -56,15 +61,16 @@ DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 
 `engines.dsh` 声明的兼容范围是 **`>=0.2.0-rc.2 <1.0.0`**，分三种情况：
 
-| 层级 | 宿主版本 | 保证 |
+| 层级 | 宿主版本 | 当前证据 |
 |---|---|---|
-| **已认证** | DSH `0.2.0-rc.2`、`0.2.1-rc.2`、`0.2.1-rc.3` | 针对精确版本的六类契约哈希、loader-ABI 检查、完整验收矩阵（Web + Desktop 运行时 + 真实 Electron 渲染器） |
-| **兼容模式** | 范围内其他可读版本 | 用最新认证契约尽力渲染；面板与自检标注“未认证”；不会直接失效 |
-| **拒绝** | 范围外或不可读版本 | 回退到原生外观，不注入任何样式 |
+| **候选** | DSH `0.2.0-rc.2`、`0.2.1-rc.2` | 精确的六类契约哈希与 loader-ABI 检查，G0–G5 通过；Web Chrome 已测，Desktop macOS/Windows 和 Web Edge **仍待完成**。 |
+| **草稿** | DSH `0.2.1-rc.3` | 只有契约和 packaged runtime 冒烟；真实 Electron 运行不算完整的平台门禁。 |
+| **兼容模式** | 范围内其他可读版本 | 用最新的候选契约尽力渲染；面板与自检标注“未认证”；不会直接失效。 |
+| **拒绝** | 范围外或不可读版本 | 回退到原生外观，不注入任何样式。 |
 
-认证只表示“在这个精确版本上验证通过”，不表示“只能装在这里”。新版本加入认证矩阵后，会自动从
-兼容模式升级为已认证。机制见 [docs/design/multi-version.md](docs/design/multi-version.md)，当前
-矩阵见 [docs/verification.md](docs/verification.md)。
+目前没有任何 DSH 版本通过 G6，因此以上都**不是正式认证**。安装范围只是兼容声明，不是支持保证。
+机制见 [docs/design/multi-version.md](docs/design/multi-version.md)，当前证据见
+[docs/verification.md](docs/verification.md)。
 
 ![风格差异](docs/assets/style-differences.jpg)
 
@@ -73,7 +79,7 @@ DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 ### Web Profile（CLI）
 
 ```bash
-pnpm build && pnpm pack                 # 或使用已发布的 dsh-livery-*.tgz
+pnpm build && pnpm pack                 # 候选构建，尚未发布
 dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # 打开命令输出的地址
 ```

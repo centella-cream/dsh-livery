@@ -2,12 +2,18 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
+[![DSH](https://img.shields.io/badge/DSH-0.2.x%20candidate%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
 
 A visual styling plugin for DeepSeek Harness: 24 styles built on a frozen contract, a
 wallpaper studio with online image search and blur/frost effects, and a style
 gallery. It ships as a plugin that adds a visual layer **instead of taking over
 the host theme**.
+
+> **Release status: not released.** Candidate builds pass the project's G0–G5
+> checks and Web/Chrome acceptance only. Desktop macOS/Windows, Web Edge, native
+> window gates and G6 are still open, so `pnpm gate:support-matrix` and
+> `pnpm gate:release` fail. Do not treat this package as a certified production
+> release.
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -75,17 +81,18 @@ survives DSH updates.
 `engines.dsh` declares the compatibility range **`>=0.2.0-rc.2 <1.0.0`**. The
 range has three outcomes:
 
-| Tier | Host builds | Guarantees |
+| Tier | Host builds | Current evidence |
 |---|---|---|
-| **Certified** | DSH `0.2.0-rc.2`, `0.2.1-rc.2`, `0.2.1-rc.3` | Exact six-hash contract, loader-ABI check, full acceptance matrix (Web + Desktop runtime + real Electron renderer) |
-| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest certified contract; marked "unverified" in the panel and self-check; no hard failure |
-| **Rejected** | Versions outside the range or unreadable | Fail closed to the stock appearance, zero injected rows |
+| **Candidate** | DSH `0.2.0-rc.2`, `0.2.1-rc.2` | Exact six-hash contract and loader-ABI checks; G0–G5 passed. Web Chrome tested; Desktop macOS/Windows and Web Edge are **pending**. |
+| **Draft** | DSH `0.2.1-rc.3` | Contract and packaged-runtime smoke only; the real Electron run is not a full platform gate. |
+| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest candidate contract; marked "unverified" in the panel and self-check; no hard failure. |
+| **Rejected** | Versions outside the range or unreadable | Fail closed to the stock appearance, zero injected rows. |
 
-Certification means "verified on that exact build", not "installable only there".
-When a new DSH build joins the certified matrix, it moves from compat to certified
-automatically. See [docs/design/multi-version.md](docs/design/multi-version.md)
+No DSH build has passed G6, so **none of these tiers is a production
+certification**. The install-time range is a compatibility declaration, not a
+support guarantee. See [docs/design/multi-version.md](docs/design/multi-version.md)
 for the mechanism and [docs/verification.md](docs/verification.md) for the current
-matrix.
+evidence.
 
 ![Style differences](docs/assets/style-differences.jpg)
 
@@ -94,7 +101,7 @@ matrix.
 ### Web Profile (CLI)
 
 ```bash
-pnpm build && pnpm pack                 # or use a released dsh-livery-*.tgz
+pnpm build && pnpm pack                 # candidate build; not published
 dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # open the printed URL
 ```

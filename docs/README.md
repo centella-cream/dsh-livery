@@ -1,5 +1,9 @@
 # Documentation
 
+> Release status: candidate only. No host build has passed G6 yet; see the
+> support table in the main README before treating anything here as released.
+
+
 ## English
 
 - **Design:** [interfaces and frozen contracts](design/interfaces.md) · [visual style system](design/style-system.md) · [multi-version hosts](design/multi-version.md) · [implementation plan](design/implementation-plan.md) · [original design notes](design/design-notes.md)

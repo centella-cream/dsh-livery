@@ -1,0 +1,29 @@
+name: release-gates
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - run: pnpm gate:support-matrix
+      - run: pnpm gate:release
+      - run: pnpm release:check
+      - name: Upload tarball manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest
+          path: .tmp/release-check/release-manifest.json

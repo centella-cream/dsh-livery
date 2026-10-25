@@ -1,7 +1,7 @@
 {
   "name": "dsh-livery",
   "version": "0.1.0",
-  "description": "Contract-bound color, typography, surface and safe-layout liveries for DeepSeek Harness",
+  "description": "Contract-bound color, typography, surface and wallpaper liveries for DeepSeek Harness",
   "license": "MIT",
   "type": "module",
   "main": "./lib/index.js",
@@ -20,8 +20,16 @@
     "liveries",
     "contracts",
     "README.md",
+    "README.zh-CN.md",
     "NOTICE.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "CONTRIBUTING.zh-CN.md",
+    "CODE_OF_CONDUCT.md",
+    "docs"
   ],
   "sideEffects": [
     "./lib/index.js",
@@ -96,7 +104,9 @@
     "test:host": "vitest run tests/host",
     "contract:regenerate": "node scripts/cli.mjs contract:regenerate",
     "contract:extract-desktop": "node scripts/prepare-desktop-contract.mjs",
-    "test:browser": "node tests/browser/run.mjs"
+    "test:browser": "node tests/browser/run.mjs",
+    "release:check": "node scripts/cli.mjs gate:support-matrix && node scripts/cli.mjs gate:release && node scripts/release-check.mjs",
+    "prepublishOnly": "pnpm release:check"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
@@ -124,5 +134,5 @@
     "vitest": "^3.2.4"
   },
   "author": "DSH Livery contributors",
-  "private": false
+  "private": true
 }
