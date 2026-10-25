@@ -213,7 +213,7 @@ async function main() {
   }
   const profileNameOption = options['profile-name'] ?? null
   const bootTimeout = Number(options['boot-timeout'] ?? 120_000)
-  const reportPath = options['no-report'] ? null : path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'docs', 'verification', 'web-acceptance.md'))
+  const reportPath = options['no-report'] ? null : path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts', 'acceptance', 'web-acceptance-report.md'))
   const jsonPath = path.resolve(options.json ?? path.join(outDir, 'probe.json'))
 
   const ctx = {

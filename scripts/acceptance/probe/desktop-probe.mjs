@@ -66,6 +66,10 @@ import {
   installFirstPaintRecorder,
   inspectPanellist,
   liveryPanelVisible,
+  readLocaleTab,
+  readThumbLocales,
+  thumbLocaleOf,
+  waitForThumbLocale,
   openLiveryDetailed,
   readFirstPaintSamples,
   readMainColumnState,
@@ -171,8 +175,8 @@ async function main() {
     console.log('usage: node scripts/acceptance/probe/desktop-probe.mjs [--tgz path] [--out dir] [--report md] [--dsh-home /tmp/dsh-livery-desktop-runtime] [--profile-mode minimal|clone] [--clone-from dir]')
     return 0
   }
-  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.0.tgz'))
-  const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/0.2.1-rc.3-desktop'))
+  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.4.0.tgz'))
+  const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
   const home = assertIsolatedHome(options['dsh-home'] ?? '/tmp/dsh-livery-desktop-runtime')
   const appResources = options['app-bin'] ? path.dirname(path.dirname(options['app-bin'])) : DEFAULT_APP
@@ -426,6 +430,48 @@ async function main() {
       `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`,
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-panel-gallery-desktop.png'), { label: 'desktop livery panel gallery' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'panel-gallery' }))
+
+    // Preview-language tab in the real Electron renderer: it only swaps thumbnail
+    // SVG locale, so Follow tracks the zh host locale and pinning switches URLs.
+    const desktopHostLocale = 'zh'
+    const desktopTab = await readLocaleTab(page)
+    await waitForThumbLocale(page, desktopHostLocale).catch(() => {})
+    const desktopDefaultThumbs = await readThumbLocales(page)
+    expect(
+      runner,
+      'desktop.preview-locale',
+      'desktop gallery exposes the preview-language tab with Follow DSH active and zh thumbnails',
+      desktopTab.found === true &&
+        desktopTab.buttons?.length === 3 &&
+        desktopTab.buttons.find((button) => button.choice === 'follow')?.pressed === true &&
+        desktopDefaultThumbs.length > 0 &&
+        desktopDefaultThumbs.every((src) => thumbLocaleOf(src) === desktopHostLocale),
+      `tab found=${desktopTab.found}; buttons=[${(desktopTab.buttons ?? []).map((button) => `${button.choice}${button.pressed ? '*' : ''}`).join(',')}]; thumb locales=${JSON.stringify([...new Set(desktopDefaultThumbs.map(thumbLocaleOf))])}`,
+    )
+    await page.locator('[data-testid="livery-locale-en"]').click({ timeout: 8_000 }).catch(() => {})
+    await waitForThumbLocale(page, 'en').catch(() => {})
+    const desktopEnThumbs = await readThumbLocales(page)
+    await captureScreenshot(page, path.join(screensDir, 'zh-gallery-preview-en-desktop.png'), { label: 'desktop gallery English preview language' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'gallery-preview-en' }))
+    expect(
+      runner,
+      'desktop.preview-locale-en',
+      'desktop preview-language tab pins thumbnail URLs to -en- without touching copy',
+      desktopEnThumbs.length > 0 && desktopEnThumbs.every((src) => thumbLocaleOf(src) === 'en'),
+      `${desktopEnThumbs.length} thumbs; locales=${JSON.stringify([...new Set(desktopEnThumbs.map(thumbLocaleOf))])}`,
+    )
+    await page.locator('[data-testid="livery-locale-zh"]').click({ timeout: 8_000 }).catch(() => {})
+    await waitForThumbLocale(page, 'zh').catch(() => {})
+    const desktopZhThumbs = await readThumbLocales(page)
+    await captureScreenshot(page, path.join(screensDir, 'zh-gallery-preview-zh-desktop.png'), { label: 'desktop gallery Chinese preview language' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'gallery-preview-zh' }))
+    expect(
+      runner,
+      'desktop.preview-locale-zh',
+      'desktop preview-language tab pins thumbnail URLs back to -zh-',
+      desktopZhThumbs.length > 0 && desktopZhThumbs.every((src) => thumbLocaleOf(src) === 'zh'),
+      `${desktopZhThumbs.length} thumbs; locales=${JSON.stringify([...new Set(desktopZhThumbs.map(thumbLocaleOf))])}`,
+    )
+    await page.locator('[data-testid="livery-locale-follow"]').click({ timeout: 8_000 }).catch(() => {})
+    await waitForThumbLocale(page, desktopHostLocale).catch(() => {})
 
     const pair = chooseSkinPair(catalog)
     ctx.state.skinPair = pair

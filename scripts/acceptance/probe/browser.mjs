@@ -875,6 +875,73 @@ export async function readGallery(page) {
   })
 }
 
+/**
+ * Gallery preview-language tab (round 6): group + segmented buttons with
+ * `aria-pressed`, and the thumbnail URLs the tab controls.
+ */
+export async function readLocaleTab(page) {
+  return page.evaluate(() => {
+    const group = document.querySelector('[data-testid="livery-locale-tab"]')
+    if (!group) return { found: false }
+    const buttons = [...group.querySelectorAll('button[data-testid^="livery-locale-"]')].map((button) => ({
+      choice: (button.getAttribute('data-testid') ?? '').replace(/^livery-locale-/, ''),
+      text: (button.textContent ?? '').trim(),
+      pressed: button.getAttribute('aria-pressed') === 'true',
+    }))
+    return {
+      found: true,
+      role: group.getAttribute('role'),
+      ariaLabel: group.getAttribute('aria-label'),
+      title: group.getAttribute('title'),
+      buttons,
+    }
+  })
+}
+
+/** Visible gallery thumbnail `src` values (one per mounted card). */
+export async function readThumbLocales(page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="livery-thumb"]')]
+      .filter((image) => {
+        const rect = image.getBoundingClientRect()
+        return rect.width > 0 && rect.height > 0
+      })
+      .map((image) => image.getAttribute('src') ?? ''),
+  )
+}
+
+/** The `zh`/`en` locale encoded in a preview filename, or null. */
+export function thumbLocaleOf(src) {
+  const match = String(src ?? '').match(/-(zh|en)-(light|dark)\.svg(?:\?|$)/)
+  return match ? match[1] : null
+}
+
+/** Wait until every mounted thumbnail points at the requested preview locale. */
+export async function waitForThumbLocale(page, locale, { timeoutMs = 12_000 } = {}) {
+  await page.waitForFunction(
+    (wanted) =>
+      [...document.querySelectorAll('[data-testid="livery-thumb"]')]
+        .filter((image) => {
+          const rect = image.getBoundingClientRect()
+          return rect.width > 0 && rect.height > 0
+        })
+        .every((image) => new RegExp(`-${wanted}-(light|dark)\\.svg`).test(image.getAttribute('src') ?? '')),
+    locale,
+    { timeout: timeoutMs },
+  )
+}
+
+/** Card names/descriptions as rendered (host locale copy must not change). */
+export async function readCardNames(page) {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="livery-card"][data-livery-id]')].map((card) => ({
+      id: card.getAttribute('data-livery-id'),
+      name: (card.querySelector('.livery-card__name')?.textContent ?? '').trim(),
+      description: (card.querySelector('.livery-card__desc')?.textContent ?? '').trim(),
+    })),
+  )
+}
+
 /** Locate a control by data-testid and fall back to accessible names. */
 export async function findControl(page, { testId, names = [], exact = false, role = 'button' } = {}) {
   if (testId) {

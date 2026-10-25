@@ -27,8 +27,13 @@ import {
   liveryPanelVisible,
   openLiveryDetailed,
   PANEL_NAV_VIA,
+  readCardNames,
   readGallery,
   readHostStyleProbe,
+  readLocaleTab,
+  readThumbLocales,
+  thumbLocaleOf,
+  waitForThumbLocale,
   readLiveryCssRules,
   readMainColumnState,
   readSettingsSectionLabels,
@@ -822,6 +827,105 @@ export async function checkLiveryPanelFlow(ctx) {
   expect(runner, 'gallery.no-error-state', 'gallery is not in an error/catalog-unavailable state', errorState === 0, `${errorState} livery-error node(s)`)
   await capture(page, ctx, { state: 'panel-gallery' })
 
+  // ---- gallery preview-language tab (round 6) ----
+  const hostPreviewLocale = state.actualLocale === 'en' ? 'en' : 'zh'
+  const expectedTabTexts = {
+    follow: uiLabels.followLocale,
+    zh: uiLabels.localeZhTab,
+    en: uiLabels.localeEnTab,
+  }
+  const localeTab = await readLocaleTab(page)
+  const tabChoices = (localeTab.buttons ?? []).map((button) => button.choice)
+  expect(
+    runner,
+    'previewLocale.tab-present',
+    'gallery toolbar exposes the 预览语言 / Preview language segmented control with 3 options',
+    localeTab.found === true &&
+      localeTab.role === 'group' &&
+      localeTab.ariaLabel === uiLabels.previewLanguage &&
+      ['follow', 'zh', 'en'].every((choice) => tabChoices.includes(choice)),
+    `group role=${localeTab.role} aria-label="${localeTab.ariaLabel}" buttons=[${(localeTab.buttons ?? []).map((button) => `${button.choice}:${button.text}${button.pressed ? '*' : ''}`).join(', ')}] (expected label "${uiLabels.previewLanguage}")`,
+    { localeTab, hostPreviewLocale },
+  )
+  expect(
+    runner,
+    'previewLocale.tab-labels',
+    'the segmented control labels and hint match the host locale copy',
+    (localeTab.buttons ?? []).every((button) => button.text === expectedTabTexts[button.choice]) &&
+      (localeTab.title ?? '').length > 0,
+    `texts=[${(localeTab.buttons ?? []).map((button) => `${button.choice}:"${button.text}"`).join(', ')}]; title="${oneLine(localeTab.title ?? '', 100)}"`,
+  )
+  const followPressed = (localeTab.buttons ?? []).find((button) => button.choice === 'follow')?.pressed === true
+  const othersUnpressed = (localeTab.buttons ?? []).filter((button) => button.choice !== 'follow').every((button) => button.pressed === false)
+  await waitForThumbLocale(page, hostPreviewLocale).catch(() => {})
+  const defaultSources = await readThumbLocales(page)
+  const namesBeforeLocaleSwitch = await readCardNames(page)
+  expect(
+    runner,
+    'previewLocale.default-follow',
+    'Follow DSH is pressed by default and every thumbnail follows the host preview locale',
+    followPressed &&
+      othersUnpressed &&
+      defaultSources.length > 0 &&
+      defaultSources.every((src) => thumbLocaleOf(src) === hostPreviewLocale),
+    `${defaultSources.length} thumbs; follow pressed=${followPressed}; locales=${JSON.stringify([...new Set(defaultSources.map(thumbLocaleOf))])}; host=${hostPreviewLocale}`,
+    { followPressed, othersUnpressed, defaultSources: defaultSources.slice(0, 4), hostPreviewLocale },
+  )
+  let pinnedLocaleOk = false
+  try {
+    await page.locator('[data-testid="livery-locale-en"]').click({ timeout: 8_000 })
+    await waitForThumbLocale(page, 'en')
+    const enTab = await readLocaleTab(page)
+    const enSources = await readThumbLocales(page)
+    await capture(page, ctx, { state: 'panel-gallery-preview-en', mode: 'light' })
+    expect(
+      runner,
+      'previewLocale.switch-en',
+      'switching the preview language to English pins every thumbnail to -en- SVG URLs',
+      enTab.buttons?.find((button) => button.choice === 'en')?.pressed === true &&
+        enSources.length > 0 &&
+        enSources.every((src) => thumbLocaleOf(src) === 'en'),
+      `${enSources.length} thumbs; -en-=${enSources.filter((src) => thumbLocaleOf(src) === 'en').length}; pressed=${enTab.buttons?.map((button) => `${button.choice}${button.pressed ? '*' : ''}`).join(',')}`,
+    )
+    await page.locator('[data-testid="livery-locale-zh"]').click({ timeout: 8_000 })
+    await waitForThumbLocale(page, 'zh')
+    const zhTab = await readLocaleTab(page)
+    const zhSources = await readThumbLocales(page)
+    await capture(page, ctx, { state: 'panel-gallery-preview-zh', mode: 'light' })
+    expect(
+      runner,
+      'previewLocale.switch-zh',
+      'switching the preview language to 中文 pins every thumbnail to -zh- SVG URLs',
+      zhTab.buttons?.find((button) => button.choice === 'zh')?.pressed === true &&
+        zhSources.length > 0 &&
+        zhSources.every((src) => thumbLocaleOf(src) === 'zh'),
+      `${zhSources.length} thumbs; -zh-=${zhSources.filter((src) => thumbLocaleOf(src) === 'zh').length}; pressed=${zhTab.buttons?.map((button) => `${button.choice}${button.pressed ? '*' : ''}`).join(',')}`,
+    )
+    const namesWhilePinned = await readCardNames(page)
+    const namesStayHostLocale = namesWhilePinned.every((card) => {
+      const before = namesBeforeLocaleSwitch.find((entry) => entry.id === card.id)
+      return before !== undefined && before.name === card.name && before.description === card.description
+    })
+    await page.locator('[data-testid="livery-locale-follow"]').click({ timeout: 8_000 })
+    await waitForThumbLocale(page, hostPreviewLocale)
+    const followTab = await readLocaleTab(page)
+    const followSources = await readThumbLocales(page)
+    expect(
+      runner,
+      'previewLocale.follow-restores',
+      'switching back to Follow DSH restores thumbnails to the host preview locale without changing card copy',
+      namesStayHostLocale &&
+        followTab.buttons?.find((button) => button.choice === 'follow')?.pressed === true &&
+        followSources.length > 0 &&
+        followSources.every((src) => thumbLocaleOf(src) === hostPreviewLocale),
+      `follow pressed=${followTab.buttons?.find((button) => button.choice === 'follow')?.pressed}; thumb locales=${JSON.stringify([...new Set(followSources.map(thumbLocaleOf))])}; card copy unchanged while pinned=${namesStayHostLocale}`,
+    )
+    pinnedLocaleOk = true
+    state.previewLocaleTab = { hostPreviewLocale, enPinned: enSources.every((src) => thumbLocaleOf(src) === 'en'), zhPinned: zhSources.every((src) => thumbLocaleOf(src) === 'zh'), cardCopyStable: namesStayHostLocale }
+  } catch (error) {
+    runner.fail('previewLocale.switch-en', 'preview language tabs switch thumbnail SVG locale', error instanceof Error ? (error.message ?? String(error)) : String(error))
+  }
+
   // ---- search (localized name / id / tag / empty) ----
   const search = await findSearchInput(page, { labels: uiLabels })
   if (!search.locator) {
@@ -942,11 +1046,29 @@ export async function checkLiveryPanelFlow(ctx) {
   const applyCard = page.locator(`[data-testid="livery-card"][data-livery-id="${pair.applied}"]`).first()
   await applyCard.click()
   await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, pair.applied, { timeout: 10_000 }).catch(() => {})
+  // Pin a preview language before Apply: it must only affect thumbnails, never
+  // the Apply control copy or the write semantics.
+  let applyPinnedLocale = false
+  try {
+    await page.locator('[data-testid="livery-locale-en"]').click({ timeout: 8_000 })
+    await waitForThumbLocale(page, 'en')
+    applyPinnedLocale = true
+  } catch {
+    runner.fail('previewLocale.apply-pin', 'preview language can be pinned before Apply', 'could not pin the English preview language before Apply')
+  }
   const applyControl = await findControl(page, { testId: 'livery-apply', names: [uiLabels.apply], exact: false })
   if (!applyControl.locator) {
     runner.fail('apply.control', 'Apply control is present', 'apply button not found')
     return
   }
+  const applyCopyWhilePinned = (await applyControl.locator.textContent().catch(() => ''))?.trim() ?? ''
+  expect(
+    runner,
+    'previewLocale.apply-copy',
+    'Apply control copy is unchanged while a preview language is pinned',
+    applyPinnedLocale && applyCopyWhilePinned === uiLabels.apply,
+    `pinned=${applyPinnedLocale}; apply text "${applyCopyWhilePinned}" (expected "${uiLabels.apply}")`,
+  )
   await applyControl.locator.click()
   await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, pair.applied, { timeout: 10_000 }).catch(() => {})
   const applied = await readThemeSnapshot(page)
@@ -973,6 +1095,27 @@ export async function checkLiveryPanelFlow(ctx) {
   const offlineNotices = await page.locator('[data-testid="livery-offline"]').count()
   expect(runner, 'panel.no-offline-notice', 'the Livery page is not in catalog-unavailable state', offlineNotices === 0, `${offlineNotices} livery-offline notice(s)`)
   await capture(page, ctx, { state: 'panel-applied', mode: 'light' })
+  if (applyPinnedLocale) {
+    try {
+      const pinnedAfterApplyTab = await readLocaleTab(page)
+      const pinnedAfterApplySources = await readThumbLocales(page)
+      expect(
+        runner,
+        'previewLocale.apply-with-pinned',
+        'a pinned preview language survives Apply (thumbnails only) and the applied state is otherwise unchanged',
+        pinnedAfterApplyTab.buttons?.find((button) => button.choice === 'en')?.pressed === true &&
+          pinnedAfterApplySources.length > 0 &&
+          pinnedAfterApplySources.every((src) => thumbLocaleOf(src) === 'en'),
+        `en pressed=${pinnedAfterApplyTab.buttons?.find((button) => button.choice === 'en')?.pressed}; thumb locales=${JSON.stringify([...new Set(pinnedAfterApplySources.map(thumbLocaleOf))])}`,
+      )
+      await capture(page, ctx, { state: 'panel-applied-preview-en', mode: 'light' })
+      // Leave the canonical Follow mode for the remaining checks/screenshots.
+      await page.locator('[data-testid="livery-locale-follow"]').click({ timeout: 8_000 })
+      await waitForThumbLocale(page, hostPreviewLocale)
+    } catch {
+      runner.fail('previewLocale.apply-with-pinned', 'a pinned preview language survives Apply (thumbnails only)', 'could not verify/restore the pinned preview language after Apply')
+    }
+  }
 
   if (config.mode === 'isolated') {
     let patchAfter = await inspectProfilePatch(config.dshHome, config.dshProfile ?? 'web')
@@ -1381,6 +1524,20 @@ export async function checkFonts(ctx) {
       'English shell shows the Livery sidebar entry and English panel copy',
       enOpened.via === PANEL_NAV_VIA && enRowLabel === enLabels.section,
       `sidebar row label "${enRowLabel}" (expected "${enLabels.section}"); via=${enOpened.via}`,
+    )
+    // In an English host locale, Follow DSH must resolve thumbnails to -en-.
+    await waitForThumbLocale(page, 'en').catch(() => {})
+    const enLocaleTab = await readLocaleTab(page)
+    const enThumbs = await readThumbLocales(page)
+    expect(
+      runner,
+      'previewLocale.en-follow',
+      'Follow DSH follows the English host locale for thumbnails',
+      enLocaleTab.found === true &&
+        enLocaleTab.buttons?.find((button) => button.choice === 'follow')?.pressed === true &&
+        enThumbs.length > 0 &&
+        enThumbs.every((src) => thumbLocaleOf(src) === 'en'),
+      `${enThumbs.length} thumbs; locales=${JSON.stringify([...new Set(enThumbs.map(thumbLocaleOf))])}; follow pressed=${enLocaleTab.buttons?.find((button) => button.choice === 'follow')?.pressed}`,
     )
     await capture(page, ctx, { locale: 'en', state: 'panel-gallery' })
   } finally {

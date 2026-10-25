@@ -21,6 +21,7 @@ const CHECK_AREA_TITLES = {
   panel: 'Livery panel page',
   settings: 'Settings dialog (absence assertions)',
   gallery: 'Gallery',
+  previewLocale: 'Gallery preview language',
   search: 'Search',
   keyboard: 'Keyboard navigation',
   preview: 'Preview',
@@ -328,9 +329,14 @@ export const PLAN20_ROWS = [
     note: 'contrasting styles applied through the UI; border-radius, font stack, shadow/material and cascade-resolved style tokens measured on live host nodes',
   },
   {
+    criterion: 'Gallery preview-language tab switches only thumbnail preview locale (Follow DSH default / 中文 / English)',
+    checks: ['previewLocale.tab-present', 'previewLocale.tab-labels', 'previewLocale.default-follow', 'previewLocale.switch-en', 'previewLocale.switch-zh', 'previewLocale.follow-restores', 'previewLocale.apply-copy', 'previewLocale.apply-with-pinned', 'previewLocale.en-follow'],
+    note: 'thumbnail SVG URLs only (<id>-<zh|en>-<light|dark>.svg); names/descriptions/copy stay host-locale and Apply/restore semantics are unchanged',
+  },
+  {
     criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',
     checks: ['nav.sidebar-entry', 'nav.row-order', 'nav.above-workspaces', 'nav.conversation-hidden', 'nav.settings-section-absent'],
-    note: 'sidebar.panellist row (id/panel key livery, order 30, zh 皮肤 / en Livery) + main keyed page; legacy settings.section must stay unregistered on panel-navigation hosts',
+    note: 'sidebar.panellist row (id/panel key livery, order 30, zh 视觉风格 / en Visual Style) + main keyed page; legacy settings.section must stay unregistered on panel-navigation hosts',
   },
   {
     criterion: 'Preview is transient; Apply is one durable mutation; restore stock works',

@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 import zlib from 'node:zlib'
 
 /** Absolute path of the repository root (…/dsh-livery). */
-export const WORKSPACE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+export const WORKSPACE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
 /** Everything the harness may create lives under `<repo>/.tmp/acceptance`. */
 export const TMP_ROOT = path.join(WORKSPACE_ROOT, '.tmp', 'acceptance')
