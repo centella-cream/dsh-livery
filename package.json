@@ -1,6 +1,6 @@
 {
   "name": "dsh-livery",
-  "version": "0.5.0",
+  "version": "0.1.0",
   "description": "Contract-bound color, typography, surface and safe-layout liveries for DeepSeek Harness",
   "license": "MIT",
   "type": "module",

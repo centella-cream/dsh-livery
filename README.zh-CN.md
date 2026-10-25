@@ -64,7 +64,7 @@ DSH 更新后容易失效的原因。DSH Visual Studio 选择了相反的取舍�
 
 ```bash
 pnpm build && pnpm pack                 # 或使用已发布的 dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.5.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # 打开命令输出的地址
 ```
 
@@ -119,13 +119,13 @@ pnpm adapter:check
 （需要本地 DSH、系统 Chrome 与已打包 tarball）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.5.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.5.0.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # 薄封装
 ```
 
 ## 验收
 
-当前认证矩阵（0.5.0）：Web `0.2.1-rc.2` 隔离全量与真实 profile 克隆；Desktop `0.2.1-rc.3` packaged
+当前认证矩阵（未发布的 0.1.0）：Web `0.2.1-rc.2` 隔离全量与真实 profile 克隆；Desktop `0.2.1-rc.3` packaged
 web carrier 与真实 Electron 渲染器；仓库门禁包含 `tsc`、600+ 测试、对比度/token/CSS 审计、loader ABI
 与打包检查。原始证据在本地 `artifacts/` 生成、不提交。详见 [docs/verification.md](docs/verification.md)。
 

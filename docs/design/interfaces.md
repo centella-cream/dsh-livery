@@ -233,7 +233,7 @@ shipped Plugins page uses:
 Search matches: localized name (current locale first, both locales), id, localized tag
 labels in the active locale, English name.
 
-## 6b. Visual-studio UI contract (round 7, v0.5)
+## 6b. Visual-studio UI contract (unreleased 0.1.0)
 
 The page has two top-level tabs: **视觉风格 / Visual styles** and **壁纸 / Wallpapers**
 (`livery-page-tab-style`, `livery-page-tab-wallpaper`). Style tab keeps the

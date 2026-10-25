@@ -160,7 +160,7 @@ export function catalogOf(
   const adapter = options.adapter ?? ADAPTER_020
   return {
     schemaVersion: 1,
-    compilerVersion: '0.5.0',
+    compilerVersion: '0.1.0',
     adapterId: adapter.adapterId,
     hostVersion: adapter.hostVersion,
     contractHash: adapter.contractHash,

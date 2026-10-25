@@ -4,8 +4,7 @@
 
 | Version | Supported |
 |---|---|
-| `0.5.x` | Yes |
-| `< 0.5` | No (pre-release development builds) |
+| `0.1.x` (unreleased) | Yes |
 
 Certified host builds and the compatibility policy are documented in
 [README.md](README.md#supported-hosts). Hosts outside the compatibility range fail

@@ -1,4 +1,4 @@
-# Visual Studio v2 — compatibility, wallpaper, gallery UX (round 7)
+# Visual Studio (unreleased 0.1.0) — compatibility, wallpaper, gallery UX (round 7)
 
 Frozen design for the user-feedback round. Three product changes plus a README
 repositioning. UI/copy may evolve; the contracts below are what the parallel work
@@ -80,4 +80,4 @@ a generic skin — 24-style visual system, wallpaper library with online search 
 effects, certified compatibility policy, token-only/zero-takeover safety, verification
 matrix and honest limitations. Explicitly explain "不接管主题 ≠ 普通皮肤" and the
 certified-vs-compat policy table. Update SECURITY for wallpaper network requests,
-docs/verification for wallpaper+welcome, CHANGELOG 0.5.0.
+docs/verification for wallpaper+welcome, CHANGELOG (unreleased 0.1.0).

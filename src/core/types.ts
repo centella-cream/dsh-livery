@@ -10,7 +10,7 @@
 export const SCHEMA_VERSION = 1 as const
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.5.0' as const
+export const LIVERY_VERSION = '0.1.0' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always

@@ -60,7 +60,7 @@ const base = createInitialSnapshot(
   {
     adapterId: TEST_ADAPTER.adapterId,
     contractHash: TEST_ADAPTER.contractHash,
-    pluginVersion: '0.5.0',
+    pluginVersion: '0.1.0',
     hostVersion: TEST_ADAPTER.hostVersion,
   },
   { status: 'valid', reason: undefined, diagnostics: [], catalogProfile: TEST_ADAPTER.catalogProfile },
@@ -81,7 +81,7 @@ function snapshotWith(adapterId: string, hostVersion: string): LiveryRuntimeSnap
     confirmedId: 'fjord',
     effectiveId: 'fjord',
     locale: 'en',
-    identity: { adapterId, contractHash: TEST_ADAPTER.contractHash, pluginVersion: '0.5.0', hostVersion },
+    identity: { adapterId, contractHash: TEST_ADAPTER.contractHash, pluginVersion: '0.1.0', hostVersion },
   }
 }
 

@@ -79,7 +79,7 @@ certified automatically. See
 
 ```bash
 pnpm build && pnpm pack                 # or use a released dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.5.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # open the printed URL
 ```
 
@@ -140,13 +140,13 @@ so `pnpm build` works without a local DSH install. Browser acceptance (needs a l
 DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.5.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.5.0.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 ```
 
 ## Verification
 
-Current certified matrix (release 0.5.0): Web `0.2.1-rc.2` isolated full run and a
+Current certified matrix (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
 real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
 renderer; repo gates include `tsc`, 600+ tests, contrast/token/CSS audits, loader ABI
 and package checks. Raw evidence is generated locally under `artifacts/` and is not
