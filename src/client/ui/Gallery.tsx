@@ -21,7 +21,7 @@ import {
   sortLiveries,
   tagLabel,
 } from '../model.js'
-import type { LiveryFilter, LiveryRuntimeSnapshot, TagLabels } from '../model.js'
+import type { LiveryFilter, LiveryRuntimeSnapshot, PreviewLocaleChoice, TagLabels } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 
 /** Props of the gallery region. */
@@ -31,6 +31,10 @@ export interface GalleryProps {
   readonly filter: LiveryFilter
   readonly onFilterChange: (filter: LiveryFilter) => void
   readonly onPreview: (id: string) => void
+  /** Locale whose preview SVGs are shown; `follow` resolves to the host locale. */
+  readonly previewLocaleChoice: PreviewLocaleChoice
+  readonly previewLocale: 'zh' | 'en'
+  readonly onPreviewLocaleChange: (choice: PreviewLocaleChoice) => void
 }
 
 /** Visual state recorded on each card for diagnostics and black-box tests. */
@@ -63,6 +67,7 @@ function SkinCard({
   livery,
   labelById,
   locale,
+  previewLocale,
   mode,
   previewsBase,
   index,
@@ -78,6 +83,7 @@ function SkinCard({
   readonly livery: CompiledLivery
   readonly labelById: TagLabels
   readonly locale: 'zh' | 'en'
+  readonly previewLocale: 'zh' | 'en'
   readonly mode: 'light' | 'dark'
   readonly previewsBase: string
   readonly index: number
@@ -126,7 +132,7 @@ function SkinCard({
             <img
               className="livery-thumb__img"
               data-testid="livery-thumb"
-              src={previewUrl(previewsBase, livery.id, locale, mode)}
+              src={previewUrl(previewsBase, livery.id, previewLocale, mode)}
               alt={t('card.thumbnailAlt', {
                 name,
                 mode: t(mode === 'dark' ? 'mode.dark' : 'mode.light'),
@@ -173,7 +179,10 @@ function columnCount(grid: HTMLElement | null): number {
  * @param props - gallery properties; see {@link GalleryProps}.
  * @returns the gallery region.
  */
-export function Gallery({ t, snapshot, filter, onFilterChange, onPreview }: GalleryProps): JSX.Element {
+export function Gallery({
+  t, snapshot, filter, onFilterChange, onPreview,
+  previewLocaleChoice, previewLocale, onPreviewLocaleChange,
+}: GalleryProps): JSX.Element {
   const allLiveries = useMemo(
     () => sortLiveries(snapshot.catalog?.liveries ?? []),
     [snapshot.catalog],
@@ -280,6 +289,32 @@ export function Gallery({ t, snapshot, filter, onFilterChange, onPreview }: Gall
         )}
       </div>
 
+      <div
+        className="livery-filters livery-locale-tab"
+        role="group"
+        aria-label={t('gallery.previewLanguage')}
+        title={t('gallery.previewLanguageHint')}
+        data-testid="livery-locale-tab"
+      >
+        <span className="livery-filters__label">{t('gallery.previewLanguage')}</span>
+        {(['follow', 'zh', 'en'] as const).map(choice => (
+          <button
+            key={choice}
+            type="button"
+            className="livery-chip"
+            data-testid={`livery-locale-${choice}`}
+            aria-pressed={previewLocaleChoice === choice}
+            onClick={() => onPreviewLocaleChange(choice)}
+          >
+            {choice === 'follow'
+              ? t('gallery.followLocale')
+              : choice === 'zh'
+                ? t('gallery.localeZh')
+                : t('gallery.localeEn')}
+          </button>
+        ))}
+      </div>
+
       <div className="livery-gallery-head">
         <h3 className="livery-gallery-head__title">{t('gallery.title')}</h3>
         <span className="livery-gallery-head__count">{countText}</span>
@@ -321,6 +356,7 @@ export function Gallery({ t, snapshot, filter, onFilterChange, onPreview }: Gall
                   livery={livery}
                   labelById={labelById}
                   locale={snapshot.locale}
+                  previewLocale={previewLocale}
                   mode={snapshot.themeMode}
                   previewsBase={snapshot.catalog?.previewsBase ?? ''}
                   index={index}

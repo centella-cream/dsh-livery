@@ -17,10 +17,11 @@ import {
   isStock,
   localizedDescription,
   localizedName,
+  resolvePreviewLocale,
   shortHash,
   sortLiveries,
 } from '../model.js'
-import type { LiveryRuntimeApi } from '../model.js'
+import type { LiveryRuntimeApi, PreviewLocaleChoice } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import { capabilityList } from './capability-names.js'
 import { Gallery } from './Gallery.js'
@@ -59,6 +60,7 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
   const [copyFailed, setCopyFailed] = useState(false)
   const [confirmRestore, setConfirmRestore] = useState(false)
   const [toast, setToast] = useState<ToastState | undefined>(undefined)
+  const [previewLocaleChoice, setPreviewLocaleChoice] = useState<PreviewLocaleChoice>('follow')
 
   // Theme observation and preview rollback live exactly as long as the page.
   useEffect(() => runtime.observeTheme(), [runtime])
@@ -75,6 +77,7 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
     return livery === undefined ? id : localizedName(livery, locale)
   }, [liveries, locale, t])
 
+  const previewLocale = resolvePreviewLocale(previewLocaleChoice, snapshot.locale)
   const previewing = snapshot.phase === 'previewing'
   const loading = snapshot.phase === 'boot' || snapshot.phase === 'loading'
   const mismatch = snapshot.bootStatus === 'mismatch'
@@ -269,6 +272,9 @@ export function LiveryWorkspace({ runtime, t }: LiveryWorkspaceProps): JSX.Eleme
               filter={filter}
               onFilterChange={next => setFilter({ query: next.query, tagId: next.tagId })}
               onPreview={onPreview}
+              previewLocaleChoice={previewLocaleChoice}
+              previewLocale={previewLocale}
+              onPreviewLocaleChange={setPreviewLocaleChoice}
             />
           )}
 

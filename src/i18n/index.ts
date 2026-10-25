@@ -118,6 +118,8 @@ export const SHARED_VALUE_KEYS: readonly LiveryKey[] = [
   'diag.capabilityLine',
   'diag.ratio',
   'diag.count',
+  // Proper noun: the language's own name is identical in every dictionary.
+  'gallery.localeEn',
 ]
 
 /**

@@ -23,6 +23,8 @@ DSH Livery 刻意收窄了边界：
   零 CSS 文本写入；不注册主题、不调用 `setTheme`、不写 `data-ds-*`、不画窗口 chrome。
 - **一级入口。** 主页面左侧栏「视觉风格」插件面板，与插件/自动化任务/上下文洞察同级，
   不再藏在设置页。
+- **预览语言 tab。** 缩略图可「跟随 DSH」或固定为 中文 / English，方便在不切换应用语言
+  的情况下检查两种语言的字体风格；应用后的风格始终按宿主语言匹配字体。
 - **诚实降级。** 宿主不存在的能力（如结构性布局 hook）在自检中如实展示，不伪造。
 
 ## 风格
@@ -50,7 +52,7 @@ Catppuccin、Tokyo Night、Rosé Pine、Everforest、Kanagawa、One Dark、Ayu�
 
 ```bash
 pnpm build && pnpm pack                 # 或使用已发布的 dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.3.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.4.0.tgz
 dsh web                                 # 打开命令输出的地址
 ```
 
@@ -63,7 +65,10 @@ dsh web                                 # 打开命令输出的地址
 
 打开左侧栏，在「工作区」上方点击 **视觉风格**（英文界面为 **Visual Style**）。
 预览是临时的；「应用」只写入一次配置；「恢复默认外观」可移除。选中后整个应用的配色、
-字体与模块设计随之变化。
+字体与模块设计随之变化。画廊工具栏的「预览语言」可在 跟随 DSH / 中文 / English 之间切换
+（仅预览图；应用后按 DSH 语言匹配字体）。
+
+![预览语言](docs/assets/preview-language.jpg)
 
 ![入口与面板](docs/assets/livery-panel.jpg)
 
@@ -113,8 +118,8 @@ pnpm adapter:check
 浏览器验收（需要本地 DSH、系统 Chrome 与已打包的 tarball）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.3.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.3.0.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.4.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.4.0.tgz      # 薄封装
 ```
 
 ## 参与贡献

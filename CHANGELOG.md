@@ -2,6 +2,22 @@
 
 All notable changes to DSH Livery are recorded here.
 
+## [0.4.0] — unreleased
+
+### Added
+
+- **Preview-language tab** in the gallery toolbar: `跟随 DSH / Follow DSH`,
+  `中文`, `English`. It switches gallery thumbnails between the language-specific
+  preview assets without changing the app language; applied styles still match
+  fonts to the host language. Labels and title hint are localized; `data-testid`s
+  `livery-locale-tab`, `livery-locale-follow|zh|en` keep the UI testable.
+
+### Changed
+
+- Plugin version `0.3.0` → `0.4.0`; tarball `dsh-livery-0.4.0.tgz`.
+- No contract, manifest, catalog or CSS-budget change: the tab only selects which
+  precompiled preview SVG locale is displayed (client-only).
+
 ## [0.3.0] — unreleased
 
 Visual style system v2 + 24-style gallery, and the entry rename requested by the
@@ -74,13 +90,13 @@ main-page left-sidebar plugin navigation (the same pattern as 插件 / 自动化
 
 ### Changed
 
-- Plugin version `0.1.0` → `0.2.2`; tarball name `dsh-livery-0.3.0.tgz`.
+- Plugin version `0.1.0` → `0.2.2`; tarball name `dsh-livery-0.2.2.tgz`.
 - On panel-navigation hosts the Settings → 皮肤 section is no longer registered
   (single entry point, no duplicate navigation).
 
 ### Verified
 
-- Package `dsh-livery-0.3.0.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
+- Package `dsh-livery-0.2.2.tgz` sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
 - Sidebar entry accepted on all four targets: Web 0.2.1-rc.2 isolated 127/0/3/1,
   real-web-profile clone 128/0/3/2, Desktop 0.2.1-rc.3 packaged runtime 127/0/3/1,
   Desktop 0.2.1-rc.3 real Electron renderer 22/0/1 (native chrome/DPI/vibrancy

@@ -208,6 +208,12 @@ shipped Plugins page uses:
   its own title/description and a scrollable body; the fallback section keeps the
   settings shell chrome.
 - Gallery: keyboard roving focus (←→↑↓/Home/End/Enter), `aria-selected`, visible focus.
+- **Preview-language tab (0.4+):** the gallery toolbar carries a segmented control
+  (`livery-locale-tab`) with `Follow DSH` (default) / `中文` / `English`
+  (`livery-locale-follow|zh|en`, `aria-pressed`). It selects which precompiled
+  preview SVG locale the thumbnails load (`follow` resolves to the host locale);
+  it never changes app copy, names/descriptions or applied-style semantics.
+  Labels: zh 预览语言/跟随 DSH/中文/English; en Preview language/Follow DSH/中文/English.
   All copy from `src/i18n`; no hard-coded Chinese in default UI or English in default UI.
 
 Search matches: localized name (current locale first, both locales), id, localized tag

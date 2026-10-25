@@ -18,6 +18,7 @@ import {
   previewSeeds,
   previewAssetUrl,
   previewUrl,
+  resolvePreviewLocale,
   shortHash,
   sortLiveries,
 } from '../../src/client/model.js'
@@ -214,6 +215,13 @@ describe('config normalization and helpers', () => {
     expect(previewAssetUrl(TEST_PREVIEWS_BASE, 'a.svg')).toBe(`${TEST_PREVIEWS_BASE}a.svg`)
     expect(previewUrl('/livery/assets/previews/other-profile/', 'x', 'zh', 'light'))
       .toBe('/livery/assets/previews/other-profile/x-zh-light.svg')
+  })
+
+  it('resolves the gallery preview language: follow the host or pin zh/en', () => {
+    expect(resolvePreviewLocale('follow', 'zh')).toBe('zh')
+    expect(resolvePreviewLocale('follow', 'en')).toBe('en')
+    expect(resolvePreviewLocale('zh', 'en')).toBe('zh')
+    expect(resolvePreviewLocale('en', 'zh')).toBe('en')
   })
 
   it('shortens hashes for display', () => {

@@ -133,6 +133,25 @@ describe('settings page server render', () => {
     expect(html).not.toContain('data-testid="livery-apply"')
   })
 
+  it('renders the preview-language tab and follows the host locale by default', () => {
+    const html = render(READY)
+    expect(html).toContain('data-testid="livery-locale-tab"')
+    expect(html).toContain('data-testid="livery-locale-follow"')
+    expect(html).toContain('data-testid="livery-locale-zh"')
+    expect(html).toContain('data-testid="livery-locale-en"')
+    // READY.locale === 'en' and the default choice is "follow DSH".
+    expect(html).toMatch(/data-testid="livery-locale-follow"[^>]*aria-pressed="true"/)
+    expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
+    expect(html).toContain('Preview language')
+  })
+
+  it('uses the host zh locale for previews when following DSH', () => {
+    const html = render({ ...READY, locale: 'zh' }, 'zh')
+    expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-zh-light.svg`)
+    expect(html).toContain('预览语言')
+    expect(html).toContain('跟随 DSH')
+  })
+
   it('renders the preview bar with apply/cancel hooks while previewing', () => {
     const html = render({ ...READY, phase: 'previewing', previewId: 'midnight' })
     expect(html).toContain('data-testid="livery-preview"')

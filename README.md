@@ -57,7 +57,7 @@ Cinnabar 朱砂). Palettes are re-derived into DSH's token system, not pixel-exa
 
 ```bash
 pnpm build && pnpm pack                 # or use a released dsh-livery-*.tgz
-dsh plugin --profile web add ./dsh-livery-0.3.0.tgz
+dsh plugin --profile web add ./dsh-livery-0.4.0.tgz
 dsh web                                 # open the printed URL
 ```
 
@@ -74,6 +74,13 @@ Open the left sidebar, look above the **Workspace** section and click
 performs exactly one configuration mutation; **Restore default appearance** removes
 it. The selected style changes palette, typography and module design across the
 whole app.
+
+![Preview language](docs/assets/preview-language.jpg)
+
+The gallery toolbar also has a **Preview language** control (Follow DSH /
+Chinese / English) that switches only the thumbnail SVG locale. Style names,
+descriptions and all other copy stay in the host language, and applying a style
+always matches the style fonts to the current DSH language.
 
 ![Entry and panel](docs/assets/livery-panel.jpg)
 
@@ -125,8 +132,8 @@ need the matching DSH build — see [docs/design/multi-version.md](docs/design/m
 Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.3.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.3.0.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.4.0.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.4.0.tgz      # thin wrapper
 ```
 
 ## Contributing

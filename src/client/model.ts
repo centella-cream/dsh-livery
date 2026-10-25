@@ -216,6 +216,24 @@ export function tagLabel(tag: string, labels: TagLabels): string {
   return label !== undefined && label.length > 0 ? label : tag
 }
 
+/** Gallery preview-language choice: follow the host locale or pin zh/en. */
+export type PreviewLocaleChoice = 'follow' | 'zh' | 'en'
+
+/**
+ * Resolve the locale used for preview thumbnails. `follow` tracks the DSH
+ * locale; `zh`/`en` pin the preview assets while the applied style still
+ * matches fonts to the host language.
+ * @param choice - user's preview-language choice.
+ * @param hostLocale - the active DSH locale.
+ * @returns the locale to load preview SVGs for.
+ */
+export function resolvePreviewLocale(
+  choice: PreviewLocaleChoice,
+  hostLocale: LiveryLocaleId,
+): LiveryLocaleId {
+  return choice === 'follow' ? hostLocale : choice
+}
+
 /** Search/filter state for the gallery. */
 export interface LiveryFilter {
   readonly query: string
