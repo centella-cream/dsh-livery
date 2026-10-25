@@ -24,6 +24,7 @@ import type { LiveryPanelPageProps } from '../../src/client/platform.js'
 import { LiveryWorkspace } from '../../src/client/ui/LiveryWorkspace.js'
 import type { LiveryWorkspaceProps } from '../../src/client/ui/LiveryWorkspace.js'
 import { WallpaperPanel } from '../../src/client/ui/WallpaperPanel.js'
+import { createAutoRandomLoader } from '../../src/client/ui/online-auto.js'
 import type { WallpaperPanelProps } from '../../src/client/ui/WallpaperPanel.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
@@ -215,8 +216,19 @@ describe('page tabs', () => {
   })
 })
 
+describe('online auto batch', () => {
+  it('fires exactly one random batch per wallpaper-tab mount', () => {
+    const calls: number[] = []
+    const loader = createAutoRandomLoader(page => calls.push(page), () => 4)
+    loader.trigger()
+    loader.trigger()
+    loader.trigger()
+    expect(calls).toEqual([4])
+  })
+})
+
 describe('wallpaper studio render', () => {
-  it('renders the online library, 24 built-in wallpapers, effects, upload, URL and online controls', () => {
+  it('renders the search-first online card, 24 built-in wallpapers, effects, upload and URL controls', () => {
     const html = renderPanel()
     expect(html).toContain('data-testid="wallpaper-panel"')
     expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(24)
@@ -236,23 +248,19 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-layout"')
     expect(html).toContain('data-testid="wallpaper-hero"')
     expect(html).toContain('data-testid="wallpaper-hero-empty"')
-    expect(html).toContain('data-testid="wallpaper-library-card"')
-    expect(html).toContain('data-testid="wallpaper-random-card"')
+    // Online wallpaper card sits directly after the hero (search-first).
+    expect(html).toContain('data-testid="wallpaper-online-card"')
+    expect(html.indexOf('data-testid="wallpaper-hero"')).toBeLessThan(html.indexOf('data-testid="wallpaper-online-card"'))
+    expect(html.indexOf('data-testid="wallpaper-online-card"')).toBeLessThan(html.indexOf('data-testid="wallpaper-custom-card"'))
     expect(html).toContain('data-testid="wallpaper-custom-card"')
     expect(html).toContain('data-testid="wallpaper-effects-card"')
     expect(html).toContain('data-testid="wallpaper-effects-grid"')
     expect(html).toContain('data-testid="wallpaper-builtins-card"')
     expect(html).toContain('Current wallpaper')
-    expect(html).toContain('Surprise me')
-    // Curated online library is the first section: 8 category chips + more.
-    expect(html.match(/data-testid="wallpaper-category"/g)).toHaveLength(8)
-    expect(html).toContain('data-testid="wallpaper-library-more"')
-    // Status appears after the user-triggered load; SSR shows the idle section.
-    expect(html).not.toContain('data-testid="wallpaper-library-status"')
-    expect(html).toContain('data-category="nature"')
-    expect(html).toMatch(/data-category="nature"[^>]*aria-pressed="true"/)
-    expect(html.match(/data-testid="wallpaper-library-result"/g)).toBeNull()
-    expect(html).toContain('Online wallpaper library')
+    expect(html).toContain('Online wallpapers')
+    // Status/results appear only after the auto batch resolves; SSR shows idle.
+    expect(html).not.toContain('data-testid="wallpaper-status"')
+    expect(html.match(/data-testid="wallpaper-result"/g)).toBeNull()
     // Upload section: hidden file input + picker button + drop zone.
     expect(html).toContain('data-testid="wallpaper-upload"')
     expect(html).toContain('accept="image/jpeg,image/png,image/webp,image/avif"')
@@ -280,7 +288,7 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('value="30"')
     expect(html).toContain('Built-in wallpapers')
     expect(html).toContain('Atmosphere')
-    expect(html).toContain('Search online')
+    expect(html).toContain('Online wallpapers')
   })
 
   it('localizes every wallpaper block in zh', () => {
@@ -291,8 +299,8 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('表面霜化')
     expect(html).toContain('全局氛围')
     expect(html).toContain('自定义图片地址')
-    expect(html).toContain('在线搜索')
-    expect(html).toContain('在线壁纸库')
+    expect(html).toContain('在线壁纸')
+    expect(html).toContain('在线壁纸')
     expect(html).toContain('上传图片')
     expect(html).toContain('极光')
     expect(html).toContain('搜索')

@@ -265,12 +265,9 @@ Round-9 wallpaper additions (unreleased 0.1.0):
 - 24 built-ins (`wallpaper-builtin`, `data-wallpaper-id`, stable ids: the original
   8 + forest/desert/ocean/sky/snow/bloom/neon/cyber/retro/sand/rose/violet/
   midnight/sunrise/glacier/minimal).
-- Curated online library: category chips `wallpaper-category` (`data-category`,
-  eight curated Openverse CC0/PDM queries), results `wallpaper-library-result`
-  (`data-wallpaper-url`), status `wallpaper-library-status` (`data-status`:
-  loading/ready-only-via-results/empty/offline/error/cached), more
-  `wallpaper-library-more`, attribution `wallpaper-library-attribution`; auto-loads
-  one category when the wallpaper tab mounts; 6 h cache, dedupe, retry/timeout.
+- Online wallpapers card: search/random/next-batch/retry, one automatic random
+  Picsum batch on tab mount; the round-9 curated category library was removed in
+  round 11 (no `wallpaper-library-*`/`wallpaper-category` hooks).
 - Upload: `wallpaper-upload` (file input), `wallpaper-upload-button`,
   `wallpaper-upload-dropzone`, `wallpaper-upload-error`; JPEG/PNG/WebP/AVIF ≤10 MiB;
   blob stored in IndexedDB `dsh-livery-wallpapers`/`images`; selection kind
@@ -297,8 +294,8 @@ Presentation-only responsive card layout; all behaviour/testids from §6b remain
   optional `livery-preview-card`, notices, `livery-gallery-card`; rail `livery-rail`
   with `livery-actions-card` + self-check card.
 - Wallpaper page: `wallpaper-layout` grid → main `wallpaper-hero`
-  (`wallpaper-hero-preview`/`wallpaper-hero-empty`), `wallpaper-library-card`,
-  `wallpaper-random-card`, `wallpaper-custom-card`; rail
+  (`wallpaper-hero-preview`/`wallpaper-hero-empty`), `wallpaper-online-card`,
+  `wallpaper-custom-card`; rail
   `wallpaper-effects-card` (+`wallpaper-effects-grid`; sliders bounded ≤220 px,
   fixed value badges) and `wallpaper-builtins-card`.
 - Cards share `.livery-ui-card` (token-derived surface, 1 px border, 14 px radius,

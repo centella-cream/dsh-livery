@@ -1,11 +1,10 @@
 /**
- * Wallpaper studio panel: curated online library, 24 built-in CSS wallpapers,
- * effect sliders, uploaded images, custom https URLs and user-initiated
- * Openverse/Picsum search.
+ * Wallpaper studio panel: online random/search wallpapers, 24 built-in CSS
+ * wallpapers, effect sliders, uploaded images and a custom https URL.
  *
  * Client-only: changes go through the wallpaper controller (localStorage +
  * IndexedDB uploads + one owned stylesheet); no host config or boot payload is
- * touched. Network requests fire only from explicit user actions.
+ * touched. Network requests are user-originated (tab open / explicit clicks).
  */
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -21,18 +20,11 @@ import {
   validateWallpaperUrl,
 } from '../wallpaper.js'
 import type { BuiltinWallpaperId, WallpaperEffects, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperUrlProblem } from '../wallpaper.js'
-import {
-  LIBRARY_CATEGORIES,
-  fetchLibraryBatch,
-  mergeLibraryResults,
-  readLibraryCache,
-  writeLibraryCache,
-} from '../wallpaper/library.js'
-import type { LibraryCategoryId, LibraryStorage } from '../wallpaper/library.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
+import { createAutoRandomLoader } from './online-auto.js'
 
 const GRID = 'livery-grid'
 const CARD = 'livery-card'
@@ -40,7 +32,6 @@ const THUMB = 'livery-thumb'
 const THUMB_IMG = 'livery-thumb__img'
 const NAME = 'livery-card__name'
 const SEARCH = 'livery-search'
-const CHIPS = 'livery-filters'
 
 const BUILTIN_KEYS: Record<BuiltinWallpaperId, LiveryKey> = {
   aurora: 'wallpaper.builtin.aurora', dusk: 'wallpaper.builtin.dusk',
@@ -75,40 +66,23 @@ const EFFECT_ROWS: readonly { id: keyof WallpaperEffects; label: LiveryKey; form
   { id: 'atmosphere', label: 'wallpaper.atmosphere', format: 'wallpaper.percent' },
 ]
 const EMPTY: WallpaperState = { selection: undefined, effects: { ...DEFAULT_WALLPAPER_EFFECTS } }
-const MAX_LIBRARY_PAGE = 3
 
-type LibraryStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'offline' | 'error' | 'cached'
-interface LibraryState {
-  readonly status: LibraryStatus
-  readonly results: readonly WallpaperRemoteResult[]
-  readonly page: number
-  readonly cached: boolean
-}
-const IDLE_LIBRARY: LibraryState = { status: 'idle', results: [], page: 1, cached: false }
-
-interface RemoteState {
-  readonly status: 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'offline'
+type OnlineStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'offline' | 'error'
+interface OnlineState {
+  readonly status: OnlineStatus
   readonly results: readonly WallpaperRemoteResult[]
   readonly page: number
   readonly source: WallpaperRemoteSource
   readonly query: string
 }
-const IDLE_REMOTE: RemoteState = { status: 'idle', results: [], page: 1, source: 'openverse', query: '' }
+const IDLE_ONLINE: OnlineState = { status: 'idle', results: [], page: 1, source: 'picsum', query: '' }
 
 interface Attribution {
   readonly title: string
   readonly creator: string
   readonly license: string
   readonly source: string
-  readonly context: 'library' | 'online' | 'custom'
-}
-
-function defaultCacheStorage(): LibraryStorage | undefined {
-  try {
-    return typeof localStorage === 'undefined' ? undefined : localStorage
-  } catch {
-    return undefined
-  }
+  readonly context: 'online' | 'custom'
 }
 
 /** Props of the wallpaper studio panel. */
@@ -119,13 +93,12 @@ export interface WallpaperPanelProps {
 
 /**
  * Render the wallpaper studio tab.
- * @param props - locale `t` seat and the runtime snapshot (for token frost).
- * @returns the wallpaper controls, online library, uploads and attribution.
+ * @param props - locale `t` seat and the runtime snapshot (unused by layout).
+ * @returns the wallpaper controls, online card and attribution.
  */
 export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const controller = getWallpaperController()
   const imageStore = useMemo(() => createIndexedDbImageStore(), [])
-  const cacheStorage = useMemo(() => defaultCacheStorage(), [])
   const state = useSyncExternalStore(
     listener => controller?.subscribe(listener) ?? (() => undefined),
     () => controller?.getSnapshot() ?? EMPTY,
@@ -136,14 +109,11 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  const [remote, setRemote] = useState<RemoteState>(IDLE_REMOTE)
-  const [category, setCategory] = useState<LibraryCategoryId>('nature')
-  const [library, setLibrary] = useState<LibraryState>(IDLE_LIBRARY)
+  const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
   const [attribution, setAttribution] = useState<Attribution | undefined>(undefined)
   const mounted = useRef(true)
   const seq = useRef(0)
-  const librarySeq = useRef(0)
-  const autoLoaded = useRef(false)
+  const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
   const fileInput = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -151,54 +121,12 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     return () => { mounted.current = false }
   }, [])
 
-  const loadLibrary = async (nextCategory: LibraryCategoryId, page: number, append: boolean): Promise<void> => {
-    const ticket = ++librarySeq.current
-    setLibrary(previous => ({ ...previous, status: 'loading', page }))
-    const outcome = await fetchLibraryBatch(nextCategory, page, { storage: cacheStorage })
-    if (!mounted.current || librarySeq.current !== ticket) return
-    if (outcome.ok) {
-      const results = append
-        ? mergeLibraryResults(library.results, outcome.results)
-        : outcome.results
-      setLibrary({ status: results.length === 0 ? 'empty' : 'ready', results, page, cached: false })
-      const cache = readLibraryCache(cacheStorage)
-      writeLibraryCache({ ...cache, [nextCategory]: { fetchedAt: Date.now(), page, results } }, cacheStorage)
-      return
-    }
-    if (outcome.cached !== undefined) {
-      const results = append
-        ? mergeLibraryResults(library.results, outcome.cached.results)
-        : outcome.cached.results
-      setLibrary({ status: 'cached', results, page: outcome.cached.page, cached: true })
-      return
-    }
-    setLibrary({ status: outcome.reason, results: [], page, cached: false })
-  }
-
-  // User-initiated: opening the wallpaper tab auto-loads the active category once.
-  useEffect(() => {
-    if (autoLoaded.current) return
-    autoLoaded.current = true
-    void loadLibrary(category, 1, false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const selectCategory = (next: LibraryCategoryId): void => {
-    setCategory(next)
-    setAttribution(undefined)
-    void loadLibrary(next, 1, false)
-  }
-  const moreLibrary = (): void => {
-    const next = library.page >= MAX_LIBRARY_PAGE ? 1 : library.page + 1
-    void loadLibrary(category, next, next > 1)
-  }
-
   const run = async (source: WallpaperRemoteSource, query: string, page: number): Promise<void> => {
     const ticket = ++seq.current
-    setRemote(previous => ({ ...previous, status: 'loading', page, source, query }))
+    setOnline(previous => ({ ...previous, status: 'loading', page, source, query }))
     const outcome = await requestWallpaperResults({ source, query, page })
     if (!mounted.current || seq.current !== ticket) return
-    setRemote({
+    setOnline({
       status: outcome.ok ? (outcome.results.length === 0 ? 'empty' : 'ready') : outcome.reason === 'offline' ? 'offline' : 'error',
       results: outcome.ok ? outcome.results : [],
       page,
@@ -207,30 +135,39 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     })
   }
 
+  // One automatic random batch per wallpaper-tab mount; effects/sliders never re-fetch.
+  useEffect(() => {
+    autoLoader.current.trigger()
+  }, [])
+
   const search = (): void => {
-    const query = remote.query.trim()
+    const query = online.query.trim()
     void run('openverse', query.length > 0 ? query : 'landscape', 1)
   }
   const random = (): void => { void run('picsum', '', Math.floor(Math.random() * 8) + 1) }
   const refresh = (): void => {
-    if (remote.source === 'picsum') random()
-    else if (remote.status === 'ready' || remote.status === 'empty') void run('openverse', remote.query, remote.page + 1)
-    else void run('openverse', 'landscape', 1)
+    if (online.source === 'picsum') random()
+    else void run('openverse', online.query, online.page + 1)
   }
+  const retry = (): void => {
+    if (online.source === 'picsum') random()
+    else void run('openverse', online.query, Math.max(1, online.page))
+  }
+
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
     controller?.setSelection({ kind: 'builtin', id })
     setAttribution(undefined)
     setProblem(undefined)
     setUploadProblem(undefined)
   }
-  const selectResult = (result: WallpaperRemoteResult, context: Attribution['context']): void => {
+  const selectResult = (result: WallpaperRemoteResult): void => {
     controller?.setSelection({ kind: 'remote', url: result.url })
     setAttribution({
       title: result.title,
       creator: result.creator,
       license: result.license,
       source: result.source,
-      context,
+      context: 'online',
     })
     setProblem(undefined)
   }
@@ -276,41 +213,6 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const selectedBuiltin = selection?.kind === 'builtin' ? selection.id : undefined
   const selectedRemote = selection?.kind === 'remote' ? selection.url : undefined
 
-  const statusKey = remote.status === 'loading'
-    ? 'wallpaper.loading'
-    : remote.status === 'empty'
-      ? 'wallpaper.empty'
-      : remote.status === 'offline'
-        ? 'wallpaper.offline'
-        : remote.status === 'error'
-          ? 'wallpaper.error'
-          : undefined
-  const libraryStatusKey = library.status === 'loading'
-    ? 'wallpaper.loading'
-    : library.status === 'empty'
-      ? 'wallpaper.empty'
-      : library.status === 'offline'
-        ? 'wallpaper.offline'
-        : library.status === 'error'
-          ? 'wallpaper.error'
-          : library.status === 'cached'
-            ? 'wallpaper.libraryCached'
-            : undefined
-  const attributionLine = attribution === undefined
-    ? undefined
-    : t('wallpaper.attribution', {
-      title: attribution.title,
-      creator: attribution.context === 'custom'
-        ? attribution.source
-        : attribution.creator.length > 0 ? attribution.creator : t('wallpaper.attributionUnknown'),
-      license: attribution.context === 'custom' || attribution.license.length === 0
-        ? t('wallpaper.licenseUnknown')
-        : attribution.license,
-      source: attribution.source,
-    })
-
-  // Hero preview: same image/gradient the layers use, plus the current dim and
-  // atmosphere values, rendered in-card (no remote screenshot).
   const renderImage = controller?.getRenderImage()
   const heroName = selection === undefined
     ? undefined
@@ -332,7 +234,28 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       : selection?.kind === 'remote'
         ? (attribution?.source ?? heroName)
         : undefined
-  const selectedFromLibrary = attribution !== undefined && attribution.context === 'library'
+
+  const statusKey = online.status === 'loading'
+    ? 'wallpaper.loading'
+    : online.status === 'empty'
+      ? 'wallpaper.empty'
+      : online.status === 'offline'
+        ? 'wallpaper.offline'
+        : online.status === 'error'
+          ? 'wallpaper.error'
+          : undefined
+  const attributionLine = attribution === undefined
+    ? undefined
+    : t('wallpaper.attribution', {
+      title: attribution.title,
+      creator: attribution.context === 'custom'
+        ? attribution.source
+        : attribution.creator.length > 0 ? attribution.creator : t('wallpaper.attributionUnknown'),
+      license: attribution.context === 'custom' || attribution.license.length === 0
+        ? t('wallpaper.licenseUnknown')
+        : attribution.license,
+      source: attribution.source,
+    })
 
   return (
     <div data-testid="wallpaper-panel">
@@ -378,108 +301,46 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                     <span className="livery-ui-card__hint">{heroKind}</span>
                   </div>
                   {attributionLine !== undefined && (
-                    <p className="livery-ui-card__hint" data-testid="wallpaper-library-attribution">{attributionLine}</p>
+                    <p className="livery-ui-card__hint" data-testid="wallpaper-hero-attribution">{attributionLine}</p>
                   )}
                 </>
               )}
           </section>
 
-          <section className="livery-ui-card" data-testid="wallpaper-library-card">
-            <div className="livery-ui-card__head">
-              <h3 className="livery-ui-card__title">{t('wallpaper.libraryTitle')}</h3>
-              <Button variant="outline" size="sm" data-testid="wallpaper-library-more" onClick={moreLibrary}>
-                {t('wallpaper.libraryMore')}
-              </Button>
-            </div>
-            <p className="livery-ui-card__hint">{t('wallpaper.libraryHint')}</p>
-            <div className={CHIPS} role="group" aria-label={t('wallpaper.categoryLabel')}>
-              {LIBRARY_CATEGORIES.map(entry => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  className="livery-chip"
-                  data-testid="wallpaper-category"
-                  data-category={entry.id}
-                  aria-pressed={category === entry.id}
-                  onClick={() => selectCategory(entry.id)}
-                >
-                  {t(entry.labelKey)}
-                </button>
-              ))}
-            </div>
-            {libraryStatusKey !== undefined && (
-              <p
-                className="livery-ui-card__hint"
-                data-testid="wallpaper-library-status"
-                data-status={library.status}
-                role="status"
-              >
-                {t(libraryStatusKey)}
-              </p>
-            )}
-            {library.results.length > 0 && (
-              <div className={GRID} role="listbox" aria-label={t('wallpaper.libraryTitle')}>
-                {library.results.map(result => (
-                  <button
-                    key={`${result.source}:${result.id}`}
-                    type="button"
-                    className={CARD}
-                    role="option"
-                    aria-selected={selectedRemote === result.url && selectedFromLibrary}
-                    aria-label={t('wallpaper.attribution', {
-                      title: result.title,
-                      creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
-                      license: result.license.length > 0 ? result.license : t('wallpaper.licenseUnknown'),
-                      source: result.source,
-                    })}
-                    data-testid="wallpaper-library-result"
-                    data-wallpaper-url={result.url}
-                    onClick={() => selectResult(result, 'library')}
-                  >
-                    <span className={THUMB}>
-                      <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
-                    </span>
-                    <span className="livery-card__body">
-                      <span className={NAME}>{result.title}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="livery-ui-card" data-testid="wallpaper-random-card">
-            <div className="livery-ui-card__head">
-              <h3 className="livery-ui-card__title">{t('wallpaper.randomTitle')}</h3>
-            </div>
-            <p className="livery-ui-card__hint">{t('wallpaper.randomHint')}</p>
+          <section className="livery-ui-card" data-testid="wallpaper-online-card">
+            <h3 className="livery-ui-card__title">{t('wallpaper.onlineTitle')}</h3>
+            <p className="livery-ui-card__hint">{t('wallpaper.onlineHint')}</p>
             <div className={SEARCH}>
               <Input
                 data-testid="wallpaper-search"
                 type="search"
-                value={remote.query}
+                value={online.query}
                 aria-label={t('wallpaper.onlineTitle')}
                 placeholder={t('wallpaper.searchPlaceholder')}
-                onChange={event => setRemote(previous => ({ ...previous, query: event.target.value }))}
+                onChange={event => setOnline(previous => ({ ...previous, query: event.target.value }))}
                 onKeyDown={event => { if (event.key === 'Enter') search() }}
               />
               <Button variant="outline" size="sm" data-testid="wallpaper-search-go" onClick={search}>{t('wallpaper.search')}</Button>
-              <Button variant="ghost" size="sm" data-testid="wallpaper-refresh" onClick={refresh}>{t('wallpaper.refresh')}</Button>
               <Button variant="ghost" size="sm" data-testid="wallpaper-random" onClick={random}>{t('wallpaper.random')}</Button>
+              <Button variant="ghost" size="sm" data-testid="wallpaper-refresh" onClick={refresh}>{t('wallpaper.refresh')}</Button>
             </div>
-            <p className="livery-ui-card__hint">{t('wallpaper.onlineHint')}</p>
             {statusKey !== undefined && (
-              <p className="livery-ui-card__hint" data-testid="wallpaper-status" data-status={remote.status} role="status">{t(statusKey)}</p>
+              <p className="livery-ui-card__hint" data-testid="wallpaper-status" data-status={online.status} role="status">{t(statusKey)}</p>
             )}
-            {remote.results.length > 0 && (
+            {(online.status === 'offline' || online.status === 'error') && (
+              <div className="livery-actions">
+                <Button variant="outline" size="sm" data-testid="wallpaper-online-retry" onClick={retry}>{t('action.retry')}</Button>
+              </div>
+            )}
+            {online.results.length > 0 && (
               <div className={GRID} role="listbox" aria-label={t('wallpaper.resultsLabel')}>
-                {remote.results.map(result => (
+                {online.results.map(result => (
                   <button
                     key={`${result.source}:${result.id}`}
                     type="button"
                     className={CARD}
                     role="option"
-                    aria-selected={selectedRemote === result.url && !selectedFromLibrary}
+                    aria-selected={selectedRemote === result.url}
                     aria-label={t('wallpaper.attribution', {
                       title: result.title,
                       creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
@@ -488,7 +349,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                     })}
                     data-testid="wallpaper-result"
                     data-wallpaper-url={result.url}
-                    onClick={() => selectResult(result, 'online')}
+                    onClick={() => selectResult(result)}
                   >
                     <span className={THUMB}>
                       <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />

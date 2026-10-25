@@ -40,10 +40,39 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain('backdrop-filter:blur(14px) saturate(1.08)')
     // Effect sliders are bounded inside the rail card, never viewport-wide.
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effect input\{flex:1 1 100px;width:100%;min-width:96px;max-width:140px/)
-    expect(CLIENT_CSS).toMatch(/\.wallpaper-effect output\{flex:0 0 54px;width:54px/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-effect output\{flex:0 0 54px/)
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effects-grid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(180px,1fr\)\)/)
-    expect(CLIENT_CSS).toMatch(/\.livery-gallery-card \.livery-family\+\.livery-family\{border-block-start/)
+    expect(CLIENT_CSS).toMatch(/\.livery-gallery-head\{display:flex;align-items:baseline;justify-content:space-between/)
     expect(CLIENT_CSS).toMatch(/\.wallpaper-swatches\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/)
+  })
+
+  it('uses one shared typography scale (≤5 sizes, no ad-hoc px in modules)', () => {
+    const sizes = [...CLIENT_CSS.matchAll(/font-size:([^;}]+)/g)].map(match => match[1]!.trim())
+    const allowed = new Set(['display', 'title', 'body', 'label', 'caption'])
+    for (const value of sizes) {
+      const match = /^var\(--lw-fs-([a-z]+)\)$/.exec(value)
+      expect(match, `ad-hoc font-size: ${value}`).not.toBeNull()
+      expect(allowed.has(match![1]!)).toBe(true)
+    }
+    const tokens = [...CLIENT_CSS.matchAll(/--lw-fs-([a-z]+):([0-9.]+)px/g)]
+    expect(tokens).toHaveLength(5)
+    const steps = [...new Set(tokens.map(match => Number(match[2])))]
+    expect(steps).toHaveLength(5)
+    expect([...steps].sort((a, b) => b - a)).toEqual([20, 15, 13, 12, 11])
+    const leading = [...CLIENT_CSS.matchAll(/line-height:([^;}]+)/g)].map(match => match[1]!.trim())
+    expect(leading.length).toBeGreaterThan(0)
+    for (const value of leading) expect(value).toBe('var(--lw-lh)')
+    // Selector-level mapping for the leaks found in the live build (not just declarations):
+    // chips/tabs, gallery heading, and host Input/Textarea inside our workspace.
+    expect(CLIENT_CSS).toMatch(/\.livery-chip\{[^}]*font-size:var\(--lw-fs-body\)/)
+    expect(CLIENT_CSS).toMatch(/\.livery-ui-card__title,\.livery-gallery-head__title\{[^}]*font-size:var\(--lw-fs-title\)/)
+    expect(CLIENT_CSS).toMatch(/\.livery-search :is\(input,textarea\)\{font-size:var\(--lw-fs-body\)\}/)
+    // Tokens live on every actual composition root, not only the legacy .livery-section.
+    const roots = '\.livery-section,\.livery-settings,\.livery-panel,\.livery-workspace{'
+    expect(CLIENT_CSS).toContain(roots.replaceAll('\\', ''))
+    expect(CLIENT_CSS).toContain('--lw-fs-display:20px;--lw-fs-title:15px;--lw-fs-body:13px;--lw-fs-label:12px;--lw-fs-caption:11px')
+    // Footer is a real two-line block: flex column with a gap, not inline spans.
+    expect(CLIENT_CSS).toMatch(/\.livery-about\{display:flex;flex-direction:column;gap:4px\}/)
   })
 
   it('provides a visible focus ring and a reduced-motion fallback', () => {
@@ -53,13 +82,13 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
 
   it('only uses documented --dsw-* tokens for color/spacing', () => {
     const custom = [...CLIENT_CSS.matchAll(/var\((--[a-z0-9-]+)/gi)].map(match => match[1]!)
-    const allowed = new Set(['--lw-fg', '--lw-2', '--lw-3', '--lw-line', '--lw-line2', '--lw-brand', '--lw-layer', '--lw-layer2', '--lw-mono', '--lw-on-brand', '--lw-err', '--lw-warn', '--livery-accent', '--livery-secondary', '--livery-surface', '--livery-text'])
+    const allowed = new Set(['--lw-fg', '--lw-2', '--lw-3', '--lw-line', '--lw-line2', '--lw-brand', '--lw-layer', '--lw-layer2', '--lw-mono', '--lw-on-brand', '--lw-err', '--lw-warn', '--lw-fs-display', '--lw-fs-title', '--lw-fs-body', '--lw-fs-label', '--lw-fs-caption', '--lw-lh', '--livery-accent', '--livery-secondary', '--livery-surface', '--livery-text'])
     for (const token of custom) {
       expect(token.startsWith('--dsw-') || allowed.has(token), `unexpected custom property: ${token}`).toBe(true)
     }
     // Local aliases themselves may only be defined from host tokens.
     for (const match of CLIENT_CSS.matchAll(/(--lw-[a-z0-9-]+):([^;}]+)/g)) {
-      expect(match[2]!.includes('--dsw-') || match[1] === '--lw-2' || match[1] === '--lw-3').toBe(true)
+      expect(match[2]!.includes('--dsw-') || match[1] === '--lw-2' || match[1] === '--lw-3' || (match[1] ?? '').startsWith('--lw-fs-') || match[1] === '--lw-lh').toBe(true)
     }
   })
 

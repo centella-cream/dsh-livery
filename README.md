@@ -39,19 +39,21 @@ version policy that survives DSH updates.
   panels, elevated cards, glass blur), and border/focus treatment. 10 original
   designs + 12 open-source-inspired palettes (MIT/Apache-2.0, see [NOTICE](NOTICE.md))
   + 2 original Chinese-aesthetic designs (Celadon 青瓷, Cinnabar 朱砂).
-- **Wallpaper studio.** 24 built-in CSS wallpapers plus a curated online library
-  (8 style categories, license-safe Openverse CC0/PDM crawler with caching and
-  offline fallback), custom search/random, local image upload (stored in IndexedDB)
-  and https URLs. Effects: blur 0–24 px, dim 0–70 %, frost 0–100 % and a global
-  atmosphere overlay that keeps the wallpaper visible on **every** plugin page,
-  including third-party panels with opaque surfaces. Both layers are viewport-
-  relative `cover`, so portrait/ultrawide/resized windows crop instead of
-  distorting. Network requests are user-navigation initiated; choices are local.
-- **Module-first studio layout.** Both pages use responsive card modules rather than
-  one flat list: a wallpaper hero, curated library, random-pick card, custom
-  upload/URL card and a side rail with compact bounded effect sliders (140 px) and
-  the 24-swatch grid; the style page pairs a current-style hero (with preview
-  thumbnail) + gallery card with a 操作/自检 rail. Stacks cleanly on narrow windows.
+- **Wallpaper studio.** 24 built-in CSS wallpapers; an **online wallpapers** card
+  that auto-loads one random Picsum batch when you open the tab, then supports
+  explicit Openverse (CC0/PDM) search, random and “next batch”; local image upload
+  (stored in IndexedDB) and https URLs. Effects: blur 0–24 px, dim 0–70 %,
+  frost 0–100 % and a global atmosphere overlay that keeps the wallpaper visible on
+  **every** plugin page, including third-party panels with opaque surfaces. Both
+  layers are viewport-relative `cover`, so portrait/ultrawide/resized windows crop
+  instead of distorting. Network requests start from opening the tab / explicit
+  actions; choices are local.
+- **Module-first studio layout with one type scale.** Both pages use responsive card
+  modules rather than one flat list: wallpaper hero, search-first online card,
+  custom upload/URL card, and a side rail with compact bounded effect sliders
+  (140 px) + the 24-swatch grid; the style page pairs a current-style hero (with
+  preview thumbnail) + gallery card with an 操作/自检 rail. A single five-step type
+  scale is shared across every module, and cards stack cleanly on narrow windows.
 - **Curated gallery.** Styles grouped into six families (Calm / Nature / Light /
   Retro / Vivid / Dark), primary filters first, the full tag vocabulary behind
   "More filters"; a preview-language tab switches thumbnails between Follow DSH /
@@ -107,10 +109,11 @@ section. Two tabs:
 - **视觉风格 / Visual styles** — preview (transient), Apply (one config mutation),
   Restore default appearance; family sections + search + "More filters"; preview
   language tab.
-- **壁纸 / Wallpapers** — browse the curated online library by style, pick one of 24
-  built-in designs, upload a local image, or paste an https URL, then tune blur / dim /
-  frost / global atmosphere. Wallpaper choices are stored in the browser and survive
-  restarts; the global atmosphere keeps them visible on third-party plugin pages too.
+- **壁纸 / Wallpapers** — open the tab to get a random online batch automatically, or
+  search Openverse / draw another random batch; pick one of 24 built-in designs, upload
+  a local image, or paste an https URL, then tune blur / dim / frost / global
+  atmosphere. Wallpaper choices are stored in the browser and survive restarts; the
+  global atmosphere keeps them visible on third-party plugin pages too.
 
 Applying a style and applying a wallpaper are independent: wallpapers keep working
 when you switch styles.

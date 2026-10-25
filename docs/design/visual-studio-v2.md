@@ -135,3 +135,27 @@ are flat/monotonous, and the style page is too simple. Requirements:
   remote assets, no host component selectors. CLIENT_CSS budget raised to 12 KiB;
   client gzip stays within 48 KiB.
 - Version unchanged (unreleased 0.1.0); commit stays one line.
+
+## 7. Round 11 — copy, typography and online-wallpaper simplification (unreleased 0.1.0)
+
+User feedback:
+
+1. **About/footer copy is machine-speak.** Replace the concatenated jargon
+   ("契约 … 适配器 … 预览来自固定的契约场景，不是宿主实拍截图") with human
+   sentences, e.g. “DSH Visual Studio 0.1.0，已适配 DeepSeek Harness
+   <hostVersion>。” + “画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面
+   截图。” Keep technical ids available in the copyable self-check/diagnostics only.
+2. **Typography is fragmented across modules.** Introduce one typography primitive
+   set shared by both pages (no ad-hoc per-module font sizes): design tokens for
+   display/title/body/label/caption/value, one family/line-height scale, applied
+   to card titles, section heads, hints, chips, badges and hero text. Target ≤5
+   font sizes across the client UI; add a CSS guard test.
+3. **Remove the curated online wallpaper library.** It is not maintained and does
+   not load; drop category chips, cache/crawler module and its UI/tests.
+4. **Search-first online wallpaper card, auto random batch on open.** The
+   wallpaper page's online card moves up (after the hero) and is just search +
+   随机 + 换一批 + result grid/status/attribution. Opening the wallpaper tab
+   automatically triggers one random fetch and shows a batch (Picsum list works;
+   Openverse search remains for explicit queries). Keep uploads/URL/builtins/
+   effects/hero unchanged; keep all other acceptance testids where possible.
+5. Version unchanged (unreleased 0.1.0); one-line commit.

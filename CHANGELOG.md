@@ -30,21 +30,25 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   **壁纸 / Wallpapers**. Forward-compatible entry detection falls back to the
   legacy settings page on hosts without panel navigation.
 - **Wallpaper studio expansion (round 9)**: 24 CSS-only built-in wallpapers;
-  curated online library with 8 style categories, license-safe Openverse
-  CC0/PDM queries, request retry/timeout, 6 h localStorage cache, dedupe and
-  cached offline fallback; user file upload (JPEG/PNG/WebP/AVIF, ≤10 MiB) stored in
-  IndexedDB and restored after reload; https URL kept; both wallpaper layers are
-  viewport-relative `cover` with an `inset:-24px` blur bleed (adaptive to any
-  window aspect); new **global atmosphere overlay** above app content
-  (`pointer-events:none`, soft-light, default 30 %) so the wallpaper is visible on
-  third-party plugin pages with opaque surfaces; page tab now remembers the last
-  active tab across workspace remounts/navigation (`sessionStorage`).
+  user file upload (JPEG/PNG/WebP/AVIF, ≤10 MiB) stored in IndexedDB and restored
+  after reload; https URL kept; both wallpaper layers are viewport-relative `cover`
+  with an `inset:-24px` blur bleed (adaptive to any window aspect); new **global
+  atmosphere overlay** above app content (`pointer-events:none`, soft-light,
+  default 30 %) so the wallpaper is visible on third-party plugin pages with opaque
+  surfaces; page tab now remembers the last active tab across workspace
+  remounts/navigation (`sessionStorage`).
 - **Studio layout redesign (round 10)**: both pages use hierarchical, responsive
-  card modules instead of a flat list; wallpaper page = hero preview + curated
-  library + random-pick + custom upload/URL cards and a rail with compact bounded
-  140 px effect sliders (no viewport-wide sliders) + 24-swatch grid; style page =
+  card modules instead of a flat list; wallpaper page = hero preview + search-first
+  online card + custom upload/URL cards and a rail with compact bounded 140 px
+  effect sliders (no viewport-wide sliders) + 24-swatch grid; style page =
   current-style hero (preview thumbnail) + gallery card + 操作/自检 rail; stacks
   below 1100 px with no horizontal overflow.
+- **Copy, typography and wallpaper edits (round 11)**: human About footer copy
+  (no contract/adapter jargon; ids stay in the copyable diagnostics); a single
+  five-step typography scale shared by both pages; removed the non-loading curated
+  category library and replaced it with one search-first **在线壁纸 / Online
+  wallpapers** card that automatically loads one Picsum random batch when the tab
+  opens, with explicit Openverse search / random / next-batch / retry.
 - **Curated gallery**: six style families (calm/nature/light/retro/vivid/dark),
   family-grouped sections and counts, primary family chips, the full 16-tag
   vocabulary behind a 更多筛选/More filters toggle, search, roving keyboard focus
@@ -72,12 +76,13 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 ### Verified
 
 - Final artifact `dsh-livery-0.1.0.tgz` sha256
-  `367c1133f826b73f25c90fa6c5827ed8b4228045353202deadfc937ed418b173` (550,663 B, 233 files).
+  `179ca228c2a568c7d3d65736c1993fa163e9cf8c7566954b67ad00f3db263842` (548,723 B, 233 files).
 - Four-target acceptance on the final artifact: Web `0.2.1-rc.2` isolated full
-  run 170/0/3/2, real-profile clone 171/0/3/4, Desktop `0.2.1-rc.3` packaged
-  carrier 170/0/3/2, real Electron renderer 27/0/1. Live real Web Profile QA
-  (families + wallpaper apply/effects/persistence/clear) 11/11.
-- Repo gates: `tsc` clean, 661 tests (1 optional skip), 204 generated files /
+  run 213/0/3/2, real-profile clone 214/0/3/4, Desktop `0.2.1-rc.3` packaged
+  carrier 213/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
+  profile (auto online batch with 12 results, unified computed font sizes
+  {11,12,13,15}, two-line About footer, no console errors).
+- Repo gates: `tsc` clean, 681 tests (1 optional skip), 204 generated files /
   2 catalog profiles in sync, all token/CSS/contrast audits, loader-ABI 12/12,
   `adapter:check`, `pack:check` (see `docs/verification.md` for evidence notes).
 

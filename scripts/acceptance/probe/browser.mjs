@@ -1054,6 +1054,10 @@ export async function readWallpaperState(page) {
             backgroundImage: overlayStyle.backgroundImage,
           }
         : { present: false },
+      mainCardOrder: [...document.querySelectorAll('.wallpaper-main > [data-testid]')].map((node) => node.getAttribute('data-testid')),
+      libraryElementCount: document.querySelectorAll('[data-testid^="wallpaper-library"]').length,
+      categoryChipCount: document.querySelectorAll('[data-testid="wallpaper-category"]').length,
+      onlineCardPresent: document.querySelector('[data-testid="wallpaper-online-card"]') !== null,
       libraryCategories: [...document.querySelectorAll('[data-testid="wallpaper-category"]')].map((chip) => ({
         id: chip.getAttribute('data-category'),
         pressed: chip.getAttribute('aria-pressed') === 'true',
@@ -1142,7 +1146,7 @@ export async function readLayoutStructure(page, which) {
       ? []
       : [...document.querySelectorAll(sliderSelector)].map((input) => Math.round(input.getBoundingClientRect().width))
     const wallpaperCards = target === 'wallpaper'
-      ? ['wallpaper-hero', 'wallpaper-library-card', 'wallpaper-random-card', 'wallpaper-custom-card', 'wallpaper-effects-card', 'wallpaper-builtins-card'].map(describeCard)
+      ? ['wallpaper-hero', 'wallpaper-online-card', 'wallpaper-custom-card', 'wallpaper-effects-card', 'wallpaper-builtins-card'].map(describeCard)
       : []
     const effectsGrid = document.querySelector('[data-testid="wallpaper-effects-grid"]')
     const effectsGridMeasured = visible(effectsGrid)
@@ -1189,6 +1193,74 @@ export async function readLayoutStructure(page, which) {
       },
     }
   }, which)
+}
+
+/**
+ * Computed type-scale probe (round 11): the unified five-step typography uses
+ * {11,12,13,15} (+20 display). Collect visible text-bearing element font sizes
+ * inside the workspace and the shared `--lw-fs-*` tokens on its real roots.
+ */
+export async function readTypographyScale(page) {
+  return page.evaluate(() => {
+    const roots = ['.livery-workspace', '.livery-panel', '.livery-section']
+    const tokens = {}
+    for (const selector of roots) {
+      const root = document.querySelector(selector)
+      if (!root) continue
+      const style = getComputedStyle(root)
+      tokens[selector] = {
+        display: style.getPropertyValue('--lw-fs-display').trim(),
+        title: style.getPropertyValue('--lw-fs-title').trim(),
+        body: style.getPropertyValue('--lw-fs-body').trim(),
+        label: style.getPropertyValue('--lw-fs-label').trim(),
+        caption: style.getPropertyValue('--lw-fs-caption').trim(),
+      }
+    }
+    const sizes = new Map()
+    for (const element of document.querySelectorAll('.livery-workspace *')) {
+      if (element.closest('svg')) continue
+      const ownText = [...element.childNodes]
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => (node.textContent ?? '').trim())
+        .join('')
+      if (ownText.length === 0) continue
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      if (rect.width <= 0 || rect.height <= 0 || style.visibility === 'hidden' || style.display === 'none' || Number(style.opacity) === 0) continue
+      const size = Number.parseFloat(style.fontSize)
+      if (!Number.isFinite(size)) continue
+      const key = String(Math.round(size * 100) / 100)
+      sizes.set(key, (sizes.get(key) ?? 0) + 1)
+    }
+    return { sizes: [...sizes.keys()].map(Number).sort((a, b) => a - b), counts: Object.fromEntries(sizes), tokens }
+  })
+}
+
+/** About-footer probe: copy, line separation and absence of engineering jargon. */
+export async function readAboutFooter(page) {
+  return page.evaluate(() => {
+    const footer = document.querySelector('.livery-about')
+    if (!footer) return { present: false }
+    const spans = [...footer.querySelectorAll('span')].map((span) => {
+      const rect = span.getBoundingClientRect()
+      return {
+        text: (span.textContent ?? '').trim(),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        display: getComputedStyle(span).display,
+        fontSize: getComputedStyle(span).fontSize,
+      }
+    })
+    const style = getComputedStyle(footer)
+    return {
+      present: true,
+      text: (footer.textContent ?? '').trim(),
+      lines: spans,
+      display: style.display,
+      flexDirection: style.flexDirection,
+      gap: style.gap,
+    }
+  })
 }
 
 /** Locate a control by data-testid and fall back to accessible names. */

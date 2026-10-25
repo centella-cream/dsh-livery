@@ -37,7 +37,6 @@ describe('dictionary key parity', () => {
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
       'src/client/ui/WallpaperPanel.tsx',
-      'src/client/wallpaper/library.ts',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
@@ -69,7 +68,6 @@ describe('dictionary key parity', () => {
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
       'src/client/ui/WallpaperPanel.tsx',
-      'src/client/wallpaper/library.ts',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
@@ -147,7 +145,7 @@ describe('entry rename — 视觉风格 / Visual Style', () => {
   })
 
   it('keeps plugin identity copy separate from the entry label', () => {
-    expect(enUS['about.plugin']).toContain('DSH Livery')
+    expect(enUS['about.plugin']).toContain('DSH Visual Studio')
     expect(zhCN['diag.header']).toContain('dsh-livery')
   })
 })

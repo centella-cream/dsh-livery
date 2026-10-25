@@ -26,6 +26,7 @@ vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
   }
 })
 import { LiverySettingsPage } from '../../src/client/ui/LiverySettingsPage.js'
+import { formatDiagnostics } from '../../src/client/diagnostics.js'
 import { SelfCheck } from '../../src/client/ui/SelfCheck.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
@@ -156,6 +157,25 @@ describe('settings page server render', () => {
     expect(html).toContain('data-testid="livery-selfcheck-toggle"')
     // Apply/cancel only exist while a transient preview is active.
     expect(html).not.toContain('data-testid="livery-apply"')
+  })
+
+  it('renders human About copy and keeps ids in the diagnostics only', () => {
+    const html = render(READY)
+    expect(html).toContain('DSH Visual Studio')
+    expect(html).toContain(`Certified for DeepSeek Harness ${TEST_ADAPTER.hostVersion}`)
+    expect(html).toContain('Gallery previews are generated from fixed scenes')
+    expect(html).not.toContain('Contract ')
+    expect(html).not.toContain('Adapter ')
+    expect(html).not.toMatch(/契约|适配器/)
+    const footer = /<footer class="livery-about"[\s\S]*?<\/footer>/.exec(html)?.[0] ?? ''
+    const spans = footer.match(/<span/g) ?? []
+    // Two distinct lines (block layout, not one run-on sentence); note is its own span.
+    expect(spans.length).toBe(2)
+    expect(footer).toMatch(/<\/span>\s*<span class="livery-about__note">/)
+    expect(footer).not.toMatch(/Harness [0-9][^<]*Gallery previews/)
+    const report = formatDiagnostics(translate(enUS), READY, 'en')
+    expect(report).toContain(TEST_ADAPTER.adapterId)
+    expect(report).toContain(TEST_ADAPTER.contractHash.replace('sha256:', '').slice(0, 12))
   })
 
   it('renders the preview-language tab and follows the host locale by default', () => {

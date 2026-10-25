@@ -84,6 +84,8 @@ import {
 import { canonicalizeColors, chooseSkinPair, waitForActiveLivery, waitForStock } from './checks.mjs'
 import { labelsFor } from './labels.mjs'
 
+const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
+
 const DEFAULT_APP = '/Applications/DeepSeek Harness.app/Contents/Resources'
 const TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw-alias-border-l1']
 const PAGE_LABELS = labelsFor('zh')
@@ -506,6 +508,18 @@ async function main() {
         desktopStructure.sections.every((section) => section.cards > 0 && section.cards === desktopFamilyCounts.get(section.family)) &&
         DESKTOP_FAMILY_ORDER.every((family) => (desktopFamilyCounts.get(family) ?? 0) > 0),
       `sections=[${desktopStructure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; expected=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopFamilyCounts.get(family)}`).join(', ')}]`,
+    )
+    // Mock the online card's automatic Picsum batch (and Openverse) so the
+    // desktop probe never depends on the live network.
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (url.includes('/v2/list')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG })
+    })
+    await page.route('https://api.openverse.org/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })

@@ -19,7 +19,6 @@ import {
   localizedName,
   previewUrl,
   resolvePreviewLocale,
-  shortHash,
   sortLiveries,
 } from '../model.js'
 import type { LiveryRuntimeApi, PreviewLocaleChoice } from '../model.js'
@@ -390,9 +389,11 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
             />
 
             <footer className="livery-about" aria-label={t('about.title')}>
-              <span>{t('about.plugin', { version: snapshot.identity.pluginVersion })}</span>
-              <span>{t('about.contract', { hash: shortHash(snapshot.identity.contractHash) })}</span>
-              <span>{t('about.adapter', { adapter: snapshot.identity.adapterId })}</span>
+              <span>
+                {t('about.plugin', { version: snapshot.identity.pluginVersion })}
+                {' · '}
+                {t('about.certified', { hostVersion: snapshot.identity.hostVersion })}
+              </span>
               <span className="livery-about__note">{t('about.note')}</span>
             </footer>
           </aside>

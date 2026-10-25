@@ -28,9 +28,11 @@ import {
   openLiveryDetailed,
   PANEL_NAV_VIA,
   readCardNames,
+  readAboutFooter,
   readGallery,
   readGalleryStructure,
   readLayoutStructure,
+  readTypographyScale,
   readHostStyleProbe,
   readLocaleTab,
   readThumbLocales,
@@ -2019,6 +2021,16 @@ export async function checkSelfCheck(ctx) {
         `clipboard ${clipboard.text.length} byte(s), starts: ${oneLine(clipboard.text, 200)}`,
         { preview: oneLine(clipboard.text, 800) },
       )
+      const adapterId = state.catalog?.adapterId ?? ''
+      const contractPrefix = String(state.catalog?.contractHash ?? '').replace(/^sha256:/, '').slice(0, 8)
+      expect(
+        runner,
+        'selfcheck.copy-diagnostics-content',
+        'copied diagnostics still carry the adapter id + contract prefix (engineering ids live in diagnostics, not the About footer)',
+        clipboard.ok === true && adapterId.length > 0 && clipboard.text.includes(adapterId) && (contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)),
+        `adapterId="${adapterId}" present=${clipboard.text.includes(adapterId)}; contractPrefix="${contractPrefix}" present=${contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)}`,
+        { preview: oneLine(clipboard.text, 800) },
+      )
     } else {
       expect(runner, 'selfcheck.copy-diagnostics', 'copy diagnostics produces diagnostics text', toast, `clipboard unreadable (${clipboard.error ?? 'unknown'}); "diagnostics copied" toast=${toast}`)
     }
@@ -2797,20 +2809,17 @@ export async function checkWallpaperStudio(ctx) {
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
     'base64',
   )
-  const libraryFixture = {
+  const openverseFixture = {
     results: [
-      { id: 'lib-1', url: 'https://images.example.test/nature-1.jpg', thumbnail: 'https://images.example.test/nature-1-thumb.jpg', title: 'Nature One', creator: 'Tester', license: 'cc0' },
-      { id: 'lib-2', url: 'https://images.example.test/nature-2.jpg', thumbnail: 'https://images.example.test/nature-2-thumb.jpg', title: 'Nature Two', creator: 'Artist', license: 'pdm' },
+      { id: 'ov-1', url: 'https://images.example.test/one.jpg', thumbnail: 'https://images.example.test/one-thumb.jpg', title: 'Aurora One', creator: 'Tester', license: 'cc0' },
+      { id: 'ov-2', url: 'https://images.example.test/two-full.jpg', thumbnail: 'https://images.example.test/two-thumb.jpg', title: 'Aurora Two', creator: 'Artist', license: 'pdm' },
     ],
   }
-  const onlineFixture = {
-    results: [
-      { id: 'ov-1', url: 'https://images.example.test/one.jpg', thumbnail: 'https://images.example.test/one-thumb.jpg', title: 'Aurora Test', creator: 'Tester', license: 'cc0' },
-      { id: 'ov-2', url: 'https://images.example.test/two-full.jpg', thumbnail: 'https://images.example.test/two-thumb.jpg', title: 'Mist Test', creator: 'Artist', license: 'pdm' },
-    ],
-  }
-  const apiRequests = []
-  let apiMode = 'ok'
+  const picsumFixture = [{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]
+  const openverseRequests = []
+  const picsumListRequests = []
+  let openverseMode = 'ok'
+  let picsumMode = 'ok'
   const meanPixelDelta = (a, b) => {
     if (!a || !b) return null
     const avg = [0, 1, 2].reduce((sum, index) => sum + Math.abs((a.average?.[index] ?? 0) - (b.average?.[index] ?? 0)), 0) / 3
@@ -2823,7 +2832,6 @@ export async function checkWallpaperStudio(ctx) {
       : 0
     return { avg: Number(avg.toFixed(2)), grid: Number(grid.toFixed(2)), score: Number((avg + grid).toFixed(2)) }
   }
-  const expectedCategories = ['nature', 'city', 'abstract', 'minimal', 'sky', 'texture', 'space', 'gradient']
   const allCover = (value) => typeof value === 'string' && value.length > 0 && value.split(',').every((part) => part.trim() === 'cover')
   const liveryRowLabels = ['视觉风格', 'Visual Style', '皮肤', 'Livery']
   const reopenLivery = async () => {
@@ -2869,10 +2877,16 @@ export async function checkWallpaperStudio(ctx) {
   }
   try {
     await page.route('https://api.openverse.org/**', (route) => {
-      apiRequests.push(route.request().url())
-      if (apiMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(libraryFixture) })
-      if (apiMode === 'online') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(onlineFixture) })
-      return route.fulfill({ status: 500, contentType: 'text/plain', body: 'library unavailable' })
+      openverseRequests.push(route.request().url())
+      if (openverseMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(openverseFixture) })
+      return route.fulfill({ status: 500, contentType: 'text/plain', body: 'openverse unavailable' })
+    })
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (!url.includes('/v2/list')) return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+      picsumListRequests.push(url)
+      if (picsumMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(picsumFixture) })
+      return route.fulfill({ status: 500, contentType: 'text/plain', body: 'picsum unavailable' })
     })
     await page.route('https://images.example.test/**', (route) =>
       route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }),
@@ -2880,12 +2894,13 @@ export async function checkWallpaperStudio(ctx) {
     await reopenLivery()
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
-    // Auto-load of the active curated category (network intercepted).
+    // Exactly one automatic Picsum random batch on wallpaper-tab mount.
+    await page.waitForSelector('[data-testid="wallpaper-online-card"]', { timeout: 10_000 })
     await page.waitForFunction(() => {
-      const results = document.querySelectorAll('[data-testid="wallpaper-library-result"]').length
-      const status = document.querySelector('[data-testid="wallpaper-library-status"]')?.getAttribute('data-status') ?? null
+      const results = document.querySelectorAll('[data-testid="wallpaper-result"]').length
+      const status = document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') ?? null
       return results > 0 || status === 'error' || status === 'offline' || status === 'empty'
-    }, undefined, { timeout: 15_000 }).catch(() => {})
+    }, undefined, { timeout: 20_000 }).catch(() => {})
     await sleep(500)
     const tabState = await readGalleryStructure(page)
     expect(
@@ -2899,92 +2914,122 @@ export async function checkWallpaperStudio(ctx) {
       `selected=${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.selected}; wallpaper panel=${tabState.wallpaperPanel}; style panel=${tabState.stylePanel}; label="${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text}"`,
     )
 
-    // ---- curated library: 8 categories, auto-load, pagination, cache/offline ----
-    const library = await readWallpaperState(page)
+    // ---- search-first online card (round 11): one auto Picsum batch, explicit actions, no slider refetch ----
+    const onlineAuto = await readWallpaperState(page)
+    const loadedThumbs = await page
+      .evaluate(() => [...document.querySelectorAll('[data-testid="wallpaper-online-card"] [data-testid="wallpaper-result"] img')].filter((img) => img.complete && img.naturalWidth > 0).length)
+      .catch(() => 0)
+    const mainOrder = onlineAuto.mainCardOrder ?? []
     expect(
       runner,
-      'wallpaper.library-categories',
-      'curated library exposes 8 Openverse categories and auto-loads the active one',
-      library.libraryCategories.map((chip) => chip.id).join(',') === expectedCategories.join(',') &&
-        library.libraryCategories.find((chip) => chip.id === 'nature')?.pressed === true &&
-        library.libraryCategories.every((chip) => chip.text.length > 0) &&
-        library.moreButton === true &&
-        library.libraryResults.length === 2 &&
-        (library.libraryStatus === null || library.libraryStatus === 'ready'),
-      `categories=[${library.libraryCategories.map((chip) => `${chip.id}:${chip.text}${chip.pressed ? '*' : ''}`).join(', ')}]; results=${library.libraryResults.length}; status=${library.libraryStatus}; requests=${apiRequests.length}`,
+      'wallpaper.library-removed',
+      'curated library/category UI is removed; one search-first online card directly follows the hero',
+      onlineAuto.onlineCardPresent === true &&
+        onlineAuto.libraryElementCount === 0 &&
+        onlineAuto.categoryChipCount === 0 &&
+        mainOrder.indexOf('wallpaper-hero') >= 0 &&
+        mainOrder.indexOf('wallpaper-online-card') === mainOrder.indexOf('wallpaper-hero') + 1,
+      `onlineCard=${onlineAuto.onlineCardPresent}; libraryElements=${onlineAuto.libraryElementCount}; categoryChips=${onlineAuto.categoryChipCount}; mainCardOrder=${JSON.stringify(mainOrder)}`,
     )
-    const libraryCacheRaw = await page
-      .evaluate(() => { try { return window.localStorage.getItem('dsh-livery.wallpaper.library.v1') } catch { return null } })
-      .catch(() => null)
-    let libraryCache = null
-    try { libraryCache = libraryCacheRaw === null ? null : JSON.parse(libraryCacheRaw) } catch { libraryCache = null }
     expect(
       runner,
-      'wallpaper.library-cached',
-      'library results are cached in localStorage for the 6 h TTL',
-      libraryCache !== null &&
-        typeof libraryCache === 'object' &&
-        Array.isArray(libraryCache.nature?.results) &&
-        libraryCache.nature.results.length === 2 &&
-        typeof libraryCache.nature.fetchedAt === 'number',
-      `library cache key "dsh-livery.wallpaper.library.v1"; cachedCategories=${libraryCache === null ? '(none)' : Object.keys(libraryCache).join(',')}`,
+      'wallpaper.online-auto-random',
+      'opening the wallpaper tab auto-loads exactly one Picsum random batch (mockable)',
+      picsumListRequests.length === 1 && onlineAuto.results.length >= 2 && onlineAuto.results.every((result) => result.url?.startsWith('https://picsum.photos/')) && loadedThumbs > 0 && openverseRequests.length === 0,
+      `picsum list requests=${picsumListRequests.length}; openverse requests=${openverseRequests.length}; results=${onlineAuto.results.length}; loaded thumbs=${loadedThumbs}; status=${onlineAuto.status}`,
     )
-    // Click a result: remote URL + attribution.
-    await page.locator('[data-testid="wallpaper-library-result"]').first().click({ timeout: 8_000 })
-    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('nature-1.jpg'), undefined, { timeout: 10_000 }).catch(() => {})
-    const libraryApplied = await readWallpaperState(page)
+    await capture(page, ctx, { state: 'wallpaper-online-auto', mode: 'light' })
+    const picsumBeforeSliders = picsumListRequests.length
+    const openverseBeforeSliders = openverseRequests.length
+    await setRangeValue(page, 'wallpaper-blur', 16)
+    await sleep(700)
     expect(
       runner,
-      'wallpaper.library-applied',
-      'clicking a library result applies its https URL and shows attribution',
-      libraryApplied.styleText.includes("url('https://images.example.test/nature-1.jpg')") &&
-        libraryApplied.attribute !== null &&
-        libraryApplied.libraryAttribution.length > 0,
-      `styleHasUrl=${libraryApplied.styleText.includes('nature-1.jpg')}; attribution="${oneLine(libraryApplied.libraryAttribution, 120)}"`,
+      'wallpaper.online-no-refetch',
+      'changing effect sliders never refetches the online card',
+      picsumListRequests.length === picsumBeforeSliders && openverseRequests.length === openverseBeforeSliders,
+      `picsum ${picsumBeforeSliders}→${picsumListRequests.length}; openverse ${openverseBeforeSliders}→${openverseRequests.length}`,
     )
-    // Pagination: "换一批" fetches page 2.
-    const requestsBeforeMore = apiRequests.length
-    await page.locator('[data-testid="wallpaper-library-more"]').click({ timeout: 8_000 })
-    await page.waitForFunction((count) => true, undefined, { timeout: 100 }).catch(() => {})
-    for (let attempt = 0; attempt < 40 && apiRequests.length === requestsBeforeMore; attempt += 1) await sleep(100)
-    await sleep(300)
-    expect(
-      runner,
-      'wallpaper.library-more',
-      '换一批 requests the next library page (mocked)',
-      apiRequests.length > requestsBeforeMore && apiRequests.some((url) => /[?&]page=2(?:&|$)/.test(url)),
-      `${apiRequests.length} request(s); last=${oneLine(apiRequests[apiRequests.length - 1] ?? '', 160)}`,
-    )
-    // Cached fallback: after a successful batch is cached, failures render the cache.
-    apiMode = 'fail'
-    await page.locator('[data-testid="wallpaper-category"][data-category="nature"]').click({ timeout: 8_000 })
-    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-library-status"]')?.getAttribute('data-status') === 'cached', undefined, { timeout: 20_000 }).catch(() => {})
-    const cachedState = await readWallpaperState(page)
-    expect(
-      runner,
-      'wallpaper.library-cached-fallback',
-      'library failure falls back to the cached batch (mocked 500)',
-      cachedState.libraryStatus === 'cached' && cachedState.libraryResults.length === 2,
-      `status=${cachedState.libraryStatus}; results=${cachedState.libraryResults.length}; statusText="${oneLine(cachedState.libraryStatusText, 120)}"`,
-    )
-    // No-cache failure: typed error state, built-ins still available.
-    await page.locator('[data-testid="wallpaper-category"][data-category="space"]').click({ timeout: 8_000 })
+    // Explicit Openverse search.
+    await page.locator('[data-testid="wallpaper-search"]').fill('aurora')
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
     await page.waitForFunction(() => {
-      const status = document.querySelector('[data-testid="wallpaper-library-status"]')?.getAttribute('data-status')
-      return status === 'error' || status === 'offline'
-    }, undefined, { timeout: 20_000 }).catch(() => {})
-    const offlineState = await readWallpaperState(page)
+      const status = document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') ?? null
+      const labels = [...document.querySelectorAll('[data-testid="wallpaper-result"]')].map((result) => result.getAttribute('aria-label') ?? '')
+      return (status === null || status === 'ready') && labels.some((label) => label.includes('Aurora'))
+    }, undefined, { timeout: 15_000 }).catch(() => {})
+    const searched = await readWallpaperState(page)
     expect(
       runner,
-      'wallpaper.library-offline',
-      'library failure without cache resolves to a typed offline/error state (built-ins remain usable)',
-      (offlineState.libraryStatus === 'error' || offlineState.libraryStatus === 'offline') && offlineState.builtins.length === 24,
-      `status=${offlineState.libraryStatus}; builtins=${offlineState.builtins.length}; statusText="${oneLine(offlineState.libraryStatusText, 120)}"`,
+      'wallpaper.online-search',
+      'explicit Openverse search renders the mocked results',
+      openverseRequests.length === 1 && searched.results.length === 2 && (searched.results[0]?.label ?? '').includes('Aurora'),
+      `openverse requests=${openverseRequests.length}; results=${JSON.stringify(searched.results.map((result) => result.url))}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 100)}"`,
     )
-    apiMode = 'ok'
-    await page.locator('[data-testid="wallpaper-category"][data-category="nature"]').click({ timeout: 8_000 })
-    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-library-status"]')?.getAttribute('data-status') !== 'loading', undefined, { timeout: 20_000 }).catch(() => {})
+    await capture(page, ctx, { state: 'wallpaper-online-search', mode: 'light' })
+    // Random and 换一批/refresh re-fetch the active source.
+    const beforeRandom = picsumListRequests.length
+    await page.locator('[data-testid="wallpaper-random"]').click({ timeout: 8_000 })
+    for (let attempt = 0; attempt < 50 && picsumListRequests.length === beforeRandom; attempt += 1) await sleep(100)
     await sleep(300)
+    const randomState = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.online-random',
+      '随机 requests a new Picsum batch',
+      picsumListRequests.length === beforeRandom + 1 && randomState.results.length > 0 && randomState.results.every((result) => result.url?.startsWith('https://picsum.photos/')),
+      `picsum ${beforeRandom}→${picsumListRequests.length}; results=${randomState.results.length}`,
+    )
+    const beforeRefresh = picsumListRequests.length
+    await page.locator('[data-testid="wallpaper-refresh"]').click({ timeout: 8_000 })
+    for (let attempt = 0; attempt < 50 && picsumListRequests.length === beforeRefresh; attempt += 1) await sleep(100)
+    await sleep(300)
+    expect(
+      runner,
+      'wallpaper.online-refresh',
+      '换一批/refresh requests another batch for the active source',
+      picsumListRequests.length === beforeRefresh + 1,
+      `picsum ${beforeRefresh}→${picsumListRequests.length}`,
+    )
+    // Retry flow after a simulated failure.
+    picsumMode = 'fail'
+    const beforeFail = picsumListRequests.length
+    await page.locator('[data-testid="wallpaper-random"]').click({ timeout: 8_000 })
+    for (let attempt = 0; attempt < 50 && picsumListRequests.length === beforeFail; attempt += 1) await sleep(100)
+    await page.waitForFunction(() => {
+      const status = document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') ?? null
+      return status === 'error' || status === 'offline'
+    }, undefined, { timeout: 15_000 }).catch(() => {})
+    const failed = await readWallpaperState(page)
+    const retryButton = page.locator('[data-testid="wallpaper-online-retry"]')
+    const retryVisible = (await retryButton.count()) > 0
+    await capture(page, ctx, { state: 'wallpaper-online-retry', mode: 'light' })
+    picsumMode = 'ok'
+    const beforeRetry = picsumListRequests.length
+    if (retryVisible) await retryButton.click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0, undefined, { timeout: 15_000 }).catch(() => {})
+    await sleep(300)
+    const retried = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.online-retry',
+      'a failed online batch exposes retry and succeeds when retried',
+      (failed.status === 'error' || failed.status === 'offline') && retryVisible && picsumListRequests.length === beforeRetry + 1 && retried.results.length > 0,
+      `status=${failed.status}; retryVisible=${retryVisible}; picsum ${beforeRetry}→${picsumListRequests.length}; results=${retried.results.length}`,
+    )
+    // Apply one online result.
+    const appliedOnlineUrl = retried.results[0]?.url ?? ''
+    await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
+    await page.waitForFunction((url) => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes(url), appliedOnlineUrl, { timeout: 10_000 }).catch(() => {})
+    const onlineApplied = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.online-applied',
+      'clicking an online result applies its URL and shows attribution',
+      onlineApplied.styleText.includes(appliedOnlineUrl) && onlineApplied.attribute !== null && onlineApplied.attribution.length > 0,
+      `url=${oneLine(appliedOnlineUrl, 120)}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.attribution, 120)}"`,
+    )
+    await capture(page, ctx, { state: 'wallpaper-online-applied', mode: 'light' })
 
     // ---- 24 built-ins + layer + atmosphere overlay ----
     const initial = await readWallpaperState(page)
@@ -3002,6 +3047,9 @@ export async function checkWallpaperStudio(ctx) {
       return document.body.hasAttribute('data-dsh-wallpaper') && style !== null && (style.textContent ?? '').includes('background-image')
     }, undefined, { timeout: 10_000 }).catch(() => {})
     const builtinApplied = await readWallpaperState(page)
+    const builtinBlur = builtinApplied.sliderValues.blur
+    const builtinDim = builtinApplied.sliderValues.dim
+    const builtinVeil = `rgba(0,0,0,${(Number(builtinDim) / 100).toFixed(2)})`
     expect(
       runner,
       'wallpaper.builtin-applied',
@@ -3010,9 +3058,9 @@ export async function checkWallpaperStudio(ctx) {
         builtinApplied.stylePresent === true &&
         builtinApplied.styleMarker === 'dsh-livery/wallpaper' &&
         builtinApplied.coverCount >= 2 &&
-        /filter:blur\(8px\)/.test(builtinApplied.styleText) &&
-        /rgba\(0,0,0,0\.25\)/.test(builtinApplied.styleText),
-      `attr=${builtinApplied.attribute}; marker=${builtinApplied.styleMarker}; cover rules=${builtinApplied.coverCount}; filter=${builtinApplied.styleText.match(/filter:blur\([^)]*\)/)?.[0]}`,
+        builtinApplied.styleText.includes(`filter:blur(${builtinBlur}px)`) &&
+        builtinApplied.styleText.includes(builtinVeil),
+      `attr=${builtinApplied.attribute}; marker=${builtinApplied.styleMarker}; cover rules=${builtinApplied.coverCount}; sliders=${JSON.stringify(builtinApplied.sliderValues)}; filter=${builtinApplied.styleText.match(/filter:blur\([^)]*\)/)?.[0]}`,
       { styleText: builtinApplied.styleText.slice(0, 800) },
     )
     expect(
@@ -3139,7 +3187,32 @@ export async function checkWallpaperStudio(ctx) {
     await setRangeValue(page, 'wallpaper-dim', 40)
     await setRangeValue(page, 'wallpaper-frost', 55)
     await setRangeValue(page, 'wallpaper-atmosphere', 60)
-    await page.waitForFunction(() => (window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? '').includes('"blur":12'), undefined, { timeout: 8_000 }).catch(() => {})
+    // Wait for the debounced persistence to carry ALL four effects (not just the
+    // first one) before reloading; retry the atmosphere update once if a React
+    // commit raced the range event.
+    const persistedAllEffects = async () =>
+      page.evaluate(() => {
+        try {
+          const raw = window.localStorage.getItem('dsh-livery.wallpaper.v1')
+          if (raw === null) return false
+          const stored = JSON.parse(raw)
+          return stored?.blur === 12 && stored?.dim === 40 && stored?.frost === 55 && stored?.atmosphere === 60
+        } catch {
+          return false
+        }
+      }).catch(() => false)
+    let storedComplete = false
+    for (let attempt = 0; attempt < 25 && !storedComplete; attempt += 1) {
+      storedComplete = await persistedAllEffects()
+      if (!storedComplete) await sleep(150)
+    }
+    if (!storedComplete) {
+      await setRangeValue(page, 'wallpaper-atmosphere', 60)
+      for (let attempt = 0; attempt < 15 && !storedComplete; attempt += 1) {
+        storedComplete = await persistedAllEffects()
+        if (!storedComplete) await sleep(150)
+      }
+    }
     const storedBeforeReload = (await readWallpaperState(page)).stored
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
     await waitForBootGraph(page)
@@ -3291,38 +3364,6 @@ export async function checkWallpaperStudio(ctx) {
     )
     await capture(page, ctx, { state: 'wallpaper-custom-url', mode: 'light' })
 
-    // ---- mocked online search path (legacy panel section) ----
-    apiMode = 'online'
-    await page.locator('[data-testid="wallpaper-search"]').fill('aurora')
-    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
-    await page.waitForFunction(() => {
-      const status = document.querySelector('[data-testid="wallpaper-status"]')
-      return (status === null || status.getAttribute('data-status') === 'ready') && document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0
-    }, undefined, { timeout: 15_000 }).catch(() => {})
-    const searched = await readWallpaperState(page)
-    expect(
-      runner,
-      'wallpaper.search-results',
-      'mocked Openverse search renders result cards with attribution labels',
-      searched.results.length === 2 &&
-        searched.results.every((result) => result.url?.startsWith('https://images.example.test/')) &&
-        searched.results[0]?.label?.includes('Aurora Test'),
-      `results=${JSON.stringify(searched.results.map((result) => result.url))}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 100)}"`,
-    )
-    await capture(page, ctx, { state: 'wallpaper-search', mode: 'light' })
-    await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
-    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('one.jpg'), undefined, { timeout: 10_000 }).catch(() => {})
-    const remoteApplied = await readWallpaperState(page)
-    expect(
-      runner,
-      'wallpaper.search-applied',
-      'clicking a search result applies the remote wallpaper URL and shows attribution',
-      remoteApplied.styleText.includes("url('https://images.example.test/one.jpg')") &&
-        remoteApplied.attribute !== null &&
-        remoteApplied.attribution.includes('Aurora Test'),
-      `styleHasUrl=${remoteApplied.styleText.includes('one.jpg')}; attr=${remoteApplied.attribute}; attribution="${oneLine(remoteApplied.attribution, 120)}"`,
-    )
-
     // ---- adaptive cover layers at several viewport sizes ----
     const resizeSizes = [[1024, 768], [1920, 1080], [900, 1300]]
     const resizeEvidence = []
@@ -3439,9 +3480,13 @@ export async function checkWallpaperStudio(ctx) {
     state.wallpaperEvidence = {
       builtinCount: initial.builtins.length,
       builtin: builtinApplied.selectedBuiltin,
-      libraryCategories: expectedCategories.length,
-      libraryCacheFallback: cachedState.libraryStatus,
-      libraryOffline: offlineState.libraryStatus,
+      online: {
+        autoPicsumRequests: 1,
+        openverseSearchRequests: openverseRequests.length,
+        picsumRefetchRequests: picsumListRequests.length,
+        retrySucceeded: retried.results.length > 0,
+        libraryRemoved: onlineAuto.libraryElementCount === 0 && onlineAuto.categoryChipCount === 0,
+      },
       uploadPersisted: uploadPersisted.styleText.includes('blob:'),
       atmosphereOverPlugin: state.atmosphereOverPlugin ?? null,
       resizeEvidence,
@@ -3460,10 +3505,11 @@ export async function checkWallpaperStudio(ctx) {
       `style selected=${restored.tabs.find((tab) => tab.id === 'style')?.selected}; stylePanel=${restored.stylePanel}; wallpaperPanel=${restored.wallpaperPanel}`,
     )
   } catch (error) {
-    runner.fail('wallpaper.studio', 'wallpaper studio (library, overlay, upload, effects, persistence, URL validation)', error instanceof Error ? (error.stack ?? error.message) : String(error))
+    runner.fail('wallpaper.studio', 'wallpaper studio (online card, overlay, upload, effects, persistence, URL validation)', error instanceof Error ? (error.stack ?? error.message) : String(error))
   } finally {
     await page.unroute('https://api.openverse.org/**').catch(() => {})
     await page.unroute('https://images.example.test/**').catch(() => {})
+    await page.unroute('https://picsum.photos/**').catch(() => {})
   }
 }
 
@@ -3508,6 +3554,13 @@ export async function checkLayoutStructure(ctx) {
     await page.route('https://api.openverse.org/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (url.includes('/v2/list')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+    })
     await page.route('https://images.example.test/**', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }))
     routed = true
     await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale ?? 'zh', timeoutMs: 25_000 })
@@ -3571,6 +3624,62 @@ export async function checkLayoutStructure(ctx) {
     )
     await captureShot('layout-style-1440')
 
+    // ---- round-11: human About footer + unified five-step typography ----
+    const footer = await readAboutFooter(page)
+    const footerLines = footer.lines ?? []
+    const aboutPlugin = /^DSH Visual Studio \S+ · 已适配 DeepSeek Harness \S+$/.test(footerLines[0]?.text ?? '')
+    const aboutNote = (footerLines[1]?.text ?? '').includes('画廊预览图') && (footerLines[1]?.text ?? '').includes('不是宿主界面截图')
+    expect(
+      runner,
+      'footer.about-copy',
+      'About footer shows the human two-line copy (product + certified host, then the preview note)',
+      footer.present === true && footerLines.length === 2 && aboutPlugin && aboutNote,
+      `lines=[${footerLines.map((line) => `"${oneLine(line.text, 120)}"`).join(', ')}]`,
+      { footer },
+    )
+    expect(
+      runner,
+      'footer.about-lines',
+      'About footer renders its two lines separately (no run-on concatenation)',
+      footer.present === true &&
+        (footer.display === 'flex' || footer.display === 'block') &&
+        footerLines.length === 2 &&
+        footerLines[0].bottom <= footerLines[1].top + 2,
+      `display=${footer.display}/${footer.flexDirection} gap=${footer.gap}; tops=${footerLines.map((line) => `${line.top}-${line.bottom}`).join(' / ')}`,
+    )
+    expect(
+      runner,
+      'footer.about-no-jargon',
+      'About footer carries no contract hash / adapter id / jargon (ids live in diagnostics only)',
+      footer.present === true && !/sha256|契约|contract|adapter|适配器|dsh-0\.2\.1-rc\.\d-r\d|fc5ccff/i.test(footer.text ?? ''),
+      `footer text="${oneLine(footer.text ?? '', 220)}"`,
+    )
+    const styleScale = await readTypographyScale(page)
+    const allowedSizes = [11, 12, 13, 15, 20]
+    const leakedSizes = styleScale.sizes.filter((size) => ![11, 12, 13, 15, 20].includes(size))
+    expect(
+      runner,
+      'typography.five-step-style',
+      'style page uses the unified five-step type scale {11,12,13,15} (+20 display), no 14/16/18.72 leaks',
+      styleScale.sizes.length > 0 &&
+        styleScale.sizes.every((size) => allowedSizes.includes(size)) &&
+        [11, 12, 13, 15].every((size) => styleScale.sizes.includes(size)) &&
+        ![14, 16, 18.72].some((size) => styleScale.sizes.includes(size)),
+      `sizes=${JSON.stringify(styleScale.sizes)} counts=${JSON.stringify(styleScale.counts)} leaked=${JSON.stringify(leakedSizes)}`,
+      { styleScale },
+    )
+    const expectedTokens = { display: '20px', title: '15px', body: '13px', label: '12px', caption: '11px' }
+    const workspaceTokens = styleScale.tokens['.livery-workspace'] ?? {}
+    const panelTokens = styleScale.tokens['.livery-panel'] ?? {}
+    const tokensMatch = (tokens) => Object.entries(expectedTokens).every(([key, value]) => tokens[key] === value)
+    expect(
+      runner,
+      'typography.root-tokens',
+      'shared --lw-fs-* type tokens exist on the real .livery-workspace/.livery-panel roots (not only a legacy .livery-section)',
+      tokensMatch(workspaceTokens) && tokensMatch(panelTokens),
+      `workspace=${JSON.stringify(workspaceTokens)}; panel=${JSON.stringify(panelTokens)}`,
+    )
+
     // ---------- style page: 1024×800 (stacked) ----------
     await page.setViewportSize({ width: 1024, height: 800 })
     await sleep(450)
@@ -3621,8 +3730,9 @@ export async function checkLayoutStructure(ctx) {
     expect(
       runner,
       'layout.wallpaper-cards',
-      'wallpaper page renders hero / library / random / custom / effects / builtins cards',
-      wallpaperCards.length === 6 &&
+      'wallpaper page renders hero / online / custom / effects / builtins cards (library removed)',
+      wallpaperCards.length === 5 &&
+        wallpaperCards.map((card) => card.testId).join(',') === 'wallpaper-hero,wallpaper-online-card,wallpaper-custom-card,wallpaper-effects-card,wallpaper-builtins-card' &&
         wallpaperCards.every((card) => card.present === true && card.visible === true) &&
         wallpaperWide.heroThumb?.present === true &&
         (wallpaperWide.heroThumb.backgroundImage ?? '').includes('gradient') &&
@@ -3635,6 +3745,23 @@ export async function checkLayoutStructure(ctx) {
       'wallpaper page cards have a visible border and a non-flat surface',
       wallpaperCards.length > 0 && wallpaperCards.every((card) => hasVisibleSurface(card)),
       wallpaperCards.map((card) => `${card.testId}: border=${card.borderWidth} ${card.borderColor}, bg=${card.backgroundColor}`).join(' | '),
+    )
+    const wallpaperScale = await readTypographyScale(page)
+    const wallpaperLeaks = wallpaperScale.sizes.filter((size) => ![11, 12, 13, 15, 20].includes(size))
+    expect(
+      runner,
+      'typography.five-step-wallpaper',
+      'wallpaper page uses the same unified five-step type scale (no 14/16/18.72 leaks)',
+      wallpaperScale.sizes.length > 0 && wallpaperScale.sizes.every((size) => allowedSizes.includes(size)) && ![14, 16, 18.72].some((size) => wallpaperScale.sizes.includes(size)),
+      `sizes=${JSON.stringify(wallpaperScale.sizes)} counts=${JSON.stringify(wallpaperScale.counts)} leaked=${JSON.stringify(wallpaperLeaks)}`,
+      { wallpaperScale },
+    )
+    expect(
+      runner,
+      'typography.about-rail',
+      'About footer is visible on the wallpaper page as well (rail shared)',
+      footerLines.length === 2,
+      `footer lines=${footerLines.length}`,
     )
     const slidersWide = wallpaperWide.sliderWidths ?? []
     expect(
@@ -3700,6 +3827,7 @@ export async function checkLayoutStructure(ctx) {
     if (routed) {
       await page.unroute('https://api.openverse.org/**').catch(() => {})
       await page.unroute('https://images.example.test/**').catch(() => {})
+      await page.unroute('https://picsum.photos/**').catch(() => {})
     }
     await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
   }

@@ -27,9 +27,9 @@ small first-frame payload. It:
 - **styles are offline**: no remote fonts or scripts, and no network requests for
   visual styles or previews;
 - **the optional wallpaper studio is the only networked feature**: opening the
-  wallpaper tab loads one curated category from `api.openverse.org` (CC0/PDM
-  search; only the category query leaves the browser), and explicit search/random
-  actions call `api.openverse.org` / `picsum.photos`. User-selected images come
+  wallpaper tab automatically loads one random batch from `picsum.photos`, and
+  explicit search/random/next-batch actions call `api.openverse.org` (CC0/PDM
+  search; only the query leaves the browser) / `picsum.photos`. User-selected images come
   from a validated https URL or a local file upload; uploads are stored in the
   browser's IndexedDB and never uploaded. Results are cached in `localStorage`.
   No telemetry, no background requests, no API keys. Wallpaper choices/effects are

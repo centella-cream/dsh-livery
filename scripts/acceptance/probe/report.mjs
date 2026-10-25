@@ -25,6 +25,8 @@ const CHECK_AREA_TITLES = {
   galleryFamilies: 'Gallery families (taxonomy, chips, sections, filters)',
   wallpaper: 'Wallpaper studio',
   layout: 'Presentation layout & card structure',
+  footer: 'About footer (human copy)',
+  typography: 'Unified five-step type scale',
   search: 'Search',
   keyboard: 'Keyboard navigation',
   preview: 'Preview',
@@ -344,7 +346,12 @@ export const PLAN20_ROWS = [
   {
     criterion: 'Wallpaper studio (client-only layer, effects, validation, online search)',
     checks: ['wallpaper.tab', 'wallpaper.builtin-count', 'wallpaper.builtin-applied', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.search-results', 'wallpaper.search-applied', 'wallpaper.clear', 'wallpaper.tab-restore'],
-    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 24 built-ins, library cache/offline, uploads, atmosphere overlay, tab persistence; mockable Openverse (no live network)',
+    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 24 built-ins, search-first online card (auto Picsum batch; mocked Openverse/Picsum), uploads, atmosphere overlay, tab persistence (no live network)',
+  },
+  {
+    criterion: 'Round-11 copy/type/online card: human About footer, unified five-step typography, search-first online card with one auto random batch',
+    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'wallpaper.library-removed', 'wallpaper.online-auto-random', 'wallpaper.online-no-refetch', 'wallpaper.online-search', 'wallpaper.online-random', 'wallpaper.online-refresh', 'wallpaper.online-retry', 'wallpaper.online-applied', 'selfcheck.copy-diagnostics-content'],
+    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; curated library removed; exactly one mocked Picsum auto batch on tab open; sliders never refetch; explicit Openverse search / random / refresh / retry flows',
   },
   {
     criterion: 'Round-10 card layout: two-column card hierarchy, responsive stacking, bounded sliders, no overflow',
