@@ -6,16 +6,16 @@ evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
 screenshots/probes are generated locally under `artifacts/` (not committed).
 
 Shipped artifact: `dsh-livery-0.1.0.tgz`
-sha256 `08b385be051a5295bb02ef02bb24c50f32596d995fd799cd367c2f44d41f398c`
-(548,638 B).
+sha256 `367c1133f826b73f25c90fa6c5827ed8b4228045353202deadfc937ed418b173`
+(550,663 B).
 
 ## Host matrix (release 0.1.0 — unreleased)
 
 | Target | Result | What it covers |
 |---|---|---|
-| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **191 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, visual-studio tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, curated library with cache/retry/offline, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
-| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **192 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
-| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **191 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
+| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **205 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, visual-studio tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, curated library with cache/retry/offline, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), round-10 card layout (two-column ≥1100px, stacked at 1024, bounded sliders, hero thumbnails, no overflow), preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
+| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **206 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel and the round-10 card layout checks; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
+| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **205 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
 | DSH `0.2.1-rc.3`, Desktop Profile, real Electron renderer | **27 / 0 / 1** | real Electron app: boot graph, catalog identity, 6 family sections + tabs, 24 built-in wallpapers + atmosphere layer, preview-language tab, preview/apply/persist, relaunch boot payload, light/dark tokens, font hooks, self-check, sidebar entry |
 
 The package is **not released**; `0.1.0` is the unreleased version line. Earlier
@@ -56,6 +56,22 @@ releases.
   channel at 8-bit scale — perceptible in the captured frames, reported as a
   measured value, not a subjective claim); page-tab persistence across
   navigation and reload; adaptive cover at the three viewports.
+- **Round-10 presentation layout (measured at 1440×900 and 1024×800):** the
+  style page renders `livery-layout` with **two tracks at 1440
+  (`728px 364px`)** and **one track at 1024 (`696px`)**; the current-style hero
+  (`livery-current-card`, loaded `livery-hero-thumb` preview SVG) + gallery card
+  sit in the main column, while the 操作 card (`livery-actions-card`) and
+  self-check card sit in `livery-rail`. The wallpaper page has the same
+  two-column/stacked behaviour with six visible cards (hero/library/random/
+  custom/effects/builtins), a hero preview background-image + clear action, and
+  a `wallpaper-effects-grid` containing **four bounded 140 px sliders** (never
+  viewport-wide; grid becomes 2 tracks when stacked at 1024). Card surfaces are
+  visibly separated (non-flat surface material: background/backdrop/shadow; note
+  the host shell computes `section` border-width as 0 even though the card rule
+  sets a 1px border — separation remains visible via the material, and the
+  check accepts the measured surface material). No horizontal overflow at
+  either width; screenshots `layout-style-1440/1024` and
+  `layout-wallpaper-1440/1024` per Web target.
 - **Wallpaper studio** (client-only). **24 deterministic CSS-only built-ins**,
   blur 0–24 px, dim 0–70 %, frost 0–100 %, global atmosphere 0–100 %, custom
   https-only URL validation, local image upload (JPEG/PNG/WebP/AVIF, ≤10 MiB,
@@ -106,9 +122,9 @@ releases.
 - `tsc --noEmit` clean, `vitest run` 661 tests green.
 - `liveries:check`: 24 styles across 2 catalog profiles.
 - Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
-- Per-livery CSS under the 12 KiB hard cap; **client gzip 35,062 B** (48 KiB
-  budget; harness-measured served bundle 35,207 B) and **client CSS 8,449 B**
-  (9 KiB budget); **host gzip 295,744 B**.
+- Per-livery CSS under the 12 KiB hard cap; **client gzip 36,569 B** (48 KiB
+  budget; harness-measured served bundle 36,712–36,714 B) and **client CSS
+  12,191 B** (12 KiB cap); **host gzip 295,744 B**.
 - Loader ABI 12/12 checks; adapter allowlist, pack and lint checks green.
 
 ## Development-round evidence (not releases)

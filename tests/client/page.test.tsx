@@ -112,6 +112,25 @@ describe('settings page server render', () => {
     expect(html).not.toContain('data-testid="livery-gallery"')
   })
 
+  it('renders the two-column card layout with hero, gallery and side rail', () => {
+    const html = render(READY)
+    expect(html).toContain('data-testid="livery-layout"')
+    expect(html).toContain('data-testid="livery-current-card"')
+    expect(html).toContain('data-testid="livery-gallery-card"')
+    expect(html).toContain('data-testid="livery-actions-card"')
+    expect(html).toContain('class="livery-rail"')
+    expect(html).toContain('Current style')
+    expect(html).toContain('Actions')
+    // Behavior hooks moved into cards but preserved verbatim.
+    expect(html).toContain('data-testid="livery-current"')
+    expect(html).toContain('data-testid="livery-gallery"')
+    expect(html).toContain('data-testid="livery-restore"')
+    expect(html).toContain('data-testid="livery-selfcheck"')
+    // Richer 当前风格 hero: selected-style preview SVG thumbnail from previewsBase.
+    expect(html).toContain('data-testid="livery-hero-thumb"')
+    expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
+  })
+
   it('renders the current summary and family-grouped gallery hooks', () => {
     const html = render(READY)
     expect(html).toContain('data-testid="livery-current"')

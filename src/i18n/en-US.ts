@@ -124,6 +124,13 @@ export const enUS = {
   'wallpaper.uploadError.size': 'Image is larger than 10 MiB.',
   'wallpaper.uploadError.empty': 'The file is empty.',
   'wallpaper.uploadSessionHint': 'IndexedDB is unavailable; this upload lasts for the current page session only.',
+  'layout.actions': 'Actions',
+  'wallpaper.currentTitle': 'Current wallpaper',
+  'wallpaper.currentEmpty': 'No wallpaper selected yet. Start with the online library, a built-in design, or your own image.',
+  'wallpaper.builtinKind': 'Built-in design',
+  'layout.currentStyle': 'Current style',
+  'wallpaper.randomTitle': 'Surprise me',
+  'wallpaper.randomHint': 'A quick random background — refresh pulls another batch from the online search, random jumps to Picsum.',
   // Search and tag filters.
   'search.label': 'Search visual styles',
   'search.placeholder': 'Search by name, ID, or tag',

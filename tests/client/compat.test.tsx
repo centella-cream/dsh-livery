@@ -110,8 +110,9 @@ describe('compatibility-mode notice', () => {
     expect(html).toContain('Compatibility mode (unverified)')
     expect(html).toContain('outside the certified matrix')
     expect(html).toContain('data-testid="livery-current"')
-    // Summary keeps an honest warning tag next to the current style.
-    expect(html).toMatch(/data-testid="livery-current"[\s\S]*Compatibility mode \(unverified\)/)
+    expect(html).toContain('data-testid="livery-current-card"')
+    // Banner + hero-card tag both carry the honest warning.
+    expect(html.match(/Compatibility mode \(unverified\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
   })
 
   it('localizes the compat notice in zh', () => {

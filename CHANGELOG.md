@@ -39,6 +39,12 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   (`pointer-events:none`, soft-light, default 30 %) so the wallpaper is visible on
   third-party plugin pages with opaque surfaces; page tab now remembers the last
   active tab across workspace remounts/navigation (`sessionStorage`).
+- **Studio layout redesign (round 10)**: both pages use hierarchical, responsive
+  card modules instead of a flat list; wallpaper page = hero preview + curated
+  library + random-pick + custom upload/URL cards and a rail with compact bounded
+  140 px effect sliders (no viewport-wide sliders) + 24-swatch grid; style page =
+  current-style hero (preview thumbnail) + gallery card + 操作/自检 rail; stacks
+  below 1100 px with no horizontal overflow.
 - **Curated gallery**: six style families (calm/nature/light/retro/vivid/dark),
   family-grouped sections and counts, primary family chips, the full 16-tag
   vocabulary behind a 更多筛选/More filters toggle, search, roving keyboard focus
@@ -66,7 +72,7 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 ### Verified
 
 - Final artifact `dsh-livery-0.1.0.tgz` sha256
-  `bbe991ba04f532d4afc14f1cf957e07eb58a28321687c31770b21172c5e5b25e` (542,784 B, 233 files).
+  `367c1133f826b73f25c90fa6c5827ed8b4228045353202deadfc937ed418b173` (550,663 B, 233 files).
 - Four-target acceptance on the final artifact: Web `0.2.1-rc.2` isolated full
   run 170/0/3/2, real-profile clone 171/0/3/4, Desktop `0.2.1-rc.3` packaged
   carrier 170/0/3/2, real Electron renderer 27/0/1. Live real Web Profile QA

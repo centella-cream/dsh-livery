@@ -288,6 +288,23 @@ Compatibility mode: when the host payload has `compat: true` (see §4), the pane
 an unverified-compat notice/tag and the self-check adds `compat.mode`; applied styles
 come from the newest certified contract.
 
+## 6c. Studio layout (round 10, unreleased 0.1.0)
+
+Presentation-only responsive card layout; all behaviour/testids from §6b remain.
+
+- Style page: `livery-layout` grid (`minmax(0,2fr) minmax(280px,1fr)` ≥1100 px,
+  single column below) → main `livery-current-card` (with `livery-hero-thumb`),
+  optional `livery-preview-card`, notices, `livery-gallery-card`; rail `livery-rail`
+  with `livery-actions-card` + self-check card.
+- Wallpaper page: `wallpaper-layout` grid → main `wallpaper-hero`
+  (`wallpaper-hero-preview`/`wallpaper-hero-empty`), `wallpaper-library-card`,
+  `wallpaper-random-card`, `wallpaper-custom-card`; rail
+  `wallpaper-effects-card` (+`wallpaper-effects-grid`; sliders bounded ≤220 px,
+  fixed value badges) and `wallpaper-builtins-card`.
+- Cards share `.livery-ui-card` (token-derived surface, 1 px border, 14 px radius,
+  subtle shadow/backdrop blur); no `!important`, no host selectors. 1440/1024 and
+  light/dark verified with no horizontal overflow.
+
 ## 7. Generated artifacts (build-time, committed)
 
 - `src/generated/contract.ts` — multi-adapter registry (`ADAPTERS`,

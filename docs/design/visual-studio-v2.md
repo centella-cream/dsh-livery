@@ -112,3 +112,26 @@ User feedback after testing the real Web Profile:
    ultrawide and resized windows crop instead of distorting.
 5. **Version policy.** Still unreleased `0.1.0`; no version bump for any of the
    above. Commits stay one-line.
+
+## 6. Round 10 — layout redesign (still unreleased 0.1.0)
+
+User feedback: the wallpaper page modules (built-ins, effects, upload, random/library)
+are flat/monotonous, and the style page is too simple. Requirements:
+
+- **Module hierarchy, not one flat list.** Every area is a card/section with a
+  header, bordered surface, consistent padding and spacing; visual hierarchy is
+  hero → main modules → secondary modules. Avoid 100%-width sliders and rows.
+- **Wallpaper page**: responsive two-column card layout at ≥1100 px: main column
+  (current-wallpaper hero card → online library card → custom upload/URL card) and
+  a side rail (effects card with compact constrained sliders in a 2×2/stacked
+  layout → built-ins card with a compact 24-swatch grid). Stack to one column
+  below 1100 px. Effects module must NOT use viewport-wide sliders; sliders are
+  bounded (~160–220 px) with value badges, in a gridded card.
+- **Style page**: current-style hero/summary card + action area, gallery card with
+  toolbar and family sections, and a side rail (self-check/details; current
+  style/actions may live here on wide screens) using the same card system.
+  Preserve all existing behavior/testids; only presentation/layout changes.
+- Preserve data-testids used by acceptance, keyboard/focus, no `!important`, no
+  remote assets, no host component selectors. CLIENT_CSS budget raised to 12 KiB;
+  client gzip stays within 48 KiB.
+- Version unchanged (unreleased 0.1.0); commit stays one line.

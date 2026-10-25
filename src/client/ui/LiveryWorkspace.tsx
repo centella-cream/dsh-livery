@@ -17,6 +17,7 @@ import {
   isStock,
   localizedDescription,
   localizedName,
+  previewUrl,
   resolvePreviewLocale,
   shortHash,
   sortLiveries,
@@ -192,183 +193,211 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
       )}
 
       {!loading && !mismatch && (
-        <>
-          <div className="livery-summary" data-testid="livery-current">
-            <div className="livery-summary__body">
-              <span className="livery-summary__kicker">{t('current.title')}</span>
-              <span className="livery-summary__name">{shownName}</span>
-              <span className="livery-summary__desc">{shownDescription}</span>
-              <div className="livery-meta">
-                <span className="livery-meta__label">{t('current.idLabel')}</span>
-                <code className="livery-id">{shownId ?? t('current.stockName')}</code>
-                {shownLivery?.meta.tags.map(tag => (
-                  <Tag key={tag} tone="quiet">{tag}</Tag>
-                ))}
+        <div className="livery-layout" data-testid="livery-layout">
+          <div className="livery-main">
+            <section className="livery-ui-card livery-hero" data-testid="livery-current-card">
+              <div className="livery-ui-card__head">
+                <h3 className="livery-ui-card__title">{t('layout.currentStyle')}</h3>
+                <div className="livery-hero__meta">
+                  {shownLivery !== undefined && snapshot.catalog !== undefined && (
+                    <img
+                      className="livery-hero__thumb"
+                      data-testid="livery-hero-thumb"
+                      src={previewUrl(snapshot.catalog.previewsBase, shownLivery.id, previewLocale, snapshot.themeMode)}
+                      alt=""
+                      decoding="async"
+                    />
+                  )}
+                  <div className="livery-meta">
+                  <Tag tone="neutral">{t('current.modes')}</Tag>
+                  {previewing && (
+                    <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>
+                  )}
+                  {degraded && <Tag tone="warning">{t('current.degraded')}</Tag>}
+                  {isCompatIdentity(snapshot.identity) && <Tag tone="warning">{t('state.compatMode')}</Tag>}
+                  {snapshot.invalidSkinId !== undefined && (
+                    <Tag tone="danger">{t('current.incompatible')}</Tag>
+                  )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="livery-summary__side">
-              <Tag tone="neutral">{t('current.modes')}</Tag>
-              {previewing && (
-                <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>
-              )}
-              {degraded && <Tag tone="warning">{t('current.degraded')}</Tag>}
-              {isCompatIdentity(snapshot.identity) && <Tag tone="warning">{t('state.compatMode')}</Tag>}
-              {snapshot.invalidSkinId !== undefined && (
-                <Tag tone="danger">{t('current.incompatible')}</Tag>
-              )}
-            </div>
+              <div className="livery-summary" data-testid="livery-current">
+                <div className="livery-summary__body">
+                  <span className="livery-summary__kicker">{t('current.title')}</span>
+                  <span className="livery-summary__name">{shownName}</span>
+                  <span className="livery-summary__desc">{shownDescription}</span>
+                  <div className="livery-meta">
+                    <span className="livery-meta__label">{t('current.idLabel')}</span>
+                    <code className="livery-id">{shownId ?? t('current.stockName')}</code>
+                    {shownLivery?.meta.tags.map(tag => (
+                      <Tag key={tag} tone="quiet">{tag}</Tag>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {previewing && (
+              <section className="livery-ui-card" data-testid="livery-preview-card">
+                <div className="livery-previewbar" data-testid="livery-preview">
+                  <div className="livery-previewbar__copy">
+                    <span className="livery-previewbar__title">
+                      {t('preview.title', { name: shownName })}
+                    </span>
+                    <span className="livery-previewbar__body">{t('preview.body')}</span>
+                  </div>
+                  <div className="livery-previewbar__actions">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      data-testid="livery-apply"
+                      disabled={busy || !canWrite}
+                      onClick={() => { void applyPreview() }}
+                    >
+                      {busy ? t('write.applying') : t('preview.apply')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="livery-cancel"
+                      disabled={busy}
+                      onClick={() => runtime.cancelPreview()}
+                    >
+                      {t('preview.cancel')}
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {busy && !previewing && (
+              <div className="livery-notice" role="status">{t('write.applying')}</div>
+            )}
+
+            {snapshot.writeFailure !== undefined && (
+              <div className="livery-notice livery-notice--error" data-testid="livery-error" role="alert">
+                <div className="livery-notice__copy">
+                  <span className="livery-notice__title">
+                    {t(snapshot.writeFailure === 'transport' ? 'write.transport' : 'write.refused')}
+                  </span>
+                  <span className="livery-notice__body">{t('write.rolledBack')}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="livery-retry"
+                  disabled={busy}
+                  onClick={() => { void runtime.retryLastWrite() }}
+                >
+                  {t('action.retry')}
+                </Button>
+              </div>
+            )}
+
+            {configUnavailable && (
+              <div className="livery-notice livery-notice--warn" data-testid="livery-config-unavailable">
+                <span className="livery-notice__body">{t('state.configUnavailable')}</span>
+              </div>
+            )}
+
+            {readOnly && (
+              <div className="livery-notice livery-notice--warn" data-testid="livery-readonly">
+                <span className="livery-notice__body">{t('state.readOnly')}</span>
+              </div>
+            )}
+
+            {offline && (
+              <div className="livery-notice livery-notice--error" data-testid="livery-offline" role="alert">
+                <div className="livery-notice__copy">
+                  <span className="livery-notice__title">{t('state.offlineTitle')}</span>
+                  <span className="livery-notice__body">{t('state.offlineBody')}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="livery-retry-catalog"
+                  onClick={() => { void runtime.retryCatalog() }}
+                >
+                  {t('action.retry')}
+                </Button>
+              </div>
+            )}
+
+            {degraded && (
+              <div className="livery-notice livery-notice--info" data-testid="livery-degraded" role="status">
+                <div className="livery-notice__copy">
+                  <span className="livery-notice__title">{t('state.degradedTitle')}</span>
+                  <span className="livery-notice__body">{t('state.degradedBody')}</span>
+                  {snapshot.invalidSkinId !== undefined && (
+                    <span className="livery-notice__body">
+                      {t('current.incompatible')}: {snapshot.invalidSkinId}
+                    </span>
+                  )}
+                  {snapshot.missingRequired.length > 0 && (
+                    <span className="livery-notice__body">
+                      {t('check.capabilities')}: {capabilityList(t, locale, snapshot.missingRequired)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!offline && !emptyCatalog && (
+              <section className="livery-ui-card livery-gallery-card" data-testid="livery-gallery-card">
+                <Gallery
+                  t={t}
+                  snapshot={snapshot}
+                  filter={filter}
+                  onFilterChange={next => setFilter({ query: next.query, tagId: next.tagId })}
+                  onPreview={onPreview}
+                  previewLocaleChoice={previewLocaleChoice}
+                  previewLocale={previewLocale}
+                  onPreviewLocaleChange={setPreviewLocaleChoice}
+                />
+              </section>
+            )}
+
+            {emptyCatalog && (
+              <div className="livery-ui-card livery-empty" data-testid="livery-empty" role="status">
+                <span className="livery-empty__title">{t('state.catalogEmpty')}</span>
+              </div>
+            )}
           </div>
 
-          {previewing && (
-            <div className="livery-previewbar" data-testid="livery-preview">
-              <div className="livery-previewbar__copy">
-                <span className="livery-previewbar__title">
-                  {t('preview.title', { name: shownName })}
-                </span>
-                <span className="livery-previewbar__body">{t('preview.body')}</span>
+          <aside className="livery-rail">
+            <section className="livery-ui-card" data-testid="livery-actions-card">
+              <div className="livery-ui-card__head">
+                <h3 className="livery-ui-card__title">{t('layout.actions')}</h3>
               </div>
-              <div className="livery-previewbar__actions">
+              <div className="livery-actions">
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
-                  data-testid="livery-apply"
-                  disabled={busy || !canWrite}
-                  onClick={() => { void applyPreview() }}
+                  data-testid="livery-restore"
+                  disabled={busy || isStock(snapshot.confirmedId) || !canWrite}
+                  onClick={() => setConfirmRestore(true)}
                 >
-                  {busy ? t('write.applying') : t('preview.apply')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="livery-cancel"
-                  disabled={busy}
-                  onClick={() => runtime.cancelPreview()}
-                >
-                  {t('preview.cancel')}
+                  {t('action.restoreStock')}
                 </Button>
               </div>
-            </div>
-          )}
+            </section>
 
-          {busy && !previewing && (
-            <div className="livery-notice" role="status">{t('write.applying')}</div>
-          )}
-
-          {snapshot.writeFailure !== undefined && (
-            <div className="livery-notice livery-notice--error" data-testid="livery-error" role="alert">
-              <div className="livery-notice__copy">
-                <span className="livery-notice__title">
-                  {t(snapshot.writeFailure === 'transport' ? 'write.transport' : 'write.refused')}
-                </span>
-                <span className="livery-notice__body">{t('write.rolledBack')}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="livery-retry"
-                disabled={busy}
-                onClick={() => { void runtime.retryLastWrite() }}
-              >
-                {t('action.retry')}
-              </Button>
-            </div>
-          )}
-
-          {configUnavailable && (
-            <div className="livery-notice livery-notice--warn" data-testid="livery-config-unavailable">
-              <span className="livery-notice__body">{t('state.configUnavailable')}</span>
-            </div>
-          )}
-
-          {readOnly && (
-            <div className="livery-notice livery-notice--warn" data-testid="livery-readonly">
-              <span className="livery-notice__body">{t('state.readOnly')}</span>
-            </div>
-          )}
-
-          {offline && (
-            <div className="livery-notice livery-notice--error" data-testid="livery-offline" role="alert">
-              <div className="livery-notice__copy">
-                <span className="livery-notice__title">{t('state.offlineTitle')}</span>
-                <span className="livery-notice__body">{t('state.offlineBody')}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="livery-retry-catalog"
-                onClick={() => { void runtime.retryCatalog() }}
-              >
-                {t('action.retry')}
-              </Button>
-            </div>
-          )}
-
-          {degraded && (
-            <div className="livery-notice livery-notice--info" data-testid="livery-degraded" role="status">
-              <div className="livery-notice__copy">
-                <span className="livery-notice__title">{t('state.degradedTitle')}</span>
-                <span className="livery-notice__body">{t('state.degradedBody')}</span>
-                {snapshot.invalidSkinId !== undefined && (
-                  <span className="livery-notice__body">
-                    {t('current.incompatible')}: {snapshot.invalidSkinId}
-                  </span>
-                )}
-                {snapshot.missingRequired.length > 0 && (
-                  <span className="livery-notice__body">
-                    {t('check.capabilities')}: {capabilityList(t, locale, snapshot.missingRequired)}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {!offline && !emptyCatalog && (
-            <Gallery
+            <SelfCheck
               t={t}
               snapshot={snapshot}
-              filter={filter}
-              onFilterChange={next => setFilter({ query: next.query, tagId: next.tagId })}
-              onPreview={onPreview}
-              previewLocaleChoice={previewLocaleChoice}
-              previewLocale={previewLocale}
-              onPreviewLocaleChange={setPreviewLocaleChoice}
+              onCopyResult={onCopyResult}
+              copyFailed={copyFailed}
             />
-          )}
 
-          {emptyCatalog && (
-            <div className="livery-empty" data-testid="livery-empty" role="status">
-              <span className="livery-empty__title">{t('state.catalogEmpty')}</span>
-            </div>
-          )}
-
-          <div className="livery-actions">
-            <Button
-              variant="outline"
-              size="sm"
-              data-testid="livery-restore"
-              disabled={busy || isStock(snapshot.confirmedId) || !canWrite}
-              onClick={() => setConfirmRestore(true)}
-            >
-              {t('action.restoreStock')}
-            </Button>
-          </div>
-
-          <SelfCheck
-            t={t}
-            snapshot={snapshot}
-            onCopyResult={onCopyResult}
-            copyFailed={copyFailed}
-          />
-
-          <footer className="livery-about" aria-label={t('about.title')}>
-            <span>{t('about.plugin', { version: snapshot.identity.pluginVersion })}</span>
-            <span>{t('about.contract', { hash: shortHash(snapshot.identity.contractHash) })}</span>
-            <span>{t('about.adapter', { adapter: snapshot.identity.adapterId })}</span>
-            <span className="livery-about__note">{t('about.note')}</span>
-          </footer>
-        </>
+            <footer className="livery-about" aria-label={t('about.title')}>
+              <span>{t('about.plugin', { version: snapshot.identity.pluginVersion })}</span>
+              <span>{t('about.contract', { hash: shortHash(snapshot.identity.contractHash) })}</span>
+              <span>{t('about.adapter', { adapter: snapshot.identity.adapterId })}</span>
+              <span className="livery-about__note">{t('about.note')}</span>
+            </footer>
+          </aside>
+        </div>
       )}
-
           </div>
         )}
 

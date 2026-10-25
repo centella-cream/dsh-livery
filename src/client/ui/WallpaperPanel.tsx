@@ -7,11 +7,10 @@
  * IndexedDB uploads + one owned stylesheet); no host config or boot payload is
  * touched. Network requests fire only from explicit user actions.
  */
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { LiveryKey } from '../../i18n/index.js'
 import type { LiveryRuntimeSnapshot } from '../model.js'
-import { isStock } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import {
   BUILTIN_WALLPAPERS,
@@ -35,16 +34,12 @@ import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
 
-const HINT = 'livery-hint'
-const ROW = 'livery-toolbar'
 const GRID = 'livery-grid'
-const HEAD = 'livery-family__head'
 const CARD = 'livery-card'
 const THUMB = 'livery-thumb'
 const THUMB_IMG = 'livery-thumb__img'
 const NAME = 'livery-card__name'
 const SEARCH = 'livery-search'
-const ACTIONS = 'livery-actions'
 const CHIPS = 'livery-filters'
 
 const BUILTIN_KEYS: Record<BuiltinWallpaperId, LiveryKey> = {
@@ -127,7 +122,7 @@ export interface WallpaperPanelProps {
  * @param props - locale `t` seat and the runtime snapshot (for token frost).
  * @returns the wallpaper controls, online library, uploads and attribution.
  */
-export function WallpaperPanel({ t, snapshot }: WallpaperPanelProps): JSX.Element {
+export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const controller = getWallpaperController()
   const imageStore = useMemo(() => createIndexedDbImageStore(), [])
   const cacheStorage = useMemo(() => defaultCacheStorage(), [])
@@ -136,7 +131,6 @@ export function WallpaperPanel({ t, snapshot }: WallpaperPanelProps): JSX.Elemen
     () => controller?.getSnapshot() ?? EMPTY,
     () => controller?.getSnapshot() ?? EMPTY,
   )
-  const baseId = useId()
   const [urlText, setUrlText] = useState('')
   const [problem, setProblem] = useState<WallpaperUrlProblem | undefined>(undefined)
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
@@ -156,11 +150,6 @@ export function WallpaperPanel({ t, snapshot }: WallpaperPanelProps): JSX.Elemen
     mounted.current = true
     return () => { mounted.current = false }
   }, [])
-
-  const liveryId = snapshot.effectiveId
-  const activeLivery = liveryId === undefined || isStock(liveryId)
-    ? undefined
-    : snapshot.catalog?.liveries.find(candidate => candidate.id === liveryId)
 
   const loadLibrary = async (nextCategory: LibraryCategoryId, page: number, append: boolean): Promise<void> => {
     const ticket = ++librarySeq.current
@@ -320,249 +309,331 @@ export function WallpaperPanel({ t, snapshot }: WallpaperPanelProps): JSX.Elemen
       source: attribution.source,
     })
 
+  // Hero preview: same image/gradient the layers use, plus the current dim and
+  // atmosphere values, rendered in-card (no remote screenshot).
+  const renderImage = controller?.getRenderImage()
+  const heroName = selection === undefined
+    ? undefined
+    : selection.kind === 'builtin'
+      ? t(BUILTIN_KEYS[selection.id])
+      : selection.kind === 'upload'
+        ? t('wallpaper.uploadTitle')
+        : (() => {
+          try {
+            return new URL(selection.url).hostname
+          } catch {
+            return selection.url
+          }
+        })()
+  const heroKind = selection?.kind === 'builtin'
+    ? t('wallpaper.builtinKind')
+    : selection?.kind === 'upload'
+      ? t('wallpaper.uploadTitle')
+      : selection?.kind === 'remote'
+        ? (attribution?.source ?? heroName)
+        : undefined
+  const selectedFromLibrary = attribution !== undefined && attribution.context === 'library'
+
   return (
-    <div className={ROW} data-testid="wallpaper-panel">
-      <p className={HINT}>{t('wallpaper.hint')}</p>
-      {activeLivery === undefined && <p className={HINT}>{t('wallpaper.stockNote')}</p>}
+    <div data-testid="wallpaper-panel">
+      <div className="wallpaper-layout" data-testid="wallpaper-layout">
+        <div className="wallpaper-main">
+          <section className="livery-ui-card wallpaper-hero" data-testid="wallpaper-hero">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.currentTitle')}</h3>
+              <div className="livery-actions">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="wallpaper-clear"
+                  disabled={selection === undefined}
+                  onClick={() => { controller?.clear(); setAttribution(undefined) }}
+                >
+                  {t('wallpaper.clear')}
+                </Button>
+              </div>
+            </div>
+            {selection === undefined || renderImage === undefined
+              ? (
+                <div className="wallpaper-hero__empty" data-testid="wallpaper-hero-empty">
+                  <span>{t('wallpaper.currentEmpty')}</span>
+                </div>
+              )
+              : (
+                <>
+                  <div
+                    className="wallpaper-hero__preview"
+                    data-testid="wallpaper-hero-preview"
+                    style={{ backgroundImage: renderImage }}
+                    aria-hidden="true"
+                  >
+                    <div className="wallpaper-hero__dim" style={{ opacity: state.effects.dim / 100 }} />
+                    <div
+                      className="wallpaper-hero__atmo"
+                      style={{ backgroundImage: renderImage, opacity: state.effects.atmosphere / 100 }}
+                    />
+                  </div>
+                  <div className="wallpaper-hero__meta">
+                    <span className="wallpaper-hero__name">{heroName}</span>
+                    <span className="livery-ui-card__hint">{heroKind}</span>
+                  </div>
+                  {attributionLine !== undefined && (
+                    <p className="livery-ui-card__hint" data-testid="wallpaper-library-attribution">{attributionLine}</p>
+                  )}
+                </>
+              )}
+          </section>
 
-      <section className={ROW} aria-labelledby={`${baseId}-library`}>
-        <h4 className={HEAD} id={`${baseId}-library`}>{t('wallpaper.libraryTitle')}</h4>
-        <p className={HINT}>{t('wallpaper.libraryHint')}</p>
-        <div className={CHIPS} role="group" aria-label={t('wallpaper.categoryLabel')}>
-          {LIBRARY_CATEGORIES.map(entry => (
-            <button
-              key={entry.id}
-              type="button"
-              className="livery-chip"
-              data-testid="wallpaper-category"
-              data-category={entry.id}
-              aria-pressed={category === entry.id}
-              onClick={() => selectCategory(entry.id)}
-            >
-              {t(entry.labelKey)}
-            </button>
-          ))}
-          <Button variant="outline" size="sm" data-testid="wallpaper-library-more" onClick={moreLibrary}>
-            {t('wallpaper.libraryMore')}
-          </Button>
-        </div>
-        {libraryStatusKey !== undefined && (
-          <p
-            className={HINT}
-            data-testid="wallpaper-library-status"
-            data-status={library.status}
-            role="status"
-          >
-            {t(libraryStatusKey)}
-          </p>
-        )}
-        {library.results.length > 0 && (
-          <div className={GRID} role="listbox" aria-label={t('wallpaper.libraryTitle')}>
-            {library.results.map(result => (
-              <button
-                key={`${result.source}:${result.id}`}
-                type="button"
-                className={CARD}
-                role="option"
-                aria-selected={selectedRemote === result.url}
-                aria-label={t('wallpaper.attribution', {
-                  title: result.title,
-                  creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
-                  license: result.license.length > 0 ? result.license : t('wallpaper.licenseUnknown'),
-                  source: result.source,
-                })}
-                data-testid="wallpaper-library-result"
-                data-wallpaper-url={result.url}
-                onClick={() => selectResult(result, 'library')}
+          <section className="livery-ui-card" data-testid="wallpaper-library-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.libraryTitle')}</h3>
+              <Button variant="outline" size="sm" data-testid="wallpaper-library-more" onClick={moreLibrary}>
+                {t('wallpaper.libraryMore')}
+              </Button>
+            </div>
+            <p className="livery-ui-card__hint">{t('wallpaper.libraryHint')}</p>
+            <div className={CHIPS} role="group" aria-label={t('wallpaper.categoryLabel')}>
+              {LIBRARY_CATEGORIES.map(entry => (
+                <button
+                  key={entry.id}
+                  type="button"
+                  className="livery-chip"
+                  data-testid="wallpaper-category"
+                  data-category={entry.id}
+                  aria-pressed={category === entry.id}
+                  onClick={() => selectCategory(entry.id)}
+                >
+                  {t(entry.labelKey)}
+                </button>
+              ))}
+            </div>
+            {libraryStatusKey !== undefined && (
+              <p
+                className="livery-ui-card__hint"
+                data-testid="wallpaper-library-status"
+                data-status={library.status}
+                role="status"
               >
-                <span className={THUMB}>
-                  <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
-                </span>
-                <span className="livery-card__body">
-                  <span className={NAME}>{result.title}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        {attribution !== undefined && attribution.context === 'library' && attributionLine !== undefined && (
-          <p className={HINT} data-testid="wallpaper-library-attribution">{attributionLine}</p>
-        )}
-      </section>
+                {t(libraryStatusKey)}
+              </p>
+            )}
+            {library.results.length > 0 && (
+              <div className={GRID} role="listbox" aria-label={t('wallpaper.libraryTitle')}>
+                {library.results.map(result => (
+                  <button
+                    key={`${result.source}:${result.id}`}
+                    type="button"
+                    className={CARD}
+                    role="option"
+                    aria-selected={selectedRemote === result.url && selectedFromLibrary}
+                    aria-label={t('wallpaper.attribution', {
+                      title: result.title,
+                      creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
+                      license: result.license.length > 0 ? result.license : t('wallpaper.licenseUnknown'),
+                      source: result.source,
+                    })}
+                    data-testid="wallpaper-library-result"
+                    data-wallpaper-url={result.url}
+                    onClick={() => selectResult(result, 'library')}
+                  >
+                    <span className={THUMB}>
+                      <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
+                    </span>
+                    <span className="livery-card__body">
+                      <span className={NAME}>{result.title}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
 
-      <section className={ROW} aria-labelledby={`${baseId}-builtin`}>
-        <h4 className={HEAD} id={`${baseId}-builtin`}>{t('wallpaper.builtinTitle')}</h4>
-        <div className={GRID}>
-          {BUILTIN_WALLPAPER_IDS.map(id => (
-            <button
-              key={id}
-              type="button"
-              className={`${CARD} wallpaper-swatch`}
-              data-testid="wallpaper-builtin"
-              data-wallpaper-id={id}
-              aria-pressed={selectedBuiltin === id}
-              aria-label={t(BUILTIN_KEYS[id])}
-              style={{ backgroundImage: BUILTIN_WALLPAPERS[id] }}
-              onClick={() => selectBuiltin(id)}
-            >
-              <span className={NAME}>{t(BUILTIN_KEYS[id])}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className={ROW} aria-labelledby={`${baseId}-effects`}>
-        <h4 className={HEAD} id={`${baseId}-effects`}>{t('wallpaper.effects')}</h4>
-        {EFFECT_ROWS.map(row => {
-          const bounds = WALLPAPER_EFFECT_BOUNDS[row.id]
-          const value = state.effects[row.id]
-          return (
-            <label key={row.id} className="wallpaper-effect">
-              <span>{t(row.label)}</span>
-              <input
-                type="range"
-                data-testid={`wallpaper-${row.id}`}
-                min={bounds.min}
-                max={bounds.max}
-                step={bounds.step}
-                value={value}
-                onChange={event => controller?.setEffects({ [row.id]: Number(event.target.value) })}
+          <section className="livery-ui-card" data-testid="wallpaper-random-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.randomTitle')}</h3>
+            </div>
+            <p className="livery-ui-card__hint">{t('wallpaper.randomHint')}</p>
+            <div className={SEARCH}>
+              <Input
+                data-testid="wallpaper-search"
+                type="search"
+                value={remote.query}
+                aria-label={t('wallpaper.onlineTitle')}
+                placeholder={t('wallpaper.searchPlaceholder')}
+                onChange={event => setRemote(previous => ({ ...previous, query: event.target.value }))}
+                onKeyDown={event => { if (event.key === 'Enter') search() }}
               />
-              <output>{t(row.format, { value })}</output>
-            </label>
-          )
-        })}
-        <p className={HINT}>{t('wallpaper.frostHint')}</p>
-        <p className={HINT}>{t('wallpaper.atmosphereHint')}</p>
-        <div className={ACTIONS}>
-          <Button variant="outline" size="sm" data-testid="wallpaper-reset" onClick={() => controller?.setEffects(DEFAULT_WALLPAPER_EFFECTS)}>
-            {t('wallpaper.reset')}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            data-testid="wallpaper-clear"
-            onClick={() => { controller?.clear(); setAttribution(undefined) }}
-          >
-            {t('wallpaper.clear')}
-          </Button>
-        </div>
-      </section>
+              <Button variant="outline" size="sm" data-testid="wallpaper-search-go" onClick={search}>{t('wallpaper.search')}</Button>
+              <Button variant="ghost" size="sm" data-testid="wallpaper-refresh" onClick={refresh}>{t('wallpaper.refresh')}</Button>
+              <Button variant="ghost" size="sm" data-testid="wallpaper-random" onClick={random}>{t('wallpaper.random')}</Button>
+            </div>
+            <p className="livery-ui-card__hint">{t('wallpaper.onlineHint')}</p>
+            {statusKey !== undefined && (
+              <p className="livery-ui-card__hint" data-testid="wallpaper-status" data-status={remote.status} role="status">{t(statusKey)}</p>
+            )}
+            {remote.results.length > 0 && (
+              <div className={GRID} role="listbox" aria-label={t('wallpaper.resultsLabel')}>
+                {remote.results.map(result => (
+                  <button
+                    key={`${result.source}:${result.id}`}
+                    type="button"
+                    className={CARD}
+                    role="option"
+                    aria-selected={selectedRemote === result.url && !selectedFromLibrary}
+                    aria-label={t('wallpaper.attribution', {
+                      title: result.title,
+                      creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
+                      license: result.license.length > 0 ? result.license : t('wallpaper.licenseUnknown'),
+                      source: result.source,
+                    })}
+                    data-testid="wallpaper-result"
+                    data-wallpaper-url={result.url}
+                    onClick={() => selectResult(result, 'online')}
+                  >
+                    <span className={THUMB}>
+                      <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
+                    </span>
+                    <span className="livery-card__body">
+                      <span className={NAME}>{result.title}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {attribution !== undefined && attribution.context === 'online' && attributionLine !== undefined && (
+              <p className="livery-ui-card__hint" data-testid="wallpaper-attribution">{attributionLine}</p>
+            )}
+          </section>
 
-      <section className={ROW} aria-labelledby={`${baseId}-upload`}>
-        <h4 className={HEAD} id={`${baseId}-upload`}>{t('wallpaper.uploadTitle')}</h4>
-        <p className={HINT}>{t('wallpaper.uploadHint')}</p>
-        <div className={SEARCH}>
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            data-testid="wallpaper-upload"
-            aria-label={t('wallpaper.uploadTitle')}
-            onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
-          />
-          <Button variant="outline" size="sm" data-testid="wallpaper-upload-button" onClick={() => fileInput.current?.click()}>
-            {t('wallpaper.uploadButton')}
-          </Button>
-        </div>
-        <div
-          className={`wallpaper-dropzone${dragOver ? ' wallpaper-dropzone--over' : ''}`}
-          data-testid="wallpaper-upload-dropzone"
-          onDragOver={event => { event.preventDefault(); setDragOver(true) }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={event => {
-            event.preventDefault()
-            setDragOver(false)
-            pickFiles(event.dataTransfer.files)
-          }}
-        >
-          {t('wallpaper.uploadDrop')}
-        </div>
-        {uploadProblem !== undefined && (
-          <div className="livery-notice livery-notice--error" data-testid="wallpaper-upload-error" role="alert">
-            <span className="livery-notice__body">{t(UPLOAD_PROBLEM_KEYS[uploadProblem])}</span>
-          </div>
-        )}
-        {uploadSessionOnly && <p className={HINT}>{t('wallpaper.uploadSessionHint')}</p>}
-      </section>
-
-      <section className={ROW} aria-labelledby={`${baseId}-custom`}>
-        <h4 className={HEAD} id={`${baseId}-custom`}>{t('wallpaper.customTitle')}</h4>
-        <p className={HINT}>{t('wallpaper.customHint')}</p>
-        <div className={SEARCH}>
-          <Input
-            data-testid="wallpaper-url"
-            type="url"
-            value={urlText}
-            maxLength={2048}
-            aria-label={t('wallpaper.customTitle')}
-            placeholder={t('wallpaper.customPlaceholder')}
-            onChange={event => { setUrlText(event.target.value); if (problem !== undefined) setProblem(undefined) }}
-          />
-          <Button variant="outline" size="sm" data-testid="wallpaper-url-apply" onClick={applyUrl}>
-            {t('wallpaper.customApply')}
-          </Button>
-        </div>
-        {problem !== undefined && (
-          <div className="livery-notice livery-notice--error" data-testid="wallpaper-url-error" role="alert">
-            <span className="livery-notice__body">{t(PROBLEM_KEYS[problem])}</span>
-          </div>
-        )}
-      </section>
-
-      <section className={ROW} aria-labelledby={`${baseId}-online`}>
-        <h4 className={HEAD} id={`${baseId}-online`}>{t('wallpaper.onlineTitle')}</h4>
-        <p className={HINT}>{t('wallpaper.onlineHint')}</p>
-        <div className={SEARCH}>
-          <Input
-            data-testid="wallpaper-search"
-            type="search"
-            value={remote.query}
-            aria-label={t('wallpaper.onlineTitle')}
-            placeholder={t('wallpaper.searchPlaceholder')}
-            onChange={event => setRemote(previous => ({ ...previous, query: event.target.value }))}
-            onKeyDown={event => { if (event.key === 'Enter') search() }}
-          />
-          <Button variant="outline" size="sm" data-testid="wallpaper-search-go" onClick={search}>{t('wallpaper.search')}</Button>
-          <Button variant="ghost" size="sm" data-testid="wallpaper-refresh" onClick={refresh}>{t('wallpaper.refresh')}</Button>
-          <Button variant="ghost" size="sm" data-testid="wallpaper-random" onClick={random}>{t('wallpaper.random')}</Button>
-        </div>
-        {statusKey !== undefined && (
-          <p className={HINT} data-testid="wallpaper-status" data-status={remote.status} role="status">{t(statusKey)}</p>
-        )}
-        {remote.results.length > 0 && (
-          <div className={GRID} role="listbox" aria-label={t('wallpaper.resultsLabel')}>
-            {remote.results.map(result => (
-              <button
-                key={`${result.source}:${result.id}`}
-                type="button"
-                className={CARD}
-                role="option"
-                aria-selected={selectedRemote === result.url}
-                aria-label={t('wallpaper.attribution', {
-                  title: result.title,
-                  creator: result.creator.length > 0 ? result.creator : t('wallpaper.attributionUnknown'),
-                  license: result.license.length > 0 ? result.license : t('wallpaper.licenseUnknown'),
-                  source: result.source,
-                })}
-                data-testid="wallpaper-result"
-                data-wallpaper-url={result.url}
-                onClick={() => selectResult(result, 'online')}
+          <section className="livery-ui-card" data-testid="wallpaper-custom-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.uploadTitle')}</h3>
+            </div>
+            <div className="wallpaper-subrow">
+              <p className="livery-ui-card__hint">{t('wallpaper.uploadHint')}</p>
+              <div className={SEARCH}>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  data-testid="wallpaper-upload"
+                  aria-label={t('wallpaper.uploadTitle')}
+                  onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
+                />
+                <Button variant="outline" size="sm" data-testid="wallpaper-upload-button" onClick={() => fileInput.current?.click()}>
+                  {t('wallpaper.uploadButton')}
+                </Button>
+              </div>
+              <div
+                className={`wallpaper-dropzone${dragOver ? ' wallpaper-dropzone--over' : ''}`}
+                data-testid="wallpaper-upload-dropzone"
+                onDragOver={event => { event.preventDefault(); setDragOver(true) }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={event => {
+                  event.preventDefault()
+                  setDragOver(false)
+                  pickFiles(event.dataTransfer.files)
+                }}
               >
-                <span className={THUMB}>
-                  <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
-                </span>
-                <span className="livery-card__body">
-                  <span className={NAME}>{result.title}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-        {attribution !== undefined && attribution.context === 'online' && attributionLine !== undefined && (
-          <p className={HINT} data-testid="wallpaper-attribution">{attributionLine}</p>
-        )}
-      </section>
+                {t('wallpaper.uploadDrop')}
+              </div>
+              {uploadProblem !== undefined && (
+                <div className="livery-notice livery-notice--error" data-testid="wallpaper-upload-error" role="alert">
+                  <span className="livery-notice__body">{t(UPLOAD_PROBLEM_KEYS[uploadProblem])}</span>
+                </div>
+              )}
+              {uploadSessionOnly && <p className="livery-ui-card__hint">{t('wallpaper.uploadSessionHint')}</p>}
+            </div>
+            <div className="wallpaper-subrow">
+              <h4 className="livery-ui-card__title">{t('wallpaper.customTitle')}</h4>
+              <p className="livery-ui-card__hint">{t('wallpaper.customHint')}</p>
+              <div className={SEARCH}>
+                <Input
+                  data-testid="wallpaper-url"
+                  type="url"
+                  value={urlText}
+                  maxLength={2048}
+                  aria-label={t('wallpaper.customTitle')}
+                  placeholder={t('wallpaper.customPlaceholder')}
+                  onChange={event => { setUrlText(event.target.value); if (problem !== undefined) setProblem(undefined) }}
+                />
+                <Button variant="outline" size="sm" data-testid="wallpaper-url-apply" onClick={applyUrl}>
+                  {t('wallpaper.customApply')}
+                </Button>
+              </div>
+              {problem !== undefined && (
+                <div className="livery-notice livery-notice--error" data-testid="wallpaper-url-error" role="alert">
+                  <span className="livery-notice__body">{t(PROBLEM_KEYS[problem])}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        <aside className="wallpaper-rail">
+          <section className="livery-ui-card" data-testid="wallpaper-effects-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.effects')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="wallpaper-reset"
+                onClick={() => controller?.setEffects(DEFAULT_WALLPAPER_EFFECTS)}
+              >
+                {t('wallpaper.reset')}
+              </Button>
+            </div>
+            <div className="wallpaper-effects-grid" data-testid="wallpaper-effects-grid">
+              {EFFECT_ROWS.map(row => {
+                const bounds = WALLPAPER_EFFECT_BOUNDS[row.id]
+                const value = state.effects[row.id]
+                return (
+                  <label key={row.id} className="wallpaper-effect">
+                    <span>{t(row.label)}</span>
+                    <span className="wallpaper-effect__control">
+                      <input
+                        type="range"
+                        data-testid={`wallpaper-${row.id}`}
+                        min={bounds.min}
+                        max={bounds.max}
+                        step={bounds.step}
+                        value={value}
+                        onChange={event => controller?.setEffects({ [row.id]: Number(event.target.value) })}
+                      />
+                      <output>{t(row.format, { value })}</output>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            <p className="livery-ui-card__hint">{t('wallpaper.frostHint')}</p>
+            <p className="livery-ui-card__hint">{t('wallpaper.atmosphereHint')}</p>
+          </section>
+
+          <section className="livery-ui-card" data-testid="wallpaper-builtins-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.builtinTitle')}</h3>
+            </div>
+            <div className="wallpaper-swatches">
+              {BUILTIN_WALLPAPER_IDS.map(id => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`${CARD} wallpaper-swatch`}
+                  data-testid="wallpaper-builtin"
+                  data-wallpaper-id={id}
+                  aria-pressed={selectedBuiltin === id}
+                  aria-label={t(BUILTIN_KEYS[id])}
+                  style={{ backgroundImage: BUILTIN_WALLPAPERS[id] }}
+                  onClick={() => selectBuiltin(id)}
+                >
+                  <span className={NAME}>{t(BUILTIN_KEYS[id])}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </aside>
+      </div>
     </div>
   )
 }

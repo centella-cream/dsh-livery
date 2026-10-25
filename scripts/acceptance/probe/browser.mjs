@@ -1089,6 +1089,108 @@ export async function readWallpaperState(page) {
   })
 }
 
+/**
+ * Structural layout probe for the card redesign (round 10): grid tracks, main
+ * vs rail geometry, card surfaces (border/background/backdrop), hero previews,
+ * bounded effect sliders and horizontal overflow. `which` selects the style or
+ * wallpaper page.
+ */
+export async function readLayoutStructure(page, which) {
+  return page.evaluate((target) => {
+    const visible = (element) => {
+      if (!element) return null
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      if (rect.width <= 0 || rect.height <= 0 || style.visibility === 'hidden' || style.display === 'none') return null
+      return { rect, style }
+    }
+    const describeCard = (testId) => {
+      const element = document.querySelector(`[data-testid="${testId}"]`)
+      const measured = visible(element)
+      if (measured === null) return { present: false, visible: false, testId }
+      const { rect, style } = measured
+      return {
+        present: true,
+        visible: true,
+        testId,
+        left: Math.round(rect.left),
+        top: Math.round(rect.top),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        borderWidth: style.borderTopWidth,
+        borderStyle: style.borderTopStyle,
+        borderColor: style.borderTopColor,
+        backgroundColor: style.backgroundColor,
+        backdropFilter: style.backdropFilter,
+        boxShadow: style.boxShadow,
+      }
+    }
+    const splitTracks = (value) => String(value ?? '').trim().split(/\s+/).filter(Boolean)
+    const layout = document.querySelector(target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]')
+    const layoutMeasured = visible(layout)
+    const layoutTracks = layoutMeasured === null ? [] : splitTracks(layoutMeasured.style.gridTemplateColumns)
+    const mainSelector = target === 'wallpaper' ? '.wallpaper-main' : '.livery-main'
+    const railSelector = target === 'wallpaper' ? '.wallpaper-rail' : '.livery-rail'
+    const mainMeasured = visible(document.querySelector(`${target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]'} ${mainSelector}`))
+    const railMeasured = visible(document.querySelector(`${target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]'} ${railSelector}`))
+    const heroThumb = target === 'style'
+      ? document.querySelector('[data-testid="livery-hero-thumb"]')
+      : document.querySelector('[data-testid="wallpaper-hero-preview"]')
+    const heroThumbVisible = visible(heroThumb)
+    const sliderSelector = target === 'wallpaper' ? '[data-testid="wallpaper-effects-card"] input[type="range"]' : null
+    const sliderWidths = sliderSelector === null
+      ? []
+      : [...document.querySelectorAll(sliderSelector)].map((input) => Math.round(input.getBoundingClientRect().width))
+    const wallpaperCards = target === 'wallpaper'
+      ? ['wallpaper-hero', 'wallpaper-library-card', 'wallpaper-random-card', 'wallpaper-custom-card', 'wallpaper-effects-card', 'wallpaper-builtins-card'].map(describeCard)
+      : []
+    const effectsGrid = document.querySelector('[data-testid="wallpaper-effects-grid"]')
+    const effectsGridMeasured = visible(effectsGrid)
+    return {
+      which: target,
+      layout: layoutMeasured === null
+        ? { present: false }
+        : {
+            present: true,
+            gridTemplateColumns: layoutMeasured.style.gridTemplateColumns,
+            tracks: layoutTracks,
+            trackCount: layoutTracks.length,
+            display: layoutMeasured.style.display,
+            width: Math.round(layoutMeasured.rect.width),
+            height: Math.round(layoutMeasured.rect.height),
+          },
+      main: mainMeasured === null ? null : { left: Math.round(mainMeasured.rect.left), top: Math.round(mainMeasured.rect.top), width: Math.round(mainMeasured.rect.width), height: Math.round(mainMeasured.rect.height) },
+      rail: railMeasured === null ? null : { left: Math.round(railMeasured.rect.left), top: Math.round(railMeasured.rect.top), width: Math.round(railMeasured.rect.width), height: Math.round(railMeasured.rect.height) },
+      styleCards: target === 'style'
+        ? ['livery-current-card', 'livery-gallery-card', 'livery-actions-card', 'livery-selfcheck'].map(describeCard)
+        : [],
+      wallpaperCards,
+      heroThumb: heroThumbVisible === null
+        ? { present: Boolean(heroThumb), visible: false }
+        : {
+            present: true,
+            visible: true,
+            tag: heroThumb.tagName.toLowerCase(),
+            src: heroThumb.getAttribute('src') ?? heroThumb.getAttribute('style') ?? '',
+            naturalWidth: heroThumb.naturalWidth ?? null,
+            backgroundImage: heroThumbVisible.style.backgroundImage,
+            width: Math.round(heroThumbVisible.rect.width),
+            height: Math.round(heroThumbVisible.rect.height),
+          },
+      sliderWidths,
+      effectsGrid: effectsGridMeasured === null
+        ? { present: false }
+        : { present: true, tracks: splitTracks(effectsGridMeasured.style.gridTemplateColumns).length, columns: effectsGridMeasured.style.gridTemplateColumns },
+      overflow: {
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        bodyScrollWidth: document.body.scrollWidth,
+        horizontal: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      },
+    }
+  }, which)
+}
+
 /** Locate a control by data-testid and fall back to accessible names. */
 export async function findControl(page, { testId, names = [], exact = false, role = 'button' } = {}) {
   if (testId) {

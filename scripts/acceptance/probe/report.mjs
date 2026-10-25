@@ -24,6 +24,7 @@ const CHECK_AREA_TITLES = {
   previewLocale: 'Gallery preview language',
   galleryFamilies: 'Gallery families (taxonomy, chips, sections, filters)',
   wallpaper: 'Wallpaper studio',
+  layout: 'Presentation layout & card structure',
   search: 'Search',
   keyboard: 'Keyboard navigation',
   preview: 'Preview',
@@ -343,7 +344,12 @@ export const PLAN20_ROWS = [
   {
     criterion: 'Wallpaper studio (client-only layer, effects, validation, online search)',
     checks: ['wallpaper.tab', 'wallpaper.builtin-count', 'wallpaper.builtin-applied', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.search-results', 'wallpaper.search-applied', 'wallpaper.clear', 'wallpaper.tab-restore'],
-    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 8 built-ins, blur/dim/frost, localStorage persistence, https-only URL validation, mocked Openverse search (no live network)',
+    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 24 built-ins, library cache/offline, uploads, atmosphere overlay, tab persistence; mockable Openverse (no live network)',
+  },
+  {
+    criterion: 'Round-10 card layout: two-column card hierarchy, responsive stacking, bounded sliders, no overflow',
+    checks: ['layout.style-2col', 'layout.style-cards', 'layout.style-hero-thumb', 'layout.style-card-surfaces', 'layout.style-stacked-1024', 'layout.style-no-overflow-1440', 'layout.style-no-overflow-1024', 'layout.wallpaper-2col', 'layout.wallpaper-cards', 'layout.wallpaper-card-surfaces', 'layout.effects-sliders-bounded', 'layout.wallpaper-stacked-1024', 'layout.wallpaper-no-overflow-1440', 'layout.wallpaper-no-overflow-1024'],
+    note: 'style page: current-style hero + gallery card + 操作/自检 rail; wallpaper page: hero/library/random/custom/effects/builtins cards; 2 tracks ≥1100px, single column below; sliders 80–220px; screenshots at 1440×900 and 1024×800',
   },
   {
     criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',

@@ -9,6 +9,7 @@
  */
 import type { TokenMap } from '../../core/types.js'
 import {
+  backgroundImageValue,
   buildWallpaperCss,
   clampEffects,
   DEFAULT_WALLPAPER_EFFECTS,
@@ -50,6 +51,8 @@ export interface WallpaperControllerApi {
   clear(): void
   /** Provide the active livery's background-token maps (undefined for stock). */
   setTokens(light: TokenMap | undefined, dark: TokenMap | undefined): void
+  /** CSS background-image value of the current selection (hero preview). */
+  getRenderImage(): string | undefined
   /** Hydrate from localStorage and apply. */
   start(): void
   /** Remove the DOM layer and flush pending persistence. */
@@ -294,6 +297,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       tokens = { light, dark }
       apply()
     },
+    getRenderImage: () => backgroundImageValue(selection, uploadUrl),
     start: () => {
       if (started) return
       started = true

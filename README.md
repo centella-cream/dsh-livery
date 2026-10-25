@@ -47,6 +47,11 @@ version policy that survives DSH updates.
   including third-party panels with opaque surfaces. Both layers are viewport-
   relative `cover`, so portrait/ultrawide/resized windows crop instead of
   distorting. Network requests are user-navigation initiated; choices are local.
+- **Module-first studio layout.** Both pages use responsive card modules rather than
+  one flat list: a wallpaper hero, curated library, random-pick card, custom
+  upload/URL card and a side rail with compact bounded effect sliders (140 px) and
+  the 24-swatch grid; the style page pairs a current-style hero (with preview
+  thumbnail) + gallery card with a 操作/自检 rail. Stacks cleanly on narrow windows.
 - **Curated gallery.** Styles grouped into six families (Calm / Nature / Light /
   Retro / Vivid / Dark), primary filters first, the full tag vocabulary behind
   "More filters"; a preview-language tab switches thumbnails between Follow DSH /

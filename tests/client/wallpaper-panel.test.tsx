@@ -229,7 +229,21 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-atmosphere"')
     expect(html.match(/type="range"/g)).toHaveLength(4)
     expect(html).toContain('data-testid="wallpaper-reset"')
+    // Clear stays present (disabled in the empty hero) so the testid contract holds.
     expect(html).toContain('data-testid="wallpaper-clear"')
+    expect(html).toMatch(/data-testid="wallpaper-clear"[^>]*disabled/)
+    // Two-column card hierarchy: main column + side rail.
+    expect(html).toContain('data-testid="wallpaper-layout"')
+    expect(html).toContain('data-testid="wallpaper-hero"')
+    expect(html).toContain('data-testid="wallpaper-hero-empty"')
+    expect(html).toContain('data-testid="wallpaper-library-card"')
+    expect(html).toContain('data-testid="wallpaper-random-card"')
+    expect(html).toContain('data-testid="wallpaper-custom-card"')
+    expect(html).toContain('data-testid="wallpaper-effects-card"')
+    expect(html).toContain('data-testid="wallpaper-effects-grid"')
+    expect(html).toContain('data-testid="wallpaper-builtins-card"')
+    expect(html).toContain('Current wallpaper')
+    expect(html).toContain('Surprise me')
     // Curated online library is the first section: 8 category chips + more.
     expect(html.match(/data-testid="wallpaper-category"/g)).toHaveLength(8)
     expect(html).toContain('data-testid="wallpaper-library-more"')
@@ -301,15 +315,14 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('value="55"')
     expect(html).toContain('value="90"')
     expect(html).toContain('value="30"')
+    expect(html).toContain('data-testid="wallpaper-clear"')
+    expect(html).toContain('data-testid="wallpaper-hero-preview"')
   })
 
-  it('shows the stock note while no visual style is applied', () => {
-    const stockSnapshot: LiveryRuntimeSnapshot = {
-      ...READY,
-      confirmedId: 'stock',
-      effectiveId: 'stock',
-    }
-    expect(renderPanel(enUS as unknown as Dict, stockSnapshot)).toContain('Surfaces stay opaque until a visual style is applied.')
+  it('shows the hero empty-state prompt while no wallpaper is selected', () => {
+    const html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-hero-empty"')
+    expect(html).toContain('No wallpaper selected yet')
   })
 
   it('uses only the documented effect defaults when nothing is stored', () => {

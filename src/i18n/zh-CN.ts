@@ -122,6 +122,13 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.uploadError.size': '图片超过 10 MiB。',
   'wallpaper.uploadError.empty': '文件为空。',
   'wallpaper.uploadSessionHint': 'IndexedDB 不可用，本次上传仅在当前页面会话有效。',
+  'layout.actions': '操作',
+  'wallpaper.currentTitle': '当前壁纸',
+  'wallpaper.currentEmpty': '还没有选择壁纸。可以从在线壁纸库、内置壁纸或上传图片开始。',
+  'wallpaper.builtinKind': '内置设计',
+  'layout.currentStyle': '当前风格',
+  'wallpaper.randomTitle': '随机壁纸',
+  'wallpaper.randomHint': '快速换一张背景：换一批会向在线搜索请求下一批，随机则从 Picsum 取一张。',
   // Search and tag filters.
   'search.label': '搜索视觉风格',
   'search.placeholder': '按名称、ID 或标签搜索',

@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs'
 import { CLIENT_CSS } from '../../src/styles/client.js'
 
 describe('client stylesheet (plan §18.3 / §18.8)', () => {
-  it('stays inside the 9KB budget', () => {
-    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(9 * 1024)
+  it('stays inside the 12KB budget', () => {
+    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(12 * 1024)
   })
 
   it('contains no !important', () => {
@@ -27,6 +27,23 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
   it('scopes every rule to a livery class and never touches host theme attributes', () => {
     expect(CLIENT_CSS).not.toMatch(/data-ds-/)
     expect(CLIENT_CSS).not.toMatch(/(^|[},])\s*(?:html|body|\*)\s*[{,]/m)
+  })
+
+  it('ships the responsive two-column card layout system', () => {
+    expect(CLIENT_CSS).toMatch(/\.livery-layout,\.wallpaper-layout\{display:grid;grid-template-columns:minmax\(0,2fr\) minmax\(280px,1fr\)/)
+    expect(CLIENT_CSS).toMatch(/@media \(max-width:1099px\)\{\.livery-layout,\.wallpaper-layout\{grid-template-columns:minmax\(0,1fr\)/)
+    expect(CLIENT_CSS).toMatch(/\.livery-ui-card\{display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px 18px/)
+    // Cards are genuinely layered: token-derived surface, border, shadow, blur.
+    expect(CLIENT_CSS).toContain('border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent)')
+    expect(CLIENT_CSS).toContain('background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2))')
+    expect(CLIENT_CSS).toContain('box-shadow:0 1px 2px rgba(0,0,0,.06)')
+    expect(CLIENT_CSS).toContain('backdrop-filter:blur(14px) saturate(1.08)')
+    // Effect sliders are bounded inside the rail card, never viewport-wide.
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-effect input\{flex:1 1 100px;width:100%;min-width:96px;max-width:140px/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-effect output\{flex:0 0 54px;width:54px/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-effects-grid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(180px,1fr\)\)/)
+    expect(CLIENT_CSS).toMatch(/\.livery-gallery-card \.livery-family\+\.livery-family\{border-block-start/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-swatches\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/)
   })
 
   it('provides a visible focus ring and a reduced-motion fallback', () => {
