@@ -1,39 +1,63 @@
 # Verification — Web profile acceptance
 
-> ## Current acceptance evidence — shipped package `dsh-livery@0.2.2`
+> ## Current acceptance evidence — shipped package `dsh-livery@0.3.0`
 >
-> Tarball `dsh-livery-0.2.2.tgz` sha256
-> `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`
-> (258,064 B). Livery now lives in the **left-sidebar plugin navigation**
-> (`sidebar.panellist` row `livery`, order 30, zh 皮肤 / en Livery) addressing a
-> `main` keyed full page; the legacy Settings section is fallback-only and must
-> be absent on all certified hosts.
+> Tarball `dsh-livery-0.3.0.tgz` sha256
+> `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950`
+> (527,683 B). This is a repack of the first 0.3.0 pack (`a225849a…`): the only
+> delta is the packaged `README.md` — `lib/index.js`, `lib/client.js`,
+> `schemas/livery.schema.json`, `package.json` and `NOTICE.md` are byte-identical
+> (verified against the pre-repack build installed in the real Web profile), and
+> all four targets were re-run on the repack with identical results. Superseded
+> pre-repack evidence: `artifacts/acceptance/pre-repack-a225849a/` (probe.json +
+> reports, annotated).
+>
+> Round 5 ships the style system v2: the entry/page is renamed
+> **视觉风格 / Visual Style** and the catalog grows to **24 visually distinct
+> designs per profile** (48 across the two certified catalog profiles) with
+> 96 preview SVGs per profile. Styles vary palette, typography, background
+> material and module shape/elevation via the frozen token contract.
 >
 > | target | host / adapter / catalog profile | result | evidence |
 > |---|---|---|---|
-> | Web Profile (npm CLI) | 0.2.1-rc.2 · `dsh-0.2.1-rc.2-r1` · `sha256:060e80ef…` | **PASS 127 / 0 / 3 / 1** | [web-acceptance-0.2.1-rc.2-pkg0.2.2.md](web-acceptance-0.2.1-rc.2-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.2.2/web-0.2.1-rc.2/` |
-> | Web real-profile clone (byte-clone of `~/.dsh/profiles/web` incl. dsh-context/charter/livery) | 0.2.1-rc.2 · same adapter · same profile | **PASS 128 / 0 / 3 / 2** | [web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.2.2.md](web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.2.2/web-real-profile-clone/` |
-> | Desktop app runtime serving a Web carrier (bundled rc.3 CLI) | 0.2.1-rc.3 · `dsh-0.2.1-rc.3-r1` · `sha256:060e80ef…` | **PASS 127 / 0 / 3 / 1** | [web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.2.2.md](web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.2.2/web-carrier-0.2.1-rc.3/` |
-> | Desktop app — real Electron renderer (isolated app launch, Playwright `_electron`) | 0.2.1-rc.3 · same adapter · same profile | **PASS 22 / 0 / 1** (renderer evidence; native window chrome NOT verified) | [desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md](desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.2.2/desktop-0.2.1-rc.3/` |
+> | Web Profile (npm CLI) | 0.2.1-rc.2 · `dsh-0.2.1-rc.2-r1` · `sha256:060e80ef…` | **PASS 139 / 0 / 3 / 2** | [web-acceptance-0.2.1-rc.2-pkg0.3.0.md](web-acceptance-0.2.1-rc.2-pkg0.3.0.md) · `artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2/` |
+> | Web real-profile clone (byte-clone of `~/.dsh/profiles/web` incl. dsh-context/charter/livery) | 0.2.1-rc.2 · same adapter · same profile | **PASS 140 / 0 / 3 / 3** | [web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.3.0.md](web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.3.0.md) · `artifacts/acceptance/pkg-0.3.0/web-real-profile-clone/` |
+> | Desktop app runtime serving a Web carrier (bundled rc.3 CLI) | 0.2.1-rc.3 · `dsh-0.2.1-rc.3-r1` · `sha256:060e80ef…` | **PASS 139 / 0 / 3 / 2** | [web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.3.0.md](web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.3.0.md) · `artifacts/acceptance/pkg-0.3.0/web-carrier-0.2.1-rc.3/` |
+> | Desktop app — real Electron renderer (isolated app launch, Playwright `_electron`) | 0.2.1-rc.3 · same adapter · same profile | **PASS 22 / 0 / 1** (renderer evidence; native window chrome NOT verified) | [desktop-acceptance-0.2.1-rc.3-pkg0.3.0.md](desktop-acceptance-0.2.1-rc.3-pkg0.3.0.md) · `artifacts/acceptance/pkg-0.3.0/desktop-0.2.1-rc.3/` |
 >
-> Sidebar-navigation assertions in every Web run: row present before any skin is
-> configured (`aria-label` 皮肤, `data-slot="sidebar.panellist"`, inline svg icon),
-> row order after 插件/自动化任务/上下文洞察 when present, above the workspace
-> section, click selects the row (`aria-current="page"`), the `main` column shows
-> `[data-testid="livery-panel"]` with h1 皮肤 and the conversation composer/copy
-> disappears, Settings contains **no** Livery section
-> (`section labels = [通用设置, 模型, 内置插件, Agent 预设]`, 0 livery nodes), the
-> panel stays selected after closing Settings, and re-opens after a hard reload
-> (`nav.panel-after-reload`). Desktop renderer shows the same row #2 皮肤 →
-> main panel swap.
+> Round-5 checks in every Web run: 24 catalog liveries / 24 gallery cards /
+> 96–96 preview SVGs per profile; per-livery CSS under the 12 KiB cap (served
+> 0.2.1 profile max **8,892 B**); style vocabulary covers 7 surface recipes
+> [soft, rounded, elevated, paper, sharp, glass, flat], 5 en-US UI font stacks
+> and 3 zh-CN content stacks with shape/elevation/material/border token
+> families; the renamed labels are asserted (sidebar row + main-panel h1
+> 视觉风格, search accessible name 搜索视觉风格, gallery aria 视觉风格画廊,
+> English `Visual Style`); and the applied styles are measured on the live host
+> after real Apply: composer-shell radius **10 → 32 → 18 → 36 px**
+> (graphite/catppuccin/rice-paper/tokyo-night), body font stack
+> **PingFang SC vs Songti SC (serif)**, 10 distinct shadow values, glass
+> `--dsw-menu-backdrop-filter: blur(40px) saturate(150%)`, and catalog style
+> tokens resolving to the computed host values (6/10, 8/13, 13/13, 9/14 per
+> style). See [style-system-0.3.0.md](style-system-0.3.0.md) for the detailed
+> numbers and honest scope.
 >
 > 3 skips per Web run are the stock-boot handshake rows (host emits zero rows for
 > `skinId: stock`; re-asserted as `handshake.applied-boot` after Apply). Warnings:
-> the documented grouped-bundle-URL deviation (all Web runs) and the cloned
-> profile's “1 entry did not activate” boot warning (clone only, recorded).
-> Desktop renderer: 1 skip = pre-paint rAF sampling on the native startup path.
+> the documented grouped-bundle-URL deviation (all Web runs) and the accepted
+> `css.size-target` warning (active palette 8,248 B is over the 8 KiB target but
+> under the 12 KiB hard cap). Clone adds the recorded clone/warning rows. Desktop
+> renderer: 1 skip = pre-paint rAF sampling on the native startup path.
 >
 > ## Historical rounds (retained, not the current package)
+>
+> ### Round 4 — `dsh-livery@0.2.2`, sidebar-navigation entry
+>
+> | target | host / adapter / catalog profile | result | evidence |
+> |---|---|---|---|
+> | Web Profile (npm CLI) | 0.2.1-rc.2 · `dsh-0.2.1-rc.2-r1` · `sha256:060e80ef…` | PASS 127 / 0 / 3 / 1 | [web-acceptance-0.2.1-rc.2-pkg0.2.2.md](web-acceptance-0.2.1-rc.2-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2/` |
+> | Web real-profile clone | 0.2.1-rc.2 · same adapter · same profile | PASS 128 / 0 / 3 / 2 | [web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.2.2.md](web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.3.0/web-real-profile-clone/` |
+> | Desktop app runtime Web carrier | 0.2.1-rc.3 · `dsh-0.2.1-rc.3-r1` · `sha256:060e80ef…` | PASS 127 / 0 / 3 / 1 | [web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.2.2.md](web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.3.0/web-carrier-0.2.1-rc.3/` |
+> | Desktop real Electron renderer | 0.2.1-rc.3 · same adapter · same profile | PASS 22 / 0 / 1 | [desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md](desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md) · `artifacts/acceptance/pkg-0.2.2/desktop-0.2.1-rc.3/` |
 >
 > ### Round 3 — `dsh-livery@0.1.0`, Settings-page entry
 >
@@ -51,20 +75,9 @@
 >   (`slots.spec` receiver bug) → `artifacts/acceptance/pkg-0.2.0/SUPERSEDED.md`.
 > - `dsh-livery@0.2.1` sha `27c57a44…` — activation OK but the synchronous
 >   capability probe ran before `sidebar.panellist` was declared, so it fell
->   back to the Settings page (no 皮肤 row) →
+>   back to the Settings page (no sidebar row) →
 >   `artifacts/acceptance/pkg-0.2.1/SUPERSEDED.md` and the annotated failed
 >   report `web-acceptance-0.2.1-rc.2-pkg0.2.1.md`.
->
-> **Desktop honesty (unchanged):** adapted and renderer-verified, but
-> `desktop.macos` stays pending in the support matrix: native traffic
-> lights/leading, vibrancy, Dock window states, OS-level DPI behaviour and the
-> packaged Chromium sandbox/GPU path are NOT verified. The desktop composition
-> cannot be booted by the CLI; all runtime evidence comes from launching the real
-> Electron application with an isolated DSH_HOME/user-data-dir. Runtime
-> coexistence with `dsh-skin` remains unexercised (cloned real desktop profile
-> hits `ERR_PNPM_UNEXPECTED_STORE` in the bundled pnpm 11; recorded, not hidden).
-> The §20 layout-capability criterion remains an honest gap (no public
-> density/transcript/message-flow hook on 0.2.1-rc.2/rc.3).
 
 This directory holds the evidence reports for the DSH Livery Web-profile
 acceptance harness. The harness is a **black-box** test: it installs the packed
@@ -83,11 +96,11 @@ imported from `src/`; no fixture fakes the host.
 ```bash
 # 1. Full acceptance: isolated DSH_HOME + official install + boot + probe + uninstall.
 pnpm build                                  # produces dist/dsh-livery-0.1.0.tgz
-node scripts/acceptance-web.mjs --tgz dsh-livery-0.2.2.tgz
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.3.0.tgz
 
 # 2. Same via the standalone runner / package script.
-node tests/browser/run.mjs --tgz dsh-livery-0.2.2.tgz
-pnpm acceptance:web -- --tgz dsh-livery-0.2.2.tgz
+node tests/browser/run.mjs --tgz dsh-livery-0.3.0.tgz
+pnpm acceptance:web -- --tgz dsh-livery-0.3.0.tgz
 
 # 3. Read-only probe of an already-running real web profile (no install, no boot,
 #    no uninstall; preview/cancel only — settings writes are opt-in).
@@ -98,30 +111,30 @@ node scripts/acceptance-web.mjs --reuse "http://127.0.0.1:<port>/?token=<hex>"
 node tests/browser/run.mjs --smoke
 
 # 5. Certified-matrix runs by version (evidence paths used above).
-node scripts/acceptance-web.mjs --tgz dsh-livery-0.2.2.tgz \
-  --out artifacts/acceptance/pkg-0.2.2/web-0.2.1-rc.2 \
-  --json artifacts/acceptance/pkg-0.2.2/web-0.2.1-rc.2/probe.json \
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.3.0.tgz \
+  --out artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2 \
+  --json artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2/probe.json \
   --report docs/verification/web-acceptance-0.2.1-rc.2-pkg0.2.2.md
 # fast nav smoke (~40 s: install/boot/catalog + sidebar-panel checks only):
-node scripts/acceptance-web.mjs --tgz dsh-livery-0.2.2.tgz --quick \
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.3.0.tgz --quick \
   --out /tmp/quick-livery --json /tmp/quick-livery/probe.json --report /tmp/quick-livery/report.md
-node scripts/acceptance-web.mjs --tgz dsh-livery-0.2.2.tgz \
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.3.0.tgz \
   --clone-from "$HOME/.dsh/profiles/web" \
-  --out artifacts/acceptance/pkg-0.2.2/web-real-profile-clone \
-  --json artifacts/acceptance/pkg-0.2.2/web-real-profile-clone/probe.json \
+  --out artifacts/acceptance/pkg-0.3.0/web-real-profile-clone \
+  --json artifacts/acceptance/pkg-0.3.0/web-real-profile-clone/probe.json \
   --report docs/verification/web-acceptance-0.2.1-rc.2-real-profile-clone-pkg0.2.2.md
-node scripts/acceptance-web.mjs --tgz dsh-livery-0.2.2.tgz \
+node scripts/acceptance-web.mjs --tgz dsh-livery-0.3.0.tgz \
   --dsh-bin "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
   --dsh-home /tmp/dsh-livery-rc3-web-home --expect-version 0.2.1-rc.3 \
   --expect-profile-kind desktop \
-  --out artifacts/acceptance/pkg-0.2.2/web-carrier-0.2.1-rc.3 \
+  --out artifacts/acceptance/pkg-0.3.0/web-carrier-0.2.1-rc.3 \
   --report docs/verification/web-acceptance-0.2.1-rc.3-runtime-carrier-pkg0.2.2.md
 
 # 6. Real Electron desktop renderer probe (isolated /tmp DSH_HOME + user-data-dir;
 #    never touches the user's running app; renderer screenshots only).
-node scripts/probe/desktop-probe.mjs --tgz dsh-livery-0.2.2.tgz \
-  --out artifacts/acceptance/pkg-0.2.2/desktop-0.2.1-rc.3 \
-  --report docs/verification/desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md
+node scripts/probe/desktop-probe.mjs --tgz dsh-livery-0.3.0.tgz \
+  --out artifacts/acceptance/pkg-0.3.0/desktop-0.2.1-rc.3 \
+  --report docs/verification/desktop-acceptance-0.2.1-rc.3-pkg0.3.0.md
 ```
 
 Requirements: Node 22.19+, a certified `dsh` CLI on `PATH` (0.2.0-rc.2 /
@@ -151,9 +164,10 @@ All evidence goes to `artifacts/acceptance/`.
 
 | §20 / §18 criteria | check ids | notes |
 |---|---|---|
-| Exact DSH 0.2.0-rc.2 + certified contract | `boot.graph-entry`, `bundle.serves-client-js`, `handshake.boot-global`, `handshake.echo`, `catalog.schema` (`adapterId`, `contractHash` recorded) | `catalog.capabilities` cross-checks the frozen contract facts |
-| zh-CN / en-US settings UI + preview complete | `settings.livery-section`, `settings.section-label`, `gallery.*`, `search.*`, `keyboard.*`, `fonts.en-latin`, `locale.en-gallery`, `preview.*` | en pass flips the pinned profile locale, reloads, then restores zh |
-| ≥10 dual-mode liveries | `catalog.gallery-size`, `gallery.cards`, `previews.assets-served`, `catalog.token-coverage` | 10 liveries × zh/en × light/dark preview SVGs fetched |
+| Exact certified host + certified contract | `boot.graph-entry`, `bundle.serves-client-js`, `handshake.boot-global`, `handshake.echo`, `catalog.schema` (`adapterId`, `contractHash` recorded) | `catalog.capabilities` cross-checks the frozen contract facts |
+| Visual Style entry/page + zh-CN / en-US UI + preview complete | `nav.sidebar-entry`, `nav.main-panel`, `nav.settings-section-absent`, `gallery.*`, `search.*`, `gallery.aria-label`, `keyboard.*`, `fonts.en-latin`, `locale.en-gallery`, `preview.*` | entry/page renamed 视觉风格 / Visual Style; en pass flips the pinned profile locale, reloads, then restores zh |
+| ≥24 visually distinct dual-mode styles | `catalog.gallery-size`, `gallery.cards`, `previews.assets-served`, `catalog.style-vocabulary`, `catalog.css-budget` | 24 styles × zh/en × light/dark = 96 preview SVGs fetched; 7 surface recipes / 5 en UI stacks; per-livery CSS ≤12 KiB |
+| Applied styles change the real host (not token text) | `style.candidates`, `style.host-radius`, `style.host-font`, `style.host-elevation`, `style.material-glass`, `style.cascade-tokens` | contrasting styles activated via Apply; computed composer radius / font stack / shadow / glass material / cascade token values measured on live nodes |
 | Colour + host `font-family` actually effective (not just the settings page) | `theme.light-tokens`, `theme.dark-tokens`, `fonts.zh-cjk`, `fonts.en-latin`, `css.token-scoping`, `bundle.gzip-budget` | computed CSS compared against the **served catalog** values, not hard-coded hex |
 | Follow host light/dark, never change host preference | `theme.light-tokens`, `theme.dark-tokens`, `theme.light-restored`, `theme.host-preference`, `theme.host-preference-file`, `stock.host-theme-source` | dark via `page.emulateMedia({colorScheme:'dark'})` with `data-ds-theme-source` staying `system`; no `ui-theme` row written |
 | Startup filmstrip has no stock-style frame / no takeover flash | `firstpaint.no-stock-frame`, `firstpaint.first-colour`, `firstpaint.paint-timings` | rAF colour samples from the first frame + CDP screencast filmstrip + screenshots |
@@ -220,7 +234,8 @@ All evidence goes to `artifacts/acceptance/`.
   surface and are out of scope here.
 - The harness proves *presence and correctness of the warning* for the layout
   capability gate (density/transcript/message-flow are absent in DSH
-  0.2.0-rc.2); it cannot prove a layout capability actually takes effect
+  0.2.1-rc.2/rc.3) and it proves the token-only style differences (palette,
+  typography, material, shape/elevation), not layout differences; it cannot prove a layout capability actually takes effect
   because the certified host exposes none. This is reported as a §20 gap, not
   papered over.
 - Disable/hot-reload state-machine transitions and unknown-version fail-closed

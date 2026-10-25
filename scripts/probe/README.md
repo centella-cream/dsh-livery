@@ -13,11 +13,27 @@ harness drives the system Chrome through `channel: 'chrome'`.
 | `dsh-home.mjs` | isolated `DSH_HOME` preparation, official `dsh plugin --profile web add/remove` calls, profile patch/patch-locale edits, plugin-manager log capture |
 | `boot.mjs` | spawns `dsh --profile web --no-open --port 0`, parses the printed `dsh web: http://127.0.0.1:<port>/?token=<hex>` line, waits for readiness, stops with SIGTERM and proves the port closed |
 | `http.mjs` | raw HTTP probes: token→303→cookie, 401/403 browser-trust fence on `/api`, client-bundle route, catalog/preview routes |
-| `browser.mjs` | Playwright session/recorders, first-paint rAF recorder, **sidebar panellist + main-panel navigation** (`openLiveryDetailed`/`openLivery`/`inspectPanellist`/`readMainColumnState`), legacy settings-dialog fallback helpers, gallery/search/control helpers, CDP filmstrip, computed-theme/CSS snapshots, clipboard probe |
+| `browser.mjs` | Playwright session/recorders, first-paint rAF recorder, **sidebar panellist + main-panel navigation** (`openLiveryDetailed`/`openLivery`/`inspectPanellist`/`readMainColumnState`), **host-level style probe** (`readHostStyleProbe`: radius/shadow/backdrop/font computed styles + style-token family values), legacy settings-dialog fallback helpers, gallery/search/control helpers, CDP filmstrip, computed-theme/CSS snapshots, clipboard probe |
 | `labels.mjs` | frozen zh/en settings copy + tag labels used for accessible-name queries and search assertions |
 | `labels-runtime.mjs` | `--labels <file|json>` override loading |
 | `checks.mjs` | the assertions themselves (handshake, catalog, stock baseline, settings UI flow, tokens/dark mode, fonts/locale, self-check, first paint, restore, uninstall residue) |
 | `report.mjs` | assembles `probe.json` / `console.json` / `timings.json` and renders the Markdown report under `docs/verification/` |
+
+## Round-5 style system (24 visual styles, 视觉风格 / Visual Style)
+
+- Entry/page/search/gallery copy is asserted in the current labels table
+  (`视觉风格` / `Visual Style`, `搜索视觉风格` / `Search visual styles`,
+  `视觉风格画廊` / `Visual style gallery`); data-testids are unchanged.
+- Counts are derived from the served catalog: 24 liveries/profile
+  (`catalog.gallery-size`), 24 gallery cards, 96 preview SVGs/profile, per-livery
+  CSS ≤12 KiB, and style vocabulary (surface recipes, font stacks, shape/
+  elevation/material/border families).
+- `checkStyleContrast` applies graphite/catppuccin/rice-paper/tokyo-night through
+  the real Apply button (or transient preview in read-only `--reuse` mode) and
+  measures the live host: composer-shell border-radius, body font stack,
+  shadow values, glass backdrop token and cascade-resolved style tokens. In a
+  real-profile clone the existing `- id: livery` row is updated in place, which
+  `apply.one-mutation` accepts as the same single mutation.
 
 ## Fast nav smoke
 

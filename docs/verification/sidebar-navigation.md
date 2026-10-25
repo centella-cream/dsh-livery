@@ -1,7 +1,7 @@
 # Sidebar plugin navigation — Livery UI entry (round 4, user-directed)
 
 Status: implemented, live-verified on the user's real Web Profile, and folded into
-the certified package `dsh-livery-0.2.2.tgz`. This document records the capability
+the certified package `dsh-livery-0.3.0.tgz`. This document records the capability
 research, the implementation contract, and the evidence for the entry move away from
 the Settings page.
 
@@ -47,7 +47,7 @@ integration honest if that matrix is expanded later.
   `PANEL_ID = 'livery' as MainPanelId` (`@deepseek-ai/dsh-client-ui-layout/client`).
 - `sidebar.panellist` list row: `{ name: 'sidebar.panellist', id: PANEL_ID,
   order: 30, locale: 'dsh-livery', label: () => t('panel.label') }` — after plugins
-  (0), schedule (10) and dsh-context (20); label 皮肤 / Livery; inline SVG icon
+  (0), schedule (10) and dsh-context (20); label 视觉风格 / Livery; inline SVG icon
   receiving `{size, active}`.
 - Registration is inject-first (`ctx.slots.inject('main'|'sidebar.panellist', …)`)
   and exception-safe: a registration failure rolls back partial effects and installs
@@ -55,7 +55,7 @@ integration honest if that matrix is expanded later.
 - Fallback: `settings.section` (`id: 'livery'`, order 25) only if no panellist
   declaration arrives within 1500 ms; disposed when a late declaration arrives.
 - Page DOM: `div[data-slot="main"] > div[data-testid="livery-panel"][data-plugin-panel="true"]`
-  (h1 皮肤/Livery, description, scrollable body) → `div[data-testid="livery-section"]`
+  (h1 视觉风格/Visual Style, description, scrollable body) → `div[data-testid="livery-section"]`
   with the unchanged gallery/search/preview/apply/self-check testids. The Settings
   dialog on certified hosts contains no Livery section.
 - i18n keys added: `panel.label`, `panel.title`, `panel.description` (zh/en).
@@ -66,14 +66,14 @@ integration honest if that matrix is expanded later.
 
 Environment: real `~/.dsh/profiles/web` (DSH `0.2.1-rc.2`, installed plugins
 dsh-charter `0.1.0-rc.2`, dsh-context `0.73.0`, dsh-vscode-bridge), official
-`dsh plugin --profile web add file:dsh-livery-0.2.2.tgz`, then the real web server
+`dsh plugin --profile web add file:dsh-livery-0.3.0.tgz`, then the real web server
 booted and driven with Playwright (system Chrome, 1440×900, zh-CN).
 
-Result: **11/11 checks pass** — sidebar rows `["插件","自动化任务","上下文洞察","皮肤"]`,
-皮肤 row after 上下文洞察 and before 工作区 (DOM order verified), row click selects
-the main panel (`aria-current=page`, conversation composer hidden), page h1 皮肤,
-10 gallery cards, preview + cancel, self-check shows `0.2.1-rc.2` /
-`dsh-0.2.1-rc.2-r1`, no console errors; Settings contains no active 皮肤 section.
+Result: **11/11 checks pass** — sidebar rows `["插件","自动化任务","上下文洞察","视觉风格"]`,
+视觉风格 row after 上下文洞察 and before 工作区 (DOM order verified), row click selects
+the main panel (`aria-current=page`, conversation composer hidden), page h1 视觉风格,
+24 gallery cards, preview + cancel, self-check shows `0.2.1-rc.2` /
+`dsh-0.2.1-rc.2-r1`, no console errors; Settings contains no active 视觉风格 section.
 
 Evidence: `artifacts/acceptance/real-web-profile/` — `probe.json`,
 `real-web-sidebar.png`, `real-web-panel.png`, `real-web-preview.png`,
@@ -89,34 +89,33 @@ version is 0.2.2, not 0.2.0):
    fixed), which selected the Settings fallback instead of the sidebar row. Fixed
    with inject-first registration + grace-timer fallback (see §3).
 
-## 5. Certified-matrix acceptance (package 0.2.2)
+## 5. Certified-matrix acceptance (package 0.3.0)
 
-Filled by the verifier run against `dsh-livery-0.2.2.tgz`
-sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17`.
+Filled by the verifier run against `dsh-livery-0.3.0.tgz`
+sha256 `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950`.
 
 | Target | Result | Evidence |
 |---|---|---|
-| Web 0.2.1-rc.2 isolated full | **PASS 127 / 0 / 3 / 1** | `artifacts/acceptance/pkg-0.2.2/web-0.2.1-rc.2/` · `docs/verification/web-acceptance-0.2.1-rc.2-pkg0.2.2.md` |
-| Web real-profile clone | **PASS 128 / 0 / 3 / 2** | `artifacts/acceptance/pkg-0.2.2/web-real-profile-clone/` · `…-real-profile-clone-pkg0.2.2.md` |
-| Desktop 0.2.1-rc.3 packaged web carrier | **PASS 127 / 0 / 3 / 1** | `artifacts/acceptance/pkg-0.2.2/web-carrier-0.2.1-rc.3/` · `…-rc.3-runtime-carrier-pkg0.2.2.md` |
-| Desktop 0.2.1-rc.3 real Electron renderer | **PASS 22 / 0 / 1** (native chrome unverified) | `artifacts/acceptance/pkg-0.2.2/desktop-0.2.1-rc.3/` · `desktop-acceptance-0.2.1-rc.3-pkg0.2.2.md` |
+| Web 0.2.1-rc.2 isolated full | **PASS 139 / 0 / 3 / 2** | `artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2/` · `docs/verification/web-acceptance-0.2.1-rc.2-pkg0.3.0.md` |
+| Web real-profile clone | **PASS 140 / 0 / 3 / 3** | `artifacts/acceptance/pkg-0.3.0/web-real-profile-clone/` · `…-real-profile-clone-pkg0.3.0.md` |
+| Desktop 0.2.1-rc.3 packaged web carrier | **PASS 139 / 0 / 3 / 2** | `artifacts/acceptance/pkg-0.3.0/web-carrier-0.2.1-rc.3/` · `…-rc.3-runtime-carrier-pkg0.3.0.md` |
+| Desktop 0.2.1-rc.3 real Electron renderer | **PASS 22 / 0 / 1** (native chrome unverified) | `artifacts/acceptance/pkg-0.3.0/desktop-0.2.1-rc.3/` · `desktop-acceptance-0.2.1-rc.3-pkg0.3.0.md` |
 
 Sidebar-nav assertions passed on every target: row present already on stock start
-(`aria-label 皮肤`, `data-slot="sidebar.panellist"`, inline svg), placement above
+(`aria-label 视觉风格`, `data-slot="sidebar.panellist"`, inline svg), placement above
 工作区 (row #2 on isolated/carrier/desktop, #3 after 插件/自动化任务/上下文洞察 on
 the clone), selection switches the main panel (`aria-current=page`,
 `[data-testid="livery-panel"]`, conversation hidden), legacy Settings has 0 Livery
 nodes, the panel survives closing Settings and hard reload (via `sidebar-panellist`),
-en locale shows `Livery` + English page, and the Electron renderer shows the row and
+en locale shows `Visual Style` + English page, and the Electron renderer shows the row and
 panel swap. Harness-only fixes during the round: clone lock `file:` re-anchoring,
 onboarding-overlay/locale-settle retry for self-check, panel-aware waits; superseded
 0.2.0/0.2.1 attempts are annotated and retained.
 
 ## 6. How to use it
 
-1. Install the package into a profile: `dsh plugin --profile web add dsh-livery-0.2.2.tgz`
+1. Install the package into a profile: `dsh plugin --profile web add dsh-livery-0.3.0.tgz`
    (Desktop: install through the app's plugin manager).
 2. Open DSH. The Livery entry is in the **left sidebar, above 工作区**, in the same
-   group as 插件 / 自动化任务 / 上下文观察 (zh: 皮肤, en: Livery).
-3. Click it: the full-page gallery opens (search, tags, 10 liveries, preview, apply,
-   restore stock, self-check). Settings → 皮肤 no longer exists on these hosts.
+   group as 插件 / 自动化任务 / 上下文观察 (zh: 视觉风格, en: Livery).
+3. Click it: the full-page gallery opens (search, tags, 24 liveries with palette/typography/shape/elevation differences, preview, apply, restore stock, self-check). Settings → 视觉风格 no longer exists on these hosts.

@@ -292,8 +292,9 @@ export const PLAN20_ROWS = [
     checks: ['nav.sidebar-entry', 'nav.main-panel', 'gallery.cards', 'search.name', 'keyboard.arrow-right', 'fonts.en-latin', 'locale.en-gallery', 'preview.previewing'],
   },
   {
-    criterion: 'At least 10 double-mode liveries',
-    checks: ['catalog.gallery-size', 'gallery.cards', 'previews.assets-served'],
+    criterion: 'At least 24 double-mode, visually distinct visual styles (palette + typography + material + shape/elevation)',
+    checks: ['catalog.gallery-size', 'gallery.cards', 'previews.assets-served', 'catalog.style-vocabulary', 'catalog.css-budget'],
+    note: 'style-system v2: 24 liveries per profile, 96 previews per profile; per-livery CSS ≤ 12 KiB',
   },
   {
     criterion: 'Colour + host-level font-family actually effective (not just the settings page)',
@@ -320,6 +321,11 @@ export const PLAN20_ROWS = [
   {
     criterion: 'All contrast gates pass',
     checks: ['catalog.contrast-zero-failures', 'selfcheck.contrast'],
+  },
+  {
+    criterion: 'Applied visual styles change the real host UI (computed styles/CSS cascade)',
+    checks: ['style.candidates', 'style.host-radius', 'style.host-font', 'style.host-elevation', 'style.material-glass', 'style.cascade-tokens'],
+    note: 'contrasting styles applied through the UI; border-radius, font stack, shadow/material and cascade-resolved style tokens measured on live host nodes',
   },
   {
     criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',

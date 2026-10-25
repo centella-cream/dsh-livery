@@ -411,14 +411,20 @@ async function main() {
     expect(
       runner,
       'desktop.main-panel',
-      'selecting the sidebar row opens the Livery main panel (conversation replaced) in the desktop shell',
-      opened.via === 'sidebar-panellist' && desktopMain.liveryPanelVisible && desktopMain.conversationComposerVisible === false && desktopMain.selectedRowLabel === PAGE_LABELS.section,
-      `via=${opened.via} panelVisible=${desktopMain.liveryPanelVisible} conversationVisible=${desktopMain.conversationComposerVisible} selected="${desktopMain.selectedRowLabel}"`,
+      'selecting the sidebar row opens the Visual Style main panel (h1 matches, conversation replaced) in the desktop shell',
+      opened.via === 'sidebar-panellist' && desktopMain.liveryPanelVisible && desktopMain.conversationComposerVisible === false && desktopMain.selectedRowLabel === PAGE_LABELS.section && desktopMain.panelTitle === PAGE_LABELS.section,
+      `via=${opened.via} panelVisible=${desktopMain.liveryPanelVisible} conversationVisible=${desktopMain.conversationComposerVisible} selected="${desktopMain.selectedRowLabel}" h1="${desktopMain.panelTitle}"`,
     )
     await page.waitForFunction(() => document.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length >= 10, undefined, { timeout: 20_000 }).catch(() => {})
     const cards = await readGallery(page)
     const liveryCards = cards.filter((card) => card.id !== 'stock')
-    expect(runner, 'desktop.gallery', 'Livery panel renders the 10 compiled liveries', liveryCards.length >= 10, `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`)
+    expect(
+      runner,
+      'desktop.gallery',
+      'desktop Visual Style panel renders the 24 compiled styles',
+      liveryCards.length >= 24,
+      `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`,
+    )
     await captureScreenshot(page, path.join(screensDir, 'zh-panel-gallery-desktop.png'), { label: 'desktop livery panel gallery' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'panel-gallery' }))
 
     const pair = chooseSkinPair(catalog)

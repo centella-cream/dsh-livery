@@ -59,6 +59,7 @@ import {
   checkSelfCheck,
   checkLiveryPanelFlow,
   checkStockInitial,
+  checkStyleContrast,
   checkUninstallResidue,
   collectProfileEvidence,
 } from './probe/checks.mjs'
@@ -502,6 +503,7 @@ async function main() {
             ['selfcheck', async () => checkSelfCheck(ctx)],
             ['firstpaint', async () => checkFirstPaint(ctx)],
             ['web', async () => checkResponsive(ctx)],
+            ['style', async () => checkStyleContrast(ctx)],
             ['restore', async () => checkRestoreStock(ctx)],
           ]
         : []),

@@ -758,6 +758,7 @@ export async function readMainColumnState(page) {
       conversationCopyVisible: conversationCopy,
       editableCount: editables.length,
       liveryPanelCount: document.querySelectorAll('[data-slot="main"] [data-testid="livery-panel"], [data-slot="main"] [data-testid="livery-section"]').length,
+      panelTitle: (document.querySelector('[data-slot="main"] [data-testid="livery-panel"] h1')?.textContent ?? document.querySelector('[data-slot="main"] h1')?.textContent ?? '').trim(),
       bodyTextStart: (document.body.innerText ?? '').slice(0, 160),
     }
   })
@@ -768,6 +769,79 @@ export async function readSettingsSectionLabels(page) {
   const { nav } = settingsNav(page)
   if (!(await nav.count().catch(() => 0))) return []
   return nav.locator('button').allInnerTexts().catch(() => [])
+}
+
+/**
+ * Host-level style probe (style-system v2 acceptance).
+ *
+ * Reads the documented style token families from the CSS cascade on `body` plus
+ * the computed shape/elevation/material/font facts of stable host nodes
+ * (composer shell, send button, new-session button, sidebar panel row, the
+ * Livery panel/card). Used to prove that visually distinct liveries really
+ * change the host UI, not just a stylesheet's token text.
+ */
+export async function readHostStyleProbe(page) {
+  return page.evaluate(() => {
+    const STYLE_TOKENS = [
+      '--dsw-radius-xs', '--dsw-radius-sm', '--dsw-radius-md', '--dsw-radius-lg', '--dsw-radius-xl',
+      '--dsw-radius-panel', '--dsw-corner-shape',
+      '--dsw-shadow-lv1', '--dsw-shadow-lv1-blur', '--dsw-shadow-lv2', '--dsw-shadow-lv3',
+      '--dsw-elevation-panel', '--dsw-elevation-prominent', '--dsw-elevation-soft',
+      '--dsw-elevation-stroke', '--dsw-elevation-stroke-color',
+      '--dsw-menu-backdrop-filter', '--dsw-mask-blur', '--dsw-focus-ring-width',
+      '--dsw-font-family', '--dsh-font-family-text', '--dsh-font-family-code',
+      '--dsw-font-s-14', '--dsw-font-l-20', '--dsw-font-family-brand',
+    ]
+    const bodyStyle = getComputedStyle(document.body)
+    const tokens = {}
+    for (const name of STYLE_TOKENS) tokens[name] = bodyStyle.getPropertyValue(name).trim()
+    const isVisible = (element) => {
+      if (!element) return false
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
+    }
+    const describe = (element, label) => {
+      if (!element || !isVisible(element)) return null
+      const style = getComputedStyle(element)
+      return {
+        label,
+        tag: element.tagName.toLowerCase(),
+        radius: style.borderRadius,
+        boxShadow: style.boxShadow,
+        backdropFilter: style.backdropFilter,
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        backgroundColor: style.backgroundColor,
+        borderColor: style.borderColor,
+      }
+    }
+    const firstVisible = (selector) => [...document.querySelectorAll(selector)].find((element) => isVisible(element)) ?? null
+    const elements = {}
+    const composer = firstVisible('textarea, [contenteditable="true"], [role="textbox"]')
+    elements.composer = describe(composer, 'composer')
+    if (composer) {
+      let shell = composer
+      for (let depth = 0; depth < 5 && shell; depth += 1) {
+        const radius = getComputedStyle(shell).borderRadius
+        if (radius && radius !== '0px' && radius !== '0') break
+        shell = shell.parentElement
+      }
+      elements.composerShell = describe(shell, 'composerShell')
+    }
+    elements.sendButton = describe(firstVisible('button[aria-label="发送消息"], button[aria-label="Send message"]'), 'sendButton')
+    elements.newSessionButton = describe(firstVisible('button[aria-label="新建会话"], button[aria-label="New session"], button[aria-label="新会话"]'), 'newSessionButton')
+    elements.navRow = describe(firstVisible('[data-slot="sidebar"] nav button'), 'navRow')
+    elements.liveryPanel = describe(firstVisible('[data-testid="livery-panel"]'), 'liveryPanel')
+    elements.liveryCard = describe(firstVisible('[data-testid="livery-card"]'), 'liveryCard')
+    return {
+      url: location.href,
+      bodyFontFamily: bodyStyle.fontFamily,
+      bodyBackground: bodyStyle.backgroundColor,
+      tokens,
+      elements,
+    }
+  })
 }
 
 /** Gallery cards (stock card included), via the stable test hooks. */

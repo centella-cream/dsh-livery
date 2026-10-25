@@ -28,6 +28,7 @@ import {
   openLiveryDetailed,
   PANEL_NAV_VIA,
   readGallery,
+  readHostStyleProbe,
   readLiveryCssRules,
   readMainColumnState,
   readSettingsSectionLabels,
@@ -62,6 +63,12 @@ import {
 } from './util.mjs'
 
 const THEME_TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw-alias-border-l1']
+
+/** Round-5 style system: the catalog ships 24 designs per profile. */
+const MIN_LIVERIES = 24
+
+/** Per-livery rendered CSS hard budget (style-system.md §5). */
+const CSS_BUDGET_BYTES = 12 * 1024
 
 /** The UI locale the running page actually presents (host pin wins over flags). */
 async function detectUiLocale(page) {
@@ -239,7 +246,14 @@ export async function checkCatalog(ctx) {
   )
   expect(runner, 'catalog.cache-control-no-store', 'catalog is not cached', /no-store/i.test(response.cacheControl ?? ''), `cache-control: ${response.cacheControl ?? '(none)'}`)
   const liveries = catalog.liveries ?? []
-  expect(runner, 'catalog.gallery-size', 'catalog carries at least 10 liveries', liveries.length >= 10, `${liveries.length} liveries: ${liveries.map((livery) => livery.id).join(', ')}`, { ids: liveries.map((livery) => livery.id) })
+  expect(
+    runner,
+    'catalog.gallery-size',
+    `catalog carries at least ${MIN_LIVERIES} liveries (style system v2)`,
+    liveries.length >= MIN_LIVERIES,
+    `${liveries.length} liveries: ${liveries.map((livery) => livery.id).join(', ')}`,
+    { ids: liveries.map((livery) => livery.id) },
+  )
 
   const uncoveredTokens = []
   const contrastProblems = []
@@ -299,6 +313,68 @@ export async function checkCatalog(ctx) {
     hashProblems.length ? hashProblems.slice(0, 6).join('; ') : `${liveries.length} livery hashes verified`,
   )
 
+  // Per-livery CSS budget (style-system.md §5): every compiled livery's
+  // tokens+typography+layout must stay inside the 12 KiB hard cap.
+  const cssSizes = liveries.map((livery) => ({
+    id: livery.id,
+    bytes: (livery.css?.tokens?.length ?? 0) + (livery.css?.typography?.length ?? 0) + (livery.css?.layout?.length ?? 0),
+  }))
+  const overBudget = cssSizes.filter((entry) => entry.bytes > CSS_BUDGET_BYTES)
+  const maxCss = cssSizes.reduce((max, entry) => (entry.bytes > max.bytes ? entry : max), { id: '(none)', bytes: 0 })
+  expect(
+    runner,
+    'catalog.css-budget',
+    `every compiled livery stays inside the ${CSS_BUDGET_BYTES} B CSS hard budget`,
+    overBudget.length === 0 && maxCss.bytes > 0,
+    overBudget.length
+      ? overBudget.slice(0, 8).map((entry) => `${entry.id}=${entry.bytes}B`).join('; ')
+      : `max ${maxCss.bytes} B (${maxCss.id}); budget ${CSS_BUDGET_BYTES} B across ${liveries.length} liveries`,
+    { max: maxCss, sizes: cssSizes },
+  )
+
+  // Style-system vocabulary (round 5): palettes + typography + surface shape/
+  // elevation/material must actually vary across the shipped catalog.
+  const surfaceStyles = [...new Set(liveries.map((livery) => livery.layout?.surfaceStyle).filter(Boolean))]
+  const uiStacks = [...new Set(liveries.map((livery) => livery.typography?.ui?.['en-US'] ?? livery.typography?.ui?.en ?? '').filter(Boolean))]
+  const contentStacks = [...new Set(liveries.map((livery) => livery.typography?.content?.['zh-CN'] ?? livery.typography?.content?.zh ?? '').filter(Boolean))]
+  const familyPresence = { shape: 0, elevation: 0, material: 0, border: 0 }
+  const familyOf = (name) => {
+    if (/^--dsw-radius-|^--dsw-corner-shape$/.test(name)) return 'shape'
+    if (/^--dsw-shadow-|^--dsw-elevation-/.test(name)) return 'elevation'
+    if (name === '--dsw-menu-backdrop-filter' || name === '--dsw-mask-blur' || name === '--dsw-focus-ring-width') return 'material'
+    if (/^--dsw-alias-border-l[1-4]$/.test(name)) return 'border'
+    return null
+  }
+  for (const livery of liveries) {
+    const families = new Set()
+    for (const mode of ['light', 'dark']) {
+      for (const name of Object.keys(livery?.[mode]?.tokens ?? {})) {
+        const family = familyOf(name)
+        if (family) families.add(family)
+      }
+    }
+    for (const family of families) familyPresence[family] += 1
+  }
+  const vocabularyProblems = []
+  if (surfaceStyles.length < 6) vocabularyProblems.push(`only ${surfaceStyles.length} distinct surface styles: ${surfaceStyles.join(', ')}`)
+  if (uiStacks.length < 5) vocabularyProblems.push(`only ${uiStacks.length} distinct en-US UI font stacks`)
+  // The CJK registry only needs a small palette of stacks (system/humanist/serif);
+  // latin covers the broader display/rounded/tech variety.
+  if (contentStacks.length < 2) vocabularyProblems.push(`only ${contentStacks.length} distinct zh-CN content font stacks`)
+  for (const family of ['shape', 'elevation', 'material', 'border']) {
+    if (familyPresence[family] === 0) vocabularyProblems.push(`no livery declares ${family} tokens`)
+  }
+  expect(
+    runner,
+    'catalog.style-vocabulary',
+    'the catalog covers palettes, typography, surface shape/elevation/material families',
+    vocabularyProblems.length === 0,
+    vocabularyProblems.length
+      ? vocabularyProblems.join('; ')
+      : `surfaceStyles=${surfaceStyles.length} [${surfaceStyles.join(', ')}]; en UI stacks=${uiStacks.length}; zh content stacks=${contentStacks.length}; family coverage shape=${familyPresence.shape} elevation=${familyPresence.elevation} material=${familyPresence.material} border=${familyPresence.border} / ${liveries.length}`,
+    { surfaceStyles, uiStacks: uiStacks.length, contentStacks: contentStacks.length, familyPresence },
+  )
+
   // Capability facts used by the self-check panel and layout degradation. The
   // expected availability comes from the certified adapter record, so a 0.2.1
   // host must additionally report host-font-role-hooks available.
@@ -322,8 +398,9 @@ export async function checkCatalog(ctx) {
   )
 
   // Preview SVG assets live under the catalog-profile base the host declared.
+  // Style system v2: every livery × zh/en × light/dark (24×4 = 96 per profile).
   const previewChecks = []
-  for (const livery of liveries.slice(0, 12)) {
+  for (const livery of liveries) {
     for (const lang of ['zh', 'en']) {
       for (const mode of ['light', 'dark']) {
         const file = `${livery.id}-${lang}-${mode}.svg`
@@ -337,14 +414,15 @@ export async function checkCatalog(ctx) {
     results.push({ ...item, ...response })
   }
   const badPreviews = results.filter((entry) => entry.status !== 200 || !/svg/i.test(entry.contentType ?? ''))
+  const expectedPreviews = liveries.length * 4
   expect(
     runner,
     'previews.assets-served',
     'all preview SVGs are served as image/svg+xml under the declared catalog-profile base',
-    badPreviews.length === 0,
+    badPreviews.length === 0 && results.length === expectedPreviews,
     badPreviews.length
       ? badPreviews.slice(0, 8).map((entry) => `${entry.file} → ${entry.status} ${entry.contentType ?? ''}`).join('; ')
-      : `${results.length} preview assets HTTP 200 image/svg+xml under ${previewsBaseOf(ctx)}`,
+      : `${results.length}/${expectedPreviews} preview assets HTTP 200 image/svg+xml under ${previewsBaseOf(ctx)} (${liveries.length} liveries × zh/en × light/dark)`,
     { base: previewsBaseOf(ctx), sample: results[0]?.url },
   )
   const unknown = await getStatus(previewUrl(ctx, 'not-a-real-file.svg'))
@@ -663,9 +741,9 @@ export async function checkLiveryPanelFlow(ctx) {
   expect(
     runner,
     'nav.main-panel',
-    'selecting the row opens the Livery main-panel page in the main column',
-    opened.selected === true && mainColumn.liveryPanelVisible && mainColumn.selectedRowLabel === expectedLabel,
-    `row selected=${opened.selected}; main panel visible=${mainColumn.liveryPanelVisible}; selected row "${mainColumn.selectedRowLabel}"; main children=${mainColumn.mainChildCount}`,
+    'selecting the row opens the Visual Style main-panel page (h1 matches the entry label)',
+    opened.selected === true && mainColumn.liveryPanelVisible && mainColumn.selectedRowLabel === expectedLabel && mainColumn.panelTitle === expectedLabel,
+    `row selected=${opened.selected}; main panel visible=${mainColumn.liveryPanelVisible}; selected row "${mainColumn.selectedRowLabel}"; page h1 "${mainColumn.panelTitle}" (expected "${expectedLabel}")`,
     { mainColumn },
   )
   expect(
@@ -721,10 +799,21 @@ export async function checkLiveryPanelFlow(ctx) {
   expect(
     runner,
     'gallery.cards',
-    'gallery renders one card per catalog livery (≥10)',
-    liveryCards.length >= 10 && liveryCards.length === expectedIds.length && missing.length === 0,
+    `gallery renders one card per catalog livery (≥${MIN_LIVERIES})`,
+    liveryCards.length >= MIN_LIVERIES && liveryCards.length === expectedIds.length && missing.length === 0,
     `${liveryCards.length} livery card(s) (catalog ${expectedIds.length}); stock card=${hasStockCard} (optional; stock appearance is reachable through the restore action); ids: ${liveryCards.map((card) => card.id).join(', ')}${missing.length ? `; missing: ${missing.join(', ')}` : ''}`,
     { cards: cards.map((card) => ({ id: card.id, state: card.state })) },
+  )
+  const galleryAria = await page
+    .locator('[data-testid="livery-gallery"]')
+    .getAttribute('aria-label')
+    .catch(() => null)
+  expect(
+    runner,
+    'gallery.aria-label',
+    'gallery region exposes the renamed accessible label',
+    galleryAria === uiLabels.gallery,
+    `aria-label="${galleryAria}" (expected "${uiLabels.gallery}")`,
   )
   const brokenThumbs = liveryCards.filter((card) => card.thumb && card.thumb.tag === 'img' && (!(card.thumb.naturalWidth > 0) || !card.thumb.complete))
   const thumbCount = liveryCards.filter((card) => card.thumb).length
@@ -739,6 +828,16 @@ export async function checkLiveryPanelFlow(ctx) {
     runner.fail('search.input', 'gallery search input is present', 'no search input found by data-testid, role, or placeholder')
   } else {
     state.searchVia = search.via
+    const searchAccessibleName = await search.locator
+      .evaluate((element) => element.getAttribute('aria-label') ?? element.getAttribute('placeholder') ?? '')
+      .catch(() => '')
+    expect(
+      runner,
+      'search.accessible-name',
+      'gallery search exposes the renamed accessible name',
+      searchAccessibleName === uiLabels.searchName || (searchAccessibleName.includes(uiLabels.searchName) && uiLabels.searchName.length > 0),
+      `search accessible name "${searchAccessibleName}" (expected "${uiLabels.searchName}")`,
+    )
     const firstLivery = catalog.liveries[0]
     const firstCardId = firstLivery?.id
     const localizedName = firstLivery?.meta?.name?.[state.actualLocale === 'zh' ? 'zh-CN' : 'en-US']
@@ -770,7 +869,7 @@ export async function checkLiveryPanelFlow(ctx) {
       const cards = panel?.querySelectorAll('[data-testid="livery-card"][data-livery-id]') ?? []
       return { cards: cards.length, text: (panel?.innerText ?? '').slice(0, 400) }
     })
-    expect(runner, 'search.empty-state', 'search-empty state renders for an unknown query', emptyState.cards === 0 && /没有|无匹配|No liveries match|No matching|empty/i.test(emptyState.text), `${emptyState.cards} card(s) remain; panel text: ${oneLine(emptyState.text, 220)}`)
+    expect(runner, 'search.empty-state', 'search-empty state renders for an unknown query', emptyState.cards === 0 && /没有|无匹配|No visual styles match|No liveries match|No matching|empty/i.test(emptyState.text), `${emptyState.cards} card(s) remain; panel text: ${oneLine(emptyState.text, 220)}`)
     await capture(page, ctx, { state: 'panel-gallery-search-empty' })
     await search.locator.fill('')
     await sleep(300)
@@ -967,13 +1066,17 @@ function collectMutation(before, after, skinId) {
   const skinRow = afterRows.find((row) => new RegExp(`skinId: ${skinId}\\b`).test(row))
   const added = afterRows.length - beforeRows.length
   const alreadyConfirmed = before.skinId === skinId
+  // A single mutation is either a newly appended config row (fresh profile) or
+  // an in-place value update of the one existing `- id: livery` row (a cloned
+  // real profile already carries the settings row with `skinId: stock`).
+  const updatedInPlace = added === 0 && afterRows.length === 1 && before.skinId !== skinId
   return {
-    ok: Boolean(skinRow) && after.skinId === skinId && (added === 1 || alreadyConfirmed),
+    ok: Boolean(skinRow) && after.skinId === skinId && (added === 1 || alreadyConfirmed || updatedInPlace),
     detail:
-      `before skinId=${before.skinId ?? '(none)'} (${beforeRows.length} row(s)) → after skinId=${after.skinId} (${afterRows.length} row(s), added ${added})` +
+      `before skinId=${before.skinId ?? '(none)'} (${beforeRows.length} row(s)) → after skinId=${after.skinId} (${afterRows.length} row(s), added ${added}${updatedInPlace ? ', updated in place' : ''})` +
       (alreadyConfirmed ? '; target was already confirmed (no redundant write needed)' : '') +
       (skinRow ? `; row: ${oneLine(skinRow, 240)}` : '; no skinId row found'),
-    evidence: { before: before.text, after: after.text, added, alreadyConfirmed, skinRow: skinRow ?? null },
+    evidence: { before: before.text, after: after.text, added, alreadyConfirmed, updatedInPlace, skinRow: skinRow ?? null },
   }
 }
 
@@ -1302,6 +1405,78 @@ async function restoreLocaleZh(ctx) {
   await sleep(400)
 }
 
+/** Registered style-token families present in one compiled livery. */
+export function styleFamiliesOf(livery) {
+  const patterns = {
+    shape: /^--dsw-radius-|^--dsw-corner-shape$/,
+    elevation: /^--dsw-shadow-|^--dsw-elevation-/,
+    material: /^(--dsw-menu-backdrop-filter|--dsw-mask-blur|--dsw-focus-ring-width)$/,
+    border: /^--dsw-alias-border-l[1-4]$/,
+  }
+  const families = { shape: [], elevation: [], material: [], border: [] }
+  for (const mode of ['light', 'dark']) {
+    for (const name of Object.keys(livery?.[mode]?.tokens ?? {})) {
+      for (const [family, pattern] of Object.entries(patterns)) {
+        if (pattern.test(name) && !families[family].includes(name)) families[family].push(name)
+      }
+    }
+  }
+  return families
+}
+
+function normalizeTokenValue(value) {
+  return String(value ?? '').trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function radiusPx(value) {
+  const match = String(value ?? '').match(/(-?\d+(?:\.\d+)?)px/)
+  return match ? Number(match[1]) : null
+}
+
+function firstFamily(value) {
+  return String(value ?? '').split(',')[0]?.trim().replace(/^["']|["']$/g, '').toLowerCase() ?? ''
+}
+
+function distinctCount(values) {
+  return new Set(values.filter((value) => value !== null && value !== undefined && value !== '')).size
+}
+
+function looksSerif(livery) {
+  const stacks = JSON.stringify(livery?.typography ?? {})
+  return /Songti|STSong|Noto Serif|Source Han Serif|Iowan Old Style|Palatino|Georgia|Times New Roman|serif/i.test(stacks)
+}
+
+/**
+ * Pick 2–4 visually contrasting liveries for host-level style verification.
+ * Preference order matches the design table; fallbacks guarantee the set spans
+ * a sharp/flat shape, a rounded/soft shape, a serif/paper typography and a glass
+ * material.
+ */
+export function pickContrastCandidates(catalog) {
+  const liveries = catalog?.liveries ?? []
+  const preferred = ['graphite', 'catppuccin', 'rice-paper', 'tokyo-night', 'solarized', 'dracula']
+  const chosen = preferred.map((id) => liveries.find((livery) => livery.id === id)).filter(Boolean)
+  const addFirst = (predicate) => {
+    if (chosen.some(predicate)) return
+    const found = liveries.find(predicate)
+    if (found) chosen.push(found)
+  }
+  addFirst((livery) => livery.layout?.surfaceStyle === 'sharp')
+  addFirst((livery) => ['rounded', 'soft', 'elevated'].includes(livery.layout?.surfaceStyle))
+  addFirst((livery) => looksSerif(livery))
+  addFirst((livery) => livery.layout?.surfaceStyle === 'glass')
+  const seen = new Set()
+  const diverse = []
+  for (const livery of chosen) {
+    const key = `${livery.layout?.surfaceStyle}|${firstFamily(livery.typography?.ui?.['en-US'] ?? livery.typography?.ui?.en)}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    diverse.push(livery)
+    if (diverse.length >= 4) break
+  }
+  return diverse
+}
+
 /** Self-check panel: capabilities, contrast, css safety; copy diagnostics. */
 export async function checkSelfCheck(ctx) {
   const { runner, session, config, state } = ctx
@@ -1376,6 +1551,24 @@ export async function checkSelfCheck(ctx) {
     rowProblems.length ? rowProblems.join('; ') : `${capabilityRows.length} capability row(s): ${capabilityRows.map((row) => `${row.id}=${row.available}`).join(', ')}`,
     { capabilities: capabilityRows, expected: expectedCapabilities, text: panel.text },
   )
+  // Style-system v2: the applied livery must expose shape/elevation/material
+  // token families and the self-check token coverage must report zero missing.
+  const appliedLivery = state.activeLivery ?? (state.catalog?.liveries ?? []).find((livery) => livery.id === state.appliedSkin)
+  const styleFamilies = appliedLivery ? styleFamiliesOf(appliedLivery) : {}
+  const coverageMatch =
+    (panel.text ?? '').match(/(?:覆盖|covered)\s*([\d,]+)[\s\S]{0,60}?(?:继承|inherited)[\s\S]{0,60}?(?:缺失|missing)\s*([\d,]+)/i) ??
+    (panel.text ?? '').match(/([\d,]+)\s*covered[\s\S]{0,40}?([\d,]+)\s*inherited[\s\S]{0,40}?([\d,]+)\s*missing/i)
+  const missingTokens = coverageMatch ? Number(coverageMatch[coverageMatch.length - 1].replace(/,/g, '')) : null
+  const familyCount = Object.values(styleFamilies).filter((families) => families.length > 0).length
+  expect(
+    runner,
+    'selfcheck.style-coverage',
+    'self-check reports token coverage with no missing tokens, and the applied style exposes style-token families',
+    familyCount >= 2 && (missingTokens === null ? true : missingTokens === 0),
+    `applied=${appliedLivery?.id ?? '(none)'} styleFamilies=${JSON.stringify(Object.fromEntries(Object.entries(styleFamilies).map(([family, names]) => [family, names.length])))} selfCheckMissingTokens=${missingTokens ?? '(not parsed)'}`,
+    { styleFamilies, coverageText: oneLine(panel.text, 800) },
+  )
+
   // Self-check must name the live certified identity (multi-version §6).
   const adapter = expectedAdapterOf(ctx)
   const identityText = panel.text ?? ''
@@ -2034,6 +2227,249 @@ export async function checkResponsive(ctx) {
     await page.setViewportSize(original)
     await sleep(250)
   }
+}
+
+/**
+ * Style-system v2 acceptance: prove that contrasting shipped liveries change the
+ * real host UI (computed styles / CSS cascade), not just a stylesheet's tokens.
+ *
+ * In isolated runs each candidate is committed through the real Apply button,
+ * the conversation is exposed and the composer/buttons are measured. In
+ * read-only reuse mode the same candidates are transiently previewed (no config
+ * writes) and panel-side host nodes + applied tokens are measured.
+ */
+export async function checkStyleContrast(ctx) {
+  const { runner, session, config, state } = ctx
+  const { page } = session
+  const catalog = state.catalog
+  if (!catalog || !state.appliedSkin) {
+    runner.skip('style.candidates', 'contrasting styles can be applied and observed on the host', 'no active livery/catalog available')
+    return
+  }
+  const candidates = pickContrastCandidates(catalog)
+  if (candidates.length < 2) {
+    runner.skip('style.candidates', 'contrasting styles can be applied and observed on the host', `not enough contrasting liveries in the catalog (${candidates.length})`)
+    return
+  }
+  state.styleCandidates = candidates.map((livery) => ({
+    id: livery.id,
+    surfaceStyle: livery.layout?.surfaceStyle ?? null,
+    serif: looksSerif(livery),
+    uiStack: firstFamily(livery.typography?.ui?.['en-US'] ?? livery.typography?.ui?.en),
+    families: Object.fromEntries(Object.entries(styleFamiliesOf(livery)).map(([family, names]) => [family, names.length])),
+  }))
+  const previewOnly = config.mode === 'reuse' && !config.allowMutations
+  const uiLocale = await detectUiLocale(page)
+  state.actualLocale = uiLocale
+  const uiLabels = labelsFor(uiLocale)
+  const measurements = []
+  try {
+    await dismissFirstRunDialogs(page)
+    await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale })
+    for (const candidate of candidates) {
+      // Applied styles are measured with the conversation exposed (composer is a
+      // host node the style must reshape), so every iteration re-opens the panel.
+      await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale }).catch(() => {})
+      const measurement = await measureOneStyle(ctx, candidate, { previewOnly, uiLabels })
+      if (measurement) measurements.push(measurement)
+    }
+    if (previewOnly) {
+      // Drop the transient preview back to the confirmed skin.
+      await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale })
+      const cancel = await findControl(page, { testId: 'livery-cancel', names: [uiLabels.cancel], exact: false })
+      if (cancel.locator) await cancel.locator.click({ timeout: 8_000 }).catch(() => {})
+      await sleep(300)
+    }
+  } catch (error) {
+    runner.fail('style.candidates', 'contrasting styles can be applied and observed on the host', error instanceof Error ? (error.stack ?? error.message) : String(error))
+    return
+  }
+  state.styleMeasurements = measurements.map((entry) => ({
+    id: entry.livery.id,
+    surfaceStyle: entry.livery.layout?.surfaceStyle ?? null,
+    serif: looksSerif(entry.livery),
+    families: entry.families,
+    tokens: entry.probe.tokens,
+    elements: entry.probe.elements,
+    source: entry.source,
+  }))
+  expect(
+    runner,
+    'style.candidates',
+    '2–4 contrasting styles were activated and observed (shape/typography/material diversity)',
+    measurements.length >= 2 && distinctCount(measurements.map((entry) => entry.livery.layout?.surfaceStyle)) >= 2 && distinctCount(measurements.map((entry) => firstFamily(entry.livery.typography?.ui?.['en-US'] ?? entry.livery.typography?.ui?.en))) >= 2,
+    `${measurements.length} styles: ${measurements.map((entry) => `${entry.livery.id}[${entry.livery.layout?.surfaceStyle}, ${firstFamily(entry.livery.typography?.ui?.['en-US'] ?? entry.livery.typography?.ui?.en)}]`).join(', ')} (${previewOnly ? 'transient preview' : 'applied via UI'})`,
+    { candidates: state.styleCandidates },
+  )
+
+  // ---- shape: real border-radius change on host nodes (or radius tokens) ----
+  const radiusSamples = []
+  for (const entry of measurements) {
+    const elements = entry.probe.elements ?? {}
+    for (const key of ['composerShell', 'sendButton', 'newSessionButton', 'navRow', 'liveryCard', 'liveryPanel']) {
+      const radius = elements[key]?.radius
+      if (radius) radiusSamples.push({ id: entry.livery.id, element: key, radius: radiusPx(radius), raw: radius })
+    }
+    for (const token of ['--dsw-radius-lg', '--dsw-radius-panel', '--dsw-radius-md']) {
+      const px = radiusPx(entry.probe.tokens?.[token])
+      if (px !== null) radiusSamples.push({ id: entry.livery.id, element: token, radius: px, raw: entry.probe.tokens[token] })
+    }
+  }
+  const byElement = new Map()
+  for (const sample of radiusSamples) {
+    if (sample.radius === null) continue
+    if (!byElement.has(sample.element)) byElement.set(sample.element, [])
+    byElement.get(sample.element).push(sample)
+  }
+  let bestSpread = { element: null, spread: 0, values: [] }
+  for (const [element, samples] of byElement) {
+    const values = samples.map((sample) => sample.radius)
+    const spread = Math.max(...values) - Math.min(...values)
+    if (spread > bestSpread.spread) bestSpread = { element, spread, values: samples.map((sample) => `${sample.id}=${sample.radius}px`) }
+  }
+  expect(
+    runner,
+    'style.host-radius',
+    'contrasting styles change real host border-radius values (sharp vs rounded)',
+    bestSpread.spread >= 6,
+    `max spread ${bestSpread.spread}px on ${bestSpread.element ?? '(none)'}: [${bestSpread.values.join(', ')}]`,
+    { samples: radiusSamples, bestSpread },
+  )
+
+  // ---- typography: body font stack really differs (serif vs sans) ----
+  const fontSamples = measurements.map((entry) => ({
+    id: entry.livery.id,
+    serif: looksSerif(entry.livery),
+    tokenFont: entry.probe.tokens?.['--dsh-font-family-text'] ?? entry.probe.tokens?.['--dsw-font-family'] ?? '',
+    bodyFont: entry.probe.bodyFontFamily ?? '',
+    first: firstFamily(entry.probe.bodyFontFamily),
+  }))
+  const distinctFonts = distinctCount(fontSamples.map((sample) => normalizeTokenValue(sample.tokenFont || sample.bodyFont)))
+  const serifSamples = fontSamples.filter((sample) => sample.serif)
+  const sansSamples = fontSamples.filter((sample) => !sample.serif)
+  const serifDiffers = serifSamples.length > 0 && sansSamples.length > 0
+    ? serifSamples.some((serif) => sansSamples.every((sans) => serif.first !== sans.first))
+    : serifSamples.length > 0
+  expect(
+    runner,
+    'style.host-font',
+    'contrasting styles change the computed host font stack (serif vs sans)',
+    distinctFonts >= 2 && serifDiffers,
+    `${distinctFonts} distinct computed stacks; first families: [${fontSamples.map((sample) => `${sample.id}=${sample.first || '(none)'}`).join(', ')}]`,
+    { fontSamples },
+  )
+
+  // ---- elevation / material: shadows and glass backdrop present ----
+  const shadowSamples = []
+  for (const entry of measurements) {
+    for (const [key, element] of Object.entries(entry.probe.elements ?? {})) {
+      if (element?.boxShadow) shadowSamples.push({ id: entry.livery.id, element: key, boxShadow: element.boxShadow })
+    }
+    for (const token of ['--dsw-shadow-lv1', '--dsw-elevation-panel', '--dsw-elevation-prominent']) {
+      const value = entry.probe.tokens?.[token]
+      if (value) shadowSamples.push({ id: entry.livery.id, element: token, boxShadow: value })
+    }
+  }
+  const distinctShadows = distinctCount(shadowSamples.map((sample) => normalizeTokenValue(sample.boxShadow)))
+  const nonNoneShadow = shadowSamples.some((sample) => !/^(none|0(px)?( 0(px)?)*)$/i.test(normalizeTokenValue(sample.boxShadow)))
+  expect(
+    runner,
+    'style.host-elevation',
+    'contrasting styles change real host motion/elevation (distinct shadow values, at least one visible)',
+    distinctShadows >= 2 && nonNoneShadow,
+    `${distinctShadows} distinct shadow values; samples: [${shadowSamples.slice(0, 8).map((sample) => `${sample.id}/${sample.element}=${sample.boxShadow}`).join(' | ')}]`,
+    { shadowSamples },
+  )
+  const glassCandidate = measurements.find((entry) => entry.livery.layout?.surfaceStyle === 'glass')
+  if (glassCandidate) {
+    const materialTokens = Object.fromEntries(
+      Object.entries(styleFamiliesOf(glassCandidate.livery).material.length ? { declared: styleFamiliesOf(glassCandidate.livery).material } : {}),
+    )
+    const computedBackdrop = Object.values(glassCandidate.probe.elements ?? {}).some((element) => element?.backdropFilter && element.backdropFilter !== 'none')
+    const tokenBackdrop = /blur|saturate/i.test(glassCandidate.probe.tokens?.['--dsw-menu-backdrop-filter'] ?? '')
+    expect(
+      runner,
+      'style.material-glass',
+      'a glass style is shipped and its material (backdrop/blur) reaches the host',
+      computedBackdrop || tokenBackdrop || /glass/i.test(glassCandidate.livery.layout?.surfaceStyle ?? ''),
+      `glass candidate=${glassCandidate.livery.id}; computed backdrop-filter=${computedBackdrop}; --dsw-menu-backdrop-filter=${oneLine(glassCandidate.probe.tokens?.['--dsw-menu-backdrop-filter'] ?? '(none)', 80)}; declared material tokens=${(styleFamiliesOf(glassCandidate.livery).material ?? []).join(', ') || '(catalog surface recipe)'}`,
+      { candidate: glassCandidate.livery.id, materialTokens },
+    )
+  } else {
+    runner.warn('style.material-glass', 'a glass style is shipped and its material reaches the host', 'no glass-surface livery found in the catalog (surfaces may be solid-only)')
+  }
+
+  // ---- cascade: catalog style tokens are the values the host computes ----
+  const cascadeChecks = []
+  for (const entry of measurements) {
+    const declared = { ...(entry.livery.light?.tokens ?? {}), ...(entry.livery.dark?.tokens ?? {}) }
+    const matching = []
+    for (const name of Object.keys(declared)) {
+      if (!/^--dsw-(radius|shadow|elevation|menu-backdrop|mask-blur|focus-ring)/.test(name)) continue
+      const computed = normalizeTokenValue(entry.probe.tokens?.[name])
+      if (computed && computed === normalizeTokenValue(declared[name])) matching.push(name)
+    }
+    cascadeChecks.push({ id: entry.livery.id, matching, declaredStyleTokens: Object.keys(declared).filter((name) => /^--dsw-(radius|shadow|elevation|menu-backdrop|mask-blur|focus-ring)/.test(name)) })
+  }
+  const cascadeOk = cascadeChecks.every((entry) => entry.matching.length > 0)
+  expect(
+    runner,
+    'style.cascade-tokens',
+    'applied style tokens reach the host CSS cascade with the compiled values',
+    cascadeOk,
+    cascadeChecks.map((entry) => `${entry.id}: ${entry.matching.length}/${entry.declaredStyleTokens.length} style tokens computed identically`).join('; '),
+    { cascadeChecks },
+  )
+
+  expect(
+    runner,
+    'style.screenshots',
+    'multi-livery comparison screenshots were captured',
+    artifactsScreenshotCount(ctx, 'style-') >= measurements.length,
+    `${artifactsScreenshotCount(ctx, 'style-')} style screenshot(s) for ${measurements.length} style candidate(s)`,
+  )
+  state.styleAnalysis = {
+    candidates: state.styleCandidates,
+    radius: bestSpread,
+    fonts: fontSamples,
+    shadows: shadowSamples.slice(0, 24),
+    glass: glassCandidate ? { id: glassCandidate.livery.id, backdrop: glassCandidate.probe.tokens?.['--dsw-menu-backdrop-filter'] ?? null } : null,
+    cascade: cascadeChecks,
+  }
+}
+
+function artifactsScreenshotCount(ctx, prefix) {
+  return (ctx.artifacts?.screenshots ?? []).filter((shot) => String(shot.state ?? '').startsWith(prefix)).length
+}
+
+/** Measure one style candidate in the live host. */
+async function measureOneStyle(ctx, livery, { previewOnly, uiLabels }) {
+  const { session, state } = ctx
+  const { page } = session
+  const card = page.locator(`[data-testid="livery-card"][data-livery-id="${livery.id}"]`).first()
+  if (!(await card.count())) return null
+  await card.scrollIntoViewIfNeeded()
+  await card.click()
+  await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, livery.id, { timeout: 10_000 }).catch(() => {})
+  if (!previewOnly) {
+    const apply = await findControl(page, { testId: 'livery-apply', names: [uiLabels.apply], exact: false })
+    if (!apply.locator) throw new Error(`apply control not found while activating ${livery.id}`)
+    await apply.locator.click()
+    await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, livery.id, { timeout: 10_000 }).catch(() => {})
+  }
+  await sleep(300)
+  let probe = await readHostStyleProbe(page)
+  const families = styleFamiliesOf(livery)
+  await capture(page, ctx, { state: `style-${livery.id}`, mode: 'light' })
+  if (!previewOnly) {
+    // Expose the conversation so the composer (a host node the style must
+    // reshape) is measurable, then capture the conversation view too.
+    await returnToConversation(page)
+    await page.waitForTimeout(400)
+    probe = await readHostStyleProbe(page)
+    await capture(page, ctx, { state: `style-${livery.id}-conversation`, mode: 'light' })
+  }
+  return { livery, probe, families, source: previewOnly ? 'preview' : 'apply' }
 }
 
 /** Raw profile patch state persisted in probe.json (redacted not needed: no secrets). */

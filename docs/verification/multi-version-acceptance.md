@@ -7,7 +7,7 @@ surfaces), neither of which is claimed.**
 
 | Item | Value |
 |---|---|
-| Artifact | `dsh-livery-0.2.2.tgz` · sha256 `74725a779f0fd8d88b11fac2688a3fb587185e19840ac8398aef3830861f9c17` · 258,064 B · 107 files |
+| Artifact | `dsh-livery-0.3.0.tgz` · sha256 `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950` · 527,683 B · 233 files |
 | Certified hosts | `0.2.0-rc.2`, `0.2.1-rc.2` (npm/CLI) and `0.2.1-rc.3` (Desktop app.asar runtime) |
 | Adapters | `dsh-0.2.0-rc.2-r1`, `dsh-0.2.1-rc.2-r1`, `dsh-0.2.1-rc.3-r1` |
 | Catalog profiles | `sha256:4c5ee1a2…` (0.2.0 only), `sha256:060e80ef…` (0.2.1-rc.2 + rc.3, byte-identical) |
@@ -192,3 +192,40 @@ main-page left-sidebar plugin navigation (same pattern as 插件 / 自动化任�
   **22/0/1** (native chrome still explicitly unverified).
 - Repo gates: tsc 0, vitest 547/547, 92 generated files / 2 profiles, all audits,
   loader-ABI 12/12, adapter/pack/lint green; client bundle 20,927 B gzip.
+
+
+---
+
+# Round 5 — 24-style visual system + 视觉风格/Visual Style rename
+
+User-directed round: the entry was renamed and the gallery grew from 10 to 24
+liveries designed across five axes (palette, typography, module shape,
+elevation/material, borders). Contract surface unchanged (same three certified
+hosts, same six hashes; all changes are token-level style data inside the frozen
+renderer).
+
+- Package: `dsh-livery-0.3.0.tgz` sha256 `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950` (527,683 bytes, 233 files).
+- Entry rename: zh **视觉风格** / en **Visual Style** for sidebar row, page title,
+  Settings fallback and supporting copy (all internal ids/testids unchanged).
+- Gallery: 24 liveries/profile (48 across the two catalog profiles), 96 preview
+  SVGs/profile; 10 retuned originals + 12 open-source-inspired palettes (MIT/
+  Apache-2.0 attributions in NOTICE.md) + 2 original Chinese-aesthetic designs;
+  6 new tags; 10 local-only font stacks, 9 metric profiles, 9 surface styles.
+- Design system facts: per-livery CSS 8,134–11,778 B (12,288 B cap); contrast
+  2,832 assertions/profile, 0 failures; style-token audit 345 tokens/profile, 0
+  violations (shape 24, elevation 24, border 12, material 2).
+- Certified matrix on the shipped sha: Web 0.2.1-rc.2 isolated **139 / 0 / 3 / 2**;
+  real-web clone **140 / 0 / 3 / 3**; Desktop 0.2.1-rc.3 packaged carrier
+  **139 / 0 / 3 / 2**; Desktop 0.2.1-rc.3 real Electron renderer **22 / 0 / 1**
+  (native chrome/DPI/vibrancy still explicitly unverified).
+- Real host-level style differences proven by the harness after Apply: composer
+  border-radius 10 px (graphite sharp) / 32 px (catppuccin rounded) / 18 px
+  (rice-paper paper) / 36 px (tokyo-night glass); body font stack PingFang SC
+  sans vs Songti SC serif; 10 distinct computed shadow values; glass
+  `blur(40px) saturate(150%)` material reaches the host; catalog→cascade token
+  equality verified per style. Screenshots:
+  `artifacts/acceptance/pkg-0.3.0/`, gallery contact sheets under
+  `artifacts/acceptance/style-gallery/`.
+- Live user Web Profile check with this package: 24-card gallery, four styles
+  applied through the real UI with the above differences, stock restored
+  afterwards (`artifacts/acceptance/real-web-styles/`).

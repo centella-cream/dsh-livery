@@ -159,3 +159,25 @@ The Livery entry now lives in the left sidebar above 工作区 (皮肤/Livery, o
 instead of the Settings page; the Settings section is not registered on these hosts
 and only serves as the pre-`0.1.5-alpha.2` fallback. Evidence and capability history:
 [sidebar-navigation.md](sidebar-navigation.md).
+
+
+---
+
+# Round 5 — 24 styles + 视觉风格/Visual Style
+
+`dsh-livery-0.3.0.tgz` sha256 `f06ee765bb10363fb0ed6008e4667cc672e6e8c4c7ad4dba11da32b49e6ad950` · plugin 0.3.0 · client 21,106 B gzip ·
+host 2.5 MB raw / 295 KB gzip.
+
+| Host | Profile / runtime | Result | Evidence |
+|---|---|---|---|
+| 0.2.1-rc.2 | Web/Chrome, isolated full | **139 pass / 0 fail / 3 skip / 2 warn** | `artifacts/acceptance/pkg-0.3.0/web-0.2.1-rc.2/` |
+| 0.2.1-rc.2 | Web/Chrome, real Web Profile clone | **140 / 0 / 3 / 3** | `artifacts/acceptance/pkg-0.3.0/web-real-profile-clone/` |
+| 0.2.1-rc.3 | Desktop packaged runtime, web carrier | **139 / 0 / 3 / 2** | `artifacts/acceptance/pkg-0.3.0/web-carrier-0.2.1-rc.3/` |
+| 0.2.1-rc.3 | Desktop Profile, real Electron renderer | **22 / 0 / 1** (native chrome unverified) | `artifacts/acceptance/pkg-0.3.0/desktop-0.2.1-rc.3/` |
+| 0.2.1-rc.2 | User's real `~/.dsh/profiles/web` (live QA) | **24-card gallery, 4 styles applied + stock restored** | `artifacts/acceptance/real-web-styles/` |
+
+The Livery entry is now 视觉风格 / Visual Style in the left sidebar above 工作区;
+24 styles differ in palette, local font stack, module radii/shape, elevation and
+glass/paper material. Full numbers and honest scope:
+[style-system-0.3.0.md](style-system-0.3.0.md) (verifier) and the round-5 section
+of [multi-version-acceptance.md](multi-version-acceptance.md).
