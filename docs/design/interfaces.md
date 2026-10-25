@@ -283,6 +283,15 @@ Round-9 wallpaper additions (unreleased 0.1.0):
   (`dsh-livery.page-tab.v1`), so navigating away and back restores the wallpaper
   tab; explicit `initialTab` still wins.
 
+Recent wallpapers (round 13, unreleased 0.1.0): applied online wallpapers are
+recorded in `localStorage['dsh-livery.wallpaper.recent.v1']` (https-only, dedupe by
+URL, newest first, max 24) and rendered in an optional `wallpaper-recent-card`
+(after the online card, hidden when empty) with `wallpaper-recent-item`
+(`data-url`, `data-cached`), thumbnails and `wallpaper-recent-clear`. Images are
+cached best-effort in the existing IndexedDB store under `remote-<fnv1a>` keys;
+clicking an item re-applies it (cached blob when available, URL otherwise).
+Browser-local only; clearing history removes records and cached blobs.
+
 Compatibility mode: when the host payload has `compat: true` (see §4), the panel shows
 an unverified-compat notice/tag and the self-check adds `compat.mode`; applied styles
 come from the newest certified contract.
@@ -297,7 +306,7 @@ Presentation-only responsive card layout; all behaviour/testids from §6b remain
   with `livery-actions-card` + self-check card.
 - Wallpaper page: `wallpaper-layout` grid → main `wallpaper-hero`
   (`wallpaper-hero-preview`/`wallpaper-hero-empty`), `wallpaper-online-card`,
-  `wallpaper-custom-card`; rail
+  optional `wallpaper-recent-card`, `wallpaper-custom-card`; rail
   `wallpaper-effects-card` (+`wallpaper-effects-grid`; sliders bounded ≤220 px,
   fixed value badges) and `wallpaper-builtins-card`.
 - Cards share `.livery-ui-card` (token-derived surface, 1 px border, 14 px radius,

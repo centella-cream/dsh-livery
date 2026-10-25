@@ -1,10 +1,10 @@
-# DSH Visual Studio（dsh-livery）
+# DSH Livery（dsh-livery）
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#宿主支持与版本策略)
 
-**DeepSeek Harness 的视觉工作室**：24 套受契约约束的风格、带在线图片搜索和虚化/磨砂效果的壁纸工作室，
+**DeepSeek Harness 的视觉风格插件**：24 套受契约约束的风格、带在线图片搜索和虚化/磨砂效果的壁纸工作室，
 以及按风格分组的画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
 [English](README.md) · [中文](README.zh-CN.md)
@@ -14,9 +14,9 @@
 ## 为什么不是“又一个皮肤”
 
 普通皮肤插件常常接管宿主主题、注册自己的主题 id、绘制窗口装饰、注入大范围 CSS，这些做法也正是
-DSH 更新后容易失效的原因。DSH Visual Studio 选择了相反的取舍：
+DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 
-| 普通皮肤插件 | DSH Visual Studio |
+| 普通皮肤插件 | DSH Livery |
 |---|---|
 | 接管 `ctx.theme`、注册主题、调用 `setTheme` | 每套风格只输出一组作用域内的语义 token；从不注册或拥有宿主主题 |
 | 绘制窗口装饰（标题栏、浮层） | 不绘制窗口装饰，窗口归宿主所有 |
@@ -151,7 +151,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # 轻量封装
 ## 文档
 
 - [文档索引](docs/README.md)
-- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本与兼容](docs/design/multi-version.md) · [视觉工作室 v2](docs/design/visual-studio-v2.md) · [实现计划](docs/design/implementation-plan.md)
+- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本与兼容](docs/design/multi-version.md) · [视觉系统 v2](docs/design/visual-system-v2.md) · [实现计划](docs/design/implementation-plan.md)
 - 研究：[宿主契约](docs/research/host-contract.md) · [客户端契约](docs/research/client-contract.md) · [设计参考](docs/research/design-references.md)
 - [验收总结](docs/verification.md)
 

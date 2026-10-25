@@ -161,7 +161,7 @@ describe('settings page server render', () => {
 
   it('renders human About copy and keeps ids in the diagnostics only', () => {
     const html = render(READY)
-    expect(html).toContain('DSH Visual Studio')
+    expect(html).toContain('DSH Livery')
     expect(html).toContain(`Certified for DeepSeek Harness ${TEST_ADAPTER.hostVersion}`)
     expect(html).toContain('Gallery previews are generated from fixed scenes')
     expect(html).not.toContain('Contract ')

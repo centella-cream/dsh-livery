@@ -1,4 +1,4 @@
-# Visual Studio (unreleased 0.1.0) — compatibility, wallpaper, gallery UX (round 7)
+# DSH Livery visual system (unreleased 0.1.0) — compatibility, wallpaper, gallery UX (rounds 7-13)
 
 Frozen design for the user-feedback round. Three product changes plus a README
 repositioning. UI/copy may evolve; the contracts below are what the parallel work
@@ -77,7 +77,7 @@ Replace the 24-card flat grid + 16 always-visible tag chips with:
 
 ## 4. README / positioning
 
-Rewrite EN + zh README around **DSH Visual Studio** (视觉工作室): what it adds over
+Rewrite EN + zh README around the DSH Livery visual styling feature set: what it adds over
 a generic skin: a 24-style visual system, a wallpaper studio with online search and
 effects, the certified compatibility policy, token-only/zero-takeover safety, and the
 verification matrix with its known limitations. Explicitly explain "不接管主题 ≠ 普通皮肤" and the
@@ -145,7 +145,7 @@ User feedback:
 
 1. **About/footer copy is machine-speak.** Replace the concatenated jargon
    ("契约 … 适配器 … 预览来自固定的契约场景，不是宿主实拍截图") with human
-   sentences, e.g. “DSH Visual Studio 0.1.0，已适配 DeepSeek Harness
+   sentences, e.g. “DSH Livery 0.1.0，已适配 DeepSeek Harness
    <hostVersion>。” + “画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面
    截图。” Keep technical ids available in the copyable self-check/diagnostics only.
 2. **Typography is fragmented across modules.** Introduce one typography primitive
@@ -162,3 +162,23 @@ User feedback:
    Openverse search remains for explicit queries). Keep uploads/URL/builtins/
    effects/hero unchanged; keep all other acceptance testids where possible.
 5. Version unchanged (unreleased 0.1.0); one-line commit.
+
+## 8. Round 13 — product name and recent-wallpaper cache (unreleased 0.1.0)
+
+1. **Product name.** The visible name is **DSH Livery** again (package `dsh-livery`);
+   An earlier editorial label was used during the README repositioning and is not the
+   project name. Update footer (`DSH Livery <version>`), diagnostics header and
+   README/docs references; describe the feature set plainly, without a separate
+   product name.
+2. **Recent wallpapers.** Every applied **online** wallpaper is remembered locally
+   and shown in a new “最近使用 / Recent wallpapers” card on the wallpaper page:
+   thumbnail, title/source, click to re-apply, clear-history action. Persist in
+   `localStorage['dsh-livery.wallpaper.recent.v1']` (max 24, newest first, dedupe
+   by URL, corrupt records ignored). While adding an entry, try to cache the remote
+   image blob in the existing IndexedDB store (`remote-<hash(url)>`) so re-applying
+   can use the local copy when available; CORS/network failures are non-fatal and
+   fall back to the original URL (browser cache may still serve it). The cache is
+   browser-local, never uploaded, and independent of the DSH profile.
+   Testids: `wallpaper-recent-card`, `wallpaper-recent-item` (`data-url`),
+   `wallpaper-recent-clear`; cached status may be exposed as `data-cached`.
+3. Version stays unreleased `0.1.0`; one-line commit.

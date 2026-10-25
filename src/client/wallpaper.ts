@@ -201,11 +201,13 @@ export function cssUrlValue(url: string): string {
  * @param selection - selected wallpaper.
  * @returns the CSS value, or undefined for "no wallpaper".
  */
-export function backgroundImageValue(selection: WallpaperSelection, uploadUrl?: string): string | undefined {
+export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?: string): string | undefined {
   if (selection === undefined) return undefined
   if (selection.kind === 'builtin') return BUILTIN_WALLPAPERS[selection.id]
-  if (selection.kind === 'upload') return uploadUrl === undefined ? undefined : cssUrlValue(uploadUrl)
-  return cssUrlValue(selection.url)
+  if (selection.kind === 'upload') return overrideUrl === undefined ? undefined : cssUrlValue(overrideUrl)
+  // A locally cached (object URL) copy wins for online wallpapers; otherwise use
+  // the persisted remote URL.
+  return overrideUrl === undefined ? cssUrlValue(selection.url) : cssUrlValue(overrideUrl)
 }
 
 /**
@@ -242,6 +244,8 @@ export interface WallpaperCssInput {
   readonly tokens?: WallpaperTokenContext | undefined
   /** Fresh object URL for an `upload` selection (validated local blob URL). */
   readonly uploadUrl?: string | undefined
+  /** Local cached object URL for a remote selection (best-effort disk cache). */
+  readonly imageOverride?: string | undefined
 }
 
 /**
@@ -270,7 +274,7 @@ function tokenOverrides(selector: string, tokens: TokenMap, frost: number): stri
  * @returns the stylesheet text ('' clears the layer).
  */
 export function buildWallpaperCss(input: WallpaperCssInput): string {
-  const image = backgroundImageValue(input.selection, input.uploadUrl)
+  const image = backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
   if (image === undefined) return ''
   const { blur, dim, atmosphere } = input.effects
   const rules: string[] = [

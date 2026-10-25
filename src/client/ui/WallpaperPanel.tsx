@@ -21,6 +21,13 @@ import {
 } from '../wallpaper.js'
 import type { BuiltinWallpaperId, WallpaperEffects, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperUrlProblem } from '../wallpaper.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
+import {
+  clearRecentWallpapers,
+  readRecentWallpapers,
+  rememberRecentWallpaper,
+} from '../wallpaper/history.js'
+import type { RecentWallpaperEntry } from '../wallpaper/history.js'
+import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
@@ -99,6 +106,13 @@ export interface WallpaperPanelProps {
 export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const controller = getWallpaperController()
   const imageStore = useMemo(() => createIndexedDbImageStore(), [])
+  const recentStorage = useMemo(() => {
+    try {
+      return typeof localStorage === 'undefined' ? undefined : localStorage
+    } catch {
+      return undefined
+    }
+  }, [])
   const state = useSyncExternalStore(
     listener => controller?.subscribe(listener) ?? (() => undefined),
     () => controller?.getSnapshot() ?? EMPTY,
@@ -111,6 +125,8 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const [dragOver, setDragOver] = useState(false)
   const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
   const [attribution, setAttribution] = useState<Attribution | undefined>(undefined)
+  const [recent, setRecent] = useState<readonly RecentWallpaperEntry[]>(() => readRecentWallpapers(recentStorage))
+  const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
   const mounted = useRef(true)
   const seq = useRef(0)
   const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
@@ -154,6 +170,98 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     else void run('openverse', online.query, Math.max(1, online.page))
   }
 
+  const displayUrlFor = (entry: RecentWallpaperEntry): string =>
+    cachedUrls[entry.url] ?? entry.thumbnail ?? entry.url
+
+  const rememberBlob = (url: string, blob: Blob): void => {
+    try {
+      if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return
+      const objectUrl = URL.createObjectURL(blob)
+      setCachedUrls(previous => {
+        const old = previous[url]
+        if (old !== undefined && old !== objectUrl) URL.revokeObjectURL(old)
+        return { ...previous, [url]: objectUrl }
+      })
+    } catch {
+      /* display cache is best effort */
+    }
+  }
+
+  // Best-effort disk cache + history entry whenever an online wallpaper is chosen.
+  const rememberRemote = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
+    setRecent(rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() }))
+    void (async () => {
+      const result = await cacheRemoteImage(entry.url, { images: imageStore })
+      if (!result.ok) return
+      if (mounted.current) rememberBlob(entry.url, result.record.blob)
+      controller?.setSelection({ kind: 'remote', url: entry.url }, result.record.blob)
+    })()
+  }
+
+  const reapplyRecent = (entry: RecentWallpaperEntry): void => {
+    controller?.setSelection({ kind: 'remote', url: entry.url })
+    setAttribution({
+      title: entry.title ?? t('wallpaper.customSelected'),
+      creator: entry.creator ?? '',
+      license: entry.license ?? '',
+      source: entry.source ?? '',
+      context: 'online',
+    })
+    setRecent(rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() }))
+    void (async () => {
+      const record = await loadCachedRemote(entry.url, imageStore)
+      if (record !== undefined) {
+        if (mounted.current) rememberBlob(entry.url, record.blob)
+        controller?.setSelection({ kind: 'remote', url: entry.url }, record.blob)
+        return
+      }
+      void cacheRemoteImage(entry.url, { images: imageStore }).then(result => {
+        if (result.ok && mounted.current) rememberBlob(entry.url, result.record.blob)
+      })
+    })()
+  }
+
+  const clearRecent = (): void => {
+    const entries = recent
+    clearRecentWallpapers(recentStorage)
+    setRecent([])
+    for (const entry of entries) void deleteCachedRemote(entry.url, imageStore)
+    setCachedUrls(previous => {
+      for (const objectUrl of Object.values(previous)) {
+        try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+      }
+      return {}
+    })
+  }
+
+  // Hydrate cached thumbnails for the recent list.
+  useEffect(() => {
+    if (recent.length === 0) return
+    let cancelled = false
+    const created: string[] = []
+    void (async () => {
+      for (const entry of recent) {
+        if (cachedUrls[entry.url] !== undefined) continue
+        const record = await loadCachedRemote(entry.url, imageStore)
+        if (cancelled || record === undefined) continue
+        try {
+          const objectUrl = URL.createObjectURL(record.blob)
+          created.push(objectUrl)
+          setCachedUrls(previous => previous[entry.url] === undefined ? { ...previous, [entry.url]: objectUrl } : previous)
+        } catch {
+          /* thumbnails fall back to remote URLs */
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+      for (const objectUrl of created) {
+        try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recent.length])
+
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
     controller?.setSelection({ kind: 'builtin', id })
     setAttribution(undefined)
@@ -170,6 +278,14 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       context: 'online',
     })
     setProblem(undefined)
+    rememberRemote({
+      url: result.url,
+      thumbnail: result.thumbnail,
+      title: result.title,
+      creator: result.creator,
+      license: result.license,
+      source: result.source,
+    })
   }
   const applyUrl = (): void => {
     const check = validateWallpaperUrl(urlText)
@@ -179,10 +295,12 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     }
     setProblem(undefined)
     controller?.setSelection({ kind: 'remote', url: check.url })
+    const source = new URL(check.url).hostname
     setAttribution({
       title: t('wallpaper.customSelected'), creator: '', license: '',
-      source: new URL(check.url).hostname, context: 'custom',
+      source, context: 'custom',
     })
+    rememberRemote({ url: check.url, title: t('wallpaper.customSelected'), source })
   }
   const applyUpload = async (file: File): Promise<void> => {
     const check = validateUploadFile(file)
@@ -365,6 +483,36 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
               <p className="livery-ui-card__hint" data-testid="wallpaper-attribution">{attributionLine}</p>
             )}
           </section>
+
+          {recent.length > 0 && (
+            <section className="livery-ui-card" data-testid="wallpaper-recent-card">
+              <div className="livery-ui-card__head">
+                <h3 className="livery-ui-card__title">{t('wallpaper.recentTitle')}</h3>
+                <Button variant="ghost" size="sm" data-testid="wallpaper-recent-clear" onClick={clearRecent}>
+                  {t('wallpaper.recentClear')}
+                </Button>
+              </div>
+              <p className="livery-ui-card__hint">{t('wallpaper.recentHint')}</p>
+              <div className="wallpaper-recent-grid">
+                {recent.map(entry => (
+                  <button
+                    key={entry.url}
+                    type="button"
+                    className="wallpaper-recent-item"
+                    data-testid="wallpaper-recent-item"
+                    data-url={entry.url}
+                    data-cached={cachedUrls[entry.url] !== undefined ? 'true' : 'false'}
+                    aria-label={[entry.title ?? entry.source ?? entry.url, cachedUrls[entry.url] !== undefined ? t('wallpaper.recentCached') : ''].filter(Boolean).join(' · ')}
+                    onClick={() => reapplyRecent(entry)}
+                  >
+                    <img className="wallpaper-recent-thumb" src={displayUrlFor(entry)} alt="" loading="lazy" decoding="async" />
+                    <span className="wallpaper-recent-title">{entry.title ?? entry.source ?? entry.url}</span>
+                    {entry.source !== undefined && <span className="wallpaper-recent-source">{entry.source}</span>}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="livery-ui-card" data-testid="wallpaper-custom-card">
             <div className="livery-ui-card__head">

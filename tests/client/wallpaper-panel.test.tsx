@@ -25,6 +25,7 @@ import { LiveryWorkspace } from '../../src/client/ui/LiveryWorkspace.js'
 import type { LiveryWorkspaceProps } from '../../src/client/ui/LiveryWorkspace.js'
 import { WallpaperPanel } from '../../src/client/ui/WallpaperPanel.js'
 import { createAutoRandomLoader } from '../../src/client/ui/online-auto.js'
+import { RECENT_WALLPAPER_KEY } from '../../src/client/wallpaper/history.js'
 import type { WallpaperPanelProps } from '../../src/client/ui/WallpaperPanel.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
@@ -224,6 +225,43 @@ describe('online auto batch', () => {
     loader.trigger()
     loader.trigger()
     expect(calls).toEqual([4])
+  })
+})
+
+describe('recent wallpapers card', () => {
+  it('shows stored recent online wallpapers with thumbnails and clear action', () => {
+    const store = {
+      value: JSON.stringify([
+        { url: 'https://cdn.example/a.jpg', thumbnail: 'https://cdn.example/a-t.jpg', title: 'Result A', source: 'openverse.org', addedAt: 2 },
+        { url: 'https://cdn.example/b.jpg', title: 'Result B', source: 'picsum.photos', addedAt: 1 },
+      ]),
+      getItem(key: string): string | null { return key === RECENT_WALLPAPER_KEY ? this.value : null },
+      setItem(): void { /* no-op */ },
+      removeItem(): void { this.value = '' },
+    }
+    vi.stubGlobal('localStorage', store)
+    const html = renderPanel()
+    vi.unstubAllGlobals()
+    expect(html).toContain('data-testid="wallpaper-recent-card"')
+    expect(html.match(/data-testid="wallpaper-recent-item"/g)).toHaveLength(2)
+    expect(html).toContain('data-url="https://cdn.example/a.jpg"')
+    expect(html).toContain('data-cached="false"')
+    expect(html).toContain('data-testid="wallpaper-recent-clear"')
+    expect(html).toContain('src="https://cdn.example/a-t.jpg"')
+    expect(html).toContain('Recent wallpapers')
+    // Recent card sits after the online card and before the custom card.
+    const online = html.indexOf('data-testid="wallpaper-online-card"')
+    const recent = html.indexOf('data-testid="wallpaper-recent-card"')
+    const custom = html.indexOf('data-testid="wallpaper-custom-card"')
+    expect(online).toBeLessThan(recent)
+    expect(recent).toBeLessThan(custom)
+  })
+
+  it('hides the recent card when there is no history', () => {
+    vi.stubGlobal('localStorage', undefined)
+    const html = renderPanel()
+    vi.unstubAllGlobals()
+    expect(html).not.toContain('data-testid="wallpaper-recent-card"')
   })
 })
 

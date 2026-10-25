@@ -1070,6 +1070,15 @@ export async function readWallpaperState(page) {
       moreButton: Boolean(document.querySelector('[data-testid="wallpaper-library-more"]')),
       uploadAccept: document.querySelector('[data-testid="wallpaper-upload"]')?.getAttribute('accept') ?? null,
       uploadError: (document.querySelector('[data-testid="wallpaper-upload-error"]')?.textContent ?? '').trim(),
+      recentCard: {
+        present: document.querySelector('[data-testid="wallpaper-recent-card"]') !== null,
+        itemCount: document.querySelectorAll('[data-testid="wallpaper-recent-item"]').length,
+        items: [...document.querySelectorAll('[data-testid="wallpaper-recent-item"]')].map((item) => ({
+          url: item.getAttribute('data-url'),
+          cached: item.getAttribute('data-cached'),
+          label: item.getAttribute('aria-label'),
+        })),
+      },
       uploadSessionOnly: (() => {
         const hints = [...document.querySelectorAll('.livery-hint')].map((node) => (node.textContent ?? '').trim())
         return hints.some((text) => text.includes('IndexedDB') && text.includes('本次') )
@@ -1261,6 +1270,34 @@ export async function readAboutFooter(page) {
       gap: style.gap,
     }
   })
+}
+
+/** Read the keys currently stored in one IndexedDB object store (best effort). */
+export async function readIndexedDbKeys(page, { dbName = 'dsh-livery-wallpapers', storeName = 'images' } = {}) {
+  return page.evaluate(async ({ database, store }) => {
+    try {
+      const request = indexedDB.open(database)
+      const db = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error ?? new Error('open failed'))
+        request.onupgradeneeded = () => {
+          try { request.result.createObjectStore(store) } catch { /* exists */ }
+        }
+      })
+      try {
+        const tx = db.transaction(store, 'readonly')
+        const keysRequest = tx.objectStore(store).getAllKeys()
+        return await new Promise((resolve, reject) => {
+          keysRequest.onsuccess = () => resolve([...keysRequest.result])
+          keysRequest.onerror = () => reject(keysRequest.error ?? new Error('keys failed'))
+        })
+      } finally {
+        db.close()
+      }
+    } catch {
+      return []
+    }
+  }, { database: dbName, store: storeName }).catch(() => [])
 }
 
 /** Locate a control by data-testid and fall back to accessible names. */

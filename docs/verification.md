@@ -6,16 +6,18 @@ evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
 screenshots/probes are generated locally under `artifacts/` (not committed).
 
 Shipped artifact: `dsh-livery-0.1.0.tgz`
-sha256 `675b26bce2059c595286915c12b0b91a393260a2721f890bc4b0a8cd7073527a`
-(548,779 B).
+sha256 `2013f40c9fb9dfdff32a6db7c85ad2f61510f3086d92dc0c4049e3fc614b665d`
+(551,026 B). After the matrix run the tarball was repacked once for a README/docs-only
+change; `lib/index.js`, `lib/client.js` and all runtime assets are byte-identical to
+the accepted `45c8f217436d…` artifact, so the results below apply unchanged.
 
 ## Host matrix (release 0.1.0 — unreleased)
 
 | Target | Result | What it covers |
 |---|---|---|
-| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **219 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, visual-studio tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, search-first online card with one auto Picsum batch + explicit Openverse search/random/refresh/retry, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), round-10 card layout (two-column ≥1100px, stacked at 1024, bounded sliders, hero thumbnails, no overflow), round-11 human About footer + unified five-step typography, round-12 plain-language copy polish, preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
-| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **220 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel and the round-10 card layout checks; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
-| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **219 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
+| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **228 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, style/wallpaper page tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, search-first online card with one auto Picsum batch + explicit Openverse search/random/refresh/retry, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), round-10 card layout (two-column ≥1100px, stacked at 1024, bounded sliders, hero thumbnails, no overflow), round-11 human About footer + unified five-step typography, round-12 plain-language copy polish, round-13 DSH Livery naming + recent wallpapers, preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
+| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **229 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel and the round-10 card layout checks; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
+| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **228 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
 | DSH `0.2.1-rc.3`, Desktop Profile, real Electron renderer | **27 / 0 / 1** | real Electron app: boot graph, catalog identity, 6 family sections + tabs, 24 built-in wallpapers + atmosphere layer, preview-language tab, preview/apply/persist, relaunch boot payload, light/dark tokens, font hooks, self-check, sidebar entry |
 
 The package is **not released**; `0.1.0` is the unreleased version line. Earlier
@@ -71,7 +73,7 @@ releases.
   either width; screenshots `layout-style-1440/1024` and
   `layout-wallpaper-1440/1024` per Web target.
 - **Round-11 copy and type system (measured at 1440×900):** the About footer
-  renders **two separated lines** — `DSH Visual Studio 0.1.0 · 已适配 DeepSeek
+  renders **two separated lines** — `DSH Livery 0.1.0 · 已适配 DeepSeek
   Harness <hostVersion>` and the preview note — with a flex-column layout
   (tops 333–373 / 377–413), no contract hash/adapter id/jargon in the footer,
   while copied diagnostics still carry the adapter id (`dsh-0.2.1-rc.2-r1` /
@@ -106,6 +108,21 @@ releases.
   sizes remain exactly {11,12,13,15} on both pages; no stale library/category
   hooks; layout, online-card auto-random batch and all round-9/10/11 behaviour
   are unchanged.
+- **Round-13 product name + recent wallpapers:** the visible product name is
+  **DSH Livery** again — footer line 1 is `DSH Livery 0.1.0 · 已适配 DeepSeek
+  Harness <hostVersion>`, the copied diagnostics header is
+  `DSH Livery（dsh-livery）诊断信息`, and no stale old-product-name string appears
+  anywhere in the visible UI; engineering ids stay in diagnostics. The new
+  **最近使用 / Recent wallpapers** card is hidden while history is empty, then
+  appears after applying wallpapers: entries are newest-first (`data-url`), with
+  `data-cached="true"` when the best-effort IndexedDB image cache succeeded
+  (2 entries after two online results, 3 after a custom https wallpaper, 4 after
+  a cache-failure URL; reload keeps the card and cached thumbnails). Clicking an
+  entry re-applies it (cached blob layer is legitimate) and moves it to newest;
+  a failed image fetch still records the entry with `data-cached="false"` and
+  re-applies via its original URL. Clear removes the card, the
+  `dsh-livery.wallpaper.recent.v1` localStorage record and the remote image-cache
+  keys (measured 3→0). No host config/boot changes.
 - **Wallpaper studio** (client-only). **24 deterministic CSS-only built-ins**,
   blur 0–24 px, dim 0–70 %, frost 0–100 %, global atmosphere 0–100 %, custom
   https-only URL validation, local image upload (JPEG/PNG/WebP/AVIF, ≤10 MiB,
@@ -160,9 +177,9 @@ releases.
 - `tsc --noEmit` clean, `vitest run` 661 tests green.
 - `liveries:check`: 24 styles across 2 catalog profiles.
 - Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
-- Per-livery CSS under the 12 KiB hard cap; **client gzip 34,610 B** (48 KiB
-  budget; harness-measured served bundle 34,748–34,751 B) and **client CSS
-  12,123 B** (12 KiB cap); **host gzip 295,747 B**.
+- Per-livery CSS under the 12 KiB hard cap; **client gzip 36,333 B** (48 KiB
+  budget; harness-measured served bundle 36,475–36,477 B) and **client CSS
+  12,880 B** (14 KiB cap); **host gzip 295,747 B**.
 - Loader ABI 12/12 checks; adapter allowlist, pack and lint checks green.
 
 ## Development-round evidence (not releases)

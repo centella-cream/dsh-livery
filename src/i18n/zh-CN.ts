@@ -33,7 +33,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'current.previewNotice': '这只是预览，应用后才会保存。',
 
   // Page tabs.
-  'tab.label': '视觉工作室标签',
+  'tab.label': '页面标签',
   'tab.style': '视觉风格',
   'tab.wallpaper': '壁纸',
 
@@ -114,6 +114,11 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.currentEmpty': '还没有选择壁纸。可以从在线壁纸、内置壁纸或上传图片开始。',
   'wallpaper.builtinKind': '内置设计',
   'layout.currentStyle': '当前风格',
+  'wallpaper.recentTitle': '最近使用',
+  'wallpaper.recentHint': '最近用过的在线壁纸会显示在这里。',
+  'wallpaper.recentEmpty': '还没有用过的在线壁纸。',
+  'wallpaper.recentClear': '清空历史',
+  'wallpaper.recentCached': '已缓存',
   // Search and tag filters.
   'search.label': '搜索视觉风格',
   'search.placeholder': '按名称、ID 或标签搜索',
@@ -245,7 +250,7 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // About footer.
   'about.title': '关于',
-  'about.plugin': 'DSH Visual Studio {version}',
+  'about.plugin': 'DSH Livery {version}',
   'about.certified': '已适配 DeepSeek Harness {hostVersion}',
   'about.note': '画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。',
 
@@ -295,7 +300,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'hint.keyboard': '用方向键切换视觉风格，按回车预览。',
 
   // Diagnostics report.
-  'diag.header': 'DSH Visual Studio（dsh-livery）诊断信息',
+  'diag.header': 'DSH Livery（dsh-livery）诊断信息',
   'diag.environment': '环境',
   'diag.boot': '启动信息',
   'diag.catalog': '目录',

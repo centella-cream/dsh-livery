@@ -128,4 +128,9 @@ export const CLIENT_CSS = `
 .livery-search :is(input,textarea){font-size:var(--lw-fs-body)}
 .livery-about{display:flex;flex-direction:column;gap:4px}
 .livery-about__note{color:var(--lw-2)}
+.wallpaper-recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.wallpaper-recent-item{display:flex;flex-direction:column;gap:3px;min-width:0;padding:0;border:1px solid color-mix(in srgb,var(--lw-fg) 14%,transparent);border-radius:9px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer2));color:inherit;font:inherit;font-size:var(--lw-fs-caption);text-align:start;cursor:pointer;overflow:hidden}
+.wallpaper-recent-thumb{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--lw-layer2)}
+.wallpaper-recent-title,.wallpaper-recent-source{display:block;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wallpaper-recent-source{padding-bottom:6px;color:var(--lw-2)}
 `

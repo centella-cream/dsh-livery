@@ -7,7 +7,7 @@ they are folded into this single unreleased entry.
 
 ## [0.1.0] — unreleased
 
-DSH Visual Studio: a token-only visual layer for DeepSeek Harness with 24 styles,
+DSH Livery: a token-only visual layer for DeepSeek Harness with 24 styles,
 a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Added
@@ -43,6 +43,13 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   effect sliders (no viewport-wide sliders) + 24-swatch grid; style page =
   current-style hero (preview thumbnail) + gallery card + 操作/自检 rail; stacks
   below 1100 px with no horizontal overflow.
+- **Recent wallpapers + product name (round 13)**: used online wallpapers are kept
+  in browser-local history (`localStorage['dsh-livery.wallpaper.recent.v1']`, max
+  24, newest first) and shown in a Recent wallpapers card where they can be
+  re-applied; images are cached in IndexedDB when the server allows CORS, with the
+  original URL as fallback. Clear history removes local records. The visible
+  product name is **DSH Livery**; an editorial label used in earlier docs has been
+  removed.
 - **Copy, typography and wallpaper edits (round 11)**: human About footer copy
   (no contract/adapter jargon; ids stay in the copyable diagnostics); a single
   five-step typography scale shared by both pages; removed the non-loading curated
@@ -70,19 +77,19 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 - Client gzip budget raised to 32 KiB for the wallpaper studio (actual 29,628 B),
   then to 48 KiB for the round-9 expansion (actual 35,062 B); CLIENT_CSS budget
   9 KiB (actual 8,449 B).
-- README repositioned as **DSH Visual Studio** (visual system + wallpapers +
-  verification policy) instead of a plain skin, with a certified-vs-compat table.
+- README repositioned around the visual styling feature set (24 styles, wallpapers,
+  verification policy), with a certified-vs-compat table.
 
 ### Verified
 
 - Final artifact `dsh-livery-0.1.0.tgz` sha256
-  `675b26bce2059c595286915c12b0b91a393260a2721f890bc4b0a8cd7073527a` (548,779 B, 233 files).
+  `2013f40c9fb9dfdff32a6db7c85ad2f61510f3086d92dc0c4049e3fc614b665d` (551,026 B, 233 files).
 - Four-target acceptance on the final artifact: Web `0.2.1-rc.2` isolated full
-  run 219/0/3/2, real-profile clone 220/0/3/4, Desktop `0.2.1-rc.3` packaged
-  carrier 219/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
-  profile (auto online batch with 12 results, unified computed font sizes
-  {11,12,13,15}, two-line About footer, no console errors).
-- Repo gates: `tsc` clean, 681 tests (1 optional skip), 204 generated files /
+  run 228/0/3/2, real-profile clone 229/0/3/4, Desktop `0.2.1-rc.3` packaged
+  carrier 228/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
+  profile (DSH Livery footer, recent-wallpaper history with cached blob re-apply,
+  auto online batch, no console errors).
+- Repo gates: `tsc` clean, 690 tests (1 optional skip), 204 generated files /
   2 catalog profiles in sync, all token/CSS/contrast audits, loader-ABI 12/12,
   `adapter:check`, `pack:check` (see `docs/verification.md` for evidence notes).
 

@@ -34,6 +34,7 @@ import {
   readLayoutStructure,
   readTypographyScale,
   readHostStyleProbe,
+  readIndexedDbKeys,
   readLocaleTab,
   readThumbLocales,
   setRangeValue,
@@ -2100,9 +2101,9 @@ export async function checkSelfCheck(ctx) {
       expect(
         runner,
         'selfcheck.copy-diagnostics-content',
-        'copied diagnostics still carry the adapter id + contract prefix (engineering ids live in diagnostics, not the About footer)',
-        clipboard.ok === true && adapterId.length > 0 && clipboard.text.includes(adapterId) && (contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)),
-        `adapterId="${adapterId}" present=${clipboard.text.includes(adapterId)}; contractPrefix="${contractPrefix}" present=${contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)}`,
+        'copied diagnostics carry the DSH Livery header + adapter id + contract prefix (engineering ids live in diagnostics, not the About footer)',
+        clipboard.ok === true && adapterId.length > 0 && clipboard.text.includes(adapterId) && (contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)) && clipboard.text.includes('DSH Livery') && !clipboard.text.includes('Visual Studio'),
+        `adapterId="${adapterId}" present=${clipboard.text.includes(adapterId)}; contractPrefix="${contractPrefix}" present=${contractPrefix.length === 0 || clipboard.text.includes(contractPrefix)}; headerDSHLivery=${clipboard.text.includes('DSH Livery')}; noVisualStudio=${!clipboard.text.includes('Visual Studio')}`,
         { preview: oneLine(clipboard.text, 800) },
       )
     } else {
@@ -2963,9 +2964,10 @@ export async function checkWallpaperStudio(ctx) {
       if (picsumMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(picsumFixture) })
       return route.fulfill({ status: 500, contentType: 'text/plain', body: 'picsum unavailable' })
     })
-    await page.route('https://images.example.test/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }),
-    )
+    await page.route('https://images.example.test/**', (route) => {
+      if (route.request().url().includes('broken')) return route.fulfill({ status: 500, contentType: 'text/plain', body: 'image unavailable' })
+      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+    })
     await reopenLivery()
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
@@ -2987,6 +2989,16 @@ export async function checkWallpaperStudio(ctx) {
         tabState.stylePanel === false &&
         tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text === uiLabels.tabWallpaper,
       `selected=${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.selected}; wallpaper panel=${tabState.wallpaperPanel}; style panel=${tabState.stylePanel}; label="${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text}"`,
+    )
+
+    // ---- round-13 recent-wallpaper history: starts hidden while empty ----
+    const recentInitial = await readWallpaperState(page)
+    expect(
+      runner,
+      'recent.hidden-empty',
+      'the Recent wallpapers card is absent while the local history is empty',
+      recentInitial.recentCard.present === false && recentInitial.recentCard.itemCount === 0,
+      `present=${recentInitial.recentCard.present}; items=${recentInitial.recentCard.itemCount}`,
     )
 
     // ---- search-first online card (round 11): one auto Picsum batch, explicit actions, no slider refetch ----
@@ -3110,17 +3122,59 @@ export async function checkWallpaperStudio(ctx) {
     )
     // Apply one online result.
     const appliedOnlineUrl = retried.results[0]?.url ?? ''
+    const appliedOnlineLabel = retried.results[0]?.label ?? ''
+    const appliedOnlineTitle = appliedOnlineLabel.split(' · ')[0]
     await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
-    await page.waitForFunction((url) => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes(url), appliedOnlineUrl, { timeout: 10_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-hero-preview"]') !== null, undefined, { timeout: 10_000 }).catch(() => {})
+    await sleep(600)
     const onlineApplied = await readWallpaperState(page)
     expect(
       runner,
       'wallpaper.online-applied',
-      'clicking an online result applies its URL and shows attribution',
-      onlineApplied.styleText.includes(appliedOnlineUrl) && onlineApplied.attribute !== null && onlineApplied.attribution.length > 0,
-      `url=${oneLine(appliedOnlineUrl, 120)}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.attribution, 120)}"`,
+      'clicking an online result applies that wallpaper (cached blob or URL layer) and shows attribution',
+      onlineApplied.attribute !== null &&
+        onlineApplied.styleText.includes('background-image') &&
+        (onlineApplied.styleText.includes(appliedOnlineUrl) || onlineApplied.styleText.includes('blob:')) &&
+        onlineApplied.attribution.length > 0 &&
+        appliedOnlineTitle.length > 0 &&
+        onlineApplied.attribution.includes(appliedOnlineTitle),
+      `url=${oneLine(appliedOnlineUrl, 120)}; layer=${onlineApplied.styleText.includes('blob:') ? 'cached blob' : 'url'}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.attribution, 120)}"`,
     )
     await capture(page, ctx, { state: 'wallpaper-online-applied', mode: 'light' })
+
+    // ---- recent history after applying online wallpapers ----
+    await page.waitForFunction(() => {
+      const card = document.querySelector('[data-testid="wallpaper-recent-card"]')
+      return card !== null && card.querySelectorAll('[data-testid="wallpaper-recent-item"]').length >= 1
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-recent-item"]')?.getAttribute('data-cached') === 'true', undefined, { timeout: 10_000 }).catch(() => {})
+    const recentOne = await readWallpaperState(page)
+    expect(
+      runner,
+      'recent.online-entry',
+      'applying an online wallpaper records it in the Recent card (newest first, cached flag best-effort)',
+      recentOne.recentCard.present === true &&
+        recentOne.recentCard.itemCount === 1 &&
+        recentOne.recentCard.items[0]?.url === appliedOnlineUrl &&
+        recentOne.recentCard.items[0]?.cached === 'true',
+      `card=${recentOne.recentCard.present}; items=${JSON.stringify(recentOne.recentCard.items)}; applied=${oneLine(appliedOnlineUrl, 100)}`,
+    )
+    // Apply a second online result: history grows, newest first.
+    const secondResult = page.locator('[data-testid="wallpaper-result"]').nth(1)
+    const secondUrl = await secondResult.getAttribute('data-wallpaper-url')
+    if (secondUrl !== null && (await secondResult.count()) > 0) await secondResult.click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-recent-item"]').length >= 2, undefined, { timeout: 10_000 }).catch(() => {})
+    await sleep(500)
+    const recentTwo = await readWallpaperState(page)
+    expect(
+      runner,
+      'recent.two-entries',
+      'two applied online wallpapers appear newest-first in the Recent card',
+      recentTwo.recentCard.itemCount === 2 &&
+        recentTwo.recentCard.items[0]?.url === secondUrl &&
+        recentTwo.recentCard.items[1]?.url === appliedOnlineUrl,
+      `items=${JSON.stringify(recentTwo.recentCard.items.map((item) => item.url))}`,
+    )
 
     // ---- 24 built-ins + layer + atmosphere overlay ----
     const initial = await readWallpaperState(page)
@@ -3333,6 +3387,15 @@ export async function checkWallpaperStudio(ctx) {
     const persisted = await readWallpaperState(page)
     expect(
       runner,
+      'recent.reload-persist',
+      'Recent wallpapers survive a hard reload (localStorage history + cached thumbnails)',
+      persisted.recentCard.present === true &&
+        persisted.recentCard.itemCount === 2 &&
+        persisted.recentCard.items.some((item) => item.cached === 'true'),
+      `items=${persisted.recentCard.itemCount}; cached=${JSON.stringify(persisted.recentCard.items.map((item) => item.cached))}`,
+    )
+    expect(
+      runner,
       'wallpaper.persistence',
       'selected wallpaper and effects persist across a hard reload',
       globalAfterReload.attribute !== null &&
@@ -3454,6 +3517,80 @@ export async function checkWallpaperStudio(ctx) {
       `styleHasUrl=${customApplied.styleText.includes('custom.jpg')}; attr=${customApplied.attribute}; error="${oneLine(customApplied.urlErrorText, 80)}" (custom URLs surface no attribution line by design)`,
     )
     await capture(page, ctx, { state: 'wallpaper-custom-url', mode: 'light' })
+
+    // ---- recent history: third entry, re-apply, cache failure, clear ----
+    const customUrl = 'https://images.example.test/custom.jpg'
+    await page.waitForFunction((expectedUrl) => [...document.querySelectorAll('[data-testid="wallpaper-recent-item"]')].some((item) => item.getAttribute('data-url') === expectedUrl), customUrl, { timeout: 10_000 }).catch(() => {})
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="wallpaper-recent-item"]')].filter((item) => item.getAttribute('data-cached') === 'true').length >= 3, undefined, { timeout: 12_000 }).catch(() => {})
+    const recentThree = await readWallpaperState(page)
+    expect(
+      runner,
+      'recent.three-entries',
+      'a custom https wallpaper is added as the newest Recent entry (3 entries, cached where possible)',
+      recentThree.recentCard.itemCount === 3 &&
+        recentThree.recentCard.items[0]?.url === customUrl &&
+        recentThree.recentCard.items.filter((item) => item.cached === 'true').length >= 2,
+      `items=${JSON.stringify(recentThree.recentCard.items)}`,
+    )
+    // Re-apply an older entry: selection changes and it moves to newest.
+    const oldestUrl = recentThree.recentCard.items[2]?.url
+    const oldestTitle = (recentThree.recentCard.items[2]?.label ?? '').split(' · ')[0]
+    await page.locator('[data-testid="wallpaper-recent-item"]').nth(2).click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-hero-preview"]') !== null, undefined, { timeout: 10_000 }).catch(() => {})
+    await sleep(600)
+    const reapplied = await readWallpaperState(page)
+    const reapplyHeroText = await page.locator('[data-testid="wallpaper-hero"]').innerText().catch(() => '')
+    expect(
+      runner,
+      'recent.reapply',
+      'clicking a Recent item re-applies that wallpaper and moves it to newest (cached blob layer is legitimate)',
+      reapplied.recentCard.items[0]?.url === oldestUrl &&
+        reapplied.styleText.includes('background-image') &&
+        oldestTitle.length > 0 &&
+        reapplyHeroText.includes(oldestTitle),
+      `newest=${oneLine(reapplied.recentCard.items[0]?.url ?? '', 120)}; expected=${oneLine(oldestUrl ?? '', 120)}; hero="${oneLine(reapplyHeroText, 120)}"; expectedTitle="${oneLine(oldestTitle, 80)}"`,
+    )
+    // Cache-failure fallback: the image fetch fails, but the history entry is
+    // still recorded (data-cached=false) and re-applying works via its URL.
+    const brokenUrl = 'https://images.example.test/broken.jpg'
+    await page.locator('[data-testid="wallpaper-url"]').fill(brokenUrl)
+    await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+    await page.waitForFunction((url) => [...document.querySelectorAll('[data-testid="wallpaper-recent-item"]')].some((item) => item.getAttribute('data-url') === url), brokenUrl, { timeout: 10_000 }).catch(() => {})
+    await sleep(900)
+    const brokenState = await readWallpaperState(page)
+    const brokenItem = brokenState.recentCard.items.find((item) => item.url === brokenUrl)
+    const brokenReapply = page.locator(`[data-testid="wallpaper-recent-item"][data-url="${brokenUrl}"]`).first()
+    if ((await brokenReapply.count()) > 0) await brokenReapply.click({ timeout: 8_000 })
+    await page.waitForFunction((url) => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes(url), brokenUrl, { timeout: 10_000 }).catch(() => {})
+    await sleep(300)
+    const brokenReapplied = await readWallpaperState(page)
+    expect(
+      runner,
+      'recent.cache-failure',
+      'a failed image cache still records the history entry (data-cached=false) and re-apply works via the URL',
+      brokenItem !== undefined && brokenItem.cached === 'false' && brokenReapplied.styleText.includes(brokenUrl) && brokenReapplied.attribute !== null,
+      `entry=${JSON.stringify(brokenItem)}; reapplyStyleHasUrl=${brokenReapplied.styleText.includes(brokenUrl)}`,
+    )
+    // Clear: card disappears, localStorage key removed, remote cache keys deleted.
+    const keysBeforeClear = await readIndexedDbKeys(page)
+    const remoteKeysBefore = keysBeforeClear.filter((key) => String(key).startsWith('remote-')).length
+    await page.locator('[data-testid="wallpaper-recent-clear"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-recent-card"]') === null, undefined, { timeout: 10_000 }).catch(() => {})
+    await sleep(500)
+    const clearedRecent = await readWallpaperState(page)
+    const storedRecent = await page.evaluate(() => { try { return window.localStorage.getItem('dsh-livery.wallpaper.recent.v1') } catch { return 'error' } }).catch(() => 'error')
+    const keysAfterClear = await readIndexedDbKeys(page)
+    const remoteKeysAfter = keysAfterClear.filter((key) => String(key).startsWith('remote-')).length
+    expect(
+      runner,
+      'recent.clear',
+      'clear removes the Recent card, the localStorage history and the best-effort remote image cache',
+      clearedRecent.recentCard.present === false &&
+        (storedRecent === null || storedRecent === '') &&
+        remoteKeysAfter === 0 &&
+        (remoteKeysBefore === 0 || remoteKeysAfter < remoteKeysBefore),
+      `card=${clearedRecent.recentCard.present}; stored=${oneLine(String(storedRecent), 80)}; remote cache keys ${remoteKeysBefore}→${remoteKeysAfter}`,
+    )
 
     // ---- adaptive cover layers at several viewport sizes ----
     const resizeSizes = [[1024, 768], [1920, 1080], [900, 1300]]
@@ -3718,7 +3855,7 @@ export async function checkLayoutStructure(ctx) {
     // ---- round-11: human About footer + unified five-step typography ----
     const footer = await readAboutFooter(page)
     const footerLines = footer.lines ?? []
-    const aboutPlugin = /^DSH Visual Studio \S+ · 已适配 DeepSeek Harness \S+$/.test(footerLines[0]?.text ?? '')
+    const aboutPlugin = /^DSH Livery \S+ · 已适配 DeepSeek Harness \S+$/.test(footerLines[0]?.text ?? '')
     const aboutNote = (footerLines[1]?.text ?? '').includes('画廊预览图') && (footerLines[1]?.text ?? '').includes('不是宿主界面截图')
     expect(
       runner,
@@ -3727,6 +3864,16 @@ export async function checkLayoutStructure(ctx) {
       footer.present === true && footerLines.length === 2 && aboutPlugin && aboutNote,
       `lines=[${footerLines.map((line) => `"${oneLine(line.text, 120)}"`).join(', ')}]`,
       { footer },
+    )
+    const visibleUiText = await page.evaluate(() => document.body.innerText ?? '')
+    expect(
+      runner,
+      'copy.product-name',
+      'visible product name is DSH Livery (no “Visual Studio” anywhere in the UI)',
+      (footerLines[0]?.text ?? '').startsWith('DSH Livery ') &&
+        visibleUiText.includes('DSH Livery') &&
+        !visibleUiText.includes('Visual Studio'),
+      `footer line1="${oneLine(footerLines[0]?.text ?? '', 100)}"; bodyHasDSHLivery=${visibleUiText.includes('DSH Livery')}; bodyHasVisualStudio=${visibleUiText.includes('Visual Studio')}`,
     )
     expect(
       runner,

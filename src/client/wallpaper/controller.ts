@@ -19,6 +19,7 @@ import {
 import type { WallpaperEffects, WallpaperSelection } from '../wallpaper.js'
 import { createWallpaperLayer } from './apply.js'
 import { createIndexedDbImageStore } from './storage.js'
+import { loadCachedRemote } from './cache.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 
@@ -41,8 +42,9 @@ export interface WallpaperControllerApi {
   subscribe(listener: () => void): () => void
   /**
    * Apply one wallpaper (builtin, validated remote URL, or upload blob), or
-   * clear with undefined. For uploads pass the blob so an object URL can be
-   * produced immediately; hydration restores it from IndexedDB asynchronously.
+   * clear with undefined. Pass the blob to render a local object URL
+   * immediately: uploads use the stored file, remote selections use the
+   * best-effort disk cache. Hydration restores it from IndexedDB asynchronously.
    */
   setSelection(selection: WallpaperSelection, blob?: Blob): void
   /** Merge + clamp effects and apply them live. */
@@ -116,7 +118,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
   let started = false
-  let uploadUrl: string | undefined
+  let localImageUrl: string | undefined
 
   const notify = (): void => {
     snapshot = { selection, effects }
@@ -137,25 +139,25 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
 
   const apply = (): void => {
     layer.apply(
-      buildWallpaperCss({ selection, effects, tokens: tokenContext(), uploadUrl }),
+      buildWallpaperCss({ selection, effects, tokens: tokenContext(), imageOverride: localImageUrl }),
       effects.atmosphere > 0,
     )
   }
 
-  const replaceUploadUrl = (blob: Blob | undefined): void => {
-    if (uploadUrl !== undefined) {
+  const replaceLocalImageUrl = (blob: Blob | undefined): void => {
+    if (localImageUrl !== undefined) {
       try {
-        objectUrls?.revoke(uploadUrl)
+        objectUrls?.revoke(localImageUrl)
       } catch {
         /* a stale object URL must not break teardown */
       }
-      uploadUrl = undefined
+      localImageUrl = undefined
     }
     if (blob === undefined || objectUrls === undefined) return
     try {
-      uploadUrl = objectUrls.create(blob)
+      localImageUrl = objectUrls.create(blob)
     } catch {
-      uploadUrl = undefined
+      localImageUrl = undefined
     }
   }
 
@@ -229,6 +231,20 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   // Uploaded blobs live in IndexedDB: restore the object URL asynchronously once
   // the selection is known. A missing blob clears the wallpaper instead of
   // leaving a broken image; a session-only upload (no store) is left untouched.
+  // (Remote selections use the non-destructive restoreRemote helper above.)
+  // Online wallpapers may have a cached blob: restore it on hydrate so a
+  // remembered remote background renders even when the network is down.
+  const restoreRemote = async (): Promise<void> => {
+    if (selection === undefined || selection.kind !== 'remote') return
+    const { url } = selection
+    const record = await loadCachedRemote(url, images)
+    if (record === undefined) return
+    if (selection === undefined || selection.kind !== 'remote' || selection.url !== url) return
+    replaceLocalImageUrl(record.blob)
+    apply()
+    notify()
+  }
+
   const restoreUpload = async (): Promise<void> => {
     if (selection === undefined || selection.kind !== 'upload') return
     const { key } = selection
@@ -242,13 +258,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
     if (record === undefined) {
       selection = undefined
-      replaceUploadUrl(undefined)
+      replaceLocalImageUrl(undefined)
       apply()
       scheduleSave()
       notify()
       return
     }
-    replaceUploadUrl(record.blob)
+    replaceLocalImageUrl(record.blob)
     apply()
     notify()
   }
@@ -262,13 +278,18 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       }
     },
     setSelection: (next: WallpaperSelection, blob?: Blob) => {
-      if (sameSelection(selection, next)) return
-      selection = next
-      if (next !== undefined && next.kind === 'upload') {
-        if (blob !== undefined) replaceUploadUrl(blob)
-      } else {
-        replaceUploadUrl(undefined)
+      if (sameSelection(selection, next)) {
+        // Same wallpaper, newly available local copy (e.g. cache finished after
+        // apply): switch the rendered image without touching persistence.
+        if (blob !== undefined && selection !== undefined && selection.kind !== 'builtin') {
+          replaceLocalImageUrl(blob)
+          apply()
+          notify()
+        }
+        return
       }
+      selection = next
+      replaceLocalImageUrl(blob)
       apply()
       scheduleSave()
       notify()
@@ -287,7 +308,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     clear: () => {
       if (selection === undefined) return
       selection = undefined
-      replaceUploadUrl(undefined)
+      replaceLocalImageUrl(undefined)
       apply()
       scheduleSave()
       notify()
@@ -297,7 +318,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       tokens = { light, dark }
       apply()
     },
-    getRenderImage: () => backgroundImageValue(selection, uploadUrl),
+    getRenderImage: () => backgroundImageValue(selection, localImageUrl),
     start: () => {
       if (started) return
       started = true
@@ -305,11 +326,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       apply()
       notify()
       void restoreUpload()
+      void restoreRemote()
     },
     dispose: () => {
       flushSave()
       listeners.clear()
-      replaceUploadUrl(undefined)
+      replaceLocalImageUrl(undefined)
       layer.dispose()
       started = false
     },

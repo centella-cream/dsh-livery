@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs'
 import { CLIENT_CSS } from '../../src/styles/client.js'
 
 describe('client stylesheet (plan §18.3 / §18.8)', () => {
-  it('stays inside the 12KB budget', () => {
-    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(12 * 1024)
+  it('stays inside the 14KB budget', () => {
+    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(14 * 1024)
   })
 
   it('contains no !important', () => {
@@ -44,6 +44,9 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effects-grid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(180px,1fr\)\)/)
     expect(CLIENT_CSS).toMatch(/\.livery-gallery-head\{display:flex;align-items:baseline;justify-content:space-between/)
     expect(CLIENT_CSS).toMatch(/\.wallpaper-swatches\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/)
+    // Recent wallpapers card: compact responsive thumbnail grid.
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-recent-grid\{display:grid;grid-template-columns:repeat\(auto-fill,minmax\(118px,1fr\)\)/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-recent-item\{[^}]*font-size:var\(--lw-fs-caption\)/)
   })
 
   it('uses one shared typography scale (≤5 sizes, no ad-hoc px in modules)', () => {

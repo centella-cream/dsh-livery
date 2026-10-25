@@ -35,7 +35,7 @@ export const enUS = {
   'current.previewNotice': 'This is only a preview. Apply it to keep it.',
 
   // Page tabs.
-  'tab.label': 'Visual studio tabs',
+  'tab.label': 'Page tabs',
   'tab.style': 'Visual styles',
   'tab.wallpaper': 'Wallpapers',
 
@@ -116,6 +116,11 @@ export const enUS = {
   'wallpaper.currentEmpty': 'No wallpaper selected yet. Start with an online wallpaper, a built-in design, or your own image.',
   'wallpaper.builtinKind': 'Built-in design',
   'layout.currentStyle': 'Current style',
+  'wallpaper.recentTitle': 'Recent wallpapers',
+  'wallpaper.recentHint': 'Online wallpapers you have used appear here.',
+  'wallpaper.recentEmpty': 'No recent online wallpapers yet.',
+  'wallpaper.recentClear': 'Clear history',
+  'wallpaper.recentCached': 'Cached',
   // Search and tag filters.
   'search.label': 'Search visual styles',
   'search.placeholder': 'Search by name, ID, or tag',
@@ -247,7 +252,7 @@ export const enUS = {
 
   // About footer.
   'about.title': 'About',
-  'about.plugin': 'DSH Visual Studio {version}',
+  'about.plugin': 'DSH Livery {version}',
   'about.certified': 'Certified for DeepSeek Harness {hostVersion}',
   'about.note': 'Gallery previews are generated from fixed scenes to show style differences — they are not screenshots of the host UI.',
 
@@ -297,7 +302,7 @@ export const enUS = {
   'hint.keyboard': 'Use the arrow keys to switch visual styles and Enter to preview.',
 
   // Diagnostics report (copied to the clipboard; technical but still localized).
-  'diag.header': 'DSH Visual Studio (dsh-livery) diagnostics',
+  'diag.header': 'DSH Livery (dsh-livery) diagnostics',
   'diag.environment': 'Environment',
   'diag.boot': 'Startup check',
   'diag.catalog': 'Catalog',

@@ -1,10 +1,10 @@
-# DSH Visual Studio (dsh-livery)
+# DSH Livery (dsh-livery)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
 
-A visual studio for DeepSeek Harness: 24 styles built on a frozen contract, a
+A visual styling plugin for DeepSeek Harness: 24 styles built on a frozen contract, a
 wallpaper studio with online image search and blur/frost effects, and a style
 gallery. It ships as a plugin that adds a visual layer **instead of taking over
 the host theme**.
@@ -17,9 +17,9 @@ the host theme**.
 
 Skin plugins often take over the host theme, register their own theme ids, paint
 window chrome and inject broad CSS. That is also why they tend to break when DSH
-changes. DSH Visual Studio makes the opposite trade:
+changes. DSH Livery makes the opposite trade:
 
-| Typical skin plugin | DSH Visual Studio |
+| Typical skin plugin | DSH Livery |
 |---|---|
 | Takes over `ctx.theme`, registers themes, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
 | Paints window chrome (title bars, overlays) | Draws no chrome; the host owns the window |
@@ -181,7 +181,7 @@ Commits are one concise line (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 ## Documentation
 
 - [Docs index](docs/README.md)
-- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version & compat](docs/design/multi-version.md) · [visual studio v2](docs/design/visual-studio-v2.md) · [implementation plan](docs/design/implementation-plan.md)
+- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version & compat](docs/design/multi-version.md) · [visual system v2](docs/design/visual-system-v2.md) · [implementation plan](docs/design/implementation-plan.md)
 - Research: [host contract](docs/research/host-contract.md) · [client contract](docs/research/client-contract.md) · [design references](docs/research/design-references.md)
 - [Verification summary](docs/verification.md)
 
