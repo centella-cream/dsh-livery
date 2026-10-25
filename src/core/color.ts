@@ -61,7 +61,7 @@ function hexChannel(hex: string): number {
 }
 
 /**
- * Parse the four supported CSS colour notations:
+ * Parse the supported CSS colour notations:
  * `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`, `rgb(...)`, `rgba(...)`.
  *
  * Throws for anything else (named colours, `color()`, `var()`…). Percentages

@@ -1,8 +1,8 @@
 /**
  * Build the copyable self-check report. Pure: takes the runtime snapshot plus a
- * translate function, returns plain text. Every label is localized; ids,
- * hashes, and capability names stay verbatim because they are the values a
- * maintainer needs when filing a report.
+ * translate function, returns plain text. Every label is localized; ids and
+ * hashes stay verbatim because they are the values a maintainer needs when
+ * filing a report.
  */
 import type { CompiledLivery } from '../core/types.js'
 import { formatNumber, formatRatio } from '../i18n/index.js'

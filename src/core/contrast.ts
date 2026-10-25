@@ -2,10 +2,10 @@
  * DSH Livery — contrast audit and bounded foreground auto-adjustment.
  *
  * The matrix covers the roles × surfaces × states required by
- * docs/design/implementation-plan.md §18.2 (light and dark). Translucent token values are
- * composited over the surface they actually paint on before the WCAG 2.x ratio
- * is computed. Thresholds follow WCAG 2.2 AA: 4.5 normal text, 3.0 large text /
- * non-text / focus indicators.
+ * docs/design/implementation-plan.md §18.2 (light and dark). Translucent token
+ * values are composited over the surface they paint on before the WCAG 2.x
+ * ratio is computed. Thresholds follow WCAG 2.2 AA: 4.5 normal text, 3.0 large
+ * text / non-text / focus indicators.
  *
  * `auditContrast` is a pure read; `adjustForContrast` is a bounded
  * (fixed iteration count, deterministic) helper the deriver uses to repair
@@ -29,7 +29,10 @@ import type { StockSnapshot } from '../generated/stock.js'
 /** Interaction states asserted by the matrix (§18.2). */
 export type ContrastState = 'default' | 'hover' | 'active' | 'selected' | 'focus' | 'disabled'
 
-/** One matrix assertion. `backgroundToken` may be translucent → composite over `backgroundOverToken`. */
+/**
+ * One matrix assertion. `backgroundToken` may be translucent, in which case it
+ * is composited over `backgroundOverToken`.
+ */
 export interface ContrastCheck {
   readonly role: string
   readonly surface: string

@@ -1,10 +1,9 @@
 /**
  * Compatibility-mode presentation helpers.
  *
- * The handshake (Lead-owned) accepts an uncertified-but-in-range host by
- * synthesizing the `dsh-compat` identity and setting `payload.compat`; the UI
- * only reads that identity to surface an honest "unverified" warning. No policy
- * logic lives here.
+ * The handshake module accepts an uncertified-but-in-range host by synthesizing
+ * the `dsh-compat` identity and setting `payload.compat`; the UI only reads that
+ * identity to show an "unverified" warning. No policy logic lives here.
  */
 import { COMPAT_ADAPTER_ID } from '../../core/compat.js'
 

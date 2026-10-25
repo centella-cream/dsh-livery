@@ -1,10 +1,10 @@
 /**
  * DSH Livery — runtime-neutral stylesheet helpers.
  *
- * This module intentionally imports nothing but the shared types: no derivation
- * state, no frozen stock token table, no renderer. The compile-time renderer and
- * every runtime bundle reuse this single concatenation rule so the injected bytes
- * and the compared hash can never disagree.
+ * This module imports only the shared types: no derivation state, no frozen
+ * stock token table, no renderer. The compile-time renderer and every runtime
+ * bundle share this concatenation rule, so the injected bytes and the compared
+ * hash cannot disagree.
  */
 import type { LiveryCss } from './types.js'
 

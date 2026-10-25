@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an improvement or a new style/host capability
+description: Suggest an improvement, a new style or host support
 title: "[feature]: "
 labels: ["enhancement"]
 body:
@@ -7,14 +7,14 @@ body:
     id: problem
     attributes:
       label: Problem
-      description: What problem does this solve? What is missing today?
+      description: What problem would this solve? What is missing today?
     validations:
       required: true
   - type: textarea
     id: proposal
     attributes:
       label: Proposed solution
-      description: Describe the change. For a new style, list palette/typography/shape ideas.
+      description: Describe the change. For a new style, include palette, typography and shape ideas.
     validations:
       required: true
   - type: textarea

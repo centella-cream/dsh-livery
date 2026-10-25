@@ -36,7 +36,7 @@ export const PREVIEWS_DIRECTORY = 'previews'
 /**
  * One preview filename this route is willing to serve.
  *
- * Deliberately flat: the generated layout is `<id>-<zh|en>-<light|dark>.svg`
+ * Flat by design: the generated layout is `<id>-<zh|en>-<light|dark>.svg`
  * directly inside the profile directory, so a name carrying a separator is not
  * a preview name at all.
  */
@@ -112,8 +112,8 @@ export function buildCatalog(
 /**
  * Serialize a catalog for the catalog route.
  *
- * The serialization is stable for a given catalog object, which is what lets
- * the route build it once per adapter and answer HEAD from the same bytes.
+ * The serialization is stable for a given catalog object, so the route can
+ * build it once per adapter and answer HEAD from the same bytes.
  * @param catalog - catalog document.
  * @returns compact JSON text.
  */
@@ -142,14 +142,13 @@ function asPreviewFileName(value: string): string | undefined {
 
 /**
  * Collect every preview filename an index document mentions, whatever its
- * generated shape is.
+ * generated shape.
  *
- * The index is a build artifact from the same repository, but the CLI that
- * writes it and the Host that reads it are separate pieces of code. Accepting
- * the filename as an array element or an object key, at any depth, keeps the
- * two from having to share an exact serialization for something that is only a
- * name whitelist. Anything that is not a flat `.svg` name is ignored, so no
- * traversal or absolute path can enter the whitelist.
+ * The index comes from the same repository, but the CLI that writes it and the
+ * Host that reads it are separate. Accepting a filename as an array element or
+ * object key at any depth avoids a shared serialization for what is only a name
+ * whitelist. Names that are not flat `.svg` files are ignored, so traversal or
+ * absolute paths cannot enter the whitelist.
  * @param parsed - `JSON.parse` output of the index document.
  * @returns sorted, unique filenames.
  */

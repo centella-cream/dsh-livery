@@ -108,7 +108,7 @@ describe('compatibility-mode notice', () => {
     const html = renderPage(COMPAT)
     expect(html).toContain('data-testid="livery-compat-notice"')
     expect(html).toContain('Compatibility mode (unverified)')
-    expect(html).toContain('outside the certified matrix')
+    expect(html).toContain('outside our full test range')
     expect(html).toContain('data-testid="livery-current"')
     expect(html).toContain('data-testid="livery-current-card"')
     // Banner + hero-card tag both carry the honest warning.
@@ -139,7 +139,7 @@ describe('compatibility-mode notice', () => {
     expect(html).toContain('data-testid="livery-compat-selfcheck"')
     expect(html).toContain('Compatibility mode')
     expect(html).toContain('Unverified (0.3.0)')
-    expect(html).toContain('outside the certified matrix')
+    expect(html).toContain('outside our full test range')
   })
 
   it('omits the compat row in the self-check on a certified host', () => {
@@ -170,7 +170,7 @@ describe('compat dictionary keys', () => {
     expect(zhCN['state.compatMode']).toBe('兼容模式（未认证）')
     expect(enUS['check.compatMode']).toBe('Compatibility mode')
     expect(zhCN['check.compatMode']).toBe('兼容模式')
-    expect(enUS['state.compatModeBody']).toContain('certified matrix')
-    expect(zhCN['state.compatModeBody']).toContain('认证矩阵')
+    expect(enUS['state.compatModeBody']).toContain('full test range')
+    expect(zhCN['state.compatModeBody']).toContain('完整测试范围')
   })
 })

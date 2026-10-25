@@ -3,21 +3,19 @@
  * contributes.
  *
  * This is the only Host code that runs before the Client exists, so it carries
- * the plugin's fail-closed rule: the live DSH version is mapped through the
- * generated adapter registry to exactly one certified adapter, and unless that
- * adapter's identity, catalog and the active livery all check out, the Host
- * contributes zero rows. A closed gate leaves the page on the host's own stock
- * appearance — never a half-injected palette, never a partial row table that a
- * later render might finish. Unknown/uncertified versions are a closed gate,
- * not a "best effort".
+ * the plugin's fail-closed rule: the live DSH version maps through the generated
+ * adapter registry to exactly one certified adapter, and unless that adapter's
+ * identity, catalog and the active livery all check out, the Host contributes
+ * zero rows. A closed gate leaves the page on stock appearance, never a
+ * half-injected palette or a partial row table. Unknown or uncertified versions
+ * are a closed gate, not a best effort.
  *
  * The runtime never renders or hashes CSS. `renderBootCssFromCatalog` reads the
- * `css` fragments and `cssHash` the compiler already produced (once per catalog
- * profile) and gated, which is what makes the injected bytes provably identical
- * to what the Client will derive from the catalog.
+ * `css` fragments and `cssHash` the compiler already produced and gated, so the
+ * injected bytes are the bytes the Client expects from the catalog.
  *
- * Row shapes follow `@deepseek-ai/dsh-host-webserver`'s `IndexInjection` union:
- * `html` (a head `<style>` with an id the Client can adopt), then `global` (the
+ * Rows follow `@deepseek-ai/dsh-host-webserver`'s `IndexInjection` union: `html`
+ * (a head `<style>` with an id the Client can adopt), then `global` (the
  * handshake payload), then `script` (body attribute stamping). All content is
  * escaped so no livery id or CSS comment can close its host element early.
  */
@@ -69,8 +67,8 @@ const NO_CAPABILITIES: CapabilityMap = Object.freeze({})
  *
  * The diagnostic layer consumes this shape (rather than the whole boot state)
  * so it can explain a closed gate without depending on the render layer. Empty
- * strings mean "the registry could not resolve an adapter", which is exactly
- * what the diagnostics report.
+ * strings mean the registry could not resolve an adapter, and the diagnostics
+ * report the same.
  */
 export interface GateResult {
   /**
@@ -228,8 +226,8 @@ export function escapeAttribute(value: string): string {
  *
  * The element carries the markers the Client and the plugin lifecycle use:
  * `id` for exact adoption, `data-plugin` for DSH's disposal of plugin-owned
- * styles, and the content hash so the Client can prove the sheet it would
- * render is the one already on screen.
+ * styles, and the content hash so the Client can confirm the sheet it would
+ * render is already on screen.
  * @param css - rendered boot CSS.
  * @param hash - content hash of that CSS.
  * @returns raw `<style>` markup.
@@ -261,7 +259,7 @@ export function renderBootAttributeScript(skinId: string, hash: string): string 
     body.setAttribute(${JSON.stringify(BODY_ATTRIBUTE)}, boot.skinId)
     body.setAttribute(${JSON.stringify(HASH_ATTRIBUTE)}, boot.hash)
   } catch (error) {
-    // Attribute stamping is cosmetic ordering, not a correctness boundary.
+    // Attribute stamping only affects first-paint ordering; a failure is not fatal.
   }
 })()`
 }

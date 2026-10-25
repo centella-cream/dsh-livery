@@ -2,13 +2,14 @@
  * Host-side Config for the DSH Livery plugin.
  *
  * The Config schema is the durable shape the profile patch carries. Its single
- * field is volatile, which is what turns it into the form the browser settings
- * page reads and writes through `ctx.configForms.get(ENTRY_ID)`: the settings
+ * field is volatile, which makes it the form the browser settings page reads
+ * and writes through `ctx.configForms.get(ENTRY_ID)`: the settings
  * namespace *is* the Loader entry id (`livery`), so this module never invents a
  * second namespace and never persists anything of its own.
  *
- * Everything here is total: a plugin that cannot read its own config must show
- * the stock appearance, never throw out of an index render or a settings form.
+ * Every helper here is defensive: a plugin that cannot read its own config must
+ * show the stock appearance, never throw out of an index render or a settings
+ * form.
  */
 
 import Schema from '@deepseek-ai/schemastery'
@@ -52,7 +53,7 @@ export const Config = Schema.object({
 export type LiveryConfigOutput = ReturnType<typeof Config>
 
 /**
- * Whether a value is on the wire as a volatile reference (`{ get() }`).
+ * Whether a config value is a volatile reference (`{ get() }`).
  * @param value - candidate from a validated config object.
  * @returns whether `.get()` can be called on it.
  */

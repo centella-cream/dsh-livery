@@ -2,8 +2,7 @@
 /**
  * Desktop-profile (Electron app runtime) acceptance probe for DSH Livery.
  *
- * This is the best-achievable desktop verification under a headless/CI-like
- * session. It does two things:
+ * The probe runs in a headless/CI-like session and covers two areas:
  *
  * 1. Official plugin-manager acceptance against the app-bundled rc.3 runtime
  *    (`runtime/cli/bin/dsh plugin --profile desktop add file:<tgz>`) in an
@@ -12,7 +11,7 @@
  *    at install time; a synthetic 0.2.0-only plugin is installed as a negative
  *    control that must be rejected without an exemption.
  *
- * 2. A REAL Electron renderer probe: the app is launched by Playwright's
+ * 2. A real Electron renderer probe: the app is launched by Playwright's
  *    `_electron` with an isolated DSH_HOME + user-data-dir and
  *    `--no-sandbox --disable-gpu` (the only Chromium mode that survives this
  *    file-sandboxed session), then the actual desktop renderer is driven:
@@ -20,9 +19,9 @@
  *    apply/persist, reload handshake, light/dark tokens, 0.2.1 font role hooks,
  *    first-paint samples and stock restore. Screenshots are renderer-only.
  *
- * NOT verified (documented honestly in the report): native Electron window
- * chrome (traffic lights/leading), DPI scaling behaviour beyond
- * window.devicePixelRatio, vibrancy/transparency, Dock/rightbar window states.
+ * Not verified (recorded in the report): native Electron window chrome (traffic
+ * lights/leading), DPI scaling behaviour beyond window.devicePixelRatio,
+ * vibrancy/transparency, Dock/rightbar window states.
  * The desktop profile cannot be booted by the CLI ("managed exclusively by the
  * Electron application"); all runtime evidence here comes from the real app.
  *

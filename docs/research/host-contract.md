@@ -1,12 +1,12 @@
-# DSH Host-Side Plugin Contract — 0.2.0-rc.2
+# DSH host-side plugin contract: 0.2.0-rc.2
 
-Implementation-grade contract for a third-party DSH plugin ("livery"). Every claim cites `path:line`; unverified claims
+A detailed contract for a third-party DSH plugin ("livery"). Every claim cites `path:line`; unverified claims
 are marked **UNVERIFIED**. Host `0.2.0-rc.2` (`DSH/../dsh/package.json:4`), Cordis `4.0.5` (`DSH/cordis/package.json:4`).
 Paths: `DSH/` = `…/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/`, `CHARTER/` = `~/Personal/openprojects/dsh-charter/`
 (reference plugin), `SKIN/` = `~/Personal/opensources/deepseek-harness-skin/plugin/` (prior art installed as bundle
-`dsh-skin` in `~/.dsh/profiles/desktop`; it does first-paint skin injection — the same job).
+`dsh-skin` in `~/.dsh/profiles/desktop`; it does first-paint skin injection, the same job).
 
-## 0. Load-bearing facts
+## 0. Key facts
 
 1. One plugin = one Loader entry `{id, name, config}`; `name` is an import specifier, `id` is the settings namespace (`DSH/cordis-plugin-loader/README.md:29-31`, `SKIN/cordis.patch.yml:5-9`).
 2. Entry shape is free: default-exported `class extends Service` with `static inject`/`static Config`, or an object exporting `apply(ctx, config)` + `Config` (`DSH/cordis/lib/index.js:1067-1071,1631`).
@@ -43,9 +43,9 @@ Cordis service injection"; `immediately` = phase-one registration barrier; `exte
 
 **Compatibility is gated by `peerDependencies`, not `engines.dsh`**: before import, every `@deepseek-ai/dsh` / `dsh-*`
 peer range is checked against one runtime version; missing DSH peers are unconstrained; `engines.dsh` is never consulted
-(`DSH/dsh-app-boot/README.md:52`, `DSH/dsh-package-manifest/README.md:93`). Pin `0.2.0-rc.2` exactly; `"*"` (`SKIN/package.json`)
-buys nothing. Both references install as a *bundle* (listed in the profile's `dsh.profile.bundles`), so the profile patch
-never repeats their rows (`~/.dsh/profiles/desktop/package.json`, `~/.dsh/profiles/web/package.json`).
+(`DSH/dsh-app-boot/README.md:52`, `DSH/dsh-package-manifest/README.md:93`). For a package that targets a single build, pin
+`0.2.0-rc.2` exactly; `"*"` (`SKIN/package.json`) buys nothing. Both references install as a *bundle* (listed in the
+profile's `dsh.profile.bundles`), so the profile patch never repeats their rows (`~/.dsh/profiles/desktop/package.json`, `~/.dsh/profiles/web/package.json`).
 
 ### 1.2 cordis.patch.yml
 
@@ -239,7 +239,7 @@ text must not contain `</style`/`</script` (`DSH/dsh-host-webserver/lib/types/in
 
 - Fiber-owned resources dispose themselves: `ctx.on`, `ctx.effect`, `webServer.register` disposers, services (`DSH/cordis/lib/types/service.d.ts:28-38`, `DSH/cordis/lib/types/fiber.d.ts:35-51`, `DSH/dsh-host-webserver/lib/types/index.d.ts:84-106`). A Host `index-inject` listener disappears on disable, so the next index render omits the rows — an **already loaded page keeps them until reload**.
 - Client-bundle CSS is removed with the plugin: `<style data-plugin data-plugin-css>` appended inside `ctx.effect` whose disposer removes the tag (`DSH/dsh-client-ui-theme/lib/client.js:1183-1192`, `SKIN/src/client/styles.ts:35-45`); the module system "waits for its asynchronous effects before evicting unused modules and styles" (`DSH/dsh-client-modules/README.md:42`).
-- **Gap — do not copy**: `SKIN` writes `body[data-dsh-skin]`, `data-skin-chrome`, `data-dsh-titlebar` in a presenter (`SKIN/src/client/presenter.ts:52-69`) but registers only a form subscription, no reverse effect (`SKIN/src/client/index.ts:218`), so HMR/disable leaves those attributes until reload. Livery must own cleanup: `ctx.effect(() => { applyAttributes(snapshot); return () => clearLivery(document) }, 'livery: presentation')`.
+- **Gap: do not copy.** `SKIN` writes `body[data-dsh-skin]`, `data-skin-chrome`, `data-dsh-titlebar` in a presenter (`SKIN/src/client/presenter.ts:52-69`) but registers only a form subscription, no reverse effect (`SKIN/src/client/index.ts:218`), so HMR/disable leaves those attributes until reload. Livery must own cleanup: `ctx.effect(() => { applyAttributes(snapshot); return () => clearLivery(document) }, 'livery: presentation')`.
 - Adopting a Host-injected style element is supported: give the row `kind:'html'` to carry an `id`, then query/replace it from the client (`SKIN/src/boot-skin.ts:80-89`, `SKIN/src/client/custom-skin.ts:127,138`).
 - Failure visibility: the module system records "the last import failure per row … the Web boot audit reports that text per entry" (`DSH/dsh-client-modules/README.md:38`). No documented "last console error" surface — **UNVERIFIED**.
 

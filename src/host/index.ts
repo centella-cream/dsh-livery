@@ -1,14 +1,14 @@
 /**
  * DSH Livery — Host half (Cordis functional plugin).
  *
- * Three responsibilities, all of them things the browser cannot do for itself:
+ * Three responsibilities the browser cannot handle on its own:
  *
  * 1. Declare the volatile Config the profile patch carries (`Config`), so the
  *    persisted skin id is a settings form the Client reads and writes through
  *    `ctx.configForms.get('livery')`.
  * 2. Contribute the first-frame rows on every index render, but only after the
  *    pre-loader gate has mapped the live DSH version through the generated
- *    adapter registry and proved the identity matches a certified build. A
+ *    adapter registry and confirmed the identity matches a certified build. A
  *    closed gate contributes nothing: stock stays stock.
  * 3. Serve the read-only catalog and preview assets from the webserver, when a
  *    Web carrier is composed, for the adapter this process resolved to.

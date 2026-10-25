@@ -2,9 +2,9 @@
  * Host-version compatibility policy.
  *
  * The certified matrix in `contracts/dsh/support-matrix.proposed.json` names the
- * exact DSH builds whose six-hash contracts are frozen and verified. Newer DSH
- * builds must not become an instant hard failure, so `engines.dsh` declares a
- * compatibility RANGE instead of an exact allowlist:
+ * exact DSH builds whose six-hash contracts are frozen and verified. A newer
+ * DSH build must still work, so `engines.dsh` declares a compatibility range
+ * rather than an exact allowlist:
  *
  *   >=0.2.0-rc.2 <1.0.0
  *

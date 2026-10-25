@@ -3,15 +3,14 @@
  *
  * Two layers, both mandatory:
  *
- * 1. Strict JSON Schema (draft 2020-12) from `schemas/livery.schema.json`, compiled
- *    by Ajv in `strict: true` mode. The schema is the single source of truth for the
- *    manifest shape: unknown keys anywhere, remote resources, CSS strings, font
- *    faces and unregistered registry ids are all rejected here.
- * 2. Semantic checks that a JSON Schema cannot express: catalog-wide id/order
- *    uniqueness, livery-dir ↔ id agreement, real registry membership (tags, fonts,
- *    metrics), known + available capabilities, token-whitelist membership and safe
- *    CSS colour values for explicit overrides, and seed parseability through the
- *    core colour parser.
+ * 1. Strict JSON Schema (draft 2020-12) from `schemas/livery.schema.json`,
+ *    compiled by Ajv in `strict: true` mode. The schema is the single source of
+ *    truth for the manifest shape: unknown keys anywhere, remote resources, CSS
+ *    strings, font faces and unregistered registry ids are all rejected here.
+ * 2. Semantic checks a JSON Schema cannot express: catalog-wide id/order
+ *    uniqueness, livery-dir ↔ id agreement, registry membership, known and
+ *    available capabilities, token whitelisting, safe CSS colour overrides and
+ *    seed parseability.
  *
  * Everything returns a structured `Diagnostic[]`; nothing throws for invalid input.
  */

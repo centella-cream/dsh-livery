@@ -3,7 +3,7 @@
  *
  * Priority:
  *   1. `--pw-core` / `PW_CORE` explicit module path
- *   2. the checkout's own `node_modules/playwright-core` (pnpm-linked by the Lead)
+ *   2. the checkout's own `node_modules/playwright-core` (pnpm-linked in the workspace)
  *   3. a bare `import('playwright-core')` if the package is resolvable anyway
  *
  * The system Chrome (`channel: 'chrome'`) is the only browser we ever launch:

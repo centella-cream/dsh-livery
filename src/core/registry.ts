@@ -2,8 +2,8 @@
  * DSH Livery — typography / metrics / surface-style / tag registries.
  *
  * Raw font stacks never appear in a manifest: manifests reference these stable
- * ids. All stacks are local-only (never loaded from the network); CSS font
- * families are only *requested*, the host browser resolves them. Surface-style
+ * ids. All stacks are local-only (never loaded from the network). CSS font
+ * families are only requested; the host browser resolves them. Surface-style
  * recipes are token-only: they may only emit the frozen shape / elevation /
  * material / border token families validated by `src/core/audit.ts`, plus radius
  * scale values already consumed by the host.

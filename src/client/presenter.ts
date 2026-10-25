@@ -8,8 +8,8 @@
  *   `data-dsh-livery-hash`).
  * - Never touches `data-ds-*` (host theme presenter's domain), never uses a
  *   `MutationObserver`, never reads layout.
- * - A presentation batch is synchronous: at most one style-textassignment and
- *   the attribute update happen in the same task (plan §6.3).
+ * - A presentation batch is synchronous: at most one style-text assignment and
+ *   the attribute update happen in the same task (implementation-plan.md §6.3).
  */
 import {
   BODY_ATTRIBUTE,

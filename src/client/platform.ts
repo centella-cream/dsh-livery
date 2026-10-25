@@ -36,13 +36,13 @@ export type { LiveryKey }
 /** Typed translate function for this bundle's locale namespace. */
 export type LiveryTranslate = Translate<LiveryKey>
 
-/** Owner + locale shares a `settings.section` entry receives from the shell. */
+/** Props a `settings.section` entry receives: owner props and locale. */
 export type LiveryPageProps = PropsRuntime<'settings.section'> & PropsLocale<'dsh-livery'>
 
-/** Owner + locale shares the keyed `main` panel page receives from the shell. */
+/** Props the keyed `main` panel page receives: owner props and locale. */
 export type LiveryMainPageProps = PropsRuntime<'main'> & PropsLocale<'dsh-livery'>
 
-/** Owner (icon geometry/active) + locale shares a sidebar row receives. */
+/** Props a sidebar row receives: owner props (icon geometry/active) and locale. */
 export type LiveryPanelIconProps = PropsRuntime<'sidebar.panellist'> & PropsLocale<'dsh-livery'>
 
 /** Full props of the Livery settings page (fallback composition). */
@@ -85,7 +85,7 @@ export interface LiverySidebarRegistration {
  * callback whenever the slot's declaring owner becomes live, and `register`
  * contributes an entry whose disposer removes it. Contribution gating never
  * reads slot metadata synchronously: activation order is profile-dependent, so
- * `inject` is the source of truth.
+ * `inject` is authoritative.
  */
 export interface SlotsService {
   register(

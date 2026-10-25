@@ -1,44 +1,41 @@
 /**
  * DSH Livery — data-driven light/dark token derivation (COMPILE-TIME ONLY).
  *
- * `deriveLivery` turns a manifest's four seed colours per mode into a complete
- * concrete token overlay for one exact host stock snapshot:
+ * `deriveLivery` turns a manifest's four seed colours per mode into a concrete
+ * token overlay for one exact host stock snapshot:
  *
- * 1. Neutral ramp: every neutral static step is re-mapped in OKLab from the
- *    `surface` ↔ `text` seed pair, preserving the host's relative lightness
- *    structure (light/pale steps stay pale, dark steps stay dark).
- * 2. Accent ramp: `deepseek-*` statics (link / primary action / business state)
- *    are mapped from the `accent` seed; `blue-*` statics (selection / secondary
- *    emphasis) from the `secondary` seed. The 500 step anchors the seed itself.
- * 3. Semantic statics (`amber` / `green` / `red`) keep their host hues; only the
- *    foreground aliases are contrast-adjusted, never the semantic statics.
- * 4. Alias / specific tokens are resolved through their stock `var()` chain,
- *    `color-mix()` expressions are evaluated against the new ramp values and the
- *    host think-selection gradients are re-stopped on the new ramp.
- * 5. The dark variant is derived independently from its own seeds; it is not an
+ * 1. Neutral ramp: remap every neutral static step in OKLab from the `surface` /
+ *    `text` seed pair, preserving the host's relative lightness structure.
+ * 2. Accent ramp: map `deepseek-*` statics (link / primary action / business
+ *    state) from `accent`, and `blue-*` statics (selection / secondary emphasis)
+ *    from `secondary`. The 500 step anchors the seed itself.
+ * 3. Semantic statics (`amber` / `green` / `red`) keep their host hues; only
+ *    foreground aliases are contrast-adjusted.
+ * 4. Resolve alias / specific tokens through their stock `var()` chain, evaluate
+ *    `color-mix()` against the new ramp and re-stop the think-selection gradients.
+ * 5. Derive the dark variant independently from its own seeds; it is not an
  *    inversion of the light variant.
- * 6. A bounded WCAG repair pass (`auditContrast` + `adjustForContrast`) moves
- *    foreground tokens that miss §18.2; explicit manifest overrides win over the
- *    derived values (they are exempt from the repair pass).
- * 7. Style system v2 merge order (docs/design/style-system.md §2):
- *    derived colours → `metrics.tokens` (mode-independent) → `surfaceStyle.light`
- *    or `surfaceStyle.dark` → explicit `variants.<mode>.tokens` (explicit wins).
- *    `CompiledVariant.tokens` stays the single emitted map the renderer consumes.
- * 8. Emission policy (§8.2 A-tier): only tokens consumed by shipped host
- *    packages are serialized — every consumed `--dsw-alias-*` /
- *    `--dsw-specific-*` token plus the static steps read directly by components,
- *    plus the style/metric tokens selected by the manifest (shape/elevation/
- *    material/border + allowed font-ladder overrides). The full derived palette
- *    is still used for the contrast audit and returned through `contrast`;
- *    unconsumed colour tokens inherit stock and are reported by the compiler.
+ * 6. Run a bounded WCAG repair pass (`auditContrast` + `adjustForContrast`) on
+ *    foreground tokens that miss implementation-plan.md §18.2. Explicit
+ *    manifest overrides win and are exempt from repair.
+ * 7. Merge in this order (docs/design/style-system.md §2): derived colours →
+ *    `metrics.tokens` (mode-independent) → `surfaceStyle.<mode>` →
+ *    `variants.<mode>.tokens` (explicit wins). `CompiledVariant.tokens` remains
+ *    the single emitted map.
+ * 8. Emission policy (implementation-plan.md §8.2 A-tier): serialize only
+ *    tokens consumed by shipped host packages (every consumed `--dsw-alias-*` /
+ *    `--dsw-specific-*` token plus static steps read directly by components)
+ *    and the style/metric tokens selected by the manifest (shape / elevation /
+ *    material / border and allowed font-ladder overrides). The full palette is
+ *    still audited and returned through `contrast`; unconsumed tokens inherit
+ *    stock and are reported.
  *
  * Every entry point takes the host `StockSnapshot` explicitly (§2 of
- * docs/design/multi-version.md): a catalog compiled for one host version
- * can never derive against another version's token values. No module-global
- * stock table survives. This module imports the frozen snapshot *types* only and
- * must never be reachable from the Client/Host runtime bundles.
+ * docs/design/multi-version.md): a catalog compiled for one host version can
+ * never derive against another. This module imports the frozen snapshot types
+ * only and must never be reachable from the Client/Host runtime bundles.
  *
- * Output is deterministic: fixed ordering, fixed rounding, no I/O, no clocks.
+ * Output is deterministic: fixed ordering and rounding, no I/O, no clocks.
  */
 
 import type { CompiledVariant, ContrastEntry, LiveryManifest, Mode, Seeds, TokenMap } from './types.js'
@@ -70,9 +67,9 @@ const ROLE_TOKEN_NAMES: readonly string[] = [
 ] as const
 
 /**
- * Tokens deliberately left at their stock value (documented inheritance):
- * public host material contracts, host rebind seams, onboarding brand art and
- * the semantic diff palette (which is intentionally not re-themed).
+ * Tokens left at their stock value by design: public host material contracts,
+ * host rebinding points, onboarding brand art and the semantic diff palette
+ * (not re-themed).
  */
 export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   '--dsw-menu-surface-fill',
@@ -282,11 +279,10 @@ function sortedTokens(source: MutableTokens): TokenMap {
 /**
  * Mode-independent metric font-token overrides for one manifest.
  *
- * The manifest picks one metrics profile per locale; both profiles are merged in
- * deterministic locale order (`zh-CN` then `en-US`, so `en-US` wins on a
- * collision — designers are expected to pick the same profile for both locales
- * when the token maps differ). Only consumed host font tokens are allowed, so the
- * user's content/code font-size setting stays authoritative.
+ * The manifest picks one metrics profile per locale. Both profiles merge in
+ * deterministic locale order (`zh-CN`, then `en-US`, so `en-US` wins on a
+ * collision). Only consumed host font tokens are allowed, so the user's
+ * content/code font-size setting stays authoritative.
  */
 function metricTokenOverrides(manifest: LiveryManifest): TokenMap {
   const merged: Record<string, string> = {}

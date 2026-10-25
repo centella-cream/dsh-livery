@@ -335,7 +335,7 @@ function buildPalette(livery: PreviewLivery, mode: Mode, stock: StockSnapshot): 
 
 function liverySeeds(livery: PreviewLivery, mode: Mode): { readonly accent: string; readonly secondary: string; readonly surface: string; readonly text: string } {
   // The compiled artifact does not carry seeds directly; compiled tokens always
-  // contain the palette families, so recover representative seed-ish colours.
+  // contain the palette families, so recover representative seed colours.
   const tokens = mode === 'light' ? livery.light.tokens : livery.dark.tokens
   const pick = (name: string): string | null => {
     const value = tokens[name]
@@ -592,7 +592,7 @@ function buildStyle(
       const concrete = concreteFamily(brandValue)
       // The brand token embeds `var(--dsw-font-family)`/host hook vars which SVG
       // cannot resolve; append the resolved UI stack so a display face that is not
-      // installed falls back to the livery's own ui font.
+      // installed falls back to the livery's own UI font.
       return concrete !== null && /var\(/.test(brandValue ?? '') ? `${concrete}, ${uiFont}` : concrete ?? uiFont
     })(),
     type: {
@@ -1049,7 +1049,7 @@ function renderScene(livery: PreviewLivery, locale: DshLocaleId, mode: Mode, sto
 
 const PREVIEW_SEPARATOR = '-'
 
-/** Canonical preview filename for one livery / locale / mode com. */
+/** Canonical preview filename for one livery, locale and mode. */
 export function previewFileName(id: string, locale: DshLocaleId, mode: Mode): string {
   return `${id}${PREVIEW_SEPARATOR}${locale}${PREVIEW_SEPARATOR}${mode}.svg`
 }

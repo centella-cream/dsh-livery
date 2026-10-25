@@ -258,7 +258,7 @@ describe('settings page server render', () => {
     expect(html).toContain('data-testid="livery-degraded"')
     expect(html).toContain('livery-notice--info')
     expect(html).not.toContain('livery-notice--warn')
-    expect(html).toContain('theme CSS')
+    expect(html).toContain('theme styles')
   })
 
   it('explains an unknown configured skin id without alert styling', () => {
@@ -295,7 +295,7 @@ describe('settings page server render', () => {
     expect(html).toContain('data-testid="livery-optional-info"')
     expect(html).toContain('density')
     expect(html).toContain('conversation width')
-    expect(html).toContain('message flow')
+    expect(html).toContain('message layout')
     // Required-capability alert must not appear for the normal host fallbacks.
     expect(render(snapshot)).not.toContain('data-testid="livery-degraded"')
   })

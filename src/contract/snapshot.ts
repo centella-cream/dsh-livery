@@ -1,9 +1,9 @@
 /**
  * Contract snapshot extraction.
  *
- * Reads a real DSH 0.2.0-rc.2 installation and records the six contract classes
- * that decide compatibility. Nothing here trusts a version string: the hashes
- * are computed from the installed bytes.
+ * Reads a real DSH installation and records the six contract classes that
+ * decide compatibility. Nothing here trusts a version string: the hashes are
+ * computed from the installed bytes.
  *
  * Run as `node lib/cli/contract.js contract:snapshot -- --dsh-install <path>`.
  * The CLI entry is built by scripts/build.mjs.
@@ -888,7 +888,7 @@ async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, a
   return { matrix: merged, path }
 }
 
-/** Ascending semantic-ish version order for display and registry stability. */
+/** Ascending version order for display and registry stability. */
 export function compareVersions(a: string, b: string): number {
   const parse = (value: string): number[] => {
     const match = /^(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?$/u.exec(value)

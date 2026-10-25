@@ -1,6 +1,6 @@
 /**
  * Localized display names for the stable capability ids that appear in the
- * degradation report. Unknown ids fall back to the verbatim id, which is what a
+ * degradation report. Unknown ids fall back to the verbatim id, the value a
  * maintainer needs when a future contract adds a capability before this client
  * learns a name for it.
  */

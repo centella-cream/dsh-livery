@@ -1,8 +1,8 @@
 /**
  * Human-readable diagnostics for the multi-adapter pre-loader gate.
  *
- * The gate itself is deliberately silent data ({@link GateResult}); this module
- * turns a closed gate into stable, structured strings for three consumers:
+ * The gate itself returns only data ({@link GateResult}); this module turns a
+ * closed gate into stable, structured strings for three consumers:
  *
  * 1. `BootPayload.diagnostics` — the Client shows the same strings in its
  *    self-check panel, so a mismatch and the reason for it travel together.
@@ -11,9 +11,9 @@
  *
  * Strings are English and machine-oriented ("code: detail") on purpose: the
  * Client localizes its own UI, and a translated diagnostic is not reproducible
- * in a report. No secrets, paths or URLs are included — observed version, the
- * certified allowlist, adapter id, host version, contract hash prefix, catalog
- * profile, capability ids and an action.
+ * in a report. Fields are the observed version, certified allowlist, adapter
+ * id, host version, contract hash prefix, catalog profile, capability ids, gate
+ * codes and an action; never secrets, paths or URLs.
  */
 
 import type { CapabilityMap } from '../core/types.js'

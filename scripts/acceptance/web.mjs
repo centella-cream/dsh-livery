@@ -123,9 +123,10 @@ function failStartup(message, details) {
 }
 
 /**
- * Version-aware report limitations. One entry list per run; the §20 layout gap
- * and the client-bundle URL deviation are facts of every certified build, while
- * the desktop entry appears only for packaged-app / desktop-profile-kind runs.
+ * Version-aware report limitations. Each run gets one list: the
+ * implementation-plan.md §20 layout gap and the client-bundle URL deviation
+ * apply to every certified build, while desktop entries appear only for
+ * packaged-app or desktop-profile-kind runs.
  */
 function buildKnownLimitations(ctx, adapter) {
   const version = adapter?.hostVersion ?? ctx.config.expectedVersion ?? 'this host'

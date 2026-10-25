@@ -1,12 +1,12 @@
-# Design references — 24 livery set (round 5)
+# Design references: the 24-style set (round 5)
 
-The round-5 livery set keeps the 10 original ids (retuned with the new style
-system) and adds 14: 12 open-source-inspired palettes plus 2 original Chinese
-aesthetic themes (青瓷/朱砂). Open-source palettes are used as *colour
-inspiration* under their permissive licences; no source code, images, fonts or
-trademarks are copied, and every colour is re-derived into the plugin's own
-OKLab seed/token pipeline (light + dark variants authored for DSH token contrast).
-Machine-readable table: `docs/research/design-table.json`.
+The round-5 set keeps the 10 original ids (retuned for the new style system) and
+adds 14: 12 palettes inspired by open-source themes plus 2 original
+Chinese-aesthetic designs (青瓷/朱砂). The open-source palettes are used as *colour
+inspiration* under their permissive licences. No source code, images, fonts or
+trademarks are copied, and every colour is re-derived through the plugin's own
+OKLab seed/token pipeline, with light and dark variants written for DSH token
+contrast. The machine-readable table is `docs/research/design-table.json`.
 
 ## Open-source inspirations
 
@@ -48,7 +48,7 @@ Every livery differs on at least three axes (see `docs/design/style-system.md`):
 1. **Palette** — light + dark seeds (accent / secondary / surface / text), each
    contrast-repaired by the compiler.
 2. **Typography** — 10 local-only font stacks (system sans, humanist, serif
-   CJK/Latin, display, rounded, mono-UI) plus 8 metric profiles that override the
+   CJK/Latin, display, rounded, mono-UI) plus 9 metric profiles that override the
    consumed host type-scale tokens (UI micro text, small text, brand row).
 3. **Module shape** — 9 surface styles: radii scale (`--dsw-radius-xs…panel`),
    `--dsw-corner-shape`, elevation/shadow tokens and border tints, from sharp

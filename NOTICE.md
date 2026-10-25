@@ -1,12 +1,12 @@
 # NOTICE
 
 DSH Livery is an independent plugin for DeepSeek Harness. It does not copy
-source code from other DSH skin/theme plugins; the OKLab/OKLCh conversion
+source code from other DSH skin or theme plugins. Its OKLab/OKLCh conversion
 approach and the general "semantic token layer + boot injection" architecture
-are reimplemented from the public design notes in `references/design.md`.
+were reimplemented from the public design notes in `references/design.md`.
 
-* Research caches and extracted third-party materials are kept outside the
-  repository (untracked); none are part of the build, the packed plugin or the
+* Research caches and extracted third-party materials stay outside the
+  repository (untracked). None are part of the build, the packed plugin or the
   acceptance evidence.
 * DSH Livery ships no third-party images, fonts, character art, brands or
   trademarks. All preview thumbnails are generated from the plugin's own token
@@ -14,16 +14,15 @@ are reimplemented from the public design notes in `references/design.md`.
 * DeepSeek Harness (`@deepseek-ai/*`) is MIT licensed; see the host package for
   its own notice.
 
-## Round-5 design inspirations (palettes)
+## Design inspirations (palettes)
 
-The 24-livery set keeps 10 original designs and adds 12 palettes **inspired by**
-well-known open-source themes, plus 2 original Chinese-aesthetic designs
-(青瓷 Celadon, 朱砂 Cinnabar). No source code, images, fonts, character art or
-trademarks are copied; the colours are re-derived into DSH Livery's own OKLab
-seed/token pipeline (light + dark variants authored for host-token contrast), so
-each shipped livery is an interpretation rather than a pixel-exact port. The
-following projects are credited as colour inspirations under their permissive
-licences:
+The 24 styles include 10 original designs, 12 palettes **inspired by**
+well-known open-source themes, and 2 original Chinese designs (青瓷 Celadon,
+朱砂 Cinnabar). No source code, images, fonts, character art or trademarks are
+copied. Colours are re-derived through DSH Livery's own OKLab seed/token
+pipeline, with light and dark variants written for host-token contrast, so each
+shipped style is an interpretation rather than a pixel-exact port. The following
+projects are credited as colour inspirations under their permissive licences:
 
 - Nord — © Arctic Ice Studio / Sven Greb — MIT — https://github.com/nordtheme/nord
 - Dracula — © Dracula Theme contributors — MIT — https://github.com/dracula/dracula-theme
@@ -38,6 +37,6 @@ licences:
 - Ayu — © Ayu Theme contributors — MIT — https://github.com/ayu-theme/ayu-colors
 - Flexoki — © Steph Ango — MIT — https://github.com/kepano/flexoki
 
-Names identify the inspiration only; DSH Livery is not affiliated with or
+Names identify the inspiration only. DSH Livery is not affiliated with or
 endorsed by these projects. See `docs/research/design-references.md` for the full
 design table and rationale.

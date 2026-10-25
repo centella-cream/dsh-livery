@@ -120,7 +120,7 @@ async function buildClient() {
 }
 
 async function checkSizes() {
-  // Performance budgets from IMPLEMENTATION_PLAN §18.8, applied per catalog profile.
+  // Performance budgets from docs/design/implementation-plan.md §18.8, per catalog profile.
   const CLIENT_GZIP_BUDGET = 48 * 1024
   const PER_LIVERY_CSS_BUDGET = 12 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))

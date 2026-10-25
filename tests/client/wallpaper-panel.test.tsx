@@ -296,7 +296,7 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('内置壁纸')
     expect(html).toContain('效果')
     expect(html).toContain('模糊')
-    expect(html).toContain('表面霜化')
+    expect(html).toContain('磨砂')
     expect(html).toContain('全局氛围')
     expect(html).toContain('自定义图片地址')
     expect(html).toContain('在线壁纸')

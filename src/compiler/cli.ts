@@ -14,7 +14,7 @@
  *
  * Exit codes: 0 = pass, 1 = gate failure, 2 = usage error. Flags such as
  * `--version <v>` / `--dsh-install <path>` are accepted and ignored so the fixed
- * command interface in IMPLEMENTATION_PLAN §18.10 keeps working.
+ * command interface in docs/design/implementation-plan.md §18.10 keeps working.
  *
  * `main(argv, ctx)` is the stable entry point used by `scripts/cli.mjs` and by
  * `node lib/cli/compiler.js <command>` after `scripts/build.mjs` bundles this file.

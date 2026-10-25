@@ -1,7 +1,11 @@
 # Multi-version host support (0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.3)
 
-Frozen design for the second adaptation round. The same shipped plugin package must
-style three exact, independently certified host builds:
+This document began as the design for the second adaptation round. The certified
+matrix is still exact, but install-time compatibility is now a range; the final
+section describes the current policy.
+
+The same shipped plugin package must style three exact, independently certified
+host builds:
 
 | Host version | Source | Certified runtime | Certified browser/profile |
 |---|---|---|---|
@@ -9,9 +13,10 @@ style three exact, independently certified host builds:
 | `0.2.1-rc.2` | npm/CLI install | Node v22.23.1 | Web/Chrome (this round) |
 | `0.2.1-rc.3` | Electron `app.asar` (Desktop app) | Node v24.21.0, Electron 44.7.0 | Desktop/macOS (this round, native chrome limits documented) |
 
-No ranges and no semver inference: `engines.dsh` is the exact allowlist
-`0.2.0-rc.2 || 0.2.1-rc.2 || 0.2.1-rc.3`; `engines.node` is the union of certified
-runtimes `^22.23.1 || ^24.21.0`. Any other version fails closed to stock.
+On the certified path there is no semver inference: an exact build either has an
+adapter or it does not. `engines.node` is the union of the certified runtimes
+`^22.23.1 || ^24.21.0`. The install-time `engines.dsh` range also admits newer
+builds in compat mode, as described at the end of this document.
 
 ## 1. Generated contract registry (`src/generated/contract.ts`)
 
@@ -117,16 +122,18 @@ export const CATALOG_PROFILE_IDS: readonly string[]
 The compiler compiles **once per `catalogProfile`** (representative adapter's stock +
 capability map), then verifies that every adapter in the group renders identical
 bytes. Previews are emitted per profile: `lib/previews/<profileId>/<id>-<zh|en>-<light|dark>.svg`
-plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
+plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":96}`).
 
 ## 5. Host runtime
 
-- Pre-loader gate: `adapterForVersion(observedHostVersion)` (exact); if undefined →
-  closed gate, zero rows, structured diagnostic. Accepted state carries the adapter's
-  `adapterId`, `hostVersion`, `contractHash`, `catalogProfile`, and its capability map.
-  `profileKind` is recorded in the payload for diagnostics; certification scope is a
-  support-matrix claim, not a runtime switch (both certified builds are profile-agnostic
-  style layers).
+- Pre-loader gate: `resolveAdapterForVersion(observedHostVersion)` first looks for an
+  exact adapter. Since round 7, an in-range version without one resolves to the
+  synthetic `dsh-compat` identity (see the final section). If no adapter is available
+  because the version is out of range or unreadable, the gate closes with zero rows
+  and a structured diagnostic. Accepted state carries the adapter's `adapterId`,
+  `hostVersion`, `contractHash`, `catalogProfile` and capability map. `profileKind` is
+  recorded in the payload for diagnostics; certification scope is a support-matrix
+  claim, not a runtime switch (the certified builds are profile-agnostic style layers).
 - `buildCatalog(adapter)` returns the `LiveryCatalog` shape with that adapter's
   identity fields + `catalogProfile` + `previewsBase = PREVIEW_ROUTE_PREFIX + profileId + '/'`
   and the profile's liveries.
@@ -139,7 +146,8 @@ plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
 
 - Handshake whitelist: `__DSH_LIVERY_BOOT__` is accepted only when its
   `(hostVersion, adapterId, contractHash)` triple matches one `ADAPTERS` record, and
-  the fetched catalog repeats the same triple + `catalogProfile`.
+  the fetched catalog repeats the same triple + `catalogProfile`. A compat triple is
+  accepted only when the payload also sets `compat: true` (see the final section).
 - All style/preview decisions use the catalog data; preview URLs come from
   `catalog.previewsBase`, never from a hardcoded path.
 - Self-check shows the live host version, adapter id, contract hash and catalog
@@ -147,9 +155,9 @@ plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
   additionally lists `host-font-role-hooks: available`).
 - **Entry point:** the primary UI is a main-page panel (`main` keyed, key `livery`)
   plus a `sidebar.panellist` row (order 30, after 插件 0 / 自动化任务 10 / 上下文观察
-  20; label 皮肤/Livery) — the same integration as the shipped Plugins page. The old
-  `settings.section` page remains only as a fallback for hosts without panel
-  navigation (pre-`0.1.5-alpha.2`). See `docs/research/client-contract.md` §4 for the
+  20; label 视觉风格 / Visual Style). This is the same integration the shipped Plugins
+  page uses. The old `settings.section` page remains only as a fallback for hosts
+  without panel navigation (pre-`0.1.5-alpha.2`). See `docs/research/client-contract.md` §4 for the
   version history of this capability.
 - If the boot payload/catalog identity is not in the registry: fail closed to stock,
   remove boot style/attributes, report the mismatch.
@@ -180,7 +188,6 @@ plus `lib/previews/<profileId>/index.json` (`{"files":[...],"count":40}`).
   real window session is driven; the report must say so.
 - Support matrix: new entries stay `draft`/`g0-g5-passed` until their evidence lands;
   no G6 claim, no formal `support-matrix.json`.
-
 
 ## Certified matrix vs compatibility mode (round 7 policy)
 

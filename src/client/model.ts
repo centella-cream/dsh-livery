@@ -15,7 +15,7 @@ import type {
 } from '../core/types.js'
 import { LIVERY_VERSION, STOCK_ID } from '../core/types.js'
 
-/** Lifecycle states from plan §6.3. */
+/** Lifecycle states from implementation-plan.md §6.3. */
 export type LiveryPhase = 'boot' | 'loading' | 'ready' | 'previewing' | 'degraded' | 'disposed'
 
 /** Outcome of the first-frame handshake. */
@@ -111,7 +111,7 @@ export const DEFAULT_IDENTITY: RuntimeIdentity = {
   hostVersion: '',
 }
 
-/** Legal lifecycle transitions (plan §6.3). */
+/** Legal lifecycle transitions (implementation-plan.md §6.3). */
 export const PHASE_TRANSITIONS: Readonly<Record<LiveryPhase, readonly LiveryPhase[]>> = {
   boot: ['loading', 'degraded', 'disposed'],
   loading: ['ready', 'degraded', 'disposed'],
@@ -177,7 +177,7 @@ function metadataLocale(locale: LiveryLocaleId): 'zh-CN' | 'en-US' {
 
 /**
  * Localized livery name with the fixed fallback chain: active full locale →
- * the other shipped locale → the id (plan §11.3).
+ * the other shipped locale → the id (implementation-plan.md §11.3).
  * @param livery - one compiled livery.
  * @param locale - active DSH locale.
  * @returns display name.
@@ -249,7 +249,7 @@ function includes(haystack: string, needle: string): boolean {
  * Whether one livery matches the search text and tag filter.
  *
  * Matches the localized name in both shipped locales, the id, every tag id, and
- * the active-locale tag labels (plan §11.1/§11.2).
+ * the active-locale tag labels (implementation-plan.md §11.1/§11.2).
  * @param livery - one compiled livery.
  * @param filter - free text and optional tag id.
  * @param labels - active-locale tag labels.
@@ -290,7 +290,7 @@ export function filterLiveries(
 
 /** Availability verdict for one livery under the live capability map. */
 export interface LiveryAvailability {
-  /** False when a required host capability is missing (plan §7: not applicable). */
+  /** False when a required host capability is missing (implementation-plan.md §7: not applicable). */
   readonly applicable: boolean
   /** Required capability ids that are not available. */
   readonly missingRequired: readonly string[]
@@ -337,7 +337,7 @@ export function missingContractCapabilities(capabilities: CapabilityMap): readon
 /**
  * Boot hash comparison: the client only adopts the host style element when the
  * computed style text, the handshake payload, and the body attributes all agree
- * on the same id and content hash (plan §6.3 / interfaces.md §4).
+ * on the same id and content hash (implementation-plan.md §6.3 / interfaces.md §4).
  */
 export interface BootHashFacts {
   readonly expectedId: string
@@ -365,7 +365,7 @@ export function bootMatchesExpected(facts: BootHashFacts): boolean {
 /**
  * Short display form of a content hash (`sha256:abcd…` → `abcd…`).
  * @param hash - full hash text.
- * @returns at most the first 12 hex-ish characters after the algorithm prefix.
+ * @returns at most the first 12 characters after the algorithm prefix.
  */
 export function shortHash(hash: string): string {
   const body = hash.startsWith('sha256:') ? hash.slice('sha256:'.length) : hash

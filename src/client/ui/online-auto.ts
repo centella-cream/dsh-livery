@@ -1,5 +1,5 @@
 /**
- * Exactly-once auto random batch for the online wallpaper card.
+ * One-shot automatic random batch for the online wallpaper card.
  *
  * Opening the wallpaper tab should show a random batch immediately, but effect
  * slider changes (which re-render the panel) must never re-trigger a request.

@@ -36,7 +36,7 @@ import {
 import type { StockSnapshot } from '../generated/stock.js'
 import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from './previews.js'
 
-/** Documented size budgets from IMPLEMENTATION_PLAN §18.8 (bytes, UTF-8). */
+/** Size budgets from docs/design/implementation-plan.md §18.8 (bytes, UTF-8). */
 export const SIZE_BUDGETS = {
   /** First-frame boot CSS. */
   bootBytes: 12 * 1024,
@@ -44,7 +44,7 @@ export const SIZE_BUDGETS = {
   liveryBytes: 12 * 1024,
 } as const
 
-/** Fixed z-index budget from IMPLEMENTATION_PLAN §18.3: no value above 20. */
+/** Fixed z-index budget from docs/design/implementation-plan.md §18.3: no value above 20. */
 export const Z_INDEX_BUDGET = 20
 
 /** CSS cascade layer that must own every layout compensation rule. */
@@ -72,9 +72,9 @@ export interface TokenExemption {
 }
 
 /**
- * Alpha-only aliases derive resolves to exactly the stock value: they are
- * black/white (or semantic-red) washes whose compositing is independent of the
- * palette ramp, so inheriting the stock alpha is the correct rendering. Token
+ * Alpha-only aliases resolve to exactly the stock value: they are black/white
+ * (or semantic-red) washes whose compositing is independent of the palette
+ * ramp, so inheriting the stock alpha is the correct rendering. Token
  * names are version-independent (the 0.2.1 token contract keeps every name) and
  * entries are only consulted when a required token is uncovered.
  */
@@ -267,7 +267,10 @@ export function liveryTokenNames(livery: Pick<CompiledLivery, 'light' | 'dark'>)
   return [...new Set([...Object.keys(livery.light.tokens), ...Object.keys(livery.dark.tokens)])].sort()
 }
 
-/** Aggregate coverage across every livery: a token only counts as covered when every livery emits it. */
+/**
+ * Aggregate coverage across every livery: a token counts as covered only when
+ * every livery emits it.
+ */
 export function coverCatalog(
   liveries: readonly Pick<CompiledLivery, 'light' | 'dark'>[],
   sets: StockTokenSets,

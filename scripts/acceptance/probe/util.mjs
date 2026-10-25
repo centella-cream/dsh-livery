@@ -1,9 +1,9 @@
 /**
  * Shared utilities for the DSH Livery Web-profile acceptance harness.
  *
- * This directory is deliberately dependency-free (Node builtins + a local
- * `playwright-core`), so the harness also runs in a checkout that has not
- * installed dev dependencies yet.
+ * This directory is dependency-free (Node builtins + a local `playwright-core`),
+ * so the harness also runs in a checkout that has not installed dev dependencies
+ * yet.
  */
 
 import { createHash } from 'node:crypto'
@@ -228,9 +228,9 @@ function inflatePng(data) {
 }
 
 /**
- * Average colour of a PNG screenshot, plus a 3x3 grid of averages. Returns
- * `null` for images we cannot decode (only 8-bit PNG is supported, which is
- * what Playwright emits).
+ * Average colour of a PNG screenshot, plus a 3×3 grid of averages. Returns
+ * `null` for images we cannot decode (only 8-bit PNG is supported, the format
+ * Playwright emits).
  */
 export function pngColorStats(fileBuffer) {
   const image = inflatePng(fileBuffer)

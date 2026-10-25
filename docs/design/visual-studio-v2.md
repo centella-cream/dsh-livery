@@ -38,12 +38,14 @@ in `localStorage` under `dsh-livery.wallpaper.v1` and applied by the client
 presenter via one plugin-owned `<style data-plugin-css="dsh-livery/wallpaper">`.
 
 - Built-in wallpapers: 8 deterministic CSS-only designs (aurora, dusk, mist, paper,
-  ink, ember, sea, mono) — gradients/mesh, no network, no bundled images.
-- Online: `搜索` uses the Openverse API (CC0/PDM filter, `https://api.openverse.org/v1/images/`),
-  with search query, result grid (12), attribution/licence line, refresh page and
-  graceful offline/error state; `随机` refreshes from Picsum's public list
-  (`https://picsum.photos/v2/list`). Network requests are user-initiated only and
-  documented in README/SECURITY.
+  ink, ember, sea, mono), expanded to 24 in round 9. They are gradients and meshes
+  only: no network, no bundled images.
+- Online: **Search** uses the Openverse API (CC0/PDM filter,
+  `https://api.openverse.org/v1/images/`), with a query, a 12-item result grid,
+  attribution/licence line, paging and a graceful offline/error state. **Random**
+  refreshes from Picsum's public list (`https://picsum.photos/v2/list`). Network
+  requests only start when the user opens the tab or clicks an action; README and
+  SECURITY document them.
 - Custom URL: `https` only, max length; no `javascript:`/`data:`/`http:`.
 - Effects: blur 0–24 px, dim 0–70 %, frost 0–100 % (translucent livery surfaces:
   background tokens from the active compiled livery are mixed toward transparent by
@@ -76,11 +78,11 @@ Replace the 24-card flat grid + 16 always-visible tag chips with:
 ## 4. README / positioning
 
 Rewrite EN + zh README around **DSH Visual Studio** (视觉工作室): what it adds over
-a generic skin — 24-style visual system, wallpaper library with online search and
-effects, certified compatibility policy, token-only/zero-takeover safety, verification
-matrix and honest limitations. Explicitly explain "不接管主题 ≠ 普通皮肤" and the
+a generic skin: a 24-style visual system, a wallpaper studio with online search and
+effects, the certified compatibility policy, token-only/zero-takeover safety, and the
+verification matrix with its known limitations. Explicitly explain "不接管主题 ≠ 普通皮肤" and the
 certified-vs-compat policy table. Update SECURITY for wallpaper network requests,
-docs/verification for wallpaper+welcome, CHANGELOG (unreleased 0.1.0).
+docs/verification for wallpaper coverage, and CHANGELOG (unreleased 0.1.0).
 
 ## 5. Round 9 — wallpaper fixes/expansion (still unreleased 0.1.0)
 
@@ -98,13 +100,13 @@ User feedback after testing the real Web Profile:
    wallpaper is perceptible on any plugin page without targeting their DOM.
    Keep the immersive under-content layer + token frost for core surfaces.
    New effect control: 全局氛围 / Atmosphere (0–100, 0 = immersive only).
-3. **More wallpapers + curated crawler.** Expand built-ins 8 → 24 CSS-only
+3. **More wallpapers + a curated crawler.** Expand built-ins from 8 to 24 CSS-only
    designs. Add an **online wallpaper library** ("轻量策展爬虫"): curated style
    categories (nature/city/abstract/minimal/sky/texture/space/gradient) mapped to
-   license-safe Openverse CC0/PDM queries, pageable batches, localStorage cache
-   with TTL (6 h), request timeout/retry, dedupe, cached fallback when offline,
+   licence-safe Openverse CC0/PDM queries, pageable batches, a localStorage cache
+   with a 6 h TTL, request timeout/retry, dedupe, a cached fallback when offline and
    attribution on selection. The library appears first in the wallpaper tab;
-   custom upload/URL remains below.
+   custom upload/URL stays below it. The library was removed in round 11; see §7.
 4. **User upload + adaptive sizing.** File picker + drag/drop (JPEG/PNG/WebP/AVIF,
    ≤10 MiB), stored in IndexedDB (`dsh-livery-wallpapers`), restored after reload;
    https URL input retained. Rendering always uses viewport-relative
@@ -118,14 +120,15 @@ User feedback after testing the real Web Profile:
 User feedback: the wallpaper page modules (built-ins, effects, upload, random/library)
 are flat/monotonous, and the style page is too simple. Requirements:
 
-- **Module hierarchy, not one flat list.** Every area is a card/section with a
-  header, bordered surface, consistent padding and spacing; visual hierarchy is
-  hero → main modules → secondary modules. Avoid 100%-width sliders and rows.
+- **Module hierarchy, not one flat list.** Every area is a card or section with a
+  header, bordered surface, consistent padding and spacing. The visual hierarchy runs
+  from the hero to main modules to secondary modules. Avoid 100%-width sliders and
+  rows.
 - **Wallpaper page**: responsive two-column card layout at ≥1100 px: main column
-  (current-wallpaper hero card → online library card → custom upload/URL card) and
+  (current-wallpaper hero card → online wallpapers card → custom upload/URL card) and
   a side rail (effects card with compact constrained sliders in a 2×2/stacked
   layout → built-ins card with a compact 24-swatch grid). Stack to one column
-  below 1100 px. Effects module must NOT use viewport-wide sliders; sliders are
+  below 1100 px. The effects module must NOT use viewport-wide sliders; sliders are
   bounded (~160–220 px) with value badges, in a gridded card.
 - **Style page**: current-style hero/summary card + action area, gallery card with
   toolbar and family sections, and a side rail (self-check/details; current

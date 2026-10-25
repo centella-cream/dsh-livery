@@ -7,8 +7,8 @@
  * stylesheet bytes for every catalog profile. The runtime only reads
  * `CompiledLivery.css` and `CompiledLivery.cssHash`.
  *
- * `stock` is a first-class known skin id: it always resolves to "no livery" and
- * the callers then leave the host appearance untouched.
+ * `stock` is always a valid skin id: it resolves to "no livery", and callers
+ * leave the host appearance untouched.
  */
 
 import type { CompiledLivery, LiveryCatalog, StockId } from './types.js'
@@ -40,9 +40,9 @@ export function normalizeSkinId(source: LiverySource, skinId: string): string {
 }
 
 /**
- * Resolve the livery the persisted `skinId` points at together with the
- * normalised id that should be persisted/booted. Unknown and deleted ids
- * normalize to `stock` (the host appearance stays untouched).
+ * Resolve the persisted `skinId` to a livery and the normalised id to persist
+ * or boot. Unknown and deleted ids normalize to `stock`, leaving the host
+ * appearance untouched.
  */
 export function resolveActiveLivery(
   source: LiverySource,

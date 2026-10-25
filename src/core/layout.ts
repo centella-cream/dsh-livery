@@ -1,10 +1,10 @@
 /**
  * DSH Livery — layout recipe rendering.
  *
- * Hard host fact (src/generated/contract.ts `HOST_CAPABILITIES`): DSH
+ * Host constraint (src/generated/contract.ts `HOST_CAPABILITIES`): DSH
  * 0.2.0-rc.2 exposes no documented public hook for density, transcript width or
- * message flow. Those recipes therefore degrade to `host` / `stock` and emit NO
- * selectors — fixed code can never invent component selectors for them.
+ * message flow. Those recipes degrade to `host` / `stock` and emit no selectors;
+ * fixed code cannot invent component selectors for them.
  *
  * `surfaceStyle` is implemented token-only: the derived token values (see
  * derive.ts) carry the material, while this module emits the token-level media

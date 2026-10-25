@@ -1,9 +1,9 @@
 /**
  * DSH Livery — shared contract types.
  *
- * This module is deliberately free of React, Cordis and DSH imports: the same
- * types are compiled into the Host bundle, the Client bundle and the build-time
- * compiler. Everything here is data, never behaviour that touches a runtime.
+ * This module imports no React, Cordis or DSH packages: the same types are
+ * compiled into the Host bundle, the Client bundle and the build-time compiler.
+ * Everything here is data; nothing touches a runtime.
  */
 
 /** Livery manifest / compiled artifact schema version. */
@@ -25,7 +25,7 @@ export const CLIENT_TARGET = 'chrome120' as const
 /** Node engine range read from the target DSH contract (do not widen here). */
 export const NODE_RANGE = '^22.19.0 || >=24.0.0' as const
 
-/** Public body attribute owning the active livery. Only Livery writes it. */
+/** Public body attribute naming the active livery. Only Livery writes it. */
 export const BODY_ATTRIBUTE = 'data-dsh-livery' as const
 /** Public opt-out attribute read on third-party plugin roots. */
 export const QUIET_ATTRIBUTE = 'data-dsh-livery-quiet' as const
@@ -37,7 +37,7 @@ export const BOOT_STYLE_ID = 'dsh-livery-boot' as const
 export const TOKEN_STYLE_ID = 'dsh-livery-tokens' as const
 export const LAYOUT_STYLE_ID = 'dsh-livery-layout' as const
 export const PREVIEW_STYLE_ID = 'dsh-livery-preview' as const
-/** Data owner marker that DSH's plugin lifecycle reclaims (`style[data-plugin]`). */
+/** Marker DSH's plugin lifecycle uses to reclaim owned styles (`style[data-plugin]`). */
 export const PLUGIN_MARKER = 'dsh-livery' as const
 /** Global carrying the first-frame handshake payload. */
 export const BOOT_GLOBAL = '__DSH_LIVERY_BOOT__' as const
@@ -313,9 +313,9 @@ export interface CompiledLivery {
   readonly css: LiveryCss
   /**
    * Hash of the exact concatenated stylesheet bytes (`hashCss(css.tokens +
-   * css.typography + css.layout)`). This is the value the Host injects, the
-   * Client compares against `BootPayload.cssHash` / `body[data-dsh-livery-hash]`,
-   * and the only hash any runtime needs; no runtime re-render is required.
+   * css.typography + css.layout)`). The Host injects this value and the Client
+   * compares it against `BootPayload.cssHash` / `body[data-dsh-livery-hash]`.
+   * It is the only hash any runtime needs; no runtime re-render is required.
    */
   readonly cssHash: string
   /** Content hash over id + css + layout + typography (catalog identity). */

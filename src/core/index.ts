@@ -10,9 +10,9 @@
  * - `../generated/contract.js` (adapter registry) → host, compiler, contract tooling
  * - `../generated/liveries.js` (catalog profiles) → compiler, host catalog route
  * - `../generated/stock.js` (per-version stock snapshots) → compiler, tests
- * Only the stock *snapshot type* is genuinely shared with the core API surface,
- * so that (and its lookup helpers) are re-exported here for build-time/test
- * convenience without pulling any adapter or catalog data into the barrel.
+ * Only the stock snapshot type is shared with the core API surface, so it and
+ * its lookup helpers are re-exported here for build-time and test convenience
+ * without pulling adapter or catalog data into the barrel.
  */
 export * from './types.js'
 export * from './color.js'

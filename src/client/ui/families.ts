@@ -3,8 +3,8 @@
  *
  * The 24 built-in styles carry 16 stable tag ids; the gallery groups them into
  * six presentation families so the primary filter row stays compact and the
- * cards read as families instead of one long wall. Families are DEMERITED from
- * tags (not a second data source): deterministic, priority-ordered, and
+ * cards group by family instead of forming one long list. Families are derived
+ * from tags (not a second data source): deterministic, priority-ordered, and
  * presentation-only — they never affect compilation, capability checks or the
  * applied stylesheet.
  *

@@ -7,10 +7,9 @@
  * `body[data-dsh-wallpaper]`, using only body pseudo-elements and documented
  * livery background tokens mixed toward transparent for the frost effect.
  *
- * Everything in this module is pure and testable: validation, clamping, the
- * persisted schema, remote-response mapping and the stylesheet builder. DOM
- * writes live in `wallpaper/apply.ts`; orchestration lives in
- * `wallpaper/controller.ts`.
+ * Everything here is DOM-free and testable: validation, clamping, the persisted
+ * schema, remote-response mapping and the stylesheet builder. DOM writes live in
+ * `wallpaper/apply.ts`; orchestration lives in `wallpaper/controller.ts`.
  */
 import type { CompiledLivery, TokenMap } from '../core/types.js'
 
@@ -27,7 +26,7 @@ export const WALLPAPER_OVERLAY_CLASS = 'dsh-livery-wallpaper-overlay'
 /** Hard cap for user-provided wallpaper URLs. */
 export const MAX_WALLPAPER_URL_LENGTH = 2048
 
-/** One of the eight bundled CSS-only wallpapers. */
+/** One of the 24 bundled CSS-only wallpapers. */
 export type BuiltinWallpaperId =
   | 'aurora' | 'dusk' | 'mist' | 'paper'
   | 'ink' | 'ember' | 'sea' | 'mono'
@@ -81,7 +80,7 @@ export interface WallpaperEffects {
   readonly blur: number
   /** Dim overlay opacity in percent, 0–70. */
   readonly dim: number
-  /** Frost: percent of surface color removed toward transparent, 0–100. */
+  /** Frost: percentage of the surface colour removed toward transparency, 0–100. */
   readonly frost: number
   /** Global atmosphere overlay opacity in percent, 0–100 (step 5); 0 = immersive only. */
   readonly atmosphere: number
@@ -95,7 +94,7 @@ export const WALLPAPER_EFFECT_BOUNDS: Readonly<Record<keyof WallpaperEffects, { 
   atmosphere: { min: 0, max: 100, step: 5 },
 }
 
-/** Effects applied before any user change (and restored by 重置). */
+/** Effects applied before any user change, and by the reset action. */
 export const DEFAULT_WALLPAPER_EFFECTS: WallpaperEffects = { blur: 8, dim: 25, frost: 35, atmosphere: 30 }
 
 /** The selected wallpaper, or `undefined` for "no wallpaper". */

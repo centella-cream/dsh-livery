@@ -76,10 +76,10 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 ### Verified
 
 - Final artifact `dsh-livery-0.1.0.tgz` sha256
-  `179ca228c2a568c7d3d65736c1993fa163e9cf8c7566954b67ad00f3db263842` (548,723 B, 233 files).
+  `675b26bce2059c595286915c12b0b91a393260a2721f890bc4b0a8cd7073527a` (548,779 B, 233 files).
 - Four-target acceptance on the final artifact: Web `0.2.1-rc.2` isolated full
-  run 213/0/3/2, real-profile clone 214/0/3/4, Desktop `0.2.1-rc.3` packaged
-  carrier 213/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
+  run 219/0/3/2, real-profile clone 220/0/3/4, Desktop `0.2.1-rc.3` packaged
+  carrier 219/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
   profile (auto online batch with 12 results, unified computed font sizes
   {11,12,13,15}, two-line About footer, no console errors).
 - Repo gates: `tsc` clean, 681 tests (1 optional skip), 204 generated files /

@@ -1,13 +1,13 @@
-# DSH Client-Side Plugin Contract — 0.2.0-rc.2
+# DSH client-side plugin contract: 0.2.0-rc.2
 
-Implementation-grade contract for a third-party **browser** plugin ("livery"). Every claim is cited `path:line`;
+A detailed contract for a third-party **browser** plugin ("livery"). Every claim cites `path:line`;
 anything not verified against first-party files is marked **UNVERIFIED**.
 
 **Paths**: `DSH/` = `$DSH_INSTALL/node_modules/@deepseek-ai/`;
 `FE/` = `DSH/dsh-web-frontend/dist/assets/index-5SrrfWpU.js` (minified shell, boot+seed all on line 126);
 `CHARTER/` = `<charter-repo>/` (working reference plugin). Host `0.2.0-rc.2`, React 18.3.1.
 
-## 0. Load-bearing facts (10 lines)
+## 0. Key facts
 
 1. Build output is one classic script calling `window.__ModuleLoader__.load({id, factory})`; `id` = exact npm package name; factory = `(require) => module.exports` (`DSH/dsh-client-modules/lib/client.js:1-6,569-576`).
 2. Host serves only `exports["./client"]` as `/<pkg>/client.js` plus compiler chunks `client.<name>.js`; CSS must be inlined into JS, no sibling static imports (`DSH/dsh-client-modules/lib/index.js:170-181,204-229`).
@@ -144,7 +144,7 @@ function LiverySection(props: PropsRuntime<'settings.section'> & PropsLocale<'ds
 }
 ```
 
-Rules that bite: registering into an undeclared slot throws; a second entry at an occupied cell's exact priority throws;
+Rules to watch for: registering into an undeclared slot throws; a second entry at an occupied cell's exact priority throws;
 the disposer collapses declared children (`DSH/dsh-client-ui-slots/lib/types/index.d.ts:757-788`); an entry that declares
 `children` must render `renderSlot` (`:585-595`). Label thunks are the supported locale mechanism (`:550-555`) though the
 settings contract text still describes re-registration (`.../contract/slots.d.ts:62-68`) — shipped pages use thunks.
@@ -195,7 +195,7 @@ ctx.effect(() => {
 }, 'dsh-livery: theme observer')
 ```
 
-Prefer CSS: `--dsw-*` tokens already switch with the palette, so a skin often needs no JS observation (`DSH/dsh-client-ui-theme/README.md:28`). Registering a theme or calling `setTheme`/`setFontSize` is a product decision, not an observation mechanism; `overrideTokens(source, tokens)` is the least invasive dynamic write (`.../client/index.d.ts:162-178`). The presenter is shell-owned — never install it.
+Prefer CSS: `--dsw-*` tokens already switch with the palette, so a skin often needs no JS observation (`DSH/dsh-client-ui-theme/README.md:28`). Registering a theme or calling `setTheme`/`setFontSize` is a product decision, not an observation mechanism; `overrideTokens(source, tokens)` is the least invasive dynamic write (`.../client/index.d.ts:162-178`). The presenter is owned by the shell; never install it.
 
 ## 7. Styles
 

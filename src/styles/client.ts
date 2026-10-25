@@ -1,17 +1,18 @@
 /**
- * Client-owned stylesheet for the Livery settings page.
+ * Client-owned stylesheet for the Livery settings page and main panel.
  *
- * Kept as a TypeScript template string on purpose: the shipped client bundle is
- * one self-contained classic script and cannot ride a sibling `.css` import
+ * Kept as a TypeScript template string: the shipped client bundle is one
+ * self-contained classic script and cannot use a sibling `.css` import
  * (client-contract.md §1), so the string is inlined at materialization into
  * `<style data-plugin="dsh-livery" data-plugin-css="dsh-livery/client.css">`.
  *
- * Rules of the house (plan §18.3): no `!important`, no hashed class selectors,
- * no remote URLs, every declaration scoped to this plugin's `.livery-*` classes,
- * and all color/spacing values read from documented `--dsw-*` tokens (through
- * `.livery-section` local aliases) so the page follows the active host theme for
- * free. Text containers never hard-code a width, so 200% zoom reflows instead of
- * clipping. Compact on purpose: the shipped string is budgeted at 12KB (wallpaper/style studio layout).
+ * House rules (docs/design/implementation-plan.md §18.3): no `!important`, no
+ * hashed class selectors, no remote URLs, every declaration scoped to this
+ * plugin's `.livery-*` classes, and all colour/spacing values read from
+ * documented `--dsw-*` tokens (through `.livery-section` local aliases) so the
+ * page follows the active host theme automatically. Text containers never
+ * hard-code a width, so 200% zoom reflows instead of clipping. The shipped
+ * string is budgeted at 12 KiB.
  *
  * @see docs/research/client-contract.md §7
  */

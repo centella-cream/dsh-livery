@@ -49,7 +49,7 @@ export function rememberPageTab(tab: PageTab): void {
   }
 }
 
-/** Test seam: forget the remembered tab (module memory + sessionStorage mirror). */
+/** Test helper: forget the remembered tab (module memory + sessionStorage mirror). */
 export function resetRememberedPageTab(): void {
   remembered = undefined
   try {

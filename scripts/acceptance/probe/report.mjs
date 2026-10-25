@@ -276,9 +276,9 @@ function groupedChecks(report) {
 }
 
 /**
- * docs/design/implementation-plan.md §20 criteria mapped to the checks that prove them in
- * this Web-profile run. Rows without checks are out of scope or an honest gap
- * and are reported as such, never faked.
+ * docs/design/implementation-plan.md §20 criteria mapped to the checks that
+ * prove them in this Web-profile run. Rows without checks are out of scope or a
+ * known gap, and are reported as such.
  */
 export const PLAN20_ROWS = [
   {

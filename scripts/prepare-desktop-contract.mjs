@@ -2,9 +2,9 @@
 /**
  * Prepare a contract-extractable Desktop host tree from the packaged Electron app.
  *
- * The Desktop Profile ships its DSH runtime inside Electron's `app.asar`. Packaged
- * apps strip type declarations (`.d.ts`) and a few READMEs, which the contract
- * snapshot verifies. This script:
+ * The Desktop Profile ships its DSH runtime inside Electron's `app.asar`.
+ * Packaged apps strip type declarations (`.d.ts`) and a few READMEs that the
+ * contract snapshot expects. This script:
  *
  *  1. reads the archive header (dependency-free asar reader),
  *  2. extracts every DSH package's `package.json`, `lib/client.js`, `lib/index.js`
@@ -64,7 +64,7 @@ if (typeof appAsar !== 'string' || !existsSync(appAsar)) {
 }
 
 /* ------------------------------------------------------------------ *
- * asar reader (see src/contract/README-asar notes in docs)
+ * asar reader (dependency-free reader for Electron's asar format)
  * ------------------------------------------------------------------ */
 
 const archive = resolve(appAsar)
@@ -91,7 +91,7 @@ function extractAsarEntries(entries, targetRoot) {
   try {
     for (const [entryPath, entry] of entries) {
       // Archive root is `dsh/`; drop it so the tree mirrors a normal install:
-      //   <target>/node_modules/@deepseek-ai/dsh/... 
+      //   <target>/node_modules/@deepseek-ai/dsh/...
       const outPath = join(targetRoot, entryPath.replace(/^dsh\//u, ''))
       mkdirSync(dirname(outPath), { recursive: true })
       const buffer = Buffer.alloc(entry.size)

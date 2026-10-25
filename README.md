@@ -4,64 +4,67 @@
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.x%20certified%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
 
-A **visual studio for DeepSeek Harness**: 24 contract-gated styles, a wallpaper
-studio with online image search and blur/frost effects, and a curated gallery —
-packaged as a plugin that adds a visual layer **instead of hijacking the host
-theme**.
+A visual studio for DeepSeek Harness: 24 styles built on a frozen contract, a
+wallpaper studio with online image search and blur/frost effects, and a style
+gallery. It ships as a plugin that adds a visual layer **instead of taking over
+the host theme**.
 
 [English](README.md) · [中文](README.zh-CN.md)
 
 ![24 built-in styles](docs/assets/gallery-24-light.jpg)
 
-## Why not "just another skin"
+## Why not another skin plugin
 
-Ordinary skin plugins often own the host theme, register their own theme ids, paint
-window chrome, and inject broad CSS — which is exactly what makes them fragile
-across DSH updates. DSH Visual Studio takes the opposite trade:
+Skin plugins often take over the host theme, register their own theme ids, paint
+window chrome and inject broad CSS. That is also why they tend to break when DSH
+changes. DSH Visual Studio makes the opposite trade:
 
 | Typical skin plugin | DSH Visual Studio |
 |---|---|
 | Takes over `ctx.theme`, registers themes, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
-| Paints window chrome (title bars, overlays) | Never draws chrome; the host owns the window |
-| Wide selector-based CSS that breaks on host refactors | Token-only rendered CSS + a body-scoped wallpaper layer; no host component selectors |
-| Breaks (or half-works) when DSH changes | Certified matrix for exact builds **plus a compatibility mode for newer in-range builds** — clearly labelled, never a hard break |
-| "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits, and a published acceptance matrix |
+| Paints window chrome (title bars, overlays) | Draws no chrome; the host owns the window |
+| Wide selector-based CSS that breaks when the host refactors | CSS built only from tokens, plus a body-scoped wallpaper layer; no host component selectors |
+| Breaks or half-works after DSH updates | A certified matrix for exact builds, plus compatibility mode for newer in-range builds; clearly labelled, never a hard break |
+| "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits and a published acceptance matrix |
 
-The difference is a **visual system with engineering guarantees**, not a stylesheet:
-24 designed styles across five axes, a wallpaper studio, a curated gallery, and a
-version policy that survives DSH updates.
+The result is a visual system you can check, not just a stylesheet: 24 styles
+across five axes, a wallpaper studio, a style gallery and a version policy that
+survives DSH updates.
 
 ## Features
 
-- **24 styles, five visual axes.** Palette (OKLab seeds → full light/dark token
-  set), typography (10 local-only font stacks + 9 type scales), module shape
-  (`--dsw-radius-*`, `--dsw-corner-shape`), elevation/material (flat/paper hairline
-  panels, elevated cards, glass blur), and border/focus treatment. 10 original
-  designs + 12 open-source-inspired palettes (MIT/Apache-2.0, see [NOTICE](NOTICE.md))
-  + 2 original Chinese-aesthetic designs (Celadon 青瓷, Cinnabar 朱砂).
-- **Wallpaper studio.** 24 built-in CSS wallpapers; an **online wallpapers** card
-  that auto-loads one random Picsum batch when you open the tab, then supports
-  explicit Openverse (CC0/PDM) search, random and “next batch”; local image upload
-  (stored in IndexedDB) and https URLs. Effects: blur 0–24 px, dim 0–70 %,
-  frost 0–100 % and a global atmosphere overlay that keeps the wallpaper visible on
-  **every** plugin page, including third-party panels with opaque surfaces. Both
-  layers are viewport-relative `cover`, so portrait/ultrawide/resized windows crop
-  instead of distorting. Network requests start from opening the tab / explicit
-  actions; choices are local.
-- **Module-first studio layout with one type scale.** Both pages use responsive card
-  modules rather than one flat list: wallpaper hero, search-first online card,
-  custom upload/URL card, and a side rail with compact bounded effect sliders
-  (140 px) + the 24-swatch grid; the style page pairs a current-style hero (with
-  preview thumbnail) + gallery card with an 操作/自检 rail. A single five-step type
-  scale is shared across every module, and cards stack cleanly on narrow windows.
-- **Curated gallery.** Styles grouped into six families (Calm / Nature / Light /
-  Retro / Vivid / Dark), primary filters first, the full tag vocabulary behind
-  "More filters"; a preview-language tab switches thumbnails between Follow DSH /
-  Chinese / English.
-- **First-class entry.** A left-sidebar plugin panel (**视觉风格 / Visual styles**,
-  with a second **壁纸 / Wallpapers** tab), next to Plugins / Automation / Context.
-- **Honest degradation.** Missing host capabilities and unverified modes are shown
-  in the self-check instead of being faked.
+- **24 styles across five visual axes.** Colour (OKLab seeds to a full light/dark
+  token set), typography (10 local-only font stacks and 9 typography profiles), module
+  shape (`--dsw-radius-*`, `--dsw-corner-shape`), elevation and material (flat or
+  paper hairline panels, elevated cards, glass blur), and border/focus treatment.
+  The set has 10 original designs, 12 palettes inspired by permissively licensed
+  projects (MIT/Apache-2.0; see [NOTICE](NOTICE.md)) and 2 original Chinese designs
+  (Celadon 青瓷, Cinnabar 朱砂).
+- **Wallpaper studio.** 24 built-in CSS wallpapers and an **online wallpapers**
+  card. Opening the wallpaper tab loads one random Picsum batch automatically; from
+  there you can search Openverse (CC0/PDM), draw another random batch or load the next
+  one. Local image upload (stored in IndexedDB) and https URLs are also supported.
+  Effects: blur 0–24 px, dim 0–70 %, frost 0–100 %, and a global atmosphere
+  overlay that keeps the wallpaper visible on **every** plugin page, including
+  third-party panels with opaque surfaces. Both layers are viewport-relative
+  `cover`, so portrait, ultrawide and resized windows crop instead of distorting.
+  Network requests start when you open the tab or take an explicit action; your
+  choices stay local.
+- **Card-based studio layout with one type scale.** Both pages use responsive card
+  modules instead of one flat list. The wallpaper page has a wallpaper preview, a
+  search-first online card, a custom upload/URL card, and a side rail with compact
+  bounded effect sliders (140 px) and the 24-swatch grid. The style page pairs a
+  current-style card (with preview thumbnail) and gallery card with an Actions /
+  Self-check rail. A single five-step type scale is shared across every module, and
+  cards stack cleanly on narrow windows.
+- **Style gallery.** Styles are grouped into six families (Calm / Nature / Light /
+  Retro / Vivid / Dark). Primary filters come first, and the full tag set is
+  available under "More filters". A preview-language tab switches thumbnails
+  between Follow DSH, Chinese and English.
+- **Sidebar entry.** A left-sidebar plugin panel (**视觉风格 / Visual Style**, with
+  a second **壁纸 / Wallpapers** tab), next to Plugins / Automation / Context.
+- **Missing features are reported.** Missing host capabilities and unverified
+  modes are shown in the self-check instead of being faked.
 
 ![Wallpaper studio](docs/assets/wallpaper.jpg)
 
@@ -69,20 +72,20 @@ version policy that survives DSH updates.
 
 ## Host support and version policy
 
-`engines.dsh` declares the compatibility range **`>=0.2.0-rc.2 <1.0.0`**. Inside
-it there are two tiers:
+`engines.dsh` declares the compatibility range **`>=0.2.0-rc.2 <1.0.0`**. The
+range has three outcomes:
 
 | Tier | Host builds | Guarantees |
 |---|---|---|
 | **Certified** | DSH `0.2.0-rc.2`, `0.2.1-rc.2`, `0.2.1-rc.3` | Exact six-hash contract, loader-ABI check, full acceptance matrix (Web + Desktop runtime + real Electron renderer) |
-| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest certified contract; clearly marked "unverified" in the panel and self-check; no hard failure |
+| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest certified contract; marked "unverified" in the panel and self-check; no hard failure |
 | **Rejected** | Versions outside the range or unreadable | Fail closed to the stock appearance, zero injected rows |
 
 Certification means "verified on that exact build", not "installable only there".
-When a new DSH build is added to the certified matrix it moves from compat to
-certified automatically. See
-[docs/design/multi-version.md](docs/design/multi-version.md) for the mechanism and
-[docs/verification.md](docs/verification.md) for the current matrix.
+When a new DSH build joins the certified matrix, it moves from compat to certified
+automatically. See [docs/design/multi-version.md](docs/design/multi-version.md)
+for the mechanism and [docs/verification.md](docs/verification.md) for the current
+matrix.
 
 ![Style differences](docs/assets/style-differences.jpg)
 
@@ -103,20 +106,21 @@ enforces `engines.dsh` at install time.
 
 ## Usage
 
-Open the left sidebar, click **视觉风格 / Visual styles** above the Workspace
-section. Two tabs:
+Open the left sidebar and click **视觉风格 / Visual Style** above the Workspace
+section. The page has two tabs:
 
-- **视觉风格 / Visual styles** — preview (transient), Apply (one config mutation),
-  Restore default appearance; family sections + search + "More filters"; preview
-  language tab.
-- **壁纸 / Wallpapers** — open the tab to get a random online batch automatically, or
-  search Openverse / draw another random batch; pick one of 24 built-in designs, upload
-  a local image, or paste an https URL, then tune blur / dim / frost / global
-  atmosphere. Wallpaper choices are stored in the browser and survive restarts; the
-  global atmosphere keeps them visible on third-party plugin pages too.
+- **视觉风格 / Visual styles**: preview (temporary), Apply (one config write),
+  Restore default appearance; family sections, search, "More filters" and the
+  preview-language tab.
+- **壁纸 / Wallpapers**: opening the tab loads a random online batch automatically.
+  You can search Openverse, draw another random batch or load the next one; pick
+  one of 24 built-in designs, upload a local image or paste an https URL, then
+  adjust blur, dim, frost and global atmosphere. Wallpaper choices are stored in
+  the browser and survive restarts. The global atmosphere keeps them visible on
+  third-party plugin pages too.
 
-Applying a style and applying a wallpaper are independent: wallpapers keep working
-when you switch styles.
+Applying a style and applying a wallpaper are independent: switching styles does
+not remove the wallpaper.
 
 ![Entry and gallery](docs/assets/livery-panel.jpg)
 
@@ -163,9 +167,9 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 
 Current certified matrix (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
 real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
-renderer; repo gates include `tsc`, 680+ tests, contrast/token/CSS audits, loader ABI
+renderer. Repo gates include `tsc`, 680+ tests, contrast/token/CSS audits, loader ABI
 and package checks. Raw evidence is generated locally under `artifacts/` and is not
-committed. Details and honest limitations: [docs/verification.md](docs/verification.md).
+committed. Details and known limitations: [docs/verification.md](docs/verification.md).
 
 ## Contributing
 
@@ -183,7 +187,8 @@ Commits are one concise line (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Palette attributions are in [NOTICE.md](NOTICE.md).
+MIT, see [LICENSE](LICENSE). Palette attributions are in [NOTICE.md](NOTICE.md).
 Preview thumbnails and built-in wallpapers are generated from the plugin's own data;
 no third-party images or fonts are bundled. The optional wallpaper studio loads
-third-party images only on explicit user action (see [SECURITY.md](SECURITY.md)).
+third-party images only when you open the wallpaper tab or take an explicit action
+(see [SECURITY.md](SECURITY.md)).

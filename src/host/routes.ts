@@ -2,18 +2,18 @@
  * The two read-only routes the Host serves to the browser: the catalog and the
  * preview assets.
  *
- * Both routes answer for the *live adapter*. The Host styles exactly one exact
- * host build per process, so a process that cannot resolve a certified adapter
+ * Both routes answer for the *live adapter*. The Host styles exactly one host
+ * build per process, so a process that cannot resolve a certified adapter
  * (unreadable or uncertified version) serves neither a catalog nor previews:
  * the gate is closed and the Client has no boot payload to act on anyway. The
  * preview route is scoped to the active adapter's catalog profile — a request
  * naming another profile is a 404, so a 0.2.1 host can never be served a
  * 0.2.0-compiled asset set.
  *
- * Both handlers own their whole response (the webserver sets no content type
+ * Both handlers write the entire response (the webserver sets no content type
  * and ships no file helper), and both are fail-safe: an unexpected throw, a
- * client that disconnected, or a response already completed never escapes as
- * an unhandled rejection. Assets are served from a per-profile whitelist bound
+ * disconnected client or an already-completed response never escapes as an
+ * unhandled rejection. Assets are served from a per-profile whitelist bound
  * at registration time, so a request name can never become a filesystem path.
  */
 
@@ -243,7 +243,7 @@ export function createCatalogHandler(options: LiveryRouteOptions = {}): LiveryRo
     }
     const adapter = currentAdapter()
     if (adapter === undefined) {
-      // Uncertified host: this build has no catalog it can honestly claim.
+      // Uncertified host: this build has no catalog it can claim.
       respond(res, 404, NOT_FOUND_HEADERS)
       return
     }

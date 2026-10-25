@@ -795,6 +795,33 @@ export async function checkLiveryPanelFlow(ctx) {
     `panel visible=${afterSettings.liveryPanelVisible}; selected row "${afterSettings.selectedRowLabel}"`,
   )
 
+  // Round-12 zh self-check copy (the checkSelfCheck group later runs in the host
+  // locale, which the fonts pass leaves on en; verify the zh strings here).
+  try {
+    // Stock state omits the CSS-safety counts (no active stylesheet); the
+    // "未限定范围的变量" label is asserted after Apply below.
+    const zhSelfCheckLabels = ['启动信息', '样式覆盖', '协议校验码']
+    const toggle = page.locator('[data-testid="livery-selfcheck-toggle"]').first()
+    if ((await toggle.count()) > 0) {
+      if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="livery-capability"]', { state: 'visible', timeout: 8_000 }).catch(() => {})
+      const zhPanelText = await page.locator('[data-testid="livery-selfcheck"]').innerText().catch(() => '')
+      expect(
+        runner,
+        'copy.selfcheck-labels-zh',
+        'zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码)',
+        zhSelfCheckLabels.every((label) => zhPanelText.includes(label)),
+        `missing=${JSON.stringify(zhSelfCheckLabels.filter((label) => !zhPanelText.includes(label)))}; panel=${oneLine(zhPanelText, 240)}`,
+      )
+      await toggle.click({ timeout: 8_000 }).catch(() => {})
+      await sleep(200)
+    } else {
+      runner.fail('copy.selfcheck-labels-zh', 'zh self-check uses the round-12 plain-language labels', 'self-check toggle not found')
+    }
+  } catch (error) {
+    runner.fail('copy.selfcheck-labels-zh', 'zh self-check uses the round-12 plain-language labels', String(error))
+  }
+
   const galleryState = await waitForGallery(page)
   state.galleryState = galleryState
   if (!galleryState.cards) {
@@ -858,8 +885,20 @@ export async function checkLiveryPanelFlow(ctx) {
     'previewLocale.tab-labels',
     'the segmented control labels and hint match the host locale copy',
     (localeTab.buttons ?? []).every((button) => button.text === expectedTabTexts[button.choice]) &&
-      (localeTab.title ?? '').length > 0,
-    `texts=[${(localeTab.buttons ?? []).map((button) => `${button.choice}:"${button.text}"`).join(', ')}]; title="${oneLine(localeTab.title ?? '', 100)}"`,
+      localeTab.title === uiLabels.previewLanguageHint,
+    `texts=[${(localeTab.buttons ?? []).map((button) => `${button.choice}:"${button.text}"`).join(', ')}]; title="${oneLine(localeTab.title ?? '', 140)}" (expected "${oneLine(uiLabels.previewLanguageHint, 140)}")`,
+  )
+  const zhLabels = labelsFor('zh')
+  const enLabelsCopy = labelsFor('en')
+  expect(
+    runner,
+    'copy.state-strings',
+    'acceptance label constants match the round-12 rewritten copy for the non-happy-path states (unit-covered)',
+    zhLabels.catalogUnavailable === '视觉风格暂时无法加载' &&
+      zhLabels.writeRefused === '宿主没有保存这套视觉风格。' &&
+      enLabelsCopy.catalogUnavailable === 'Visual styles are unavailable right now' &&
+      enLabelsCopy.writeRefused === 'The host did not save this visual style.',
+    `zh.catalogUnavailable="${zhLabels.catalogUnavailable}"; zh.writeRefused="${zhLabels.writeRefused}"; en.catalogUnavailable="${enLabelsCopy.catalogUnavailable}"; en.writeRefused="${enLabelsCopy.writeRefused}"`,
   )
   const followPressed = (localeTab.buttons ?? []).find((button) => button.choice === 'follow')?.pressed === true
   const othersUnpressed = (localeTab.buttons ?? []).filter((button) => button.choice !== 'follow').every((button) => button.pressed === false)
@@ -1250,6 +1289,29 @@ export async function checkLiveryPanelFlow(ctx) {
   const offlineNotices = await page.locator('[data-testid="livery-offline"]').count()
   expect(runner, 'panel.no-offline-notice', 'the Livery page is not in catalog-unavailable state', offlineNotices === 0, `${offlineNotices} livery-offline notice(s)`)
   await capture(page, ctx, { state: 'panel-applied', mode: 'light' })
+  // With an active style the CSS-safety figures (and their plain label) render.
+  try {
+    const zhActiveLabels = ['启动信息', '样式覆盖', '协议校验码', '未限定范围的变量']
+    const activeToggle = page.locator('[data-testid="livery-selfcheck-toggle"]').first()
+    if ((await activeToggle.count()) > 0) {
+      if ((await activeToggle.getAttribute('aria-expanded')) !== 'true') await activeToggle.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="livery-capability"]', { state: 'visible', timeout: 8_000 }).catch(() => {})
+      const activePanelText = await page.locator('[data-testid="livery-selfcheck"]').innerText().catch(() => '')
+      expect(
+        runner,
+        'copy.selfcheck-labels-zh-active',
+        'zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量)',
+        zhActiveLabels.every((label) => activePanelText.includes(label)),
+        `missing=${JSON.stringify(zhActiveLabels.filter((label) => !activePanelText.includes(label)))}; panel=${oneLine(activePanelText, 260)}`,
+      )
+      await activeToggle.click({ timeout: 8_000 }).catch(() => {})
+      await sleep(200)
+    } else {
+      runner.fail('copy.selfcheck-labels-zh-active', 'zh self-check shows the full plain-language label set', 'self-check toggle not found after Apply')
+    }
+  } catch (error) {
+    runner.fail('copy.selfcheck-labels-zh-active', 'zh self-check shows the full plain-language label set', String(error))
+  }
   if (applyPinnedLocale) {
     try {
       const pinnedAfterApplyTab = await readLocaleTab(page)
@@ -1863,6 +1925,18 @@ export async function checkSelfCheck(ctx) {
     rowProblems.length ? rowProblems.join('; ') : `${capabilityRows.length} capability row(s): ${capabilityRows.map((row) => `${row.id}=${row.available}`).join(', ')}`,
     { capabilities: capabilityRows, expected: expectedCapabilities, text: panel.text },
   )
+  // Round-12 copy polish: plain self-check wording (zh/en) must be present.
+  const selfCheckCopyExpected = uiLocale === 'en'
+    ? ['Startup check', 'Style coverage', 'Contract hash', 'Unscoped variables']
+    : ['启动信息', '样式覆盖', '协议校验码', '未限定范围的变量']
+  expect(
+    runner,
+    'copy.selfcheck-labels',
+    'self-check uses the round-12 plain-language labels',
+    selfCheckCopyExpected.every((label) => (panel.text ?? '').includes(label)),
+    `missing=${JSON.stringify(selfCheckCopyExpected.filter((label) => !(panel.text ?? '').includes(label)))}; panel=${oneLine(panel.text, 260)}`,
+  )
+
   // Style-system v2: the applied livery must expose shape/elevation/material
   // token families and the self-check token coverage must report zero missing.
   const appliedLivery = state.activeLivery ?? (state.catalog?.liveries ?? []).find((livery) => livery.id === state.appliedSkin)
@@ -1881,7 +1955,7 @@ export async function checkSelfCheck(ctx) {
     { styleFamilies, coverageText: oneLine(panel.text, 800) },
   )
 
-  // Self-check must name the live certified identity (multi-version §6).
+  // Self-check must name the live certified identity (multi-version.md §6).
   const adapter = expectedAdapterOf(ctx)
   const identityText = panel.text ?? ''
   const contractShort = (adapter?.contractHash ?? '').replace(/^sha256:/, '').slice(0, 8)
@@ -2165,7 +2239,8 @@ export async function checkFirstPaint(ctx) {
 
   // Whole-document MutationObserver authorship: the shell installs its own
   // document-level observer, so count only observers whose creation stack names
-  // the Livery bundle. Any such observer is a plan §18.3/§20 violation.
+  // the Livery bundle. Any such observer is an
+  // implementation-plan.md §18.3/§20 violation.
   const observerReport = await readObserverReport(page)
   ctx.state.appliedObserverReport = observerReport
   const attributed = observerReport.observations.filter((entry) => entry.liveryAttributed)
@@ -2930,6 +3005,22 @@ export async function checkWallpaperStudio(ctx) {
         mainOrder.indexOf('wallpaper-hero') >= 0 &&
         mainOrder.indexOf('wallpaper-online-card') === mainOrder.indexOf('wallpaper-hero') + 1,
       `onlineCard=${onlineAuto.onlineCardPresent}; libraryElements=${onlineAuto.libraryElementCount}; categoryChips=${onlineAuto.categoryChipCount}; mainCardOrder=${JSON.stringify(mainOrder)}`,
+    )
+    const onlineCardText = await page.locator('[data-testid="wallpaper-online-card"]').innerText().catch(() => '')
+    expect(
+      runner,
+      'copy.wallpaper-online-hint',
+      'online card uses the round-12 human hint copy',
+      onlineCardText.includes('打开这个标签页会自动加载一批随机壁纸'),
+      `online card text=${oneLine(onlineCardText, 220)}`,
+    )
+    const effectsCardText = await page.locator('[data-testid="wallpaper-effects-card"]').innerText().catch(() => '')
+    expect(
+      runner,
+      'copy.frost-label',
+      'effect slider keeps the plain 磨砂 (Frost) label',
+      effectsCardText.includes('磨砂'),
+      `effects card labels=${oneLine(effectsCardText, 220)}`,
     )
     expect(
       runner,

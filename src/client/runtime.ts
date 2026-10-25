@@ -1,5 +1,5 @@
 /**
- * Livery client runtime: the state machine from plan §6.3.
+ * Livery client runtime: the state machine from implementation-plan.md §6.3.
  *
  * ```text
  * boot -> loading -> ready <-> previewing
@@ -402,7 +402,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   /**
    * Observe host light/dark changes. Called by the settings page while it is
    * mounted, so startup performs zero `theme/change` subscriptions
-   * (plan §18.8).
+   * (implementation-plan.md §18.8).
    * @returns unsubscribe.
    */
   observeTheme(): () => void {
@@ -638,7 +638,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     })
   }
 
-  /** Adopt the host first frame when it is provably identical to our render. */
+  /** Adopt the host first frame when it matches this render exactly. */
   private tryAdoptBoot(skin: SkinCss): boolean {
     const boot = this.deps.boot
     const payload: BootPayload | undefined = boot.payload
