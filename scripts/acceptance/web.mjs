@@ -60,6 +60,7 @@ import {
   checkLiveryPanelFlow,
   checkStockInitial,
   checkStyleContrast,
+  checkWallpaperStudio,
   checkUninstallResidue,
   collectProfileEvidence,
 } from './probe/checks.mjs'
@@ -504,6 +505,7 @@ async function main() {
             ['firstpaint', async () => checkFirstPaint(ctx)],
             ['web', async () => checkResponsive(ctx)],
             ['style', async () => checkStyleContrast(ctx)],
+            ['wallpaper', async () => checkWallpaperStudio(ctx)],
             ['restore', async () => checkRestoreStock(ctx)],
           ]
         : []),

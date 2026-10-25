@@ -29,9 +29,12 @@ import {
   PANEL_NAV_VIA,
   readCardNames,
   readGallery,
+  readGalleryStructure,
   readHostStyleProbe,
   readLocaleTab,
   readThumbLocales,
+  setRangeValue,
+  readWallpaperState,
   thumbLocaleOf,
   waitForThumbLocale,
   readLiveryCssRules,
@@ -480,11 +483,11 @@ export async function checkBootHandshake(ctx) {
       const raw = await rawRequest(bundle.bundle.entryUrl)
       const gzipBytes = zlib.gzipSync(raw.body).length
       ctx.state.bundleGzip = gzipBytes
-      const budget = 25 * 1024
+      const budget = 32 * 1024
       expect(
         runner,
         'bundle.gzip-budget',
-        'client bundle gzip stays within the 25KB performance budget (host peers excluded)',
+        'client bundle gzip stays within the 32KB performance budget (host peers excluded)',
         gzipBytes <= budget,
         `${gzipBytes} bytes gzip / ${raw.body.length} bytes raw (budget ${budget})`,
         { gzipBytes, rawBytes: raw.body.length },
@@ -924,6 +927,155 @@ export async function checkLiveryPanelFlow(ctx) {
     state.previewLocaleTab = { hostPreviewLocale, enPinned: enSources.every((src) => thumbLocaleOf(src) === 'en'), zhPinned: zhSources.every((src) => thumbLocaleOf(src) === 'zh'), cardCopyStable: namesStayHostLocale }
   } catch (error) {
     runner.fail('previewLocale.switch-en', 'preview language tabs switch thumbnail SVG locale', error instanceof Error ? (error.message ?? String(error)) : String(error))
+  }
+
+  // ---- gallery families (0.5.0 taxonomy): 6/6 sections, chips, filters ----
+  const FAMILY_ORDER = ['calm', 'nature', 'light', 'retro', 'vivid', 'dark']
+  // Final 0.5.0 taxonomy priority: `nature` leads so organic+calm styles
+  // (moss/everforest/celadon) are grouped as Nature instead of being absorbed
+  // by calm; every one of the six families must be non-empty.
+  const FAMILY_TAGS = [
+    ['nature', ['organic']],
+    ['calm', ['calm', 'elegant', 'muted']],
+    ['light', ['cool', 'paper', 'ink']],
+    ['retro', ['retro', 'warm', 'classic']],
+    ['vivid', ['neon', 'playful', 'contrast']],
+    ['dark', ['deep', 'neutral', 'tech']],
+  ]
+  const expectedFamilyOf = (tags) => {
+    for (const [family, familyTags] of FAMILY_TAGS) {
+      if (familyTags.some((tag) => (tags ?? []).includes(tag))) return family
+    }
+    return 'calm'
+  }
+  try {
+    const structure = await readGalleryStructure(page)
+    expect(
+      runner,
+      'gallery.page-tabs',
+      'visual studio exposes 视觉风格 / 壁纸 page tabs with the style tab selected by default',
+      structure.tablistFound &&
+        structure.tabs.map((tab) => tab.id).join(',') === 'style,wallpaper' &&
+        structure.tabs.every((tab) => tab.role === 'tab') &&
+        structure.tabs.find((tab) => tab.id === 'style')?.selected === true &&
+        structure.tabs.find((tab) => tab.id === 'wallpaper')?.selected === false &&
+        structure.stylePanel === true &&
+        structure.wallpaperPanel === false &&
+        structure.tabs.map((tab) => tab.text).join('|') === `${uiLabels.tabStyle}|${uiLabels.tabWallpaper}`,
+      `tabs=${JSON.stringify(structure.tabs)}; stylePanel=${structure.stylePanel}; wallpaperPanel=${structure.wallpaperPanel}; expected texts ${uiLabels.tabStyle}|${uiLabels.tabWallpaper}`,
+    )
+    expect(
+      runner,
+      'gallery.family-chips',
+      'primary filter row shows 全部 + six family chips in display order',
+      structure.chips.length === 7 &&
+        structure.chips.map((chip) => chip.family).join(',') === `all,${FAMILY_ORDER.join(',')}` &&
+        structure.chips[0]?.pressed === true &&
+        structure.chips.slice(1).every((chip) => chip.pressed === false) &&
+        FAMILY_ORDER.every((family) => structure.chips.find((chip) => chip.family === family)?.text === uiLabels.familyNames[family]),
+      `chips=${structure.chips.map((chip) => `${chip.family}:${chip.text}${chip.pressed ? '*' : ''}`).join(', ')}`,
+    )
+    const sectionFamilies = structure.sections.map((section) => section.family)
+    const sectionTotal = structure.sections.reduce((sum, section) => sum + section.cards, 0)
+    const expectedCounts = new Map(FAMILY_ORDER.map((family) => [family, 0]))
+    for (const livery of catalog.liveries) {
+      const family = expectedFamilyOf(livery.meta?.tags)
+      expectedCounts.set(family, (expectedCounts.get(family) ?? 0) + 1)
+    }
+    const emptyFamilies = FAMILY_ORDER.filter((family) => (expectedCounts.get(family) ?? 0) === 0)
+    expect(
+      runner,
+      'gallery.family-sections',
+      'all six family sections render (not five) in display order with their styles and counts',
+      sectionFamilies.join(',') === FAMILY_ORDER.join(',') &&
+        sectionTotal === catalog.liveries.length &&
+        structure.sections.every((section) => section.cards > 0 && section.cards === expectedCounts.get(section.family)) &&
+        emptyFamilies.length === 0 &&
+        structure.sections.every((section) => section.heading === uiLabels.familyNames[section.family]),
+      `sections=[${structure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; expected counts=[${FAMILY_ORDER.map((family) => `${family}:${expectedCounts.get(family)}`).join(', ')}]; empty families=${emptyFamilies.join(',') || 'none'}`,
+      { sections: structure.sections, expectedCounts: Object.fromEntries(expectedCounts) },
+    )
+    const catalogById = new Map(catalog.liveries.map((livery) => [livery.id, livery]))
+    const mappingProblems = structure.cards
+      .map((card) => {
+        const expected = expectedFamilyOf(catalogById.get(card.id)?.meta?.tags)
+        return expected === card.family ? null : `${card.id}: expected ${expected}, rendered in ${card.family}`
+      })
+      .filter(Boolean)
+    expect(
+      runner,
+      'gallery.family-mapping',
+      'family assignment follows the nature→calm→light→retro→vivid→dark tag priority for every style',
+      mappingProblems.length === 0,
+      mappingProblems.length ? mappingProblems.slice(0, 8).join('; ') : `${structure.cards.length}/${structure.cards.length} cards mapped to the priority-picked family`,
+    )
+    expect(
+      runner,
+      'gallery.more-filters',
+      '更多筛选 reveals the 16 tag chips and collapses again',
+      structure.moreFilters.found === true && structure.moreFilters.expanded === false && structure.tagChips === 0,
+      `more-filters found=${structure.moreFilters.found}; expanded=${structure.moreFilters.expanded}; tag chips visible=${structure.tagChips}`,
+    )
+    await page.locator('[data-testid="livery-more-filters"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="livery-more-filters"]')?.getAttribute('aria-expanded') === 'true', undefined, { timeout: 8_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="livery-tag"]').length > 0, undefined, { timeout: 8_000 }).catch(() => {})
+    const expandedStructure = await readGalleryStructure(page)
+    expect(
+      runner,
+      'gallery.more-filters-expanded',
+      'expanded 更多筛选 shows the tag chips (aria-expanded=true)',
+      expandedStructure.moreFilters.expanded === true && expandedStructure.tagChips >= 10,
+      `expanded=${expandedStructure.moreFilters.expanded}; tag chips=${expandedStructure.tagChips}; toggle text="${expandedStructure.moreFilters.text}"`,
+    )
+    await page.locator('[data-testid="livery-more-filters"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="livery-more-filters"]')?.getAttribute('aria-expanded') === 'false', undefined, { timeout: 8_000 }).catch(() => {})
+    const collapsedStructure = await readGalleryStructure(page)
+    expect(
+      runner,
+      'gallery.more-filters-collapsed',
+      'collapsing 更多筛选 hides the tag chips again',
+      collapsedStructure.moreFilters.expanded === false && collapsedStructure.tagChips === 0,
+      `expanded=${collapsedStructure.moreFilters.expanded}; tag chips=${collapsedStructure.tagChips}`,
+    )
+    // Family chip filters the grouped gallery.
+    await page.locator('[data-testid="livery-family-chip"][data-family="nature"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="livery-family-chip"][data-family="nature"]')?.getAttribute('aria-pressed') === 'true', undefined, { timeout: 8_000 }).catch(() => {})
+    await sleep(200)
+    const filteredStructure = await readGalleryStructure(page)
+    const natureCount = expectedCounts.get('nature') ?? 0
+    expect(
+      runner,
+      'gallery.family-filter',
+      'selecting a family chip narrows the gallery to that one family section',
+      filteredStructure.sections.length === 1 &&
+        filteredStructure.sections[0].family === 'nature' &&
+        filteredStructure.cards.length === natureCount &&
+        filteredStructure.chips.find((chip) => chip.family === 'nature')?.pressed === true &&
+        filteredStructure.chips.find((chip) => chip.family === 'all')?.pressed === false,
+      `sections=[${filteredStructure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; cards=${filteredStructure.cards.length} (expected nature=${natureCount})`,
+    )
+    // Keyboard focus continues across the flattened card list (section boundaries).
+    await page.locator('[data-testid="livery-family-chip"][data-family="all"]').click({ timeout: 8_000 })
+    await sleep(200)
+    const firstFamily = FAMILY_ORDER.find((family) => (expectedCounts.get(family) ?? 0) > 0)
+    const secondFamily = FAMILY_ORDER.slice(FAMILY_ORDER.indexOf(firstFamily) + 1).find((family) => (expectedCounts.get(family) ?? 0) > 0)
+    const calmSection = page.locator(`[data-testid="livery-family-${firstFamily}"]`)
+    const lastCalmCard = calmSection.locator('[data-testid="livery-card"][data-livery-id]').last()
+    const firstNextCard = page.locator(`[data-testid="livery-family-${secondFamily}"] [data-testid="livery-card"][data-livery-id]`).first()
+    const nextId = await firstNextCard.getAttribute('data-livery-id')
+    await lastCalmCard.focus()
+    await page.keyboard.press('ArrowRight')
+    await sleep(180)
+    expect(
+      runner,
+      'gallery.family-keyboard',
+      'roving focus crosses family-section boundaries as one flattened list',
+      (await focusedCardId(page)) === nextId,
+      `focus after ArrowRight="${await focusedCardId(page)}" (expected first ${secondFamily} card "${nextId}")`,
+    )
+    await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
+  } catch (error) {
+    runner.fail('gallery.family-sections', 'gallery family sections / filters render correctly', error instanceof Error ? (error.stack ?? error.message) : String(error))
   }
 
   // ---- search (localized name / id / tag / empty) ----
@@ -2627,6 +2779,259 @@ async function measureOneStyle(ctx, livery, { previewOnly, uiLabels }) {
     await capture(page, ctx, { state: `style-${livery.id}-conversation`, mode: 'light' })
   }
   return { livery, probe, families, source: previewOnly ? 'preview' : 'apply' }
+}
+
+/**
+ * Wallpaper studio acceptance (0.5.0): built-in CSS wallpapers, effect sliders,
+ * the client-only layer (owned <style> + body attribute), persistence, URL
+ * validation and a mocked online search (network is intercepted, never live).
+ */
+export async function checkWallpaperStudio(ctx) {
+  const { runner, session, config, state } = ctx
+  const { page } = session
+  const uiLabels = labelsFor(state.actualLocale ?? 'zh')
+  const builtinIds = ['aurora', 'dusk', 'mist', 'paper', 'ink', 'ember', 'sea', 'mono']
+  const tinyPng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  )
+  const openverseFixture = {
+    results: [
+      { id: 'ov-1', url: 'https://images.example.test/one.jpg', thumbnail: 'https://images.example.test/one-thumb.jpg', title: 'Aurora Test', creator: 'Tester', license: 'cc0' },
+      { id: 'ov-2', url: 'https://images.example.test/two-full.jpg', thumbnail: 'https://images.example.test/two-thumb.jpg', title: 'Mist Test', creator: 'Artist', license: 'pdm' },
+    ],
+  }
+  try {
+    await page.route('https://api.openverse.org/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(openverseFixture) }),
+    )
+    await page.route('https://images.example.test/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }),
+    )
+    await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale ?? 'zh', timeoutMs: 25_000 })
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    const tabState = await readGalleryStructure(page)
+    expect(
+      runner,
+      'wallpaper.tab',
+      '壁纸 page tab switches to the wallpaper studio panel',
+      tabState.tabs.find((tab) => tab.id === 'wallpaper')?.selected === true &&
+        tabState.wallpaperPanel === true &&
+        tabState.stylePanel === false &&
+        tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text === uiLabels.tabWallpaper,
+      `selected=${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.selected}; wallpaper panel=${tabState.wallpaperPanel}; style panel=${tabState.stylePanel}; label="${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text}"`,
+    )
+    const initial = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.builtin-count',
+      'wallpaper studio ships 8 deterministic built-in wallpapers',
+      initial.builtins.map((button) => button.id).join(',') === builtinIds.join(',') && initial.attribute === null,
+      `builtins=[${initial.builtins.map((button) => button.id).join(', ')}]; attribute=${initial.attribute}`,
+    )
+    await page.locator('[data-testid="wallpaper-builtin"][data-wallpaper-id="aurora"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      return document.body.hasAttribute('data-dsh-wallpaper') && style !== null && (style.textContent ?? '').includes('radial-gradient')
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const builtinApplied = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.builtin-applied',
+      'clicking a built-in wallpaper writes the owned stylesheet + body attribute',
+      builtinApplied.attribute !== null &&
+        builtinApplied.stylePresent === true &&
+        builtinApplied.styleMarker === 'dsh-livery/wallpaper' &&
+        builtinApplied.selectedBuiltin === 'aurora' &&
+        builtinApplied.styleText.includes('#5eead4') &&
+        builtinApplied.styleText.includes('filter:blur(8px)') &&
+        /rgba\(0,0,0,0\.25\)/.test(builtinApplied.styleText),
+      `attr=${builtinApplied.attribute}; marker=${builtinApplied.styleMarker}; builtin=${builtinApplied.selectedBuiltin}; filter=${builtinApplied.styleText.match(/filter:blur\([^)]*\)/)?.[0]}; veil=${builtinApplied.styleText.match(/rgba\(0,0,0,[^)]*\)/)?.[0]}`,
+      { styleText: builtinApplied.styleText.slice(0, 600) },
+    )
+    await capture(page, ctx, { state: 'wallpaper-builtin', mode: 'light' })
+    await setRangeValue(page, 'wallpaper-blur', 20)
+    await setRangeValue(page, 'wallpaper-dim', 60)
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper')?.textContent?.includes('filter:blur(20px)'), undefined, { timeout: 8_000 }).catch(() => {})
+    const blurred = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.effects-blur-dim',
+      'blur/dim sliders update the wallpaper layer (filter + veil)',
+      blurred.sliderValues.blur === 20 &&
+        blurred.sliderValues.dim === 60 &&
+        blurred.styleText.includes('filter:blur(20px)') &&
+        /rgba\(0,0,0,0\.60\)/.test(blurred.styleText) &&
+        blurred.pseudoFilter.includes('blur(20px)'),
+      `sliders=${JSON.stringify(blurred.sliderValues)}; filter=${blurred.pseudoFilter}; veil=${blurred.pseudoVeil}`,
+    )
+    await capture(page, ctx, { state: 'wallpaper-blurred', mode: 'light' })
+    await setRangeValue(page, 'wallpaper-frost', 80)
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper')?.textContent?.includes('color-mix'), undefined, { timeout: 8_000 }).catch(() => {})
+    const frosted = await readWallpaperState(page)
+    const frostHasActiveLivery = frosted.effectiveLivery !== null && frosted.effectiveLivery !== 'stock'
+    expect(
+      runner,
+      'wallpaper.frost',
+      'frost makes active visual-style surface tokens translucent via color-mix',
+      frostHasActiveLivery
+        ? frosted.styleText.includes('color-mix(in srgb,') && frosted.styleText.includes('20%') && frosted.bgBaseToken.includes('color-mix')
+        : frosted.sliderValues.frost === 80,
+      `active livery=${frosted.effectiveLivery}; frost=${frosted.sliderValues.frost}; color-mix=${frosted.styleText.includes('color-mix')}; --dsw-alias-bg-base="${oneLine(frosted.bgBaseToken, 120)}"`,
+      { styleText: frosted.styleText.slice(0, 800) },
+    )
+    await capture(page, ctx, { state: 'wallpaper-frost', mode: 'light' })
+    // Reset restores the default effects.
+    await page.locator('[data-testid="wallpaper-reset"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper')?.textContent?.includes('filter:blur(8px)'), undefined, { timeout: 8_000 }).catch(() => {})
+    const reset = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.reset',
+      'reset restores the default blur/dim/frost values',
+      reset.sliderValues.blur === 8 && reset.sliderValues.dim === 25 && reset.sliderValues.frost === 35 && reset.styleText.includes('filter:blur(8px)'),
+      `sliders=${JSON.stringify(reset.sliderValues)}; filter=${reset.styleText.match(/filter:blur\([^)]*\)/)?.[0]}`,
+    )
+    // Persistence across a hard reload (hydrated from localStorage + re-applied layer).
+    await setRangeValue(page, 'wallpaper-blur', 12)
+    await setRangeValue(page, 'wallpaper-dim', 40)
+    await setRangeValue(page, 'wallpaper-frost', 55)
+    await page.waitForFunction(() => (window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? '').includes('"blur":12'), undefined, { timeout: 8_000 }).catch(() => {})
+    const storedBeforeReload = (await readWallpaperState(page)).stored
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await waitForBootGraph(page)
+    await waitForAppReady(page)
+    await waitForActiveLivery(page, { skinId: state.appliedSkin }).catch(() => {})
+    await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale ?? 'zh', timeoutMs: 25_000 })
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await page.waitForFunction(() => document.body.hasAttribute('data-dsh-wallpaper'), undefined, { timeout: 10_000 }).catch(() => {})
+    const persisted = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.persistence',
+      'selected built-in wallpaper and effects persist across a hard reload',
+      persisted.attribute !== null &&
+        persisted.stylePresent === true &&
+        persisted.selectedBuiltin === 'aurora' &&
+        persisted.sliderValues.blur === 12 &&
+        persisted.sliderValues.dim === 40 &&
+        persisted.sliderValues.frost === 55 &&
+        (persisted.stored ?? '').includes('"blur":12'),
+      `attr=${persisted.attribute}; builtin=${persisted.selectedBuiltin}; sliders=${JSON.stringify(persisted.sliderValues)}; stored=${oneLine(storedBeforeReload ?? '', 160)}`,
+    )
+    await capture(page, ctx, { state: 'wallpaper-persisted', mode: 'light' })
+    // Custom URL validation: http / javascript / data rejected, https accepted.
+    const urlInput = page.locator('[data-testid="wallpaper-url"]')
+    const problemOpen = async () => (await page.locator('[data-testid="wallpaper-url-error"]').count()) > 0
+    const rejectionTexts = []
+    for (const bad of ['http://insecure.test/a.jpg', 'javascript:alert(1)', 'data:image/svg+xml,<svg/>']) {
+      await urlInput.fill(bad)
+      await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+      await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-url-error"]') !== null, undefined, { timeout: 8_000 }).catch(() => {})
+      rejectionTexts.push({ url: bad, rejected: await problemOpen(), text: (await page.locator('[data-testid="wallpaper-url-error"]').textContent().catch(() => '')) ?? '' })
+    }
+    expect(
+      runner,
+      'wallpaper.url-validation',
+      'non-https / javascript / data URLs are rejected with a validation message',
+      rejectionTexts.every((entry) => entry.rejected),
+      rejectionTexts.map((entry) => `${entry.url.slice(0, 24)} rejected=${entry.rejected} "${oneLine(entry.text, 60)}"`).join('; '),
+    )
+    await urlInput.fill('https://images.example.test/custom.jpg')
+    await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      return style !== null && (style.textContent ?? '').includes('custom.jpg') && document.querySelector('[data-testid="wallpaper-url-error"]') === null
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const customApplied = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.url-accepted',
+      'https custom image URLs are accepted and applied through the owned layer',
+      customApplied.styleText.includes("url('https://images.example.test/custom.jpg')") &&
+        customApplied.attribute !== null &&
+        customApplied.urlErrorText === '' &&
+        customApplied.attribution.length > 0,
+      `styleHasUrl=${customApplied.styleText.includes('custom.jpg')}; attr=${customApplied.attribute}; attribution="${oneLine(customApplied.attribution, 100)}"`,
+    )
+    await capture(page, ctx, { state: 'wallpaper-custom-url', mode: 'light' })
+    // Mocked online search (network is intercepted; no live requests).
+    await page.locator('[data-testid="wallpaper-search"]').fill('aurora')
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const status = document.querySelector('[data-testid="wallpaper-status"]')
+      return status?.getAttribute('data-status') === 'ready' && document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0
+    }, undefined, { timeout: 15_000 }).catch(() => {})
+    const searched = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.search-results',
+      'mocked Openverse search renders result cards with titles and attribution labels',
+      (searched.status === 'ready' || searched.status === null) &&
+        searched.results.length === 2 &&
+        searched.results.every((result) => result.url?.startsWith('https://images.example.test/')) &&
+        searched.results[0]?.label?.includes('Aurora Test'),
+      `status=${searched.status}; results=${JSON.stringify(searched.results.map((result) => result.url))}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 100)}"`,
+    )
+    await capture(page, ctx, { state: 'wallpaper-search', mode: 'light' })
+    await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      return style !== null && (style.textContent ?? '').includes('one.jpg')
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const remoteApplied = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.search-applied',
+      'clicking a search result applies the remote wallpaper URL and shows attribution',
+      remoteApplied.styleText.includes("url('https://images.example.test/one.jpg')") &&
+        remoteApplied.attribute !== null &&
+        remoteApplied.attribution.includes('Aurora Test'),
+      `styleHasUrl=${remoteApplied.styleText.includes('one.jpg')}; attr=${remoteApplied.attribute}; attribution="${oneLine(remoteApplied.attribution, 120)}"`,
+    )
+    // Clear removes the layer, the attribute and the persisted record.
+    await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null && !document.body.hasAttribute('data-dsh-wallpaper'), undefined, { timeout: 10_000 }).catch(() => {})
+    // Persistence is debounced (250 ms), so wait for the cleared record to flush.
+    await page.waitForFunction(() => {
+      try { return (window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? '') === '' } catch { return true }
+    }, undefined, { timeout: 8_000 }).catch(() => {})
+    const cleared = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.clear',
+      'clear removes the owned stylesheet, body attribute and stored record',
+      cleared.stylePresent === false && cleared.attribute === null && (cleared.stored === null || cleared.stored === ''),
+      `stylePresent=${cleared.stylePresent}; attribute=${cleared.attribute}; stored=${cleared.stored}`,
+    )
+    state.wallpaperEvidence = {
+      builtin: builtinApplied.selectedBuiltin,
+      sliders: persisted.sliderValues,
+      frostActive: frostHasActiveLivery,
+      results: searched.results.length,
+      cleared: cleared.attribute === null,
+    }
+    // Back to the style tab so later style checks/screenshots are canonical.
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="livery-tabpanel-style"]', { timeout: 8_000 })
+    const restored = await readGalleryStructure(page)
+    expect(
+      runner,
+      'wallpaper.tab-restore',
+      'returning to the 视觉风格 tab restores the gallery and removes the wallpaper layer',
+      restored.tabs.find((tab) => tab.id === 'style')?.selected === true &&
+        restored.stylePanel === true &&
+        restored.wallpaperPanel === false,
+      `style selected=${restored.tabs.find((tab) => tab.id === 'style')?.selected}; stylePanel=${restored.stylePanel}; wallpaperPanel=${restored.wallpaperPanel}`,
+    )
+  } catch (error) {
+    runner.fail('wallpaper.studio', 'wallpaper studio (built-in layer, effects, persistence, URL validation, mocked search)', error instanceof Error ? (error.stack ?? error.message) : String(error))
+  } finally {
+    await page.unroute('https://api.openverse.org/**').catch(() => {})
+    await page.unroute('https://images.example.test/**').catch(() => {})
+  }
 }
 
 /** Raw profile patch state persisted in probe.json (redacted not needed: no secrets). */

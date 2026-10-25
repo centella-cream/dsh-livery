@@ -22,6 +22,8 @@ const CHECK_AREA_TITLES = {
   settings: 'Settings dialog (absence assertions)',
   gallery: 'Gallery',
   previewLocale: 'Gallery preview language',
+  galleryFamilies: 'Gallery families (taxonomy, chips, sections, filters)',
+  wallpaper: 'Wallpaper studio',
   search: 'Search',
   keyboard: 'Keyboard navigation',
   preview: 'Preview',
@@ -332,6 +334,16 @@ export const PLAN20_ROWS = [
     criterion: 'Gallery preview-language tab switches only thumbnail preview locale (Follow DSH default / 中文 / English)',
     checks: ['previewLocale.tab-present', 'previewLocale.tab-labels', 'previewLocale.default-follow', 'previewLocale.switch-en', 'previewLocale.switch-zh', 'previewLocale.follow-restores', 'previewLocale.apply-copy', 'previewLocale.apply-with-pinned', 'previewLocale.en-follow'],
     note: 'thumbnail SVG URLs only (<id>-<zh|en>-<light|dark>.svg); names/descriptions/copy stay host-locale and Apply/restore semantics are unchanged',
+  },
+  {
+    criterion: 'Gallery groups styles into six non-empty family sections with compact filters',
+    checks: ['gallery.page-tabs', 'gallery.family-chips', 'gallery.family-sections', 'gallery.family-mapping', 'gallery.more-filters', 'gallery.more-filters-expanded', 'gallery.more-filters-collapsed', 'gallery.family-filter', 'gallery.family-keyboard'],
+    note: 'display order calm→nature→light→retro→vivid→dark; family priority nature→calm→light→retro→vivid→dark; all six sections non-empty; 16 tag chips behind 更多筛选; roving focus crosses sections',
+  },
+  {
+    criterion: 'Wallpaper studio (client-only layer, effects, validation, online search)',
+    checks: ['wallpaper.tab', 'wallpaper.builtin-count', 'wallpaper.builtin-applied', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.search-results', 'wallpaper.search-applied', 'wallpaper.clear', 'wallpaper.tab-restore'],
+    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 8 built-ins, blur/dim/frost, localStorage persistence, https-only URL validation, mocked Openverse search (no live network)',
   },
   {
     criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',

@@ -66,8 +66,10 @@ import {
   installFirstPaintRecorder,
   inspectPanellist,
   liveryPanelVisible,
+  readGalleryStructure,
   readLocaleTab,
   readThumbLocales,
+  readWallpaperState,
   thumbLocaleOf,
   waitForThumbLocale,
   openLiveryDetailed,
@@ -472,6 +474,64 @@ async function main() {
     )
     await page.locator('[data-testid="livery-locale-follow"]').click({ timeout: 8_000 }).catch(() => {})
     await waitForThumbLocale(page, desktopHostLocale).catch(() => {})
+
+    // Gallery families (0.5.0) + wallpaper studio in the real Electron renderer.
+    const DESKTOP_FAMILY_ORDER = ['calm', 'nature', 'light', 'retro', 'vivid', 'dark']
+    const DESKTOP_FAMILY_TAGS = [
+      ['nature', ['organic']],
+      ['calm', ['calm', 'elegant', 'muted']],
+      ['light', ['cool', 'paper', 'ink']],
+      ['retro', ['retro', 'warm', 'classic']],
+      ['vivid', ['neon', 'playful', 'contrast']],
+      ['dark', ['deep', 'neutral', 'tech']],
+    ]
+    const desktopFamilyOf = (tags) => {
+      for (const [family, familyTags] of DESKTOP_FAMILY_TAGS) {
+        if (familyTags.some((tag) => (tags ?? []).includes(tag))) return family
+      }
+      return 'calm'
+    }
+    const desktopStructure = await readGalleryStructure(page)
+    const desktopFamilyCounts = new Map(DESKTOP_FAMILY_ORDER.map((family) => [family, 0]))
+    for (const livery of catalog.liveries) {
+      const family = desktopFamilyOf(livery.meta?.tags)
+      desktopFamilyCounts.set(family, (desktopFamilyCounts.get(family) ?? 0) + 1)
+    }
+    expect(
+      runner,
+      'desktop.gallery-families',
+      'desktop gallery renders page tabs and all six non-empty family sections in display order',
+      desktopStructure.tablistFound === true &&
+        desktopStructure.sections.map((section) => section.family).join(',') === DESKTOP_FAMILY_ORDER.join(',') &&
+        desktopStructure.sections.every((section) => section.cards > 0 && section.cards === desktopFamilyCounts.get(section.family)) &&
+        DESKTOP_FAMILY_ORDER.every((family) => (desktopFamilyCounts.get(family) ?? 0) > 0),
+      `sections=[${desktopStructure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; expected=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopFamilyCounts.get(family)}`).join(', ')}]`,
+    )
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    const desktopWallpaperInitial = await readWallpaperState(page)
+    await page.locator('[data-testid="wallpaper-builtin"][data-wallpaper-id="aurora"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      return document.body.hasAttribute('data-dsh-wallpaper') && style !== null && (style.textContent ?? '').includes('radial-gradient')
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const desktopWallpaper = await readWallpaperState(page)
+    await captureScreenshot(page, path.join(screensDir, 'zh-wallpaper-desktop.png'), { label: 'desktop wallpaper studio (built-in applied)' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'wallpaper-builtin' }))
+    expect(
+      runner,
+      'desktop.wallpaper',
+      'desktop wallpaper studio applies a built-in CSS layer through the owned stylesheet',
+      desktopWallpaperInitial.builtins.length === 8 &&
+        desktopWallpaper.attribute !== null &&
+        desktopWallpaper.styleMarker === 'dsh-livery/wallpaper' &&
+        desktopWallpaper.selectedBuiltin === 'aurora' &&
+        desktopWallpaper.styleText.includes('radial-gradient'),
+      `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
+    )
+    await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null && !document.body.hasAttribute('data-dsh-wallpaper'), undefined, { timeout: 10_000 }).catch(() => {})
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="livery-tabpanel-style"]', { timeout: 8_000 })
 
     const pair = chooseSkinPair(catalog)
     ctx.state.skinPair = pair

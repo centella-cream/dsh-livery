@@ -942,6 +942,109 @@ export async function readCardNames(page) {
   )
 }
 
+/**
+ * Gallery structure for the 0.5.0 visual studio: page tabs, family chips,
+ * family sections and the collapsed tag-filter row.
+ */
+export async function readGalleryStructure(page) {
+  return page.evaluate(() => {
+    const tabs = [...document.querySelectorAll('[data-testid^="livery-page-tab-"]')].map((tab) => ({
+      id: (tab.getAttribute('data-testid') ?? '').replace(/^livery-page-tab-/, ''),
+      role: tab.getAttribute('role'),
+      selected: tab.getAttribute('aria-selected') === 'true',
+      text: (tab.textContent ?? '').trim(),
+    }))
+    const chips = [...document.querySelectorAll('[data-testid="livery-family-chip"]')].map((chip) => ({
+      family: chip.getAttribute('data-family'),
+      pressed: chip.getAttribute('aria-pressed') === 'true',
+      text: (chip.textContent ?? '').trim(),
+    }))
+    const sections = [...document.querySelectorAll('section[data-testid^="livery-family-"]')].map((section) => {
+      const countNode = section.querySelector('.livery-family__count')
+      return {
+        family: section.getAttribute('data-family'),
+        cards: section.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length,
+        heading: (section.querySelector('[data-testid="livery-family"] span')?.textContent ?? '').trim(),
+        countText: (countNode?.textContent ?? '').trim(),
+      }
+    })
+    const cards = [...document.querySelectorAll('[data-testid="livery-card"][data-livery-id]')].map((card) => ({
+      id: card.getAttribute('data-livery-id'),
+      family: card.closest('section[data-testid^="livery-family-"]')?.getAttribute('data-family') ?? null,
+    }))
+    const moreFilters = document.querySelector('[data-testid="livery-more-filters"]')
+    return {
+      tablistFound: Boolean(document.querySelector('[data-testid="livery-page-tabs"]')),
+      tabs,
+      stylePanel: Boolean(document.querySelector('[data-testid="livery-tabpanel-style"]')),
+      wallpaperPanel: Boolean(document.querySelector('[data-testid="livery-tabpanel-wallpaper"]')),
+      chips,
+      sections,
+      cards,
+      moreFilters: moreFilters
+        ? { found: true, expanded: moreFilters.getAttribute('aria-expanded') === 'true', text: (moreFilters.textContent ?? '').trim() }
+        : { found: false, expanded: false, text: '' },
+      tagChips: document.querySelectorAll('[data-testid="livery-tag"]').length,
+    }
+  })
+}
+
+/** Set one React-controlled range input to a value and dispatch the events. */
+export async function setRangeValue(page, testId, value) {
+  await page.locator(`[data-testid="${testId}"]`).evaluate((element, next) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    setter?.call(element, String(next))
+    element.dispatchEvent(new Event('input', { bubbles: true }))
+    element.dispatchEvent(new Event('change', { bubbles: true }))
+  }, value)
+}
+
+/** Read the wallpaper layer, effects, attribution and panel state. */
+export async function readWallpaperState(page) {
+  return page.evaluate(() => {
+    const style = document.querySelector('style#dsh-livery-wallpaper')
+    const body = document.body
+    const before = getComputedStyle(body, '::before')
+    const after = getComputedStyle(body, '::after')
+    const builtins = [...document.querySelectorAll('[data-testid="wallpaper-builtin"]')].map((button) => ({
+      id: button.getAttribute('data-wallpaper-id'),
+      pressed: button.getAttribute('aria-pressed') === 'true',
+      label: button.getAttribute('aria-label'),
+    }))
+    const sliderValue = (testId) => {
+      const element = document.querySelector(`[data-testid="${testId}"]`)
+      return element instanceof HTMLInputElement ? Number(element.value) : null
+    }
+    const stored = (() => {
+      try { return window.localStorage.getItem('dsh-livery.wallpaper.v1') } catch { return null }
+    })()
+    return {
+      attribute: body.getAttribute('data-dsh-wallpaper'),
+      stylePresent: Boolean(style),
+      styleMarker: style ? style.getAttribute('data-plugin-css') : null,
+      styleText: style?.textContent ?? '',
+      pseudoBackground: before.backgroundImage,
+      pseudoFilter: before.filter,
+      pseudoVeil: after.background,
+      sliderValues: { blur: sliderValue('wallpaper-blur'), dim: sliderValue('wallpaper-dim'), frost: sliderValue('wallpaper-frost') },
+      builtins,
+      selectedBuiltin: builtins.find((button) => button.pressed)?.id ?? null,
+      urlErrorText: (document.querySelector('[data-testid="wallpaper-url-error"]')?.textContent ?? '').trim(),
+      status: document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') ?? null,
+      statusText: (document.querySelector('[data-testid="wallpaper-status"]')?.textContent ?? '').trim(),
+      results: [...document.querySelectorAll('[data-testid="wallpaper-result"]')].map((result) => ({
+        url: result.getAttribute('data-wallpaper-url'),
+        selected: result.getAttribute('aria-selected') === 'true',
+        label: result.getAttribute('aria-label'),
+      })),
+      attribution: (document.querySelector('[data-testid="wallpaper-attribution"]')?.textContent ?? '').trim(),
+      stored,
+      effectiveLivery: body.getAttribute('data-dsh-livery'),
+      bgBaseToken: getComputedStyle(body).getPropertyValue('--dsw-alias-bg-base').trim(),
+    }
+  })
+}
+
 /** Locate a control by data-testid and fall back to accessible names. */
 export async function findControl(page, { testId, names = [], exact = false, role = 'button' } = {}) {
   if (testId) {
