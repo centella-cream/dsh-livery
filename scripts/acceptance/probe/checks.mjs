@@ -929,9 +929,9 @@ export async function checkLiveryPanelFlow(ctx) {
     runner.fail('previewLocale.switch-en', 'preview language tabs switch thumbnail SVG locale', error instanceof Error ? (error.message ?? String(error)) : String(error))
   }
 
-  // ---- gallery families (0.5.0 taxonomy): 6/6 sections, chips, filters ----
+  // ---- gallery families (visual studio): 6/6 sections, chips, filters ----
   const FAMILY_ORDER = ['calm', 'nature', 'light', 'retro', 'vivid', 'dark']
-  // Final 0.5.0 taxonomy priority: `nature` leads so organic+calm styles
+  // Taxonomy priority: `nature` leads so organic+calm styles
   // (moss/everforest/celadon) are grouped as Nature instead of being absorbed
   // by calm; every one of the six families must be non-empty.
   const FAMILY_TAGS = [
@@ -2782,7 +2782,7 @@ async function measureOneStyle(ctx, livery, { previewOnly, uiLabels }) {
 }
 
 /**
- * Wallpaper studio acceptance (0.5.0): built-in CSS wallpapers, effect sliders,
+ * Wallpaper studio acceptance: built-in CSS wallpapers, effect sliders,
  * the client-only layer (owned <style> + body attribute), persistence, URL
  * validation and a mocked online search (network is intercepted, never live).
  */

@@ -41,6 +41,7 @@ import {
   dshVersion,
   installPlugin,
   profilePaths,
+  resetCloneLiveryToStock,
   resolveDshBin,
   summarizeOperation,
 } from './probe/dsh-home.mjs'
@@ -356,6 +357,17 @@ async function main() {
         if (cloneFrom) {
           const clone = await cloneProfileIntoHome({ source: cloneFrom, home: dshHome, name: 'web' })
           ctx.state.clone = clone
+          const cloneStock = await resetCloneLiveryToStock(clone.destDir)
+          if (cloneStock.removed) {
+            ctx.deviations.push(
+              `cloned profile Livery config reset to stock for a comparable matrix (clone only; source profile untouched; previous skinId=${cloneStock.previous ?? '(unknown)'})`,
+            )
+            ctx.runner.warn(
+              'lifecycle.clone-stock-normalized',
+              'cloned profile start state normalized to stock for a comparable stock→apply matrix',
+              `removed the clone's own - id: livery row (previous skinId=${cloneStock.previous ?? '(unknown)'}); source profile untouched`,
+            )
+          }
           ctx.runner.pass(
             'lifecycle.profile-cloned',
             'existing profile byte-cloned into the isolated home (source read-only)',

@@ -943,7 +943,7 @@ export async function readCardNames(page) {
 }
 
 /**
- * Gallery structure for the 0.5.0 visual studio: page tabs, family chips,
+ * Gallery structure for the visual studio: page tabs, family chips,
  * family sections and the collapsed tag-filter row.
  */
 export async function readGalleryStructure(page) {

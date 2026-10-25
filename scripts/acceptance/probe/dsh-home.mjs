@@ -291,6 +291,30 @@ export async function cloneProfileIntoHome({ source, home, name = 'web' }) {
   }
 }
 
+/**
+ * Reset a CLONED profile's own Livery config to stock before a matrix run.
+ *
+ * A clone reflects the user's live profile, which may currently have a style
+ * applied (the live-QA profile does). The acceptance matrix needs a comparable
+ * stock → preview → apply sequence, so this removes only the cloned profile's
+ * `- id: livery` config row (never the source profile). The removal is recorded
+ * as a deviation/warning by the caller.
+ * @param destDir - cloned profile directory (isolated home only).
+ * @returns what was removed, if anything.
+ */
+export async function resetCloneLiveryToStock(destDir) {
+  const patchFile = path.join(destDir, 'cordis.patch.yml')
+  if (!existsSync(patchFile)) return { removed: false, previous: null }
+  const text = await readFile(patchFile, 'utf8')
+  const rows = text.split(/\n(?=- )/)
+  const liveryRow = rows.find((row) => /^- id: livery\b/.test(row))
+  if (liveryRow === undefined) return { removed: false, previous: null }
+  const previous = liveryRow.match(/skinId:\s*([^\s#]+)/)?.[1] ?? null
+  const kept = rows.filter((row) => row !== liveryRow)
+  await writeFile(patchFile, kept.join('\n'), 'utf8')
+  return { removed: true, previous }
+}
+
 /** Rewrite the isolated profile patch with an explicit locale preference. */
 export async function setLocalePreference(home, preference, profileName = 'web') {
   const isolated = assertIsolatedHome(home)
