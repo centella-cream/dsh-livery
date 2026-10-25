@@ -81,3 +81,34 @@ effects, certified compatibility policy, token-only/zero-takeover safety, verifi
 matrix and honest limitations. Explicitly explain "不接管主题 ≠ 普通皮肤" and the
 certified-vs-compat policy table. Update SECURITY for wallpaper network requests,
 docs/verification for wallpaper+welcome, CHANGELOG (unreleased 0.1.0).
+
+## 5. Round 9 — wallpaper fixes/expansion (still unreleased 0.1.0)
+
+User feedback after testing the real Web Profile:
+
+1. **Tab bounce.** Selecting a wallpaper sometimes resets the page to the
+   视觉风格 tab. Root fix: the active page tab is remembered at module scope (and
+   `sessionStorage`, best-effort) so a workspace remount/navigation restores it;
+   selecting a wallpaper must never touch view state.
+2. **Third-party plugin coverage.** The current design only tints surfaces that
+   use the active livery's tokens, so plugin pages with their own opaque surfaces
+   hide the wallpaper. Add a generic **global atmosphere layer**: a
+   plugin-owned fixed overlay above all app content (`pointer-events:none`,
+   `mix-blend-mode:soft-light`, default opacity ~30 %) that guarantees the
+   wallpaper is perceptible on any plugin page without targeting their DOM.
+   Keep the immersive under-content layer + token frost for core surfaces.
+   New effect control: 全局氛围 / Atmosphere (0–100, 0 = immersive only).
+3. **More wallpapers + curated crawler.** Expand built-ins 8 → 24 CSS-only
+   designs. Add an **online wallpaper library** ("轻量策展爬虫"): curated style
+   categories (nature/city/abstract/minimal/sky/texture/space/gradient) mapped to
+   license-safe Openverse CC0/PDM queries, pageable batches, localStorage cache
+   with TTL (6 h), request timeout/retry, dedupe, cached fallback when offline,
+   attribution on selection. The library appears first in the wallpaper tab;
+   custom upload/URL remains below.
+4. **User upload + adaptive sizing.** File picker + drag/drop (JPEG/PNG/WebP/AVIF,
+   ≤10 MiB), stored in IndexedDB (`dsh-livery-wallpapers`), restored after reload;
+   https URL input retained. Rendering always uses viewport-relative
+   `background-size:cover; background-position:center` (both layers), so portrait,
+   ultrawide and resized windows crop instead of distorting.
+5. **Version policy.** Still unreleased `0.1.0`; no version bump for any of the
+   above. Commits stay one-line.

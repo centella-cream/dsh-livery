@@ -20,6 +20,9 @@ export const WALLPAPER_STORAGE_KEY = 'dsh-livery.wallpaper.v1'
 export const WALLPAPER_CSS_FILE = 'dsh-livery/wallpaper'
 /** Public body attribute owning the wallpaper layer (only Livery writes it). */
 export const WALLPAPER_ATTRIBUTE = 'data-dsh-wallpaper'
+/** Id + class of the plugin-owned atmosphere overlay element above app content. */
+export const WALLPAPER_OVERLAY_ID = 'dsh-livery-wallpaper-overlay'
+export const WALLPAPER_OVERLAY_CLASS = 'dsh-livery-wallpaper-overlay'
 
 /** Hard cap for user-provided wallpaper URLs. */
 export const MAX_WALLPAPER_URL_LENGTH = 2048
@@ -28,10 +31,16 @@ export const MAX_WALLPAPER_URL_LENGTH = 2048
 export type BuiltinWallpaperId =
   | 'aurora' | 'dusk' | 'mist' | 'paper'
   | 'ink' | 'ember' | 'sea' | 'mono'
+  | 'forest' | 'desert' | 'ocean' | 'sky'
+  | 'snow' | 'bloom' | 'neon' | 'cyber'
+  | 'retro' | 'sand' | 'rose' | 'violet'
+  | 'midnight' | 'sunrise' | 'glacier' | 'minimal'
 
 /** Builtin wallpapers in display order. */
 export const BUILTIN_WALLPAPER_IDS: readonly BuiltinWallpaperId[] = [
   'aurora', 'dusk', 'mist', 'paper', 'ink', 'ember', 'sea', 'mono',
+  'forest', 'desert', 'ocean', 'sky', 'snow', 'bloom', 'neon', 'cyber',
+  'retro', 'sand', 'rose', 'violet', 'midnight', 'sunrise', 'glacier', 'minimal',
 ]
 
 /** CSS `background` shorthand value of each bundled wallpaper (no network/assets). */
@@ -48,6 +57,22 @@ export const BUILTIN_WALLPAPERS: Readonly<Record<BuiltinWallpaperId, string>> = 
     + 'linear-gradient(160deg, #3a0d0d 0%, #7c2d12 58%, #f59e0b 100%)',
   sea: 'linear-gradient(180deg, #0f172a 0%, #0e7490 55%, #67e8f9 100%)',
   mono: 'linear-gradient(160deg, #111111 0%, #333333 50%, #111111 100%)',
+  forest: 'radial-gradient(90% 120% at 20% 0%, #14532d 0%, transparent 60%), linear-gradient(170deg, #052e16 0%, #166534 55%, #4ade80 100%)',
+  desert: 'linear-gradient(165deg, #78350f 0%, #d97706 45%, #fde68a 100%)',
+  ocean: 'radial-gradient(100% 120% at 80% 10%, #0ea5e9 0%, transparent 55%), linear-gradient(180deg, #082f49 0%, #0369a1 55%, #67e8f9 100%)',
+  sky: 'linear-gradient(180deg, #38bdf8 0%, #bae6fd 55%, #f0f9ff 100%)',
+  snow: 'radial-gradient(80% 90% at 30% 10%, #ffffff 0%, transparent 65%), linear-gradient(170deg, #dbeafe 0%, #e2e8f0 60%, #94a3b8 100%)',
+  bloom: 'radial-gradient(60% 70% at 25% 20%, #fbcfe8 0%, transparent 60%), radial-gradient(60% 70% at 80% 75%, #fde68a 0%, transparent 60%), linear-gradient(150deg, #831843 0%, #be185d 60%, #fb7185 100%)',
+  neon: 'linear-gradient(120deg, #0f172a 0%, #4c1d95 40%, #db2777 70%, #22d3ee 100%)',
+  cyber: 'repeating-linear-gradient(90deg, #0b1026 0 14px, #111a3a 14px 28px), radial-gradient(80% 100% at 50% 120%, #22d3ee 0%, transparent 60%)',
+  retro: 'linear-gradient(160deg, #7c2d12 0%, #c2410c 35%, #fbbf24 70%, #fde68a 100%)',
+  sand: 'linear-gradient(170deg, #d6c3a5 0%, #e7d7bd 50%, #b49a72 100%)',
+  rose: 'linear-gradient(160deg, #4c0519 0%, #9f1239 45%, #fda4af 100%)',
+  violet: 'radial-gradient(90% 120% at 15% 10%, #7c3aed 0%, transparent 60%), linear-gradient(170deg, #1e1b4b 0%, #4c1d95 55%, #c4b5fd 100%)',
+  midnight: 'linear-gradient(180deg, #020617 0%, #0f172a 55%, #1e293b 100%)',
+  sunrise: 'radial-gradient(80% 100% at 80% 100%, #f97316 0%, transparent 60%), linear-gradient(180deg, #1e1b4b 0%, #7c2d12 45%, #fbbf24 100%)',
+  glacier: 'radial-gradient(90% 110% at 25% 0%, #e0f2fe 0%, transparent 60%), linear-gradient(170deg, #0f172a 0%, #0369a1 50%, #7dd3fc 100%)',
+  minimal: 'linear-gradient(160deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)',
 }
 
 /** Effect slider values (integers). */
@@ -58,6 +83,8 @@ export interface WallpaperEffects {
   readonly dim: number
   /** Frost: percent of surface color removed toward transparent, 0–100. */
   readonly frost: number
+  /** Global atmosphere overlay opacity in percent, 0–100 (step 5); 0 = immersive only. */
+  readonly atmosphere: number
 }
 
 /** Effect bounds and step used by the UI and the clamp helper. */
@@ -65,25 +92,29 @@ export const WALLPAPER_EFFECT_BOUNDS: Readonly<Record<keyof WallpaperEffects, { 
   blur: { min: 0, max: 24, step: 1 },
   dim: { min: 0, max: 70, step: 1 },
   frost: { min: 0, max: 100, step: 1 },
+  atmosphere: { min: 0, max: 100, step: 5 },
 }
 
 /** Effects applied before any user change (and restored by 重置). */
-export const DEFAULT_WALLPAPER_EFFECTS: WallpaperEffects = { blur: 8, dim: 25, frost: 35 }
+export const DEFAULT_WALLPAPER_EFFECTS: WallpaperEffects = { blur: 8, dim: 25, frost: 35, atmosphere: 30 }
 
 /** The selected wallpaper, or `undefined` for "no wallpaper". */
 export type WallpaperSelection =
   | { readonly kind: 'builtin'; readonly id: BuiltinWallpaperId }
   | { readonly kind: 'remote'; readonly url: string }
+  | { readonly kind: 'upload'; readonly key: string }
   | undefined
 
 /** Persisted shape (schema v1). */
 export interface StoredWallpaper {
-  readonly kind: 'builtin' | 'remote'
+  readonly kind: 'builtin' | 'remote' | 'upload'
   readonly id?: string
   readonly url?: string
+  readonly key?: string
   readonly blur: number
   readonly dim: number
   readonly frost: number
+  readonly atmosphere: number
 }
 
 /** Clamp one numeric effect value into its bounds; NaN falls back to the default. */
@@ -92,7 +123,8 @@ function clampEffect(name: keyof WallpaperEffects, value: unknown): number {
   const fallback = DEFAULT_WALLPAPER_EFFECTS[name]
   const numeric = typeof value === 'number' ? value : Number(value)
   if (!Number.isFinite(numeric)) return fallback
-  return Math.min(bounds.max, Math.max(bounds.min, Math.round(numeric)))
+  const stepped = Math.round(numeric / bounds.step) * bounds.step
+  return Math.min(bounds.max, Math.max(bounds.min, stepped))
 }
 
 /**
@@ -106,6 +138,7 @@ export function clampEffects(input: unknown): WallpaperEffects {
     blur: clampEffect('blur', record.blur),
     dim: clampEffect('dim', record.dim),
     frost: clampEffect('frost', record.frost),
+    atmosphere: clampEffect('atmosphere', record.atmosphere),
   }
 }
 
@@ -169,9 +202,10 @@ export function cssUrlValue(url: string): string {
  * @param selection - selected wallpaper.
  * @returns the CSS value, or undefined for "no wallpaper".
  */
-export function backgroundImageValue(selection: WallpaperSelection): string | undefined {
+export function backgroundImageValue(selection: WallpaperSelection, uploadUrl?: string): string | undefined {
   if (selection === undefined) return undefined
   if (selection.kind === 'builtin') return BUILTIN_WALLPAPERS[selection.id]
+  if (selection.kind === 'upload') return uploadUrl === undefined ? undefined : cssUrlValue(uploadUrl)
   return cssUrlValue(selection.url)
 }
 
@@ -207,6 +241,8 @@ export interface WallpaperCssInput {
   readonly effects: WallpaperEffects
   /** Present only when an active livery supplies background tokens. */
   readonly tokens?: WallpaperTokenContext | undefined
+  /** Fresh object URL for an `upload` selection (validated local blob URL). */
+  readonly uploadUrl?: string | undefined
 }
 
 /**
@@ -235,15 +271,24 @@ function tokenOverrides(selector: string, tokens: TokenMap, frost: number): stri
  * @returns the stylesheet text ('' clears the layer).
  */
 export function buildWallpaperCss(input: WallpaperCssInput): string {
-  const image = backgroundImageValue(input.selection)
+  const image = backgroundImageValue(input.selection, input.uploadUrl)
   if (image === undefined) return ''
-  const { blur, dim } = input.effects
+  const { blur, dim, atmosphere } = input.effects
   const rules: string[] = [
     `body[${WALLPAPER_ATTRIBUTE}]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;`
     + `background-image:${image};background-position:center;background-size:cover;filter:blur(${blur}px)}`,
     `body[${WALLPAPER_ATTRIBUTE}]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;`
     + `background:rgba(0,0,0,${(dim / 100).toFixed(2)})}`,
+    // Let the under-content immersive layer show through the host's body canvas.
+    `body[${WALLPAPER_ATTRIBUTE}]{background-color:transparent}`,
   ]
+  // Generic coverage for pages whose surfaces are opaque: a non-interactive
+  // atmospheric copy of the wallpaper above all app content.
+  if (atmosphere > 0) {
+    rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:2147483000;pointer-events:none;`
+      + `background-image:${image};background-size:cover;background-position:center;filter:blur(${blur}px);`
+      + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
+  }
   const tokens = input.tokens
   if (tokens !== undefined) {
     const light = tokenOverrides(`body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`, tokens.light, tokens.frost)
@@ -277,6 +322,9 @@ export function toStoredWallpaper(
   if (selection.kind === 'builtin') {
     return { kind: 'builtin', id: selection.id, ...clamped }
   }
+  if (selection.kind === 'upload') {
+    return { kind: 'upload', key: selection.key, ...clamped }
+  }
   return { kind: 'remote', url: selection.url, ...clamped }
 }
 
@@ -304,6 +352,10 @@ export function parseStoredWallpaper(raw: unknown): HydratedWallpaper | undefine
     const check = validateWallpaperUrl(record.url)
     if (!check.ok) return undefined
     return { selection: { kind: 'remote', url: check.url }, effects }
+  }
+  if (record.kind === 'upload') {
+    if (typeof record.key !== 'string' || !/^upload-[A-Za-z0-9-]{1,64}$/.test(record.key)) return undefined
+    return { selection: { kind: 'upload', key: record.key }, effects }
   }
   return undefined
 }
@@ -376,7 +428,7 @@ function httpsOnly(value: unknown): string | undefined {
  * @param json - decoded response body.
  * @returns valid https results (max 12); malformed rows are skipped.
  */
-export function parseOpenverseResults(json: unknown): readonly WallpaperRemoteResult[] {
+export function parseOpenverseResults(json: unknown, limit = 12): readonly WallpaperRemoteResult[] {
   if (typeof json !== 'object' || json === null) return []
   const results = (json as Record<string, unknown>).results
   if (!Array.isArray(results)) return []
@@ -397,7 +449,7 @@ export function parseOpenverseResults(json: unknown): readonly WallpaperRemoteRe
       license: typeof row.license === 'string' ? row.license : '',
       source: 'openverse.org',
     })
-    if (mapped.length === 12) break
+    if (mapped.length === Math.max(1, limit)) break
   }
   return mapped
 }

@@ -260,6 +260,30 @@ body pseudo-element layers (`::before` image with blur, `::after` dim veil) and
 `color-mix` overrides of the active livery background tokens for frost; no host
 component selectors, no `!important`.
 
+Round-9 wallpaper additions (unreleased 0.1.0):
+
+- 24 built-ins (`wallpaper-builtin`, `data-wallpaper-id`, stable ids: the original
+  8 + forest/desert/ocean/sky/snow/bloom/neon/cyber/retro/sand/rose/violet/
+  midnight/sunrise/glacier/minimal).
+- Curated online library: category chips `wallpaper-category` (`data-category`,
+  eight curated Openverse CC0/PDM queries), results `wallpaper-library-result`
+  (`data-wallpaper-url`), status `wallpaper-library-status` (`data-status`:
+  loading/ready-only-via-results/empty/offline/error/cached), more
+  `wallpaper-library-more`, attribution `wallpaper-library-attribution`; auto-loads
+  one category when the wallpaper tab mounts; 6 h cache, dedupe, retry/timeout.
+- Upload: `wallpaper-upload` (file input), `wallpaper-upload-button`,
+  `wallpaper-upload-dropzone`, `wallpaper-upload-error`; JPEG/PNG/WebP/AVIF ≤10 MiB;
+  blob stored in IndexedDB `dsh-livery-wallpapers`/`images`; selection kind
+  `upload` persists in localStorage and hydrates as a blob object URL.
+- Effects: `wallpaper-atmosphere` 0–100 (default 30) controls the generic
+  above-content overlay `#dsh-livery-wallpaper-overlay`
+  (`.dsh-livery-wallpaper-overlay`, pointer-events none, soft-light); presence
+  requires a selected wallpaper and atmosphere > 0. Both wallpaper layers use
+  viewport-relative `cover`/`center`.
+- Page tab is remembered at module scope + `sessionStorage`
+  (`dsh-livery.page-tab.v1`), so navigating away and back restores the wallpaper
+  tab; explicit `initialTab` still wins.
+
 Compatibility mode: when the host payload has `compat: true` (see §4), the panel shows
 an unverified-compat notice/tag and the self-check adds `compat.mode`; applied styles
 come from the newest certified contract.

@@ -39,10 +39,14 @@ version policy that survives DSH updates.
   panels, elevated cards, glass blur), and border/focus treatment. 10 original
   designs + 12 open-source-inspired palettes (MIT/Apache-2.0, see [NOTICE](NOTICE.md))
   + 2 original Chinese-aesthetic designs (Celadon 青瓷, Cinnabar 朱砂).
-- **Wallpaper studio.** 8 built-in CSS wallpapers; online search (Openverse CC0/PDM)
-  and random refresh (Picsum); custom https image URL; blur 0–24 px, dim 0–70 %,
-  frost 0–100 % (translucent panels over the wallpaper). User-initiated requests
-  only, stored locally.
+- **Wallpaper studio.** 24 built-in CSS wallpapers plus a curated online library
+  (8 style categories, license-safe Openverse CC0/PDM crawler with caching and
+  offline fallback), custom search/random, local image upload (stored in IndexedDB)
+  and https URLs. Effects: blur 0–24 px, dim 0–70 %, frost 0–100 % and a global
+  atmosphere overlay that keeps the wallpaper visible on **every** plugin page,
+  including third-party panels with opaque surfaces. Both layers are viewport-
+  relative `cover`, so portrait/ultrawide/resized windows crop instead of
+  distorting. Network requests are user-navigation initiated; choices are local.
 - **Curated gallery.** Styles grouped into six families (Calm / Nature / Light /
   Retro / Vivid / Dark), primary filters first, the full tag vocabulary behind
   "More filters"; a preview-language tab switches thumbnails between Follow DSH /
@@ -53,6 +57,8 @@ version policy that survives DSH updates.
   in the self-check instead of being faked.
 
 ![Wallpaper studio](docs/assets/wallpaper.jpg)
+
+![Wallpaper visible over a third-party plugin page](docs/assets/wallpaper-coverage.jpg)
 
 ## Host support and version policy
 
@@ -96,9 +102,10 @@ section. Two tabs:
 - **视觉风格 / Visual styles** — preview (transient), Apply (one config mutation),
   Restore default appearance; family sections + search + "More filters"; preview
   language tab.
-- **壁纸 / Wallpapers** — pick a built-in wallpaper, search or refresh online, paste a
-  custom https URL, then tune blur / dim / frost. Wallpaper choices are stored in the
-  browser and survive restarts.
+- **壁纸 / Wallpapers** — browse the curated online library by style, pick one of 24
+  built-in designs, upload a local image, or paste an https URL, then tune blur / dim /
+  frost / global atmosphere. Wallpaper choices are stored in the browser and survive
+  restarts; the global atmosphere keeps them visible on third-party plugin pages too.
 
 Applying a style and applying a wallpaper are independent: wallpapers keep working
 when you switch styles.
@@ -148,7 +155,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 
 Current certified matrix (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
 real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
-renderer; repo gates include `tsc`, 600+ tests, contrast/token/CSS audits, loader ABI
+renderer; repo gates include `tsc`, 680+ tests, contrast/token/CSS audits, loader ABI
 and package checks. Raw evidence is generated locally under `artifacts/` and is not
 committed. Details and honest limitations: [docs/verification.md](docs/verification.md).
 

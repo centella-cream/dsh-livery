@@ -11,7 +11,7 @@
  * and all color/spacing values read from documented `--dsw-*` tokens (through
  * `.livery-section` local aliases) so the page follows the active host theme for
  * free. Text containers never hard-code a width, so 200% zoom reflows instead of
- * clipping. Compact on purpose: the shipped string is budgeted at 8KB (plan §18.8).
+ * clipping. Compact on purpose: the shipped string is budgeted at 9KB (wallpaper studio expansion).
  *
  * @see docs/research/client-contract.md §7
  */
@@ -93,4 +93,7 @@ export const CLIENT_CSS = `
 .wallpaper-swatch{min-height:64px;justify-content:flex-end;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
 .wallpaper-effect{display:grid;grid-template-columns:6rem 1fr 3.5rem;gap:6px;font-size:12px}
 .wallpaper-effect input{width:100%;accent-color:var(--lw-brand)}
+
+.wallpaper-dropzone{display:flex;align-items:center;justify-content:center;min-height:56px;padding:12px;border:1px dashed var(--lw-line2);border-radius:10px;color:var(--lw-2);font-size:12px;text-align:center;cursor:pointer}
+.wallpaper-dropzone--over{border-color:var(--lw-brand);color:var(--lw-brand)}
 `

@@ -6,17 +6,17 @@ evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
 screenshots/probes are generated locally under `artifacts/` (not committed).
 
 Shipped artifact: `dsh-livery-0.1.0.tgz`
-sha256 `bbe991ba04f532d4afc14f1cf957e07eb58a28321687c31770b21172c5e5b25e`
-(542,784 B).
+sha256 `08b385be051a5295bb02ef02bb24c50f32596d995fd799cd367c2f44d41f398c`
+(548,638 B).
 
 ## Host matrix (release 0.1.0 — unreleased)
 
 | Target | Result | What it covers |
 |---|---|---|
-| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **170 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, visual-studio tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (8 built-ins, blur/dim/frost, persistence, https-only URL validation, mocked online search), preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
-| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **171 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.); the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
-| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **170 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
-| DSH `0.2.1-rc.3`, Desktop Profile, real Electron renderer | **27 / 0 / 1** | real Electron app: boot graph, catalog identity, 6 family sections + tabs, wallpaper studio built-in layer, preview-language tab, preview/apply/persist, relaunch boot payload, light/dark tokens, font hooks, self-check, sidebar entry |
+| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **191 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, visual-studio tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, curated library with cache/retry/offline, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
+| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **192 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
+| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **191 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
+| DSH `0.2.1-rc.3`, Desktop Profile, real Electron renderer | **27 / 0 / 1** | real Electron app: boot graph, catalog identity, 6 family sections + tabs, 24 built-in wallpapers + atmosphere layer, preview-language tab, preview/apply/persist, relaunch boot payload, light/dark tokens, font hooks, self-check, sidebar entry |
 
 The package is **not released**; `0.1.0` is the unreleased version line. Earlier
 matrices exist only as development-round evidence (see below) and are not
@@ -45,14 +45,35 @@ releases.
   thumbnail SVG locale (`<id>-<zh|en>-<light|dark>.svg`); names, descriptions
   and other copy stay in the host language, and Apply/restore semantics are
   unchanged (verified while a language is pinned).
-- **Wallpaper studio** (client-only). 8 deterministic CSS-only built-ins,
-  blur 0–24 px, dim 0–70 %, frost 0–100 %, custom https-only URL validation, and
-  optional user-initiated Openverse/Picsum search. Applied through one
-  plugin-owned `<style data-plugin-css="dsh-livery/wallpaper">` plus
-  `body[data-dsh-wallpaper]` using body pseudo-elements; frost makes the active
-  style's surface tokens translucent via `color-mix(...)`. Selection/effects
-  persist in `localStorage`; clearing removes the layer and the stored record.
-  No host config or boot payload changes.
+- **Round-9 wallpaper behaviours measured on the real host:** 24 built-in cards;
+  library auto-load via intercepted Openverse routes (8 category chips, page-2
+  pagination, cache hit after simulated failures, typed error for an uncached
+  category with built-ins still usable); upload of a generated PNG → `blob:`
+  layer + IndexedDB round-trip across a hard reload, non-image and >10 MiB
+  uploads rejected with a validation message; atmosphere overlay computed
+  styles and removal at 0; overlay measured over the third-party 上下文洞察
+  panel with atmosphere 0 vs 60 screenshots (mean colour delta 14.7–19.3 per
+  channel at 8-bit scale — perceptible in the captured frames, reported as a
+  measured value, not a subjective claim); page-tab persistence across
+  navigation and reload; adaptive cover at the three viewports.
+- **Wallpaper studio** (client-only). **24 deterministic CSS-only built-ins**,
+  blur 0–24 px, dim 0–70 %, frost 0–100 %, global atmosphere 0–100 %, custom
+  https-only URL validation, local image upload (JPEG/PNG/WebP/AVIF, ≤10 MiB,
+  IndexedDB) and a curated online library (8 Openverse categories, 6 h
+  localStorage cache, retry + cached fallback + typed offline/error state).
+  Applied through one plugin-owned
+  `<style data-plugin-css="dsh-livery/wallpaper">` plus
+  `body[data-dsh-wallpaper]`; frost makes the active style's surface tokens
+  translucent via `color-mix(...)`. The atmosphere overlay
+  (`#dsh-livery-wallpaper-overlay`, atmo > 0) sits above app content
+  (`z-index:2147483000`, `pointer-events:none`, `mix-blend-mode:soft-light`,
+  opacity = atmosphere/100) so the wallpaper is visible over opaque third-party
+  plugin pages too. Both layers use adaptive `background-size:cover`
+  (1024×768 / 1920×1080 / 900×1300 verified). Selection/effects persist in
+  `localStorage`, uploads in IndexedDB; page-tab choice persists in
+  `sessionStorage` across navigation and hard reload. Clearing removes the
+  style, overlay, body attribute and stored record. No host config or boot
+  payload changes.
 - **Accessibility safety:** no `!important`, no hash selectors, no remote URLs
   bundled, no whole-document observers; contrast and focus-ring checks pass.
 
@@ -64,9 +85,12 @@ releases.
 - Compat-mode UI: browser acceptance cannot fake an uncertified host; the compat
   notice/self-check path is covered by client unit tests only and is **not**
   claimed as browser coverage.
-- Live online wallpaper search: acceptance intercepts Openverse/Picsum and image
-  requests with fixtures; real third-party availability/behaviour is not tested
-  (requests are user-initiated only; CSP/offline failure states are unit-tested).
+- Live online wallpaper library/search: acceptance intercepts Openverse/Picsum
+  and image requests with fixtures (the live service is not reachable from the CI
+  environment); real third-party availability/behaviour is not tested (requests
+  are user-initiated only; CSP/offline failure states are unit-tested).
+- Atmosphere perceptibility is reported as a measured screenshot colour delta on
+  the 上下文洞察 page, not as a subjective visual guarantee.
 - Web/Edge browsers (Chrome only) and Windows Desktop.
 - Structural layout changes: DSH exposes no public density/transcript-width/
   message-flow hook, so those recipes degrade to host/stock and are disclosed in
@@ -82,8 +106,9 @@ releases.
 - `tsc --noEmit` clean, `vitest run` 661 tests green.
 - `liveries:check`: 24 styles across 2 catalog profiles.
 - Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
-- Per-livery CSS under the 12 KiB hard cap; **client gzip 29,628 B** (32 KiB
-  budget) and **host gzip 295,744 B**.
+- Per-livery CSS under the 12 KiB hard cap; **client gzip 35,062 B** (48 KiB
+  budget; harness-measured served bundle 35,207 B) and **client CSS 8,449 B**
+  (9 KiB budget); **host gzip 295,744 B**.
 - Loader ABI 12/12 checks; adapter allowlist, pack and lint checks green.
 
 ## Development-round evidence (not releases)

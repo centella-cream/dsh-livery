@@ -25,6 +25,8 @@ import type { LiveryRuntimeApi, PreviewLocaleChoice } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import { capabilityList } from './capability-names.js'
 import { isCompatIdentity } from './compat.js'
+import { rememberedPageTab, rememberPageTab } from './tabs.js'
+import type { PageTab } from './tabs.js'
 import { Gallery } from './Gallery.js'
 import { SelfCheck } from './SelfCheck.js'
 import { WallpaperPanel } from './WallpaperPanel.js'
@@ -65,8 +67,12 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
   const [confirmRestore, setConfirmRestore] = useState(false)
   const [toast, setToast] = useState<ToastState | undefined>(undefined)
   const [previewLocaleChoice, setPreviewLocaleChoice] = useState<PreviewLocaleChoice>('follow')
-  const [tab, setTab] = useState<'style' | 'wallpaper'>(initialTab ?? 'style')
+  const [tab, setTabState] = useState<PageTab>(() => initialTab ?? rememberedPageTab() ?? 'style')
   const tabIdBase = useId()
+  const setTab = (next: PageTab): void => {
+    setTabState(next)
+    rememberPageTab(next)
+  }
 
   // Theme observation and preview rollback live exactly as long as the page.
   useEffect(() => runtime.observeTheme(), [runtime])

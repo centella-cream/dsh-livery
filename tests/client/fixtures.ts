@@ -119,7 +119,9 @@ export class FakeDocument {
   }
 
   getElementById(id: string): FakeElement | null {
-    return this.head.walk().find(element => element.id === id) ?? null
+    const search = (root: FakeElement): FakeElement | null =>
+      root.walk().find(element => element.id === id) ?? null
+    return search(this.head) ?? search(this.body)
   }
 
   querySelector(selector: string): FakeElement | null {

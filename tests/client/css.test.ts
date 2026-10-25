@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs'
 import { CLIENT_CSS } from '../../src/styles/client.js'
 
 describe('client stylesheet (plan §18.3 / §18.8)', () => {
-  it('stays inside the 8KB budget', () => {
-    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(8 * 1024)
+  it('stays inside the 9KB budget', () => {
+    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(9 * 1024)
   })
 
   it('contains no !important', () => {

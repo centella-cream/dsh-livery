@@ -92,19 +92,24 @@ describe('wallpaper URL validation', () => {
 describe('wallpaper effects', () => {
   it('clamps and rounds every effect into its bounds', () => {
     expect(clampEffects(undefined)).toEqual(DEFAULT_WALLPAPER_EFFECTS)
-    expect(clampEffects({ blur: -5, dim: 999, frost: 100.4 })).toEqual({ blur: 0, dim: 70, frost: 100 })
-    expect(clampEffects({ blur: 24.6, dim: 0, frost: -1 })).toEqual({ blur: 24, dim: 0, frost: 0 })
-    expect(clampEffects({ blur: Number.NaN, dim: '30', frost: null })).toEqual({ blur: 8, dim: 30, frost: 0 })
+    expect(clampEffects({ blur: -5, dim: 999, frost: 100.4 })).toEqual({ blur: 0, dim: 70, frost: 100, atmosphere: 30 })
+    expect(clampEffects({ blur: 24.6, dim: 0, frost: -1 })).toEqual({ blur: 24, dim: 0, frost: 0, atmosphere: 30 })
+    expect(clampEffects({ blur: Number.NaN, dim: '30', frost: null })).toEqual({ blur: 8, dim: 30, frost: 0, atmosphere: 30 })
+    // Atmosphere is a 0–100 step-5 slider; legacy records without it default to 30.
+    expect(clampEffects({ atmosphere: 33 }).atmosphere).toBe(35)
+    expect(clampEffects({ atmosphere: -10 }).atmosphere).toBe(0)
+    expect(clampEffects({ atmosphere: 999 }).atmosphere).toBe(100)
+    expect(clampEffects({}).atmosphere).toBe(30)
   })
 })
 
 describe('wallpaper persistence schema', () => {
   it('roundtrips a builtin selection with clamped effects', () => {
-    const stored = toStoredWallpaper({ kind: 'builtin', id: 'aurora' }, { blur: 30, dim: -2, frost: 44.5 })
-    expect(stored).toEqual({ kind: 'builtin', id: 'aurora', blur: 24, dim: 0, frost: 45 })
+    const stored = toStoredWallpaper({ kind: 'builtin', id: 'aurora' }, { blur: 30, dim: -2, frost: 44.5, atmosphere: 30 })
+    expect(stored).toEqual({ kind: 'builtin', id: 'aurora', blur: 24, dim: 0, frost: 45, atmosphere: 30 })
     expect(parseStoredWallpaper(stored)).toEqual({
       selection: { kind: 'builtin', id: 'aurora' },
-      effects: { blur: 24, dim: 0, frost: 45 },
+      effects: { blur: 24, dim: 0, frost: 45, atmosphere: 30 },
     })
   })
 
@@ -121,8 +126,8 @@ describe('wallpaper persistence schema', () => {
     expect(toStoredWallpaper(undefined, DEFAULT_WALLPAPER_EFFECTS)).toBeUndefined()
   })
 
-  it('checks builtin ids and exposes deterministic CSS for all eight', () => {
-    expect(BUILTIN_WALLPAPER_IDS).toHaveLength(8)
+  it('checks builtin ids and exposes deterministic CSS for all 24 designs', () => {
+    expect(BUILTIN_WALLPAPER_IDS).toHaveLength(24)
     for (const id of BUILTIN_WALLPAPER_IDS) {
       expect(isBuiltinWallpaperId(id)).toBe(true)
       expect(backgroundImageValue({ kind: 'builtin', id })).toBe(BUILTIN_WALLPAPERS[id])
@@ -140,13 +145,53 @@ describe('wallpaper stylesheet builder', () => {
   it('injects the builtin background and effect values behind the body attribute', () => {
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'sea' },
-      effects: { blur: 12, dim: 70, frost: 0 },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, blur: 12, dim: 70, frost: 0 },
     })
     expect(css).toContain('body[data-dsh-wallpaper]::before')
     expect(css).toContain(BUILTIN_WALLPAPERS.sea)
     expect(css).toContain('filter:blur(12px)')
     expect(css).toContain('rgba(0,0,0,0.70)')
     expect(css).not.toContain('color-mix')
+  })
+
+  it('emits the above-content atmosphere overlay and transparent body canvas', () => {
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'sea' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, blur: 10, atmosphere: 60 },
+    })
+    expect(css).toContain('.dsh-livery-wallpaper-overlay{')
+    expect(css).toContain('position:fixed')
+    expect(css).toContain('inset:0')
+    expect(css).toContain('z-index:2147483000')
+    expect(css).toContain('pointer-events:none')
+    expect(css).toContain(BUILTIN_WALLPAPERS.sea)
+    expect(css).toContain('background-size:cover')
+    expect(css).toContain('background-position:center')
+    expect(css).toContain('filter:blur(10px)')
+    expect(css).toContain('opacity:0.60')
+    expect(css).toContain('mix-blend-mode:soft-light')
+    expect(css).toContain('body[data-dsh-wallpaper]{background-color:transparent}')
+    expect(css).not.toContain('!important')
+
+    const immersiveOnly = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'sea' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, atmosphere: 0 },
+    })
+    expect(immersiveOnly).not.toContain('.dsh-livery-wallpaper-overlay')
+    expect(immersiveOnly).toContain('body[data-dsh-wallpaper]::before')
+  })
+
+  it('keeps both layers viewport-relative (cover/center, blur bleed, no fixed aspect)', () => {
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'ocean' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, blur: 18 },
+    })
+    // Immersive body layer + atmosphere overlay both crop instead of distorting.
+    expect(css.match(/background-size:cover/g)).toHaveLength(2)
+    expect(css.match(/background-position:center/g)).toHaveLength(2)
+    // Negative inset absorbs the blur bleed so resizes never show hard edges.
+    expect(css).toContain('inset:-24px')
+    expect(css).not.toMatch(/aspect-ratio|width:\s*\d+px|height:\s*\d+px/)
   })
 
   it('escapes remote URLs inside single-quoted url()', () => {
@@ -169,7 +214,7 @@ describe('wallpaper stylesheet builder', () => {
     const dark = { '--dsw-alias-bg-base': '#05070a' }
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'dusk' },
-      effects: { blur: 8, dim: 25, frost: 35 },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, blur: 8, dim: 25, frost: 35 },
       tokens: { light, dark, frost: 35 },
     })
     expect(css).toContain('body[data-dsh-livery][data-dsh-wallpaper]')
@@ -274,7 +319,7 @@ describe('wallpaper DOM layer', () => {
   it('creates/updates one owned style and marks the body, then clears both', () => {
     const doc = fakeDoc()
     const layer = createWallpaperLayer(doc as never)
-    layer.apply('body[data-dsh-wallpaper]::before{color:red}')
+    layer.apply('body[data-dsh-wallpaper]::before{color:red}', false)
     const style = doc.getElementById(WALLPAPER_STYLE_ID)
     expect(style?.id).toBe(WALLPAPER_STYLE_ID)
     expect(style?.getAttribute('data-plugin-css')).toBe('dsh-livery/wallpaper')
@@ -282,7 +327,7 @@ describe('wallpaper DOM layer', () => {
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBe('')
     expect(doc.head.walk().filter(element => element.tagName === 'STYLE')).toHaveLength(1)
 
-    layer.apply('body[data-dsh-wallpaper]::before{color:blue}')
+    layer.apply('body[data-dsh-wallpaper]::before{color:blue}', false)
     expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('blue')
     expect(doc.head.walk().filter(element => element.tagName === 'STYLE')).toHaveLength(1)
 
@@ -293,9 +338,31 @@ describe('wallpaper DOM layer', () => {
     expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
   })
 
+  it('creates the atmosphere overlay as a class/attribute-only element above content', () => {
+    const doc = fakeDoc()
+    const layer = createWallpaperLayer(doc as never)
+    layer.apply('.dsh-livery-wallpaper-overlay{opacity:.3}', true)
+    const overlay = doc.getElementById('dsh-livery-wallpaper-overlay')
+    expect(overlay).not.toBeNull()
+    expect(overlay?.getAttribute('class')).toBe('dsh-livery-wallpaper-overlay')
+    expect(overlay?.getAttribute('data-plugin')).toBe('dsh-livery')
+    expect(overlay?.getAttribute('aria-hidden')).toBe('true')
+    // No inline style attribute: presentation lives in the owned stylesheet only.
+    expect(overlay?.getAttribute('style')).toBeNull()
+    // Exactly one overlay even after repeated applies; immersive style still owned.
+    layer.apply('.dsh-livery-wallpaper-overlay{opacity:.3}', true)
+    expect(doc.body.walk().filter(element => element.id === 'dsh-livery-wallpaper-overlay')).toHaveLength(1)
+    // atmosphere = 0 removes the overlay but keeps the immersive layer.
+    layer.apply('.dsh-livery-wallpaper-overlay{opacity:.3}', false)
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+    expect(doc.body.getAttribute('data-dsh-wallpaper')).toBe('')
+    layer.clear()
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+  })
+
   it('applies nothing without a document', () => {
     const layer = createWallpaperLayer(undefined)
-    expect(() => { layer.apply('x'); layer.clear(); layer.dispose() }).not.toThrow()
+    expect(() => { layer.apply('x', false); layer.clear(); layer.dispose() }).not.toThrow()
   })
 })
 
@@ -310,12 +377,15 @@ describe('wallpaper controller', () => {
     controller.start()
     expect(controller.getSnapshot()).toEqual({
       selection: { kind: 'builtin', id: 'mist' },
-      effects: { blur: 4, dim: 10, frost: 60 },
+      effects: { blur: 4, dim: 10, frost: 60, atmosphere: 30 },
     })
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBe('')
     expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('blur(4px)')
+    // Legacy stored records hydrate the default atmosphere overlay.
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).not.toBeNull()
     controller.dispose()
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
   })
 
   it('ignores corrupt storage and leaves the layer off', () => {
@@ -372,6 +442,24 @@ describe('wallpaper controller', () => {
     controller.setTokens(undefined, undefined)
     expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent ?? '').not.toContain('color-mix')
     controller.dispose()
+  })
+
+  it('creates and removes the atmosphere overlay as the slider changes', () => {
+    const storage = new MemoryStorage()
+    const doc = fakeDoc()
+    const controller = createWallpaperController({ storage, document: doc as never })
+    controller.start()
+    controller.setSelection({ kind: 'builtin', id: 'dusk' })
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).not.toBeNull()
+    controller.setEffects({ atmosphere: 0 })
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+    // The immersive under-content layer survives atmosphere = 0.
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('body[data-dsh-wallpaper]::before')
+    controller.setEffects({ atmosphere: 65 })
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).not.toBeNull()
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('opacity:0.65')
+    controller.dispose()
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
   })
 
   it('publishes itself through the module singleton', () => {

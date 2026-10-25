@@ -641,7 +641,12 @@ export async function openLiveryDetailed(page, { labels = LABELS.zh, locale = 'z
   if (await liveryPanelVisible(page)) {
     const panellist = await inspectPanellist(page)
     const selected = panellist.rows.find((row) => row.selected) ?? null
-    return { via: 'already-open', row: selected, panellist }
+    const selectedLabel = selected?.ariaLabel ?? selected?.label ?? null
+    // Another plugin panel can leave the Livery panel mounted-but-hidden; only
+    // treat it as open when the sidebar row itself is the selected entry.
+    if (selectedLabel !== null && panellistLabels(labels, locale).includes(selectedLabel)) {
+      return { via: 'already-open', row: selected, panellist }
+    }
   }
   const before = await inspectPanellist(page)
   const candidates = panellistLabels(labels, locale)
@@ -1018,15 +1023,54 @@ export async function readWallpaperState(page) {
     const stored = (() => {
       try { return window.localStorage.getItem('dsh-livery.wallpaper.v1') } catch { return null }
     })()
+    const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+    const overlayStyle = overlay ? getComputedStyle(overlay) : null
+    const libraryResults = [...document.querySelectorAll('[data-testid="wallpaper-library-result"]')].map((result) => ({
+      url: result.getAttribute('data-wallpaper-url'),
+      selected: result.getAttribute('aria-selected') === 'true',
+      label: result.getAttribute('aria-label'),
+    }))
     return {
       attribute: body.getAttribute('data-dsh-wallpaper'),
       stylePresent: Boolean(style),
       styleMarker: style ? style.getAttribute('data-plugin-css') : null,
       styleText: style?.textContent ?? '',
+      coverCount: (style?.textContent ?? '').match(/background-size:\s*cover/g)?.length ?? 0,
       pseudoBackground: before.backgroundImage,
+      pseudoBackgroundSize: before.backgroundSize,
       pseudoFilter: before.filter,
       pseudoVeil: after.background,
-      sliderValues: { blur: sliderValue('wallpaper-blur'), dim: sliderValue('wallpaper-dim'), frost: sliderValue('wallpaper-frost') },
+      overlay: overlay
+        ? {
+            present: true,
+            id: overlay.id,
+            className: overlay.getAttribute('class'),
+            ariaHidden: overlay.getAttribute('aria-hidden'),
+            zIndex: overlayStyle.zIndex,
+            pointerEvents: overlayStyle.pointerEvents,
+            opacity: overlayStyle.opacity,
+            mixBlendMode: overlayStyle.mixBlendMode,
+            backgroundSize: overlayStyle.backgroundSize,
+            backgroundImage: overlayStyle.backgroundImage,
+          }
+        : { present: false },
+      libraryCategories: [...document.querySelectorAll('[data-testid="wallpaper-category"]')].map((chip) => ({
+        id: chip.getAttribute('data-category'),
+        pressed: chip.getAttribute('aria-pressed') === 'true',
+        text: (chip.textContent ?? '').trim(),
+      })),
+      libraryStatus: document.querySelector('[data-testid="wallpaper-library-status"]')?.getAttribute('data-status') ?? null,
+      libraryStatusText: (document.querySelector('[data-testid="wallpaper-library-status"]')?.textContent ?? '').trim(),
+      libraryResults,
+      libraryAttribution: (document.querySelector('[data-testid="wallpaper-library-attribution"]')?.textContent ?? '').trim(),
+      moreButton: Boolean(document.querySelector('[data-testid="wallpaper-library-more"]')),
+      uploadAccept: document.querySelector('[data-testid="wallpaper-upload"]')?.getAttribute('accept') ?? null,
+      uploadError: (document.querySelector('[data-testid="wallpaper-upload-error"]')?.textContent ?? '').trim(),
+      uploadSessionOnly: (() => {
+        const hints = [...document.querySelectorAll('.livery-hint')].map((node) => (node.textContent ?? '').trim())
+        return hints.some((text) => text.includes('IndexedDB') && text.includes('本次') )
+      })(),
+      sliderValues: { blur: sliderValue('wallpaper-blur'), dim: sliderValue('wallpaper-dim'), frost: sliderValue('wallpaper-frost'), atmosphere: sliderValue('wallpaper-atmosphere') },
       builtins,
       selectedBuiltin: builtins.find((button) => button.pressed)?.id ?? null,
       urlErrorText: (document.querySelector('[data-testid="wallpaper-url-error"]')?.textContent ?? '').trim(),

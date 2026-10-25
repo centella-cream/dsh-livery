@@ -26,12 +26,14 @@ small first-frame payload. It:
 
 - **styles are offline**: no remote fonts or scripts, and no network requests for
   visual styles or previews;
-- **the optional wallpaper studio is the only networked feature**: user-initiated
-  searches call `api.openverse.org` (CC0/PDM image search) and `picsum.photos`
-  (random wallpapers), and a user-supplied https image URL is loaded as the
-  wallpaper background. No telemetry, no background requests, no API keys; the
-  search query and image URL are the only data sent/loaded. Wallpaper choices are
-  stored locally in `localStorage`, not in the profile;
+- **the optional wallpaper studio is the only networked feature**: opening the
+  wallpaper tab loads one curated category from `api.openverse.org` (CC0/PDM
+  search; only the category query leaves the browser), and explicit search/random
+  actions call `api.openverse.org` / `picsum.photos`. User-selected images come
+  from a validated https URL or a local file upload; uploads are stored in the
+  browser's IndexedDB and never uploaded. Results are cached in `localStorage`.
+  No telemetry, no background requests, no API keys. Wallpaper choices/effects are
+  stored locally, not in the profile;
 - ships no secrets and writes only the plugin's own configuration field
   (`skinId`) plus scoped `style` elements/attributes it owns;
 - fails closed on unknown host versions/contract hashes rather than guessing;

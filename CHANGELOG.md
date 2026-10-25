@@ -29,6 +29,16 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   (`main` keyed slot + `sidebar.panellist` row, order 30), with a second page tab
   **壁纸 / Wallpapers**. Forward-compatible entry detection falls back to the
   legacy settings page on hosts without panel navigation.
+- **Wallpaper studio expansion (round 9)**: 24 CSS-only built-in wallpapers;
+  curated online library with 8 style categories, license-safe Openverse
+  CC0/PDM queries, request retry/timeout, 6 h localStorage cache, dedupe and
+  cached offline fallback; user file upload (JPEG/PNG/WebP/AVIF, ≤10 MiB) stored in
+  IndexedDB and restored after reload; https URL kept; both wallpaper layers are
+  viewport-relative `cover` with an `inset:-24px` blur bleed (adaptive to any
+  window aspect); new **global atmosphere overlay** above app content
+  (`pointer-events:none`, soft-light, default 30 %) so the wallpaper is visible on
+  third-party plugin pages with opaque surfaces; page tab now remembers the last
+  active tab across workspace remounts/navigation (`sessionStorage`).
 - **Curated gallery**: six style families (calm/nature/light/retro/vivid/dark),
   family-grouped sections and counts, primary family chips, the full 16-tag
   vocabulary behind a 更多筛选/More filters toggle, search, roving keyboard focus
@@ -47,7 +57,9 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0` (unreleased)**; tarball
   `dsh-livery-0.1.0.tgz`.
-- Client gzip budget raised to 32 KiB for the wallpaper studio (actual 29,628 B).
+- Client gzip budget raised to 32 KiB for the wallpaper studio (actual 29,628 B),
+  then to 48 KiB for the round-9 expansion (actual 35,062 B); CLIENT_CSS budget
+  9 KiB (actual 8,449 B).
 - README repositioned as **DSH Visual Studio** (visual system + wallpapers +
   verification policy) instead of a plain skin, with a certified-vs-compat table.
 

@@ -17,6 +17,8 @@ import {
 } from '../wallpaper.js'
 import type { WallpaperEffects, WallpaperSelection } from '../wallpaper.js'
 import { createWallpaperLayer } from './apply.js'
+import { createIndexedDbImageStore } from './storage.js'
+import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 
 /** Reactive wallpaper state consumed by the studio UI. */
@@ -36,8 +38,12 @@ export interface WallpaperStorage {
 export interface WallpaperControllerApi {
   getSnapshot(): WallpaperState
   subscribe(listener: () => void): () => void
-  /** Apply one wallpaper (builtin or validated remote URL), or clear with undefined. */
-  setSelection(selection: WallpaperSelection): void
+  /**
+   * Apply one wallpaper (builtin, validated remote URL, or upload blob), or
+   * clear with undefined. For uploads pass the blob so an object URL can be
+   * produced immediately; hydration restores it from IndexedDB asynchronously.
+   */
+  setSelection(selection: WallpaperSelection, blob?: Blob): void
   /** Merge + clamp effects and apply them live. */
   setEffects(effects: Partial<WallpaperEffects>): void
   /** Remove the wallpaper layer (effects keep their current values in the UI). */
@@ -56,10 +62,27 @@ export interface WallpaperControllerOptions {
   readonly storage?: WallpaperStorage | undefined
   /** Debounce for persisted writes (ms). */
   readonly saveDelayMs?: number
+  /** Upload image store (IndexedDB); undefined keeps uploads session-only. */
+  readonly images?: WallpaperImageStore | undefined
+  /** Object-URL adapter (injected in tests). */
+  readonly objectUrls?: { create(blob: Blob): string; revoke(url: string): void } | undefined
 }
 
 const DEFAULT_SAVE_DELAY_MS = 250
 const EMPTY_TOKENS = { light: undefined, dark: undefined } as const
+
+/** Browser object-URL adapter, or undefined outside the browser. */
+function defaultObjectUrls(): { create(blob: Blob): string; revoke(url: string): void } | undefined {
+  try {
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return undefined
+    return {
+      create: (blob: Blob) => URL.createObjectURL(blob),
+      revoke: (url: string) => URL.revokeObjectURL(url),
+    }
+  } catch {
+    return undefined
+  }
+}
 
 /** Resolve the browser localStorage without throwing in restricted contexts. */
 function defaultStorage(): WallpaperStorage | undefined {
@@ -79,6 +102,8 @@ function defaultStorage(): WallpaperStorage | undefined {
 export function createWallpaperController(options: WallpaperControllerOptions = {}): WallpaperControllerApi {
   const layer: WallpaperLayer = createWallpaperLayer(options.document)
   const storage = options.storage ?? defaultStorage()
+  const images = options.images ?? createIndexedDbImageStore()
+  const objectUrls = options.objectUrls ?? defaultObjectUrls()
   const saveDelay = options.saveDelayMs ?? DEFAULT_SAVE_DELAY_MS
   const listeners = new Set<() => void>()
   let selection: WallpaperSelection = undefined
@@ -88,6 +113,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
   let started = false
+  let uploadUrl: string | undefined
 
   const notify = (): void => {
     snapshot = { selection, effects }
@@ -107,7 +133,27 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   }
 
   const apply = (): void => {
-    layer.apply(buildWallpaperCss({ selection, effects, tokens: tokenContext() }))
+    layer.apply(
+      buildWallpaperCss({ selection, effects, tokens: tokenContext(), uploadUrl }),
+      effects.atmosphere > 0,
+    )
+  }
+
+  const replaceUploadUrl = (blob: Blob | undefined): void => {
+    if (uploadUrl !== undefined) {
+      try {
+        objectUrls?.revoke(uploadUrl)
+      } catch {
+        /* a stale object URL must not break teardown */
+      }
+      uploadUrl = undefined
+    }
+    if (blob === undefined || objectUrls === undefined) return
+    try {
+      uploadUrl = objectUrls.create(blob)
+    } catch {
+      uploadUrl = undefined
+    }
   }
 
   const persist = (): void => {
@@ -119,7 +165,11 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       }
       storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
         kind: selection.kind,
-        ...(selection.kind === 'builtin' ? { id: selection.id } : { url: selection.url }),
+        ...(selection.kind === 'builtin'
+          ? { id: selection.id }
+          : selection.kind === 'upload'
+            ? { key: selection.key }
+            : { url: selection.url }),
         ...effects,
       }))
     } catch {
@@ -154,7 +204,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (a.kind !== b.kind) return false
     if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
     if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
-    return false
+    return b.kind === 'upload' && a.key === b.key
   }
 
   const hydrate = (): void => {
@@ -173,6 +223,33 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     effects = stored.effects
   }
 
+  // Uploaded blobs live in IndexedDB: restore the object URL asynchronously once
+  // the selection is known. A missing blob clears the wallpaper instead of
+  // leaving a broken image; a session-only upload (no store) is left untouched.
+  const restoreUpload = async (): Promise<void> => {
+    if (selection === undefined || selection.kind !== 'upload') return
+    const { key } = selection
+    if (images === undefined || objectUrls === undefined) return
+    let record: StoredImageRecord | undefined
+    try {
+      record = await images.get(key)
+    } catch {
+      record = undefined
+    }
+    if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
+    if (record === undefined) {
+      selection = undefined
+      replaceUploadUrl(undefined)
+      apply()
+      scheduleSave()
+      notify()
+      return
+    }
+    replaceUploadUrl(record.blob)
+    apply()
+    notify()
+  }
+
   return {
     getSnapshot: () => snapshot,
     subscribe: (listener: () => void) => {
@@ -181,16 +258,24 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
         listeners.delete(listener)
       }
     },
-    setSelection: (next: WallpaperSelection) => {
+    setSelection: (next: WallpaperSelection, blob?: Blob) => {
       if (sameSelection(selection, next)) return
       selection = next
+      if (next !== undefined && next.kind === 'upload') {
+        if (blob !== undefined) replaceUploadUrl(blob)
+      } else {
+        replaceUploadUrl(undefined)
+      }
       apply()
       scheduleSave()
       notify()
     },
     setEffects: (patch: Partial<WallpaperEffects>) => {
       const merged = clampEffects({ ...effects, ...patch })
-      if (merged.blur === effects.blur && merged.dim === effects.dim && merged.frost === effects.frost) return
+      if (
+        merged.blur === effects.blur && merged.dim === effects.dim
+        && merged.frost === effects.frost && merged.atmosphere === effects.atmosphere
+      ) return
       effects = merged
       apply()
       scheduleSave()
@@ -199,6 +284,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     clear: () => {
       if (selection === undefined) return
       selection = undefined
+      replaceUploadUrl(undefined)
       apply()
       scheduleSave()
       notify()
@@ -214,10 +300,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       hydrate()
       apply()
       notify()
+      void restoreUpload()
     },
     dispose: () => {
       flushSave()
       listeners.clear()
+      replaceUploadUrl(undefined)
       layer.dispose()
       started = false
     },

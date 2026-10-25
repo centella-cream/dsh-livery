@@ -521,11 +521,12 @@ async function main() {
       runner,
       'desktop.wallpaper',
       'desktop wallpaper studio applies a built-in CSS layer through the owned stylesheet',
-      desktopWallpaperInitial.builtins.length === 8 &&
+      desktopWallpaperInitial.builtins.length === 24 &&
         desktopWallpaper.attribute !== null &&
         desktopWallpaper.styleMarker === 'dsh-livery/wallpaper' &&
         desktopWallpaper.selectedBuiltin === 'aurora' &&
-        desktopWallpaper.styleText.includes('radial-gradient'),
+        desktopWallpaper.styleText.includes('background-image') &&
+        desktopWallpaper.overlay?.present === true,
       `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
     )
     await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 })
