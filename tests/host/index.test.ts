@@ -159,15 +159,9 @@ describe('resolveAdapter', () => {
     expect(resolveAdapter()).toBeUndefined()
   })
 
-  it('resolves the synthetic compat adapter for an in-range uncertified version', () => {
-    const newest = ADAPTERS[ADAPTERS.length - 1]
-    if (newest === undefined) return
+  it('returns undefined for an in-range uncertified version (exact-only policy)', () => {
     setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '0.3.0-rc.1' })
-    const adapter = resolveAdapter()
-    expect(adapter?.adapterId).toBe('dsh-compat')
-    expect(adapter?.hostVersion).toBe('0.3.0-rc.1')
-    expect(adapter?.contractHash).toBe(newest.contractHash)
-    expect(adapter?.catalogProfile).toBe(newest.catalogProfile)
+    expect(resolveAdapter()).toBeUndefined()
   })
 })
 
@@ -179,16 +173,17 @@ describe('bootStateForConfig', () => {
     expect(state.gate.codes).toContain('gate.version-unknown')
   })
 
-  it.skipIf(!COMPILED)('boots in compat mode for an in-range uncertified version', () => {
+  it('fails closed for a readable in-range uncertified version (no compat injection)', () => {
     setHostEnvironmentForTests({ profileKind: 'web', observedHostVersion: '0.3.0-rc.1' })
     const state = bootStateForConfig({ skinId: { get: () => 'fjord' } } as unknown as LiveryHostConfig)
-    expect(state.gate.accepted).toBe(true)
-    expect(state.compat).toBe(true)
-    expect(state.payload.compat).toBe(true)
-    expect(state.payload.adapterId).toBe('dsh-compat')
+    expect(state.gate.accepted).toBe(false)
+    expect(state.accepted).toBe(false)
+    expect(state.rows).toEqual([])
+    expect(state.gate.codes).toContain('gate.version-mismatch')
+    expect(state.payload.adapterId).toBe('')
     expect(state.payload.hostVersion).toBe('0.3.0-rc.1')
-    expect(state.rows).toHaveLength(3)
-    expect(state.diagnostics.join('\n')).toContain('compat.mode')
+    expect(state.diagnostics.join('\n')).not.toContain('compat.mode')
+    expect((state.payload as { compat?: boolean }).compat).toBeUndefined()
   })
 
   it('fails closed for an out-of-range host version', () => {

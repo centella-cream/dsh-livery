@@ -72,10 +72,25 @@ async function packCheck(args) {
       problems.push(`package.json files must not include ${forbidden}/`)
     }
   }
-  // Install-time compatibility range; the certified matrix lives in contracts/.
-  const compatRange = '>=0.2.0-rc.2 <1.0.0'
-  if (pkg.engines?.dsh !== compatRange) {
-    problems.push(`engines.dsh must be the compatibility range "${compatRange}", got ${String(pkg.engines?.dsh)}`)
+  // Narrow compatibility: engines.dsh must be the EXACT formal-matrix shipped
+  // allowlist (contracts/dsh/support-matrix.json), never a semver range.
+  try {
+    const matrix = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
+    const shipped = matrix.entries
+      .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
+      .map((entry) => entry.hostVersion)
+      .sort()
+    const expectedRange = shipped.join(' || ')
+    if (shipped.length === 0) problems.push('formal support matrix has no g6-approved/released entry')
+    if (pkg.engines?.dsh !== expectedRange) {
+      problems.push(`engines.dsh must be the exact shipped allowlist "${expectedRange}", got ${String(pkg.engines?.dsh)}`)
+    }
+    const releases = pkg.dsh?.compatibility?.dshReleases
+    if (releases === undefined || JSON.stringify(Object.keys(releases).sort()) !== JSON.stringify(shipped)) {
+      problems.push(`dsh.compatibility.dshReleases must list exactly the shipped allowlist ${JSON.stringify(shipped)}`)
+    }
+  } catch (error) {
+    problems.push(`cannot validate narrow compatibility: ${error.message}`)
   }
   if (typeof pkg.engines?.node !== 'string' || !pkg.engines.node.includes('^22.23.1') || !pkg.engines.node.includes('^24.21.0')) {
     problems.push(`engines.node must cover the certified runtimes, got ${String(pkg.engines?.node)}`)

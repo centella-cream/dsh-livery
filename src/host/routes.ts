@@ -58,7 +58,27 @@ export interface LiveryRouteOptions {
   readonly profilePreviews?: ReadonlyMap<string, ReadonlyMap<string, string>>
   /** File reader for preview assets; defaults to `node:fs/promises`. */
   readonly readAsset?: (filePath: string) => Promise<Uint8Array>
+  /**
+   * Optional cold-start readiness gate.
+   *
+   * The Host's runtime-version probe is asynchronous; a request can arrive
+   * before it settles. When supplied, both handlers await it (bounded by
+   * `readinessTimeoutMs`) before resolving the adapter, so a cold client fetch
+   * gets the real catalog instead of a race-induced 404. It must never reject;
+   * a timeout is treated as "still unknown" and falls back to 404.
+   */
+  readonly whenReady?: () => Promise<unknown>
+  /** Maximum readiness wait per request; defaults to {@link DEFAULT_READINESS_TIMEOUT_MS}. */
+  readonly readinessTimeoutMs?: number
 }
+
+/**
+ * Default bounded wait for the Host version probe before a route answers 404.
+ *
+ * Matches the Host's `HOST_READINESS_TIMEOUT_MS`; kept here so the route module
+ * is independently testable and safe if a caller forgets to thread the value.
+ */
+export const DEFAULT_READINESS_TIMEOUT_MS = 1500
 
 /** Both handlers, wired with one consistent option set. */
 export interface LiveryRouteHandlers {
@@ -156,6 +176,42 @@ function respond(
 }
 
 /**
+ * Wait for cold-start readiness, bounded and never rejecting.
+ *
+ * A route that answers before the version probe settles would return a
+ * race-induced 404, which the Client treats as a terminal degraded state. The
+ * wait is capped so a genuinely absent probe still leaves the carrier
+ * responsive; timeout and probe rejection both fall through to normal adapter
+ * resolution (which then 404s because the version is genuinely unknown).
+ * @param options - route options carrying the gate.
+ * @returns nothing; resolves within the bounded wait.
+ */
+async function awaitReadiness(options: LiveryRouteOptions): Promise<void> {
+  const whenReady = options.whenReady
+  if (whenReady === undefined) return
+  const timeoutMs = options.readinessTimeoutMs ?? DEFAULT_READINESS_TIMEOUT_MS
+  await new Promise<void>((resolve) => {
+    let finished = false
+    const finish = (): void => {
+      if (finished) return
+      finished = true
+      clearTimeout(timer)
+      resolve()
+    }
+    const timer = setTimeout(finish, Math.max(0, timeoutMs))
+    timer.unref?.()
+    let pending: Promise<unknown>
+    try {
+      pending = Promise.resolve(whenReady())
+    } catch {
+      finish()
+      return
+    }
+    pending.then(finish, finish)
+  })
+}
+
+/**
  * Parse the request target into a decoded pathname.
  *
  * The decoded form is what traversal checks must run against: `%2e%2e%2f` is
@@ -236,11 +292,15 @@ export function createCatalogHandler(options: LiveryRouteOptions = {}): LiveryRo
   const currentAdapter = adapterResolver(options)
   const catalogFor = options.catalogFor ?? ((adapter: AdapterRecord) => buildCatalog(adapter))
   const catalogJson = new Map<string, string>()
-  return (req, res) => {
+  return async (req, res) => {
     if (!isReadMethod(req)) {
       respond(res, 405, METHOD_NOT_ALLOWED_HEADERS)
       return
     }
+    // Cold start: a request may land before the version probe settles. Wait
+    // (bounded) so the Client's single catalog fetch is not answered with a
+    // race-induced 404 it would treat as terminal.
+    await awaitReadiness(options)
     const adapter = currentAdapter()
     if (adapter === undefined) {
       // Uncertified host: this build has no catalog it can claim.
@@ -303,6 +363,9 @@ export function createPreviewHandler(options: LiveryRouteOptions = {}): LiveryRo
       respond(res, 405, METHOD_NOT_ALLOWED_HEADERS)
       return
     }
+    // Same cold-start gate as the catalog route: previews for the active
+    // profile are only meaningful once the adapter is known.
+    await awaitReadiness(options)
     const adapter = currentAdapter()
     if (adapter === undefined) {
       respond(res, 404, NOT_FOUND_HEADERS)

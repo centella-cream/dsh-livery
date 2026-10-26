@@ -1,4 +1,4 @@
-import { DSH_COMPAT_RANGE, isCompatibleHostVersion } from '../core/compat.js'
+import { FORMAL_MATRIX_PATH, readFormalMatrix, shippedVersionsFromMatrix } from './matrix.js'
 /**
  * Contract / adapter / support-matrix CLI.
  *
@@ -19,11 +19,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import {
   adapterIdFor,
+  adapterManifestFrom,
   buildContractSnapshot,
   canonicalJson,
   hashCanonical,
   readCommittedSnapshots,
   regenerateGeneratedContracts,
+  renderGeneratedRegistry,
+  shippedSnapshots,
   resolveDshInstall,
   sha256Bytes,
   writeSnapshotArtifacts,
@@ -119,8 +122,14 @@ async function loadCommittedSnapshot(workspace: string, version?: string): Promi
   return latest
 }
 
+/** The formal support matrix is the only release/generation authority. */
 async function loadCommittedMatrix(workspace: string): Promise<SupportMatrix> {
-  return readJson<SupportMatrix>(join(workspace, 'contracts', 'dsh', 'support-matrix.proposed.json'))
+  return readFormalMatrix(workspace)
+}
+
+/** Exact `engines.dsh` allowlist for the generated adapter set. */
+function expectedEngineRange(versions: readonly string[]): string {
+  return versions.join(' || ')
 }
 
 /* ------------------------------------------------------------------ *
@@ -203,10 +212,13 @@ async function commandDiff(context: CliContext, parsed: ParsedArgs): Promise<num
 
 async function commandAdapterGenerate(context: CliContext, parsed: ParsedArgs): Promise<number> {
   const matrix = await loadCommittedMatrix(context.cwd)
-  const snapshots = await readCommittedSnapshots(context.cwd)
+  const committed = await readCommittedSnapshots(context.cwd)
+  // Default: only formal-matrix g6-approved/released adapters. An explicit
+  // --version may refresh a historical adapter.json for maintenance, but the
+  // generated registry itself only ever contains the shipped set.
   const selected = typeof parsed.flags.version === 'string'
-    ? snapshots.filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
-    : snapshots
+    ? committed.filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
+    : await shippedSnapshots(context.cwd)
   if (selected.length === 0) {
     context.error('adapter:generate: no committed contracts matched')
     return 1
@@ -222,46 +234,21 @@ async function commandAdapterGenerate(context: CliContext, parsed: ParsedArgs): 
   return 0
 }
 
-/** Derive one adapter manifest; certification fields follow the support matrix. */
+/**
+ * Derive one adapter manifest; certification fields follow the formal support
+ * matrix (profile statuses decide verified profiles/platforms/browsers).
+ */
 export function adapterFrom(snapshot: ContractSnapshot, matrix?: SupportMatrix): AdapterManifest {
   const entry = matrix?.entries.find((candidate) => candidate.hostVersion === snapshot.hostVersion)
-  const webPassed = entry?.profiles.web.chrome === 'passed' || entry?.profiles.web.edge === 'passed'
-  const darwinPassed = entry?.profiles.desktop.macos === 'passed'
-  const win32Passed = entry?.profiles.desktop.win32 === 'passed'
-  const verifiedProfiles: string[] = []
-  if (webPassed) verifiedProfiles.push('web')
-  if (darwinPassed || win32Passed) verifiedProfiles.push('desktop')
-  const verifiedPlatforms: string[] = []
-  if (webPassed) verifiedPlatforms.push('web')
-  if (darwinPassed) verifiedPlatforms.push('darwin')
-  if (win32Passed) verifiedPlatforms.push('win32')
-  const browsers: Array<{ family: string; minVersion: number }> = []
-  if (entry?.profiles.web.chrome === 'passed') browsers.push({ family: 'chrome', minVersion: 120 })
-  if (entry?.profiles.web.edge === 'passed') browsers.push({ family: 'edge', minVersion: 120 })
-  return {
-    hostVersion: snapshot.hostVersion,
-    adapterId: snapshot.adapterId,
-    loaderAbi: snapshot.hashes.loaderAbi,
-    hostApiContract: snapshot.hashes.hostApi,
-    clientApiContract: snapshot.hashes.clientApi,
-    tokenContract: snapshot.hashes.token,
-    layoutContract: snapshot.hashes.layout,
-    profileSchema: snapshot.hashes.profileSchema,
-    contractHash: snapshot.contractHash,
-    nodeRange: snapshot.source.nodeRange,
-    clientTarget: snapshot.source.clientTarget,
-    verifiedProfiles,
-    verifiedPlatforms,
-    verifiedBrowsers: browsers,
-  }
+  return adapterManifestFrom(snapshot, entry)
 }
 
 async function commandAdapterCheck(context: CliContext, parsed: ParsedArgs): Promise<number> {
   const matrix = await loadCommittedMatrix(context.cwd)
-  const snapshots = await readCommittedSnapshots(context.cwd)
+  const shipped = await shippedSnapshots(context.cwd)
   const selected = typeof parsed.flags.version === 'string'
-    ? snapshots.filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
-    : snapshots
+    ? (await readCommittedSnapshots(context.cwd)).filter((snapshot) => snapshot.hostVersion === parsed.flags.version)
+    : shipped
   const problems: string[] = []
   for (const snapshot of selected) {
     const version = snapshot.hostVersion
@@ -282,21 +269,22 @@ async function commandAdapterCheck(context: CliContext, parsed: ParsedArgs): Pro
       problems.push(`${version}: adapterId must be ${adapterIdFor(version)}, got ${adapter.adapterId}`)
     }
   }
+  const shippedVersions = shippedVersionsFromMatrix(matrix)
+  const expectedRange = expectedEngineRange(shippedVersions)
   const pkg = await readJson<{ engines?: { dsh?: string } }>(join(context.cwd, 'package.json'))
-  if (pkg.engines?.dsh !== DSH_COMPAT_RANGE) {
-    problems.push(`package.json engines.dsh must be the compatibility range "${DSH_COMPAT_RANGE}", got "${String(pkg.engines?.dsh)}"`)
+  if (pkg.engines?.dsh !== expectedRange) {
+    problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
   }
-  for (const snapshot of snapshots) {
-    if (!isCompatibleHostVersion(snapshot.hostVersion)) {
-      problems.push(`certified contract ${snapshot.hostVersion} is outside the compatibility range`)
-    }
+  const generatedVersions = shipped.map((snapshot) => snapshot.hostVersion)
+  if (JSON.stringify(generatedVersions) !== JSON.stringify(shippedVersions)) {
+    problems.push(`generated adapter versions ${JSON.stringify(generatedVersions)} do not match the formal matrix ${JSON.stringify(shippedVersions)}`)
   }
   if (problems.length > 0) {
     for (const problem of problems) context.error(`adapter:check: FAIL ${problem}`)
     return 1
   }
   context.log(`adapter:check: OK ${selected.map((snapshot) => snapshot.adapterId).join(', ')}`)
-  context.log(`adapter:check: compatibility range ${DSH_COMPAT_RANGE} covering ${selected.map((snapshot) => snapshot.hostVersion).join(', ')}`)
+  context.log(`adapter:check: exact engines allowlist ${expectedRange} (shipped: ${shippedVersions.join(', ')})`)
   return 0
 }
 
@@ -474,7 +462,8 @@ async function commandLoaderAbi(context: CliContext): Promise<number> {
   )
 
   const result: LoaderAbiTestResult = { ok: checks.every((check) => check.ok), checks }
-  const artifactsDir = join(workspace, 'artifacts', 'abi', '0.2.0-rc.2')
+  const abiVersion = (await shippedSnapshots(workspace))[0]?.hostVersion ?? 'unknown'
+  const artifactsDir = join(workspace, 'artifacts', 'abi', abiVersion)
   await mkdir(artifactsDir, { recursive: true })
   await writeFile(join(artifactsDir, 'loader.json'), `${JSON.stringify({ sha256: sha256Bytes(Buffer.from(text)), result }, null, 2)}\n`)
   for (const check of checks) {
@@ -505,7 +494,7 @@ function isPlatformModule(request: string): boolean {
 
 /** Load every committed adapter's seeded module table (for the ABI test). */
 async function loadAdapterModuleTables(workspace: string): Promise<Array<{ version: string; modules: readonly string[] }>> {
-  const snapshots = await readCommittedSnapshots(workspace)
+  const snapshots = await shippedSnapshots(workspace)
   return snapshots.map((snapshot) => ({
     version: snapshot.hostVersion,
     modules: snapshot.loaderAbi.platformModules.modules,
@@ -516,12 +505,29 @@ async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, releas
   const matrixPath =
     typeof parsed.flags.matrix === 'string'
       ? resolve(context.cwd, parsed.flags.matrix)
-      : join(context.cwd, 'contracts', 'dsh', 'support-matrix.proposed.json')
+      : join(context.cwd, FORMAL_MATRIX_PATH)
   const all = parsed.flags.all === true || parsed.flags.all === 'true'
   const matrix = await readMatrix(matrixPath)
+  const shippedVersions = shippedVersionsFromMatrix(matrix)
+  // `--all` always compares the adapters this build actually generates/ships,
+  // never every historical contract snapshot on disk.
   const versions = all
-    ? (await readCommittedSnapshots(context.cwd)).map((entry) => entry.hostVersion)
-    : [typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2']
+    ? shippedVersions
+    : [typeof parsed.flags.version === 'string' ? parsed.flags.version : shippedVersions[0] ?? '0.2.1-rc.2']
+  const bootProblems: string[] = []
+  if (all) {
+    try {
+      const shipped = await shippedSnapshots(context.cwd)
+      const generatedPath = join(context.cwd, 'src', 'generated', 'contract.ts')
+      const generated = await readFile(generatedPath, 'utf8')
+      if (generated !== renderGeneratedRegistry(shipped)) {
+        bootProblems.push('src/generated/contract.ts is stale: regenerate with `pnpm contract:regenerate`')
+      }
+    } catch (error) {
+      bootProblems.push(`cannot verify generated adapter registry: ${(error as Error).message}`)
+    }
+    if (shippedVersions.length === 0) bootProblems.push('formal support matrix has no generated adapter')
+  }
   const artifactsDir = join(context.cwd, 'artifacts', 'release')
   await mkdir(artifactsDir, { recursive: true })
   const results = versions.map((version) => release ? gateRelease(matrix, version) : gateSupportMatrix(matrix, version))
@@ -530,7 +536,10 @@ async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, releas
     join(artifactsDir, release ? `gate-release-${all ? 'all' : versions[0]}.json` : `gate-matrix-${all ? 'all' : versions[0]}.json`),
     `${JSON.stringify(output, null, 2)}\n`,
   )
-  let failed = false
+  let failed = bootProblems.length > 0
+  for (const problem of bootProblems) {
+    context.error(`${release ? 'gate:release' : 'gate:support-matrix'}: BLOCKED ${problem}`)
+  }
   for (const result of results) {
     if (!result.ok) {
       failed = true
@@ -538,6 +547,10 @@ async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, releas
         context.error(`${release ? 'gate:release' : 'gate:support-matrix'}: BLOCKED ${result.version}: ${problem}`)
       }
     }
+  }
+  if (release && all) {
+    const notReleased = versions.filter((version) => !gateRelease(matrix, version).ok)
+    if (notReleased.length > 0) failed = true
   }
   if (failed) return 1
   context.log(`${release ? 'gate:release' : 'gate:support-matrix'}: OK ${versions.join(', ')}`)

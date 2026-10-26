@@ -3,6 +3,7 @@
  * Repository lint: cheap structural checks that do not need the TypeScript
  * compiler or a browser. CSS safety proper lives in `audit:css`.
  */
+import { existsSync } from 'node:fs'
 import { readFile, readdir, stat } from 'node:fs/promises'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -57,48 +58,41 @@ for (const file of files.filter((path) => path.endsWith('.json'))) {
   }
 }
 
-// Contract policy: engines.dsh is the compatibility range, and every certified
-// contract version must fall inside it.
+// Contract policy: the FORMAL support matrix decides the exact shipped adapter
+// allowlist. engines.dsh must equal that exact list (no ranges), and the
+// generated registry must contain only those adapters. Historical contract
+// snapshots stay on disk for audit/diff and are not part of the allowlist.
 try {
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  const compatRange = '>=0.2.0-rc.2 <1.0.0'
-  const parse = (version) => {
-    const m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/.exec(version)
-    if (m === null) return null
-    return { nums: [Number(m[1]), Number(m[2]), Number(m[3])], pre: m[4] === undefined ? [] : m[4].split('.') }
-  }
-  const cmp = (a, b) => {
-    const x = parse(a); const y = parse(b)
-    if (x === null || y === null) return NaN
-    for (let i = 0; i < 3; i += 1) if (x.nums[i] !== y.nums[i]) return x.nums[i] - y.nums[i]
-    if (x.pre.length === 0 && y.pre.length === 0) return 0
-    if (x.pre.length === 0) return 1
-    if (y.pre.length === 0) return -1
-    for (let i = 0; i < Math.max(x.pre.length, y.pre.length); i += 1) {
-      const l = x.pre[i]; const r = y.pre[i]
-      if (l === undefined) return -1
-      if (r === undefined) return 1
-      if (l === r) continue
-      const ln = /^\d+$/.test(l); const rn = /^\d+$/.test(r)
-      if (ln && rn) return Number(l) - Number(r)
-      if (ln) return -1
-      if (rn) return 1
-      return l < r ? -1 : 1
-    }
-    return 0
-  }
-  const { readdir: readDir } = await import('node:fs/promises')
-  const contractDirs = (await readDir(join(root, 'contracts', 'dsh'), { withFileTypes: true }))
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
+  const matrix = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
+  const shipped = matrix.entries
+    .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
+    .map((entry) => entry.hostVersion)
     .sort()
-  if (pkg.engines?.dsh !== compatRange) {
-    problems.push(`package.json engines.dsh must be the compatibility range "${compatRange}", got "${String(pkg.engines?.dsh)}"`)
+  const expectedRange = shipped.join(' || ')
+  if (shipped.length === 0) {
+    problems.push('formal support-matrix.json has no g6-approved/released entry')
   }
-  for (const version of contractDirs) {
-    const lower = cmp(version, '0.2.0-rc.2')
-    const upper = cmp(version, '1.0.0')
-    if (!(lower >= 0 && upper < 0)) problems.push(`certified contract ${version} is outside the compatibility range`)
+  if (pkg.engines?.dsh !== expectedRange) {
+    problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
+  }
+  const releases = pkg.dsh?.compatibility?.dshReleases
+  if (releases === undefined || JSON.stringify(Object.keys(releases).sort()) !== JSON.stringify(shipped)) {
+    problems.push(`package.json dsh.compatibility.dshReleases must list exactly the shipped allowlist ${JSON.stringify(shipped)}`)
+  }
+  const generated = await readFile(join(root, 'src', 'generated', 'contract.ts'), 'utf8')
+  const generatedVersions = [
+    ...new Set([...generated.matchAll(/"hostVersion": "([^"]+)"/gu)].map((match) => match[1])),
+  ]
+  if (JSON.stringify(generatedVersions) !== JSON.stringify(shipped)) {
+    problems.push(`src/generated/contract.ts adapters ${JSON.stringify(generatedVersions)} do not match the formal matrix ${JSON.stringify(shipped)}`)
+  }
+  // Every frozen snapshot remains committed even when it is not shipped.
+  for (const entry of await readdir(join(root, 'contracts', 'dsh'), { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    if (!existsSync(join(root, 'contracts', 'dsh', entry.name, 'contract.json'))) {
+      problems.push(`contracts/dsh/${entry.name}/contract.json is missing (historical snapshots must stay on disk)`)
+    }
   }
   if (!pkg.dsh?.bundle?.patch) problems.push('package.json dsh.bundle.patch is required')
   const patch = await readFile(join(root, 'cordis.patch.yml'), 'utf8')

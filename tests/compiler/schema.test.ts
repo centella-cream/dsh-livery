@@ -15,8 +15,12 @@ import {
   validateManifest,
   type ManifestSource,
 } from '../../src/compiler/validate.js'
-import { ADAPTERS } from '../../src/generated/contract.js'
-import { stockForVersion } from '../../src/generated/stock.js'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { AdapterRecord } from '../../src/generated/contract.js'
+import type { StockSnapshot } from '../../src/generated/stock.js'
+import { adapterRecordFrom, stockSnapshotFrom } from '../../src/contract/snapshot.js'
+import type { ContractSnapshot } from '../../src/contract/types.js'
 import { cloneManifest, liveryIds, loadManifestSources, readManifest } from './helpers.js'
 
 const FJORD_FILE = 'liveries/fjord/manifest.json'
@@ -270,11 +274,16 @@ describe('semantic manifest validation', () => {
     expect(validateManifest(source).map((diagnostic) => diagnostic.code)).toContain('capability.overlap')
   })
 
-  it('accepts the shipped catalog for every certified host version', () => {
+  it('accepts the shipped catalog for every committed host snapshot', () => {
+    // Historical contracts stay on disk for audit/diff even though only the
+    // formal-matrix approved adapter is shipped; the manifest set must remain
+    // valid for every frozen snapshot the package once supported.
     for (const version of ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3']) {
-      const adapter = ADAPTERS.find((candidate) => candidate.hostVersion === version)
-      const stock = stockForVersion(version)
-      if (adapter === undefined || stock === undefined) throw new Error(`fixture missing for ${version}`)
+      const contract = JSON.parse(
+        readFileSync(join(process.cwd(), 'contracts', 'dsh', version, 'contract.json'), 'utf8'),
+      ) as ContractSnapshot
+      const adapter = adapterRecordFrom(contract) as unknown as AdapterRecord
+      const stock = stockSnapshotFrom(contract) as unknown as StockSnapshot
       const result = validateCatalog(loadManifestSources(), { stock, capabilities: adapter.capabilities })
       expect(result.ok, `${version}: ${JSON.stringify(result.diagnostics, null, 2)}`).toBe(true)
     }

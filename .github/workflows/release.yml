@@ -42,11 +42,30 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Download the exact candidate artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dsh-livery-candidate
+          path: .tmp/candidate
+      - name: Verify the downloaded bytes (no rebuild)
+        run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz
+      - name: Bind candidate to acceptance evidence
+        run: |
+          if [ ! -f .tmp/candidate/release-manifest.json ]; then
+            echo "release-manifest.json missing from candidate artifact" >&2
+            exit 1
+          fi
+          if [ -n "${RELEASE_EVIDENCE:-}" ]; then
+            pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz --evidence "$RELEASE_EVIDENCE"
+          else
+            echo "No acceptance evidence supplied; release evidence binding is required before promotion." >&2
+            exit 1
+          fi
       - name: Enforce every packaged adapter against the formal matrix
         run: |
           pnpm gate:support-matrix -- --all
           pnpm gate:release -- --all
       # Publishing is intentionally not automated here. A controlled release
-      # first downloads the exact candidate artifact above, binds it to
-      # acceptance evidence, promotes the reviewed matrix entry, then re-runs
-      # both gates on the same bytes before a separate publish job.
+      # downloads the exact candidate artifact above, binds it to acceptance
+      # evidence, promotes the reviewed matrix entry, then re-runs both gates on
+      # the same bytes before a separate publish job.

@@ -2,18 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.x%20candidate%20%2B%200.x%20compat-6d6df6.svg)](#host-support-and-version-policy)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20limited%20release-6d6df6.svg)](#host-support-and-version-policy)
 
 A visual styling plugin for DeepSeek Harness: 24 styles built on a frozen contract, a
 wallpaper studio with online image search and blur/frost effects, and a style
 gallery. It ships as a plugin that adds a visual layer **instead of taking over
 the host theme**.
 
-> **Release status: not released.** Candidate builds pass the project's G0–G5
-> checks and Web/Chrome acceptance only. Desktop macOS/Windows, Web Edge, native
-> window gates and G6 are still open, so `pnpm gate:support-matrix` and
-> `pnpm gate:release` fail. Do not treat this package as a certified production
-> release.
+> **Release status: 0.1.0 limited release.** Supported exactly for DSH
+> `0.2.1-rc.2`, Web Profile, Chrome. Desktop macOS/Windows, Web Edge and other DSH
+> builds are not supported and are rejected. The published artifact is the one
+> bound to the committed evidence file; `prepublish-check` refuses mismatched bytes.
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -30,7 +29,7 @@ changes. DSH Livery makes the opposite trade:
 | Takes over `ctx.theme`, registers themes, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
 | Paints window chrome (title bars, overlays) | Draws no chrome; the host owns the window |
 | Wide selector-based CSS that breaks when the host refactors | CSS built only from tokens, plus a body-scoped wallpaper layer; no host component selectors |
-| Breaks or half-works after DSH updates | A measured candidate matrix for exact builds, plus a compatibility mode for newer in-range builds; clearly labelled, never a hard break |
+| Breaks or half-works after DSH updates | A formal limited-release scope: exact host build, Web profile, Chrome; every other host is rejected instead of guessed |
 | "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits and a published acceptance matrix |
 
 The result is a visual system you can check, not just a stylesheet: 24 styles
@@ -78,21 +77,20 @@ survives DSH updates.
 
 ## Host support and version policy
 
-`engines.dsh` declares the compatibility range **`>=0.2.0-rc.2 <1.0.0`**. The
-range has three outcomes:
+`engines.dsh` is the exact version **`0.2.1-rc.2`**. The supported scope for
+this release line is deliberately narrow:
 
-| Tier | Host builds | Current evidence |
-|---|---|---|
-| **Candidate** | DSH `0.2.0-rc.2`, `0.2.1-rc.2` | Exact six-hash contract and loader-ABI checks; G0–G5 passed. Web Chrome tested; Desktop macOS/Windows and Web Edge are **pending**. |
-| **Draft** | DSH `0.2.1-rc.3` | Contract and packaged-runtime smoke only; the real Electron run is not a full platform gate. |
-| **Compatibility mode** | Any other readable version in the range | Best-effort visual layer using the newest candidate contract; marked "unverified" in the panel and self-check; no hard failure. |
-| **Rejected** | Versions outside the range or unreadable | Fail closed to the stock appearance, zero injected rows. |
+| Scope | Value |
+|---|---|
+| DSH build | `0.2.1-rc.2` only |
+| Profile | Web Profile |
+| Browser | Chrome (Chrome 120+ client target; tested on Chrome 155) |
+| Desktop macOS/Windows, Web Edge, older/newer DSH builds | Not installed and not supported; the runtime fails closed to stock |
 
-No DSH build has passed G6, so **none of these tiers is a production
-certification**. The install-time range is a compatibility declaration, not a
-support guarantee. See [docs/design/multi-version.md](docs/design/multi-version.md)
-for the mechanism and [docs/verification.md](docs/verification.md) for the current
-evidence.
+There is no compatibility mode. A different host version is rejected at install
+time; a mismatched runtime payload/preview is rejected at runtime. The formal,
+machine-checked scope lives in [contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json)
+and the evidence in [docs/verification.md](docs/verification.md).
 
 ![Style differences](docs/assets/style-differences.jpg)
 
@@ -172,7 +170,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 
 ## Verification
 
-Current candidate evidence (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
+Limited-release evidence (0.1.0): Web `0.2.1-rc.2` isolated full run and a
 real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
 renderer. Repo gates include `tsc`, 680+ tests, contrast/token/CSS audits, loader ABI
 and package checks. Raw evidence is generated locally under `artifacts/` and is not

@@ -9,12 +9,10 @@ import {
   readBootPayload,
   validateCatalog,
 } from '../../src/client/handshake.js'
-import { ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
+import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
 import { PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
 import {
   ADAPTER_020,
-  ADAPTER_021_2,
-  ADAPTER_021_3,
   adapterRecordOf,
   makeBootPayload,
   makeCatalog,
@@ -47,27 +45,19 @@ describe('checkBoot — certified adapter whitelist', () => {
     }
   })
 
-  it('keeps the already-accepted 0.2.0-rc.2 handshake working unchanged', () => {
-    const check = checkBoot(makeBootPayload(), ADAPTER_IDENTITIES)
+  it('accepts the shipped certified handshake and reports its build identity', () => {
+    const shipped = ADAPTER_IDENTITIES[0]!
+    const check = checkBoot(makeBootPayload({
+      hostVersion: shipped.hostVersion,
+      adapterId: shipped.adapterId,
+      contractHash: shipped.contractHash,
+      catalogProfile: shipped.catalogProfile,
+    }), ADAPTER_IDENTITIES)
     expect(check.kind).toBe('valid')
-    expect(check.adapter).toBe(ADAPTER_020)
-    expect(check.payload?.hostVersion).toBe('0.2.0-rc.2')
-    expect(check.payload?.adapterId).toBe('dsh-0.2.0-rc.2-r1')
-  })
-
-  it('accepts the 0.2.1 builds with their own profile', () => {
-    const check = checkBoot(
-      makeBootPayload({
-        adapterId: ADAPTER_021_2.adapterId,
-        hostVersion: ADAPTER_021_2.hostVersion,
-        contractHash: ADAPTER_021_2.contractHash,
-        catalogProfile: ADAPTER_021_2.catalogProfile,
-      }),
-      ADAPTER_IDENTITIES,
-    )
-    expect(check.kind).toBe('valid')
-    expect(check.adapter).toBe(ADAPTER_021_2)
-    expect(ADAPTER_021_2.catalogProfile).toBe(ADAPTER_021_3.catalogProfile)
+    expect(check.adapter).toBe(shipped)
+    expect(check.payload?.hostVersion).toBe(shipped.hostVersion)
+    expect(check.payload?.adapterId).toBe(shipped.adapterId)
+    expect(ADAPTERS.some(record => record.catalogProfile === shipped.catalogProfile)).toBe(true)
   })
 
   it('treats a missing payload as absent (client may still use the catalog)', () => {
@@ -105,10 +95,14 @@ describe('checkBoot — certified adapter whitelist', () => {
   })
 
   it('fails closed when the payload profile does not match its adapter', () => {
-    const check = checkBoot(
-      makeBootPayload({ catalogProfile: ADAPTER_021_2.catalogProfile }),
-      ADAPTER_IDENTITIES,
-    )
+    const foreignProfile = `sha256:${'0'.repeat(64)}`
+    const shipped = ADAPTER_IDENTITIES[0]!
+    const check = checkBoot(makeBootPayload({
+      hostVersion: shipped.hostVersion,
+      adapterId: shipped.adapterId,
+      contractHash: shipped.contractHash,
+      catalogProfile: foreignProfile,
+    }), ADAPTER_IDENTITIES)
     expect(check.kind).toBe('mismatch')
     expect(check.reasons.join(' ')).toContain('catalog profile mismatch')
   })
@@ -160,7 +154,7 @@ describe('bootIdentity', () => {
 })
 
 describe('checkBoot — compatibility mode (in-range but uncertified host)', () => {
-  const newest = ADAPTER_021_3
+  const newest = ADAPTER_IDENTITIES[0]!
   function compatPayload(overrides = {}) {
     return makeBootPayload({
       hostVersion: '0.3.0-rc.1',
@@ -219,8 +213,8 @@ describe('checkBoot — compatibility mode (in-range but uncertified host)', () 
       ...makeCatalog(undefined, undefined, newest),
       adapterId: 'dsh-compat',
       hostVersion: '0.3.0-rc.1',
-      catalogProfile: ADAPTER_020.catalogProfile,
-      previewsBase: expectedPreviewsBase(ADAPTER_020.catalogProfile),
+      catalogProfile: `sha256:${'1'.repeat(64)}`,
+      previewsBase: expectedPreviewsBase(`sha256:${'1'.repeat(64)}`),
     }
     expect(checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected: bootIdentity(check) }).catalog)
       .toBeUndefined()
@@ -244,9 +238,17 @@ describe('checkCatalog — certified identity + profile', () => {
     expect(checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected }).catalog).toBe(catalog)
   })
 
-  it('rejects a catalog for a different certified host than the handshake', () => {
-    const catalog = makeCatalog(undefined, adapterRecordOf(ADAPTER_021_2).capabilities, ADAPTER_021_2)
-    const expected = bootIdentity(checkBoot(makeBootPayload(), ADAPTER_IDENTITIES))
+  it('rejects a catalog for a different host identity than the handshake', () => {
+    const shipped = ADAPTER_IDENTITIES[0]!
+    const catalog = makeCatalog(undefined, adapterRecordOf(shipped).capabilities, shipped)
+    // A handshake expected identity that differs only in profile must reject the
+    // catalog instead of trusting the envelope.
+    const expected = { ...bootIdentity(checkBoot(makeBootPayload({
+      hostVersion: shipped.hostVersion,
+      adapterId: shipped.adapterId,
+      contractHash: shipped.contractHash,
+      catalogProfile: shipped.catalogProfile,
+    }), ADAPTER_IDENTITIES))!, catalogProfile: `sha256:${'2'.repeat(64)}` }
     const check = checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected })
     expect(check.catalog).toBeUndefined()
     expect(check.reasons.join(' ')).toContain('does not describe the host build')
@@ -261,7 +263,7 @@ describe('checkCatalog — certified identity + profile', () => {
 
   it('rejects a catalog whose profile does not match its adapter', () => {
     const catalog = makeCatalog()
-    const otherProfile = ADAPTER_021_2.catalogProfile
+    const otherProfile = `sha256:${'3'.repeat(64)}`
     const check = checkCatalog(
       { ...catalog, catalogProfile: otherProfile, previewsBase: `${PREVIEW_ROUTE_PREFIX}${otherProfile}/` },
       { adapters: ADAPTER_IDENTITIES },
@@ -321,5 +323,48 @@ describe('locale helpers', () => {
     expect(normalizeLocale('zh')).toBe('zh')
     expect(normalizeLocale('fr')).toBe('en')
     expect(normalizeLocale(undefined)).toBe('en')
+  })
+})
+
+describe('catalog deep validation (malformed livery rows)', () => {
+  const expectation = { adapters: ADAPTER_IDENTITIES, expected: undefined }
+  const base = (): Record<string, unknown> => structuredClone(makeCatalog()) as unknown as Record<string, unknown>
+
+  it('accepts the valid fixture catalog', () => {
+    expect(checkCatalog(base(), expectation).catalog).toBeDefined()
+  })
+
+  it('rejects catalogs whose livery rows are missing or typed wrong', () => {
+    const corruptions: Array<(row: Record<string, unknown>) => void> = [
+      row => { delete row.id },
+      row => { row.id = 42 },
+      row => { delete (row.meta as Record<string, unknown>).name },
+      row => { (row.meta as Record<string, unknown>).order = 'ten' },
+      row => { (row.meta as Record<string, unknown>).tags = 'calm' },
+      row => { delete row.light },
+      row => { (row.light as Record<string, unknown>).tokens = { '--dsw-alias-bg-base': 7 } },
+      row => { (row.css as Record<string, unknown>).tokens = 12 },
+      row => { delete row.cssHash },
+      row => { row.requiredCapabilities = 'theme-css' },
+      row => { (row.audit as Record<string, unknown>).contrastFailures = 'none' },
+      row => { (row.audit as Record<string, unknown>).cssSafety = { pass: true } },
+    ]
+    for (const corrupt of corruptions) {
+      const raw = base()
+      const liveries = raw.liveries as Array<Record<string, unknown>>
+      corrupt(liveries[0]!)
+      const check = checkCatalog(raw, expectation)
+      expect(check.catalog, 'corruption should be rejected').toBeUndefined()
+      expect(check.reasons.join(' ')).toContain('malformed livery entries')
+    }
+  })
+
+  it('rejects completely non-array livery payloads without throwing', () => {
+    for (const value of [undefined, null, {}, 'rows', 3]) {
+      const raw = base()
+      raw.liveries = value
+      expect(() => checkCatalog(raw, expectation)).not.toThrow()
+      expect(checkCatalog(raw, expectation).catalog).toBeUndefined()
+    }
   })
 })

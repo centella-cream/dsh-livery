@@ -162,3 +162,69 @@ describe('controller renders cached remote images', () => {
     controller.dispose()
   })
 })
+
+describe('late cache results and dispose races', () => {
+  it('never adopts a late cache blob for a wallpaper that is no longer selected', async () => {
+    const { isCurrentRemoteSelection } = await import('../../src/client/wallpaper/selection-guard.js')
+    type Selection = { readonly kind: 'remote'; readonly url: string } | undefined
+    let current: Selection = { kind: 'remote', url: 'B' }
+    const adopted: string[] = []
+    const adopt = (url: string, gate: () => Selection): void => {
+      if (isCurrentRemoteSelection(gate(), url)) adopted.push(url)
+    }
+    const cacheA = Promise.resolve()
+    const cacheB = Promise.resolve()
+    await cacheB.then(() => adopt('B', () => current))
+    await cacheA.then(() => adopt('A', () => current))
+    expect(adopted).toEqual(['B'])
+    current = undefined
+    expect(isCurrentRemoteSelection(current, 'B')).toBe(false)
+  })
+
+  it('ignores IndexedDB hydration that resolves after controller.dispose()', async () => {
+    const storage = new MemoryStorage()
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      kind: 'remote', url: 'https://cdn.example/a.jpg', ...DEFAULT_WALLPAPER_EFFECTS,
+    }))
+    let resolveGet: ((record: StoredImageRecord | undefined) => void) | undefined
+    const images = {
+      put: vi.fn(async () => undefined),
+      get: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveGet = resolve })),
+      delete: vi.fn(async () => undefined),
+    }
+    const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
+    const doc = new FakeDocument()
+    const controller = createWallpaperController({ storage, document: doc as never, images, objectUrls: urls })
+    controller.start()
+    controller.dispose()
+    resolveGet?.({ key: 'remote-x', name: 'a.jpg', type: 'image/png', size: 3, blob: blob() })
+    await flush()
+    expect(urls.create).not.toHaveBeenCalled()
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
+    expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+  })
+
+  it('ignores an upload restore that resolves after dispose', async () => {
+    const storage = new MemoryStorage()
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      kind: 'upload', key: 'upload-1-abc', ...DEFAULT_WALLPAPER_EFFECTS,
+    }))
+    let resolveGet: ((record: StoredImageRecord | undefined) => void) | undefined
+    const images = {
+      put: vi.fn(async () => undefined),
+      get: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveGet = resolve })),
+      delete: vi.fn(async () => undefined),
+    }
+    const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
+    const doc = new FakeDocument()
+    const controller = createWallpaperController({ storage, document: doc as never, images, objectUrls: urls })
+    controller.start()
+    controller.dispose()
+    resolveGet?.({ key: 'upload-1-abc', name: 'a.png', type: 'image/png', size: 3, blob: blob() })
+    await flush()
+    expect(urls.create).not.toHaveBeenCalled()
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
+    expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
+  })
+})

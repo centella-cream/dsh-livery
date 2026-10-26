@@ -725,7 +725,9 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     // Verify every adapter in the group renders the exact same bytes.
     let adapterRenderIdentity = true
     for (const adapter of group.adapters) {
-      if (adapter.hostVersion === representative.hostVersion) continue
+      // Compare every other adapter in the group (object identity, not version
+      // string): two records that claim the same profile must render identically.
+      if (adapter === representative) continue
       const adapterStock = stockForVersion(adapter.hostVersion)
       if (adapterStock === undefined) {
         adapterRenderIdentity = false

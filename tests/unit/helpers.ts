@@ -17,10 +17,12 @@ import type {
   LiveryManifest,
   ResolvedTypography,
 } from '../../src/core/types.js'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { AdapterRecord } from '../../src/generated/contract.js'
 import type { StockSnapshot } from '../../src/generated/stock.js'
-import { ADAPTER_BY_VERSION } from '../../src/generated/contract.js'
-import { STOCK_BY_VERSION } from '../../src/generated/stock.js'
+import { adapterRecordFrom, stockSnapshotFrom } from '../../src/contract/snapshot.js'
+import type { ContractSnapshot } from '../../src/contract/types.js'
 import { evaluateCapabilities, type CapabilityEvaluation } from '../../src/core/capabilities.js'
 import { deriveLivery } from '../../src/core/derive.js'
 import { resolveTypography } from '../../src/core/registry.js'
@@ -33,15 +35,34 @@ import {
 } from '../../src/core/render.js'
 import { auditContrast, summarizeContrast } from '../../src/core/contrast.js'
 
-/** Certified adapter records used by the tests. */
-export const ADAPTER_020: AdapterRecord = ADAPTER_BY_VERSION['0.2.0-rc.2'] as AdapterRecord
-export const ADAPTER_021_RC2: AdapterRecord = ADAPTER_BY_VERSION['0.2.1-rc.2'] as AdapterRecord
-export const ADAPTER_021_RC3: AdapterRecord = ADAPTER_BY_VERSION['0.2.1-rc.3'] as AdapterRecord
+/**
+ * Historical adapter/stock fixtures built from the committed contract snapshots.
+ * The shipped generated registry now only contains formal-matrix approved
+ * adapters, but unit tests still need explicit version fixtures to prove the
+ * derivation/renderer is driven by the snapshot, not by a global table.
+ */
+function historicalFixture(version: string): { adapter: AdapterRecord; stock: StockSnapshot } {
+  const path = join(process.cwd(), 'contracts', 'dsh', version, 'contract.json')
+  const contract = JSON.parse(readFileSync(path, 'utf8')) as ContractSnapshot
+  return {
+    adapter: adapterRecordFrom(contract) as unknown as AdapterRecord,
+    stock: stockSnapshotFrom(contract) as unknown as StockSnapshot,
+  }
+}
+
+const FIXTURE_020 = historicalFixture('0.2.0-rc.2')
+const FIXTURE_021_RC2 = historicalFixture('0.2.1-rc.2')
+const FIXTURE_021_RC3 = historicalFixture('0.2.1-rc.3')
+
+/** Historical adapter records used by the tests. */
+export const ADAPTER_020: AdapterRecord = FIXTURE_020.adapter
+export const ADAPTER_021_RC2: AdapterRecord = FIXTURE_021_RC2.adapter
+export const ADAPTER_021_RC3: AdapterRecord = FIXTURE_021_RC3.adapter
 
 /** Frozen stock snapshots keyed by host version. */
-export const STOCK_020: StockSnapshot = STOCK_BY_VERSION['0.2.0-rc.2'] as StockSnapshot
-export const STOCK_021_RC2: StockSnapshot = STOCK_BY_VERSION['0.2.1-rc.2'] as StockSnapshot
-export const STOCK_021_RC3: StockSnapshot = STOCK_BY_VERSION['0.2.1-rc.3'] as StockSnapshot
+export const STOCK_020: StockSnapshot = FIXTURE_020.stock
+export const STOCK_021_RC2: StockSnapshot = FIXTURE_021_RC2.stock
+export const STOCK_021_RC3: StockSnapshot = FIXTURE_021_RC3.stock
 
 export interface BuildOptions {
   /** Capability map; defaults to the adapter's certified map. */
@@ -53,9 +74,11 @@ export interface BuildOptions {
 }
 
 function stockForAdapter(adapter: AdapterRecord): StockSnapshot {
-  const stock = STOCK_BY_VERSION[adapter.hostVersion]
-  if (stock === undefined) throw new Error(`No stock snapshot for ${adapter.hostVersion}`)
-  return stock
+  const fixture = [FIXTURE_020, FIXTURE_021_RC2, FIXTURE_021_RC3].find(
+    (candidate) => candidate.adapter.hostVersion === adapter.hostVersion,
+  )
+  if (fixture === undefined) throw new Error(`No stock snapshot for ${adapter.hostVersion}`)
+  return fixture.stock
 }
 
 export interface FixtureBuild {

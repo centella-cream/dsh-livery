@@ -557,3 +557,54 @@ describe('locale, theme and teardown', () => {
     expect(harness.runtime.getSnapshot().phase).toBe('disposed')
   })
 })
+
+describe('write reconciliation with newer config revisions', () => {
+  class DeferredForm extends FakeConfigForm {
+    resolveWrite: ((value: boolean) => void) | undefined
+    rejectWrite: ((error: unknown) => void) | undefined
+
+    override async set(field: string, value: unknown): Promise<boolean> {
+      this.writes.push({ field, value })
+      return new Promise<boolean>((resolve, reject) => {
+        this.resolveWrite = resolve
+        this.rejectWrite = reject
+      })
+    }
+  }
+
+  async function settlePreview(): Promise<Harness & { form: DeferredForm }> {
+    const form = new DeferredForm({ status: 'ready', value: { skinId: 'fjord' }, revision: 1, writable: true, mode: 'host' })
+    const harness = createHarness({ form })
+    harness.runtime.start()
+    await flush()
+    expect(harness.runtime.preview('midnight')).toBe(true)
+    return { ...harness, form }
+  }
+
+  it('keeps the newest host config when an older write succeeds late', async () => {
+    const { runtime, form } = await settlePreview()
+    const commit = runtime.commitPreview()
+    form.update({ value: { skinId: 'stock' }, revision: 7 })
+    form.resolveWrite?.(true)
+    expect(await commit).toBe(true)
+    const snapshot = runtime.getSnapshot()
+    expect(snapshot.confirmedId).toBe('stock')
+    expect(snapshot.effectiveId).toBe('stock')
+    expect(snapshot.writing).toBe(false)
+    expect(snapshot.writeFailure).toBeUndefined()
+    expect(snapshot.notes).toContain('newer host configuration superseded the in-flight settings write')
+  })
+
+  it('rolls a failed older write back to the newest confirmed revision, not a stale one', async () => {
+    const { runtime, form } = await settlePreview()
+    const commit = runtime.commitPreview()
+    form.update({ value: { skinId: 'stock' }, revision: 9 })
+    form.resolveWrite?.(false)
+    expect(await commit).toBe(false)
+    const snapshot = runtime.getSnapshot()
+    expect(snapshot.confirmedId).toBe('stock')
+    expect(snapshot.effectiveId).toBe('stock')
+    expect(snapshot.writing).toBe(false)
+    expect(snapshot.writeFailure).toBeUndefined()
+  })
+})

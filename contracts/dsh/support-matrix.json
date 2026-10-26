@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-26T00:00:00.000Z",
+  "entries": [
+    {
+      "hostVersion": "0.2.1-rc.2",
+      "adapterId": "dsh-0.2.1-rc.2-r1",
+      "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
+      "status": "g6-approved",
+      "profiles": {
+        "desktop": {
+          "macos": "not-supported",
+          "win32": "not-supported"
+        },
+        "web": {
+          "chrome": "passed",
+          "edge": "not-supported"
+        }
+      },
+      "browserSupport": [
+        {
+          "family": "chrome",
+          "minVersion": 120
+        }
+      ],
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "Round-15 narrowed release target: DSH 0.2.1-rc.2 + Web Profile + Chrome only.",
+        "Desktop macOS/Windows and Web Edge are explicitly not-supported for this release line, not pending claims.",
+        "Status g6-approved while the release-tranche acceptance evidence is being collected; promotion to released happens in the release transaction only after that evidence exists."
+      ]
+    }
+  ]
+}

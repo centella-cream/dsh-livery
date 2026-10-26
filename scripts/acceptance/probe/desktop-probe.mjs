@@ -170,6 +170,17 @@ async function buildEngineNegativeControl(dir) {
 }
 
 async function main() {
+  // Round-15 narrowed release: only DSH 0.2.1-rc.2 + Web Profile + Chrome is
+  // certified/claimed. The desktop probe is historical tooling and must not be
+  // used to claim desktop support for this release line.
+  if (!process.argv.includes('--allow-out-of-scope')) {
+    console.error(
+      'desktop-probe: OUT OF SCOPE — this release line ships DSH 0.2.1-rc.2 + Web Profile + Chrome only; ' +
+        'desktop macOS/Windows and native chrome are not-supported and not claimed. ' +
+        'Pass --allow-out-of-scope only for historical investigation.',
+    )
+    process.exit(2)
+  }
   const options = parseArgs(process.argv.slice(2), {
     booleans: ['keep', 'help'],
     strings: ['tgz', 'out', 'report', 'dsh-home', 'app-bin', 'app-cli', 'profile-mode', 'clone-from', 'user-data-dir'],

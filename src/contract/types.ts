@@ -195,14 +195,23 @@ export type EvidenceStatus =
   | 'g6-approved'
   | 'released'
 
+/**
+ * Certification state of one profile for one exact host version.
+ *
+ * `not-supported` is an explicit release decision (the profile is deliberately
+ * outside this release line's scope), not a missing result. Gates ignore it; it
+ * must never be treated as silently pending.
+ */
+export type ProfileStatus = 'pending' | 'passed' | 'failed' | 'not-supported'
+
 export interface SupportMatrixEntry {
   readonly hostVersion: string
   readonly adapterId: string
   readonly contractHash: string
   readonly status: EvidenceStatus
   readonly profiles: {
-    readonly desktop: { readonly macos: 'pending' | 'passed' | 'failed'; readonly win32: 'pending' | 'passed' | 'failed' }
-    readonly web: { readonly chrome: 'pending' | 'passed' | 'failed'; readonly edge: 'pending' | 'passed' | 'failed' }
+    readonly desktop: { readonly macos: ProfileStatus; readonly win32: ProfileStatus }
+    readonly web: { readonly chrome: ProfileStatus; readonly edge: ProfileStatus }
   }
   readonly browserSupport: readonly { readonly family: string; readonly minVersion: number }[]
   readonly clientTarget: string
@@ -210,6 +219,13 @@ export interface SupportMatrixEntry {
   readonly notes: readonly string[]
 }
 
+/**
+ * The formal support matrix (`contracts/dsh/support-matrix.json`) is the
+ * release authority. Its entries decide which adapters may be generated and
+ * shipped at all. The historical candidate matrix
+ * (`support-matrix.proposed.json`) keeps every frozen contract's certification
+ * trail and is never read by the release gates.
+ */
 export interface SupportMatrix {
   readonly schemaVersion: 1
   readonly updatedAt: string

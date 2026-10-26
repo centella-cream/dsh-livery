@@ -17,9 +17,13 @@ import type {
   MetricsDefinition,
   ResolvedTypography,
 } from '../../src/core/types.js'
+import { expect, vi } from 'vitest'
+import type { Context } from '@deepseek-ai/cordis'
+import type { IndexInjection } from '@deepseek-ai/dsh-host-webserver'
 import type { AdapterRecord } from '../../src/generated/contract.js'
 import type { BootStateInput } from '../../src/host/boot.js'
 import { buildCatalog } from '../../src/host/catalog.js'
+import type { LiveryRouteHandler, LiveryWebServerLike } from '../../src/host/routes.js'
 
 /** First synthetic catalog profile id (not a generated one). */
 export const SYNTHETIC_PROFILE_A = 'sha256:synthetic-profile-a'
@@ -248,4 +252,117 @@ export class FakeResponse {
  */
 export function fakeRequest(method: string, url: string): { method: string; url: string } {
   return { method, url }
+}
+
+
+/** A promise with externally controlled settlement (async-race tests). */
+export interface Deferred<T> {
+  readonly promise: Promise<T>
+  /** Resolve the promise exactly once. */
+  resolve(value: T): void
+  /** Reject the promise exactly once. */
+  reject(reason?: unknown): void
+}
+
+/**
+ * Create a controllable promise.
+ * @returns the promise plus its settlement functions.
+ */
+export function deferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
+/** In-memory webserver double recording registrations and disposals. */
+export class FakeWebServer implements LiveryWebServerLike {
+  readonly routes = new Map<string, LiveryRouteHandler>()
+  readonly disposed: string[] = []
+  failOnPath: string | undefined
+
+  /**
+   * Register one route.
+   * @param route - route registration.
+   * @returns disposer removing it.
+   */
+  register(route: {
+    readonly kind: 'exact' | 'prefix'
+    readonly path: string
+    readonly handler: LiveryRouteHandler
+  }): () => void {
+    const key = `${route.kind}:${route.path}`
+    if (route.path === this.failOnPath) throw new Error(`duplicate route ${key}`)
+    this.routes.set(key, route.handler)
+    return () => {
+      this.routes.delete(key)
+      this.disposed.push(key)
+    }
+  }
+}
+
+/** One captured `ctx.effect` call. */
+export interface CapturedEffect {
+  label: string | undefined
+  dispose: () => void
+}
+
+/** A fake child context carrying injected services and recording effects. */
+export function makeChildContext(services: Record<string, unknown>, effects: CapturedEffect[]) {
+  return {
+    ...services,
+    effect(execute: () => (() => void) | void, label?: string) {
+      const dispose = execute()
+      effects.push({ label, dispose: typeof dispose === 'function' ? dispose : () => {} })
+      return () => {}
+    },
+  }
+}
+
+/** Result of {@link makeFakeHostContext}. */
+export interface FakeHostContext {
+  readonly context: Context
+  readonly listener: { current?: (table: IndexInjection[]) => void }
+  readonly effects: CapturedEffect[]
+  readonly injected: string[][]
+  readonly warn: ReturnType<typeof vi.fn>
+}
+
+/**
+ * A fake Cordis host context with the services `apply` touches.
+ * @param options - optional injected webServer/settings services.
+ * @returns the context plus captured listener/effects/injections/logger.
+ */
+export function makeFakeHostContext(options: {
+  webServer?: object
+  settings?: object
+  fiber?: object
+} = {}): FakeHostContext {
+  const listener: { current?: (table: IndexInjection[]) => void } = {}
+  const effects: CapturedEffect[] = []
+  const injected: string[][] = []
+  const warn = vi.fn()
+  const context = {
+    fiber: options.fiber ?? { uid: 1 },
+    logger: { warn },
+    on(event: string, handler: (table: IndexInjection[]) => void) {
+      expect(event).toBe('webserver/index-inject')
+      listener.current = handler
+      return () => {}
+    },
+    inject(deps: string[], callback: (child: unknown) => void) {
+      injected.push(deps)
+      if (deps.includes('webServer') && options.webServer !== undefined) {
+        callback(makeChildContext({ webServer: options.webServer }, effects))
+      }
+      if (deps.includes('settings') && options.settings !== undefined) {
+        callback(makeChildContext({ settings: options.settings }, effects))
+      }
+      return { then: () => undefined }
+    },
+  }
+  return { context: context as unknown as Context, listener, effects, injected, warn }
 }

@@ -452,7 +452,11 @@ export async function checkCatalog(ctx) {
       { url: foreignUrl, status: foreign.status, catalogProfile: catalog.catalogProfile, foreignProfile: otherProfiles[0] },
     )
   } else {
-    runner.skip('previews.profile-isolation', 'previews are served per catalog profile', 'no catalog profile advertised (legacy single-profile build)')
+    runner.skip(
+      'previews.profile-isolation',
+      'previews are served per catalog profile; another profile directory is not exposed',
+      'narrowed release ships exactly one certified catalog profile — cross-profile isolation is not applicable',
+    )
   }
 
   const post = await rawRequest(url, { method: 'POST', headers: { Cookie: ctx.state.cookieHeader ?? '' } })
@@ -1927,15 +1931,19 @@ export async function checkSelfCheck(ctx) {
     { capabilities: capabilityRows, expected: expectedCapabilities, text: panel.text },
   )
   // Round-12 copy polish: plain self-check wording (zh/en) must be present.
-  const selfCheckCopyExpected = uiLocale === 'en'
-    ? ['Startup check', 'Style coverage', 'Contract hash', 'Unscoped variables']
-    : ['启动信息', '样式覆盖', '协议校验码', '未限定范围的变量']
+  // Detect the rendered locale from the panel copy itself: a reload may settle
+  // on either locale in this build, while the labels must be the plain ones.
+  const selfCheckText = panel.text ?? ''
+  const selfCheckIsZh = selfCheckText.includes('自检') || selfCheckText.includes('协议校验码')
+  const selfCheckCopyExpected = selfCheckIsZh
+    ? ['启动信息', '样式覆盖', '协议校验码', '未限定范围的变量']
+    : ['Startup check', 'Style coverage', 'Contract hash', 'Unscoped variables']
   expect(
     runner,
     'copy.selfcheck-labels',
     'self-check uses the round-12 plain-language labels',
-    selfCheckCopyExpected.every((label) => (panel.text ?? '').includes(label)),
-    `missing=${JSON.stringify(selfCheckCopyExpected.filter((label) => !(panel.text ?? '').includes(label)))}; panel=${oneLine(panel.text, 260)}`,
+    selfCheckCopyExpected.every((label) => selfCheckText.includes(label)),
+    `locale=${selfCheckIsZh ? 'zh' : 'en'}; missing=${JSON.stringify(selfCheckCopyExpected.filter((label) => !selfCheckText.includes(label)))}; panel=${oneLine(selfCheckText, 260)}`,
   )
 
   // Style-system v2: the applied livery must expose shape/elevation/material

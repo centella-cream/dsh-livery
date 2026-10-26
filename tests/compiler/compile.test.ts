@@ -9,7 +9,8 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { CAP, LIVERY_VERSION } from '../../src/core/types.js'
 import type { LiveryManifest } from '../../src/core/types.js'
-import { ADAPTERS, adapterForVersion } from '../../src/generated/contract.js'
+import type { AdapterRecord } from '../../src/generated/contract.js'
+import { ADAPTERS, DEFAULT_ADAPTER, adapterForVersion } from '../../src/generated/contract.js'
 import { FONT_STACKS } from '../../src/core/registry.js'
 import { stockForVersion } from '../../src/generated/stock.js'
 import {
@@ -60,14 +61,16 @@ const FILES_PER_PROFILE = PREVIEW_COUNT + 1 + 4 // svgs + index + 4 audit artifa
 const TOTAL_FILES = 1 + first.profileCount * FILES_PER_PROFILE + 1 // catalog + profiles + summary
 const profileById = (id: string) => first.profiles.find((profile) => profile.profile.profileId === id)
 
-describe('compileCatalog — multi-version', () => {
-  it('compiles one catalog per distinct catalogProfile (2 profiles / 3 adapters)', () => {
+describe('compileCatalog — shipped adapters only', () => {
+  it('compiles one catalog per distinct catalogProfile for the shipped adapter set', () => {
     expect(first.problems, JSON.stringify(first.problems, null, 2)).toEqual([])
     expect(first.ok).toBe(true)
-    expect(first.profileCount).toBe(2)
-    expect(first.adapterCount).toBe(3)
-
+    // Generated adapters are filtered by the formal support matrix: only the
+    // approved 0.2.1-rc.2 adapter is shipped (historical snapshots stay on disk).
     const groups = groupAdaptersByProfile(ADAPTERS)
+    expect(first.profileCount).toBe(groups.length)
+    expect(first.adapterCount).toBe(ADAPTERS.length)
+    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2'])
     expect(first.profiles.map((profile) => profile.profile.profileId)).toEqual(groups.map((group) => group.profileId))
     for (const group of groups) {
       const compiled = profileById(group.profileId)
@@ -79,35 +82,24 @@ describe('compileCatalog — multi-version', () => {
     }
   })
 
-  it('shares one profile for 0.2.1-rc.2 + 0.2.1-rc.3 and keeps 0.2.0-rc.2 distinct', () => {
-    const rc2 = adapterForVersion('0.2.0-rc.2')
-    const rc21 = adapterForVersion('0.2.1-rc.2')
-    const rc213 = adapterForVersion('0.2.1-rc.3')
-    if (rc2 === undefined || rc21 === undefined || rc213 === undefined) throw new Error('adapters missing')
-    expect(rc21.catalogProfile).toBe(rc213.catalogProfile)
-    expect(rc21.catalogProfile).not.toBe(rc2.catalogProfile)
-    expect(rc21.tokenHash).toBe(rc213.tokenHash)
-    expect(rc21.tokenHash).not.toBe(rc2.tokenHash)
-
-    const shared = profileById(rc21.catalogProfile)
-    expect(shared?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3'])
-    expect(shared?.report.gates.adapterRenderIdentity).toBe(true)
-    const legacy = profileById(rc2.catalogProfile)
-    expect(legacy?.profile.sourceAdapters).toEqual(['0.2.0-rc.2'])
+  it('ships only formal-matrix approved adapters (historical versions are not generated)', () => {
+    expect(adapterForVersion('0.2.1-rc.2')?.adapterId).toBe('dsh-0.2.1-rc.2-r1')
+    expect(adapterForVersion('0.2.0-rc.2')).toBeUndefined()
+    expect(adapterForVersion('0.2.1-rc.3')).toBeUndefined()
+    expect(ADAPTERS).toHaveLength(1)
+    expect(DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.2')
+    // The shipped adapter still points at a committed contract snapshot.
+    expect(DEFAULT_ADAPTER.contractHash).toMatch(/^sha256:[0-9a-f]{64}$/u)
   })
 
-  it('pins each profile to its own host token contract', () => {
-    const legacy = first.profiles[0]
-    const modern = first.profiles[1]
-    if (legacy === undefined || modern === undefined) throw new Error('profiles missing')
-    expect(legacy.stock.version).toBe('0.2.0-rc.2')
-    expect(modern.stock.version).toBe('0.2.1-rc.2')
-    expect(legacy.stock.tokenContractHash).toBe(adapterForVersion('0.2.0-rc.2')?.tokenHash)
-    expect(modern.stock.tokenContractHash).toBe(adapterForVersion('0.2.1-rc.2')?.tokenHash)
-    expect(legacy.report.counts.tokenConsumed).toBe(177)
-    expect(modern.report.counts.tokenConsumed).toBe(176)
-    expect(legacy.report.counts.tokenRequired).toBe(146)
-    expect(modern.report.counts.tokenRequired).toBe(144)
+  it('pins the shipped profile to its exact host token contract', () => {
+    const shipped = first.profiles[0]
+    if (shipped === undefined) throw new Error('profile missing')
+    expect(shipped.stock.version).toBe('0.2.1-rc.2')
+    expect(shipped.stock.tokenContractHash).toBe(adapterForVersion('0.2.1-rc.2')?.tokenHash)
+    expect(shipped.report.counts.tokenConsumed).toBe(176)
+    expect(shipped.report.counts.tokenRequired).toBe(144)
+    expect(shipped.report.counts.tokenCovered).toBe(78)
   })
 
   it('is deterministic: same sources produce byte-identical outputs', () => {
@@ -128,8 +120,6 @@ describe('compileCatalog — multi-version', () => {
       expect(profile.report.sourceHash).toMatch(/^sha256:[0-9a-f]{64}$/)
       expect(profile.report.compiledAt).toBe(deriveCompiledAt(profile.report.sourceHash))
     }
-    // Different profiles must not share a source hash (profile id + token contract).
-    expect(first.profiles[0]?.report.sourceHash).not.toBe(first.profiles[1]?.report.sourceHash)
   })
 
   it('keeps every gate green for every profile', () => {
@@ -156,32 +146,51 @@ describe('compileCatalog — multi-version', () => {
     }
   })
 
-  it('uses the capability-selected typography strategy per profile', () => {
-    const legacy = first.profiles[0]
-    const modern = first.profiles[1]
-    if (legacy === undefined || modern === undefined) throw new Error('profiles missing')
-    const legacyFjord = legacy.profile.liveries.find((livery) => livery.id === 'fjord')
-    const modernFjord = modern.profile.liveries.find((livery) => livery.id === 'fjord')
+  it('selects the typography strategy from capability facts, not from a version string', () => {
+    // Synthesize a legacy-capability profile from the shipped adapter: same stock
+    // snapshot, same profile-manifest set, only the documented font-role-hook
+    // capability is absent. This isolates the strategy switch without needing a
+    // historical stock snapshot to be shipped.
+    const shipped = DEFAULT_ADAPTER
+    const hookEntry = shipped.capabilities['host-font-role-hooks']
+    const legacyCapabilities = {
+      ...shipped.capabilities,
+      'host-font-role-hooks': {
+        id: 'host-font-role-hooks',
+        available: false,
+        provenance: 'absent' as const,
+        required: false,
+        detail: 'probe: legacy host without font role hooks',
+      },
+    }
+    expect(hookEntry?.available).toBe(true)
+    const legacyAdapter: AdapterRecord = {
+      ...shipped,
+      catalogProfile: 'sha256:legacy-probe-profile',
+      capabilities: legacyCapabilities,
+    }
+    const result = compileCatalog({
+      manifests: loadManifestSources(REPO_ROOT),
+      adapters: [legacyAdapter, shipped],
+    })
+    expect(result.problems).toEqual([])
+    expect(result.profiles).toHaveLength(2)
+    const legacyProfile = result.profiles.find((profile) => profile.representative.catalogProfile === legacyAdapter.catalogProfile)
+    const modernProfile = result.profiles.find((profile) => profile.representative.catalogProfile === shipped.catalogProfile)
+    if (legacyProfile === undefined || modernProfile === undefined) throw new Error('profiles missing')
+    const legacyFjord = legacyProfile.profile.liveries.find((livery) => livery.id === 'fjord')
+    const modernFjord = modernProfile.profile.liveries.find((livery) => livery.id === 'fjord')
     if (legacyFjord === undefined || modernFjord === undefined) throw new Error('fjord missing')
-
-    expect(legacy.representative.capabilities[CAP.hostFontRoleHooks]?.available).toBe(false)
-    expect(modern.representative.capabilities[CAP.hostFontRoleHooks]?.available).toBe(true)
-    // rc.2: legacy --dsw-font-family token-pair strategy.
+    // Legacy strategy: --dsw-font-family token pair, never the host role hooks.
     expect(legacyFjord.css.typography).toContain('--dsw-font-family:')
-    expect(legacyFjord.css.typography).not.toContain('--dsh-font-family-text')
-    // 0.2.1: documented host font role hooks only, never the composite ladder.
+    expect(legacyFjord.css.typography).not.toMatch(/--dsh-font-family-(text|code)\s*:/u)
+    // Hook strategy: documented role hooks only, never the composite ladder.
     expect(modernFjord.css.typography).toContain('--dsh-font-family-text:')
     expect(modernFjord.css.typography).toContain('--dsh-font-family-code:')
     expect(modernFjord.css.typography).not.toContain('--dsw-font-')
-    // Same palette semantics (identical brand/surface values) but a different
-    // token contract (consumed set changed) and font strategy → different hash.
-    for (const svgFragment of ['--dsw-alias-bg-base:#f0f3f6', '--dsw-alias-brand-primary:#46688a']) {
-      expect(legacyFjord.css.tokens).toContain(svgFragment)
-      expect(modernFjord.css.tokens).toContain(svgFragment)
-    }
-    expect(modernFjord.css.tokens).not.toBe(legacyFjord.css.tokens)
+    // Same palette semantics, different strategy → different bytes/hashes.
+    expect(legacyFjord.css.tokens).toBe(modernFjord.css.tokens)
     expect(modernFjord.cssHash).not.toBe(legacyFjord.cssHash)
-    // 0.2.1 typography is much smaller (two hook declarations per locale).
     expect(Buffer.byteLength(modernFjord.css.typography)).toBeLessThan(Buffer.byteLength(legacyFjord.css.typography))
   })
 
@@ -331,8 +340,13 @@ describe('compileCatalog — multi-version', () => {
     const summary = first.summary
     if (summary === null) throw new Error('summary missing')
     expect(summary.pass).toBe(true)
-    expect(summary.counts).toEqual({ profiles: 2, adapters: 3, liveries: LIVERY_COUNT * 2, previews: PREVIEW_COUNT * 2 })
-    expect(summary.adapters).toHaveLength(3)
+    expect(summary.counts).toEqual({
+      profiles: first.profileCount,
+      adapters: ADAPTERS.length,
+      liveries: LIVERY_COUNT * first.profileCount,
+      previews: PREVIEW_COUNT * first.profileCount,
+    })
+    expect(summary.adapters).toHaveLength(ADAPTERS.length)
     for (const adapter of ADAPTERS) {
       const entry = summary.adapters.find((candidate) => candidate.hostVersion === adapter.hostVersion)
       expect(entry, adapter.hostVersion).toBeDefined()
@@ -347,9 +361,8 @@ describe('compileCatalog — multi-version', () => {
       expect(profile.cssSafety.pass).toBe(true)
       expect(profile.gates.adapterRenderIdentity).toBe(true)
     }
-    // rc.2 declares 177 consumed tokens, 0.2.1 declares 176.
-    expect(summary.profiles[0]?.tokenCoverage.consumed).toBe(177)
-    expect(summary.profiles[1]?.tokenCoverage.consumed).toBe(176)
+    // The shipped 0.2.1 token contract declares 176 consumed tokens.
+    expect(summary.profiles[0]?.tokenCoverage.consumed).toBe(176)
   })
 
   it('matches the committed src/generated/liveries.ts (committed catalog is current)', async () => {
@@ -381,14 +394,28 @@ describe('compileCatalog — multi-version', () => {
   })
 
   it('fails when an adapter group is not render-equivalent', () => {
-    // Group a 0.2.1 adapter under the rc.2 profile id: the compile must fail the
-    // adapter-identity gate instead of emitting a misleading catalog.
-    const rc2 = adapterForVersion('0.2.0-rc.2')
-    const rc21 = adapterForVersion('0.2.1-rc.2')
-    if (rc2 === undefined || rc21 === undefined) throw new Error('adapters missing')
+    // Hijack the shipped adapter into a second, deliberately divergent profile:
+    // same version/stock, but a capability map without font-role hooks renders a
+    // different typography strategy. The build must fail the identity gate
+    // instead of emitting a misleading catalog.
+    const shipped = DEFAULT_ADAPTER
+    const divergent: AdapterRecord = {
+      ...shipped,
+      catalogProfile: shipped.catalogProfile,
+      capabilities: {
+        ...shipped.capabilities,
+        'host-font-role-hooks': {
+          id: 'host-font-role-hooks',
+          available: false,
+          provenance: 'absent' as const,
+          required: false,
+          detail: 'probe: diverging capability map must fail the group identity gate',
+        },
+      },
+    }
     const result = compileCatalog({
       manifests: loadManifestSources(REPO_ROOT),
-      adapters: [rc2, { ...rc21, catalogProfile: rc2.catalogProfile }],
+      adapters: [shipped, divergent],
     })
     expect(result.ok).toBe(false)
     expect(result.problems.some((problem) => problem.code === 'profile.render-mismatch')).toBe(true)
@@ -433,7 +460,7 @@ describe('CLI compile / check drift detection', () => {
       expect(compileCode, compileLogs.errors.join('\n')).toBe(0)
       expect(compileLogs.errors).toEqual([])
       expect(compileLogs.lines.some((line) => line.startsWith('livery:compile:'))).toBe(true)
-      expect(compileLogs.lines.some((line) => line.includes('catalog profile(s) / 3 adapter(s)'))).toBe(true)
+      expect(compileLogs.lines.some((line) => line.includes(`${first.profileCount} catalog profile(s) / ${ADAPTERS.length} adapter(s)`))).toBe(true)
       expect(existsSync(join(fixture.dir, CATALOG_MODULE_PATH))).toBe(true)
       for (const profile of first.profiles) {
         expect(existsSync(join(fixture.dir, PREVIEW_DIR, profile.profile.profileId, 'index.json'))).toBe(true)
@@ -505,7 +532,7 @@ describe('CLI compile / check drift detection', () => {
         const logs = collectLogs()
         const code = await main([command], { cwd: fixture.dir, log: logs.log, error: logs.error })
         expect(code, `${command}: ${logs.errors.join('\n')}`).toBe(0)
-        expect(logs.lines.filter((line) => line.startsWith(`livery:${command}: profile`))).toHaveLength(2)
+        expect(logs.lines.filter((line) => line.startsWith(`livery:${command}: profile`))).toHaveLength(first.profileCount)
       }
       for (const profile of first.profiles) {
         for (const file of ['token-coverage.json', 'css-safety.json', 'contrast.json']) {
@@ -572,7 +599,6 @@ describe('emit / check helpers', () => {
       expect(artifact.tokenContractHash).toBe(profile.stock.tokenContractHash)
       expect(artifact.exemptionVersion.length).toBeGreaterThan(0)
     }
-    expect(first.profiles[0]?.tokenCoverage.counts.consumed).toBe(177)
-    expect(first.profiles[1]?.tokenCoverage.counts.consumed).toBe(176)
+    expect(first.profiles[0]?.tokenCoverage.counts.consumed).toBe(176)
   })
 })

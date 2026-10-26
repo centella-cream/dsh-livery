@@ -217,6 +217,57 @@ export function isCatalogShape(value: unknown): value is LiveryCatalog {
   return candidate.liveries.every(livery => typeof livery === 'object' && livery !== null)
 }
 
+function isRecord(value: unknown): value is RawRecord {
+  return typeof value === 'object' && value !== null
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0
+}
+
+function isLocalized(value: unknown): boolean {
+  return isRecord(value) && isText(value['zh-CN']) && isText(value['en-US'])
+}
+
+function isStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every(entry => typeof entry === 'string')
+}
+
+function isStringMap(value: unknown): boolean {
+  return isRecord(value) && Object.values(value).every(entry => typeof entry === 'string')
+}
+
+/** Validate the fields the client/UI actually consumes for one livery row. */
+function isCompiledLivery(value: unknown): boolean {
+  if (!isRecord(value) || !isText(value.id)) return false
+  const meta = value.meta
+  if (!isRecord(meta) || typeof meta.order !== 'number' || !Number.isFinite(meta.order)) return false
+  if (!isLocalized(meta.name) || !isLocalized(meta.description) || !isStringArray(meta.tags)) return false
+  for (const mode of ['light', 'dark'] as const) {
+    const variant = value[mode]
+    if (!isRecord(variant) || !isStringMap(variant.tokens)) return false
+  }
+  const css = value.css
+  if (!isRecord(css) || typeof css.tokens !== 'string' || typeof css.typography !== 'string' || typeof css.layout !== 'string') return false
+  if (!isText(value.cssHash) || !isText(value.hash)) return false
+  if (!isStringArray(value.requiredCapabilities) || !isStringArray(value.optionalCapabilities)) return false
+  const audit = value.audit
+  if (!isRecord(audit) || !Array.isArray(audit.contrast) || typeof audit.contrastFailures !== 'number') return false
+  const coverage = audit.tokenCoverage
+  if (!isRecord(coverage)
+    || !isStringArray(coverage.covered)
+    || !isStringArray(coverage.inherited)
+    || !isStringArray(coverage.missing)) return false
+  const safety = audit.cssSafety
+  if (!isRecord(safety) || typeof safety.pass !== 'boolean') return false
+  for (const field of ['important', 'hashSelectors', 'remoteUrls', 'unscopedTokens'] as const) {
+    if (typeof safety[field] !== 'number') return false
+  }
+  // `fixedZIndexes` is consumed as a list by the compiled catalog.
+  if (!Array.isArray(safety.fixedZIndexes) && typeof safety.fixedZIndexes !== 'number') return false
+  return Array.isArray(audit.degraded)
+}
+
 /** Options accepted by {@link checkCatalog}. */
 export interface CatalogExpectation {
   /** Generated certified-adapter registry. */
@@ -263,6 +314,9 @@ export function checkCatalog(raw: unknown, expectation: CatalogExpectation): Cat
   const previewsBase = expectedPreviewsBase(profile)
   if (raw.previewsBase !== previewsBase) {
     reasons.push(`catalog previewsBase mismatch: catalog=${raw.previewsBase} expected=${previewsBase}`)
+  }
+  if (!raw.liveries.every(isCompiledLivery)) {
+    reasons.push('catalog contains malformed livery entries')
   }
   if (expectation.expected !== undefined) {
     const expected = expectation.expected

@@ -1,3 +1,9 @@
+> **Release 0.1.0 scope (round 15):** the compatibility mode described in the
+> historical sections below has been **removed**. Production supports exactly
+> DSH `0.2.1-rc.2` / Web Profile / Chrome; unknown host versions are rejected at
+> install time and fail closed at runtime. The text below is kept as design
+> history.
+
 # Multi-version host support (0.2.0-rc.2 / 0.2.1-rc.2 / 0.2.1-rc.3)
 
 This document began as the design for the second adaptation round. The certified

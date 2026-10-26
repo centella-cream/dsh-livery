@@ -31,12 +31,26 @@ import {
   type StockTokenSets,
 } from '../../src/compiler/audit.js'
 import type { CompiledLivery, ContrastEntry } from '../../src/core/types.js'
-import { ADAPTERS } from '../../src/generated/contract.js'
-import { stockForVersion } from '../../src/generated/stock.js'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import type { AdapterRecord } from '../../src/generated/contract.js'
+import type { StockSnapshot } from '../../src/generated/stock.js'
+import { adapterRecordFrom, stockSnapshotFrom } from '../../src/contract/snapshot.js'
+import type { ContractSnapshot } from '../../src/contract/types.js'
 
-const RC2_STOCK = stockForVersion('0.2.0-rc.2')
-const RC21_STOCK = stockForVersion('0.2.1-rc.2')
-if (RC2_STOCK === undefined || RC21_STOCK === undefined) throw new Error('stock snapshots missing')
+function historicalFixture(version: string): { adapter: AdapterRecord; stock: StockSnapshot } {
+  const contract = JSON.parse(
+    readFileSync(join(process.cwd(), 'contracts', 'dsh', version, 'contract.json'), 'utf8'),
+  ) as ContractSnapshot
+  return {
+    adapter: adapterRecordFrom(contract) as unknown as AdapterRecord,
+    stock: stockSnapshotFrom(contract) as unknown as StockSnapshot,
+  }
+}
+const FIXTURE_020 = historicalFixture('0.2.0-rc.2')
+const FIXTURE_021 = historicalFixture('0.2.1-rc.2')
+const RC2_STOCK: StockSnapshot = FIXTURE_020.stock
+const RC21_STOCK: StockSnapshot = FIXTURE_021.stock
 const RC2_SETS = tokenSetsFor(RC2_STOCK)
 const RC21_SETS = tokenSetsFor(RC21_STOCK)
 
@@ -53,17 +67,17 @@ function safetyFor(css: string) {
 }
 
 function artifactContextFor(sets: StockTokenSets): ArtifactContext {
-  const adapter = ADAPTERS.find((candidate) => stockForVersion(candidate.hostVersion)?.tokenContractHash === sets.tokenContractHash)
+  const adapter = [FIXTURE_020, FIXTURE_021].find((candidate) => candidate.stock.tokenContractHash === sets.tokenContractHash)
   if (adapter === undefined) throw new Error('no adapter for token contract')
   return {
-    profileId: adapter.catalogProfile,
+    profileId: adapter.adapter.catalogProfile,
     sourceHash: 'sha256:source',
     compiledAt: '2026-01-01T00:00:00.000Z',
-    sourceAdapters: [adapter.hostVersion],
-    adapterIds: [adapter.adapterId],
-    contractHash: adapter.contractHash,
-    hostVersion: adapter.hostVersion,
-    adapterId: adapter.adapterId,
+    sourceAdapters: [adapter.adapter.hostVersion],
+    adapterIds: [adapter.adapter.adapterId],
+    contractHash: adapter.adapter.contractHash,
+    hostVersion: adapter.adapter.hostVersion,
+    adapterId: adapter.adapter.adapterId,
     tokenSets: sets,
   }
 }

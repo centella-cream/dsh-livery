@@ -1,217 +1,64 @@
 # Verification
 
-> **Release status: not released.** The current candidate passes the checks below on
-> the platforms listed, but no combination has passed G6; Desktop macOS/Windows,
-> Web Edge, native window gates and the full release gates remain open. This page is
-> candidate evidence, not a certification.
+**Release scope for 0.1.0 (limited release):** DSH `0.2.1-rc.2`, Web Profile,
+Chrome. Desktop macOS/Windows, Web Edge and every other DSH build are explicitly
+**not supported** by this release line and are rejected at install/runtime.
 
-DSH Livery is validated against **exact, frozen host builds** and refuses to style
-anything it has not been measured against. This page summarises the acceptance
-evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
-screenshots/probes are generated locally under `artifacts/` (not committed).
+Evidence for the published artifact is committed at
+[`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`](../contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json).
+That file records the exact candidate tarball sha256, bytes, commit, scope and
+per-run probe/report results. Release gates and `prepublish-check` refuse to
+publish bytes that do not match it.
 
-Shipped artifact: `dsh-livery-0.1.0.tgz`
-sha256 `6f0910a43e100d6cde71039021074aa7d905af6bac98e4fdb729ed9a77f88bdd`
-(551,026 B). After the matrix run the tarball was repacked once for a README/docs-only
-change; `lib/index.js`, `lib/client.js` and all runtime assets are byte-identical to
-the accepted `45c8f217436d…` artifact, so the results below apply unchanged.
+## Acceptance runs (candidate artifact)
 
-Candidate artifact identity: `2f541d42…` (259 files, 1,521,093 bytes). The earlier
-`45c8f217…`/`2013f40c…` hashes refer to runtime-identical accepted builds; they are
-kept only as provenance and are not separate shipped artifacts.
-
-## Host matrix (candidate 0.1.0 — unreleased)
-
-| Target | Result | What it covers |
+| Run | Environment | Result |
 |---|---|---|
-| DSH `0.2.1-rc.2`, Web Profile, isolated full run | **228 pass / 0 fail / 3 skip / 2 warn** | official install + lifecycle, boot gate, handshake, catalog/previews, style/wallpaper page tabs, 6/6 family sections (calm 7 / nature 3 / light 4 / retro 5 / vivid 2 / dark 3) + family chips/mapping/more-filters/keyboard, 24-card gallery, preview-language tab, wallpaper studio (24 built-ins, search-first online card with one auto Picsum batch + explicit Openverse search/random/refresh/retry, IndexedDB upload, atmosphere overlay, adaptive cover, tab persistence), round-10 card layout (two-column ≥1100px, stacked at 1024, bounded sliders, hero thumbnails, no overflow), round-11 human About footer + unified five-step typography, round-12 plain-language copy polish, round-13 DSH Livery naming + recent wallpapers, preview/apply/restore, self-check, fonts/theme, style differences, unpause + residue |
-| DSH `0.2.1-rc.2`, Web Profile, clone of a real user profile | **229 / 0 / 3 / 4** | same as above in a realistic composition (charter/context/vscode-bridge etc.), including the atmosphere overlay measured over the third-party 上下文洞察 panel and the round-10 card layout checks; the clone's own Livery config row is reset to stock inside the isolated clone for a comparable stock → apply matrix (source profile untouched, recorded as a warning) |
-| DSH `0.2.1-rc.3`, Desktop packaged runtime (web carrier) | **228 / 0 / 3 / 2** | packaged-app adapter, its own Node/Electron runtime, same browser checks |
-| DSH `0.2.1-rc.3`, Desktop Profile, real Electron renderer | **27 / 0 / 1** | real Electron app: boot graph, catalog identity, 6 family sections + tabs, 24 built-in wallpapers + atmosphere layer, preview-language tab, preview/apply/persist, relaunch boot payload, light/dark tokens, font hooks, self-check, sidebar entry |
+| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node 22.23.1, Chrome 155.0.8059.85 | 227 pass / 0 fail / 4 skip / 2 warn |
+| Web real-profile clone | same | 228 pass / 0 fail / 4 skip / 4 warn |
 
-The package is **not released**; `0.1.0` is the unreleased version line. Earlier
-matrices exist only as development-round evidence (see below) and are not
-releases.
+The two runs use the official plugin install path, an isolated `DSH_HOME`, and
+Playwright with system Chrome. Skips are expected: stock-boot handshake rows are
+re-asserted after Apply, and cross-profile preview isolation is not applicable
+because this release ships exactly one catalog profile. Warnings are the grouped
+bundle URL deviation, the accepted CSS-size target and clone-composition warnings.
 
-## What the unreleased 0.1.0 package ships (verified)
+## What is verified
 
-- **24 built-in styles** across five axes (palette, typography, module shape,
-  elevation/material, borders) × 2 catalog profiles. Gallery, preview,
-  single-mutation Apply, persistence, restore stock, uninstall/restart residue.
-- **Real host-level style differences** after Apply (measured computed styles,
-  not stylesheet text): composer border-radius differs across styles
-  (10/18/32/36 px), body font stack switches between sans (PingFang SC) and
-  serif (Songti SC), 10 distinct computed shadows, glass `backdrop-filter`
-  reaches the host, and style tokens resolve exactly as compiled.
-- **Left-sidebar entry.** A main-page plugin panel in the left sidebar
-  (**视觉风格 / Visual Style**), next to Plugins / Automation / Context, with the
-  legacy settings section only as a fallback for hosts without panel navigation.
-- **Grouped gallery.** Page tabs 视觉风格 / 壁纸; family chips (全部 + 静谧/自然/
-  明亮/复古/霓虹/深色) and **all six non-empty family sections** in display
-  order calm → nature → light → retro → vivid → dark, with tag-priority mapping
-  nature → calm → light → retro → vivid → dark (counts 7/3/4/5/2/3). The 16 tag
-  chips sit behind a 更多筛选 toggle; roving focus stays one flattened list
-  across sections. Family grouping is presentation-only.
-- **Preview-language tab.** Follow DSH / 中文 / English switches only the
-  thumbnail SVG locale (`<id>-<zh|en>-<light|dark>.svg`); names, descriptions
-  and other copy stay in the host language, and Apply/restore semantics are
-  unchanged (verified while a language is pinned).
-- **Preserved wallpaper behaviours measured on the real host:** 24 built-in
-  cards; upload of a generated PNG → `blob:` layer + IndexedDB round-trip across
-  a hard reload, non-image and >10 MiB uploads rejected with a validation
-  message; atmosphere overlay computed styles and removal at 0; overlay measured
-  over the third-party 上下文洞察 panel with atmosphere 0 vs 60 screenshots
-  (mean colour delta 14.7–19.3 per channel at 8-bit scale — perceptible in the
-  captured frames, reported as a measured value, not a subjective claim);
-  page-tab persistence across navigation and reload; adaptive cover at the three
-  viewports.
-- **Round-10 presentation layout (measured at 1440×900 and 1024×800):** the
-  style page renders `livery-layout` with **two tracks at 1440
-  (`728px 364px`)** and **one track at 1024 (`696px`)**; the current-style hero
-  (`livery-current-card`, loaded `livery-hero-thumb` preview SVG) + gallery card
-  sit in the main column, while the 操作 card (`livery-actions-card`) and
-  self-check card sit in `livery-rail`. The wallpaper page has the same
-  two-column/stacked behaviour with the five visible cards (hero/online/custom/
-  effects/builtins), a hero preview background-image + clear action, and
-  a `wallpaper-effects-grid` containing **four bounded 140 px sliders** (never
-  viewport-wide; grid becomes 2 tracks when stacked at 1024). Card surfaces are
-  visibly separated (non-flat surface material: background/backdrop/shadow; note
-  the host shell computes `section` border-width as 0 even though the card rule
-  sets a 1px border — separation remains visible via the material, and the
-  check accepts the measured surface material). No horizontal overflow at
-  either width; screenshots `layout-style-1440/1024` and
-  `layout-wallpaper-1440/1024` per Web target.
-- **Round-11 copy and type system (measured at 1440×900):** the About footer
-  renders **two separated lines** — `DSH Livery 0.1.0 · 已适配 DeepSeek
-  Harness <hostVersion>` and the preview note — with a flex-column layout
-  (tops 333–373 / 377–413), no contract hash/adapter id/jargon in the footer,
-  while copied diagnostics still carry the adapter id (`dsh-0.2.1-rc.2-r1` /
-  `dsh-0.2.1-rc.3-r1`) and the contract prefix (`fc5ccff8` / `d246181d`). The
-  visible computed type sizes are exactly **{11,12,13,15}** on both the style
-  page (100/28/57/4 occurrences) and wallpaper page (4/18/28/7) — **no
-  14/16/18.72 leaks** — and the shared `--lw-fs-*` tokens resolve to
-  20/15/13/12/11 px on the real `.livery-workspace` **and** `.livery-panel`
-  roots (not only a legacy `.livery-section`).
-- **Round-11 online card:** the curated category/cache library is **removed**
-  (0 `wallpaper-library-*` elements, 0 category chips); a single search-first
-  `wallpaper-online-card` directly follows the hero (main card order:
-  hero → online → custom). Opening the tab auto-loads **exactly one** mocked
-  Picsum batch (1 `/v2/list` request, 2 results, thumbnails loaded); changing
-  effect sliders re-fetches nothing (Picsum 1→1, Openverse 0→0); explicit
-  Openverse search (1 request, titled results), 随机 (Picsum 1→2), 换一批
-  (2→3), a simulated failure → visible `wallpaper-online-retry` → successful
-  retry (4→5), and applying a result sets the URL + attribution are all
-  verified. No live network is used in acceptance (Picsum/Openverse intercepted).
-- **Round-12 copy/comment polish (no behaviour change):** every UI string was
-  rewritten in zh/en for readability while keys/testids stayed identical. Verified
-  on the real host: the two-line About footer copy; self-check plain labels in
-  **both locales** — zh 启动信息 / 样式覆盖 / 协议校验码 / 未限定范围的变量
-  (the last only with an active style; both stock and post-Apply panels checked)
-  and en Startup check / Style coverage / Contract hash / Unscoped variables;
-  effects slider label 磨砂; the online-card hint 打开这个标签页会自动加载一批
-  随机壁纸…; and the rewritten state strings 视觉风格暂时无法加载 /
-  宿主没有保存这套视觉风格。 (en: “Visual styles are unavailable right now” /
-  “The host did not save this visual style.”), with the acceptance label
-  constants matching the rendered copy. Footer stays jargon-free while copied
-  diagnostics keep the technical adapter id + contract prefix. Computed type
-  sizes remain exactly {11,12,13,15} on both pages; no stale library/category
-  hooks; layout, online-card auto-random batch and all round-9/10/11 behaviour
-  are unchanged.
-- **Round-13 product name + recent wallpapers:** the visible product name is
-  **DSH Livery** again — footer line 1 is `DSH Livery 0.1.0 · 已适配 DeepSeek
-  Harness <hostVersion>`, the copied diagnostics header is
-  `DSH Livery（dsh-livery）诊断信息`, and no stale old-product-name string appears
-  anywhere in the visible UI; engineering ids stay in diagnostics. The new
-  **最近使用 / Recent wallpapers** card is hidden while history is empty, then
-  appears after applying wallpapers: entries are newest-first (`data-url`), with
-  `data-cached="true"` when the best-effort IndexedDB image cache succeeded
-  (2 entries after two online results, 3 after a custom https wallpaper, 4 after
-  a cache-failure URL; reload keeps the card and cached thumbnails). Clicking an
-  entry re-applies it (cached blob layer is legitimate) and moves it to newest;
-  a failed image fetch still records the entry with `data-cached="false"` and
-  re-applies via its original URL. Clear removes the card, the
-  `dsh-livery.wallpaper.recent.v1` localStorage record and the remote image-cache
-  keys (measured 3→0). No host config/boot changes.
-- **Wallpaper studio** (client-only). **24 deterministic CSS-only built-ins**,
-  blur 0–24 px, dim 0–70 %, frost 0–100 %, global atmosphere 0–100 %, custom
-  https-only URL validation, local image upload (JPEG/PNG/WebP/AVIF, ≤10 MiB,
-  IndexedDB) and one search-first online card: opening the tab auto-loads
-  exactly one random Picsum batch, followed by explicit Openverse (CC0/PDM)
-  search, 随机/换一批 and retry; effect-slider changes never re-fetch. The
-  former curated category/cache library was removed in round 11.
-  Applied through one plugin-owned
-  `<style data-plugin-css="dsh-livery/wallpaper">` plus
-  `body[data-dsh-wallpaper]`; frost makes the active style's surface tokens
-  translucent via `color-mix(...)`. The atmosphere overlay
-  (`#dsh-livery-wallpaper-overlay`, atmo > 0) sits above app content
-  (`z-index:2147483000`, `pointer-events:none`, `mix-blend-mode:soft-light`,
-  opacity = atmosphere/100) so the wallpaper is visible over opaque third-party
-  plugin pages too. Both layers use adaptive `background-size:cover`
-  (1024×768 / 1920×1080 / 900×1300 verified). Selection/effects persist in
-  `localStorage`, uploads in IndexedDB; page-tab choice persists in
-  `sessionStorage` across navigation and hard reload. Clearing removes the
-  style, overlay, body attribute and stored record. No host config or boot
-  payload changes.
-- **Accessibility safety:** no `!important`, no hash selectors, no remote URLs
-  bundled, no whole-document observers; contrast and focus-ring checks pass.
+- Official install, activation and uninstall lifecycle; boot gate and handshake.
+- One adapter (`dsh-0.2.1-rc.2-r1`) and one catalog profile: 24 styles.
+- Style page: preview, single-mutation Apply, restore, persistence, self-check.
+- Wallpaper page: 24 built-ins, one automatic random Picsum batch plus explicit
+  Openverse search/random/refresh, uploads (IndexedDB), recent-wallpaper history
+  and best-effort cache, effects, atmosphere layer and adaptive cover.
+- Card layout, unified five-step type scale, keyboard tabs, tab persistence.
+- Host-token style differences after Apply (radius, font family, shadow, glass).
+- CSS/token/contrast audits: 0 missing tokens, 5,664 contrast assertions, 0
+  failures per profile, max per-style CSS 8,892 B.
+- Loader-ABI checks for the exact host build; production dependency audit clean.
 
-## What is NOT verified
+## What is not verified / not supported
 
-- Native Electron window surfaces: traffic lights/leading, vibrancy, native
-  Dock/rightbar states, OS DPI beyond `devicePixelRatio`, packaged Chromium
-  sandbox/GPU path.
-- Compat-mode UI: browser acceptance cannot fake an uncertified host; the compat
-  notice/self-check path is covered by client unit tests only and is **not**
-  claimed as browser coverage.
-- Live online wallpaper card: acceptance intercepts Picsum/Openverse and image
-  requests with fixtures (the live services are not reachable from the CI
-  environment; the Picsum auto batch and explicit Openverse search are therefore
-  mocked); real third-party availability/behaviour is not tested. The client
-  requests only on tab-open/user action, and CSP/offline failure states are
-  unit-tested.
-- Atmosphere perceptibility is reported as a measured screenshot colour delta on
-  the 上下文洞察 page, not as a subjective visual guarantee.
-- Web/Edge browsers (Chrome only) and Windows Desktop.
-- Structural layout changes: DSH exposes no public density/transcript-width/
-  message-flow hook, so those recipes degrade to host/stock and are disclosed in
-  the self-check. Style differences are token-level module design.
-- `0.2.0-rc.2` has no fresh browser boot in recent rounds (the local installed CLI
-  was upgraded); its contract/package gates and earlier development-round live
-  evidence stand.
-- Performance evidence is static and first-paint only; switch-latency p95/CLS
-  sampling is not archived.
-
-## Repo gates on the same tree
-
-- `tsc --noEmit` clean, `vitest run` 692 tests green (1 optional skip).
-- `liveries:check`: 24 styles across 2 catalog profiles.
-- Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
-- Per-livery CSS under the 12 KiB hard cap; **client gzip 36,333 B** (48 KiB
-  budget; harness-measured served bundle 36,475–36,477 B) and **client CSS
-  12,880 B** (14 KiB cap); **host gzip 295,747 B**.
-- Loader ABI 12/12 checks; adapter allowlist, pack and lint checks green.
-
-## Development-round evidence (not releases)
-
-The internal packaging labels `pkg-0.1.0` (this release line), `pkg-0.2.2`,
-`pkg-0.3.0`, `pkg-0.4.0`, `pkg-0.5.0` and `pre-repack-a225849a` under
-`artifacts/acceptance/` are development-round evidence from the same unreleased
-0.1.0 package: the higher numbers were **internal iteration labels, never
-released versions**. They are kept locally for reproducibility only; no public
-release history precedes 0.1.0. Two earlier candidate packs were dead on arrival (empty `vivid` family /
-stale installed bytes) and were never accepted;
-the current candidate packaging is the `2f541d42…` tarball above.
+- Desktop macOS/Windows native surfaces, Web Edge, and any other DSH version.
+- A second catalog profile or any second adapter. The build intentionally ships
+  one adapter and one profile.
+- Live Openverse availability: search is exercised with mocked responses; the
+  automatic Picsum batch works in the acceptance environment.
+- Native OS DPI beyond `devicePixelRatio`, Windows, and browser engines other
+  than Chrome.
+- Malicious/corrupted host payloads beyond the client's structural validation.
 
 ## Reproduce
 
 ```bash
+pnpm install
 pnpm verify
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.0.tgz --out artifacts/acceptance/local
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.0.tgz
+pnpm gate:support-matrix -- --all
+pnpm gate:release -- --all
+pnpm pack:candidate
+pnpm verify:evidence -- --tgz dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
 ```
 
-The browser harness creates an isolated `DSH_HOME`, installs the tarball through the
-official plugin manager, boots a local server, drives system Chrome via
-Playwright, and writes screenshots + `probe.json` under the chosen output directory.
-Contract snapshots can be regenerated from a matching DSH install with
-`pnpm contract:snapshot -- --dsh-install <path>` (see `docs/design/multi-version.md`).
+Raw probes and screenshots are generated locally under `artifacts/` and are not
+committed; the committed evidence file records their result summaries and the
+exact artifact identity.

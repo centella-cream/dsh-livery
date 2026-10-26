@@ -17,7 +17,6 @@
  */
 
 import type { CapabilityMap } from '../core/types.js'
-import { DSH_COMPAT_RANGE } from '../core/compat.js'
 import type { GateResult } from './boot.js'
 
 /** Codes the gate can raise. Kept stable: they are copied into reports. */
@@ -79,15 +78,7 @@ function versionList(versions: readonly string[]): string {
  * @returns diagnostic lines, empty when the gate accepted.
  */
 export function buildDiagnostics(gate: GateResult, capabilities: CapabilityMap): string[] {
-  if (gate.accepted) {
-    if (gate.compat !== true) return []
-    return [
-      `compat.mode: DSH ${gate.hostVersion} is inside the compatibility range `
-      + `${gate.compatRange ?? DSH_COMPAT_RANGE} but is not a certified build; `
-      + `serving the newest certified contract (${gate.adapterId}, ${shortHash(gate.contractHash)}) best-effort`,
-      'action: treat visual differences as unverified; install a certified dsh-livery release when one exists',
-    ]
-  }
+  if (gate.accepted) return []
 
   const lines: string[] = []
   lines.push(`gate.closed: ${gate.codes.join(', ')}`)
@@ -123,9 +114,8 @@ export function buildDiagnostics(gate: GateResult, capabilities: CapabilityMap):
   }
 
   lines.push(
-    `action: keep the stock appearance; this build styles certified DSH ${versionList(gate.supportedHostVersions)} `
-    + 'and compatible versions in the declared range '
-    + `${gate.compatRange ?? DSH_COMPAT_RANGE} — install a build certified for this host`,
+    `action: keep the stock appearance; this build styles only certified DSH `
+    + `${versionList(gate.supportedHostVersions)} — install a build certified for this host`,
   )
   return lines
 }
@@ -146,7 +136,6 @@ export function formatGateLogLine(gate: GateResult): string {
     `profile=${gate.profileKind}`,
     `observedHostVersion=${observed}`,
     `supported=[${gate.supportedHostVersions.join(',')}]`,
-    `compatRange=${gate.compatRange ?? DSH_COMPAT_RANGE}`,
     `adapter=${gate.adapterId === '' ? 'unresolved' : gate.adapterId}`,
     `hostVersion=${gate.hostVersion === '' ? 'unknown' : gate.hostVersion}`,
     `contract=${shortHash(gate.contractHash)}`,
@@ -161,18 +150,4 @@ export function formatGateLogLine(gate: GateResult): string {
     fields.push(`renderError=${oneLine(gate.renderError)}`)
   }
   return oneLine(`dsh-livery: boot gate closed ${fields.join(' ')}`)
-}
-
-/**
- * One structured line for an accepted but uncertified (compat) boot.
- * @param gate - accepted compat gate.
- * @returns one line for `ctx.logger.warn`.
- */
-export function formatCompatLogLine(gate: GateResult): string {
-  return oneLine(
-    `dsh-livery: compat mode observedHostVersion=${gate.hostVersion} `
-    + `range=${gate.compatRange ?? DSH_COMPAT_RANGE} adapter=${gate.adapterId} `
-    + `contract=${shortHash(gate.contractHash)} catalogProfile=${gate.catalogProfile} `
-    + 'action=unverified-best-effort',
-  )
 }

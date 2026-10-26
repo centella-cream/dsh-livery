@@ -17,7 +17,7 @@ import {
   type BootStateInput,
 } from '../../src/host/boot.js'
 import { buildCatalog } from '../../src/host/catalog.js'
-import type { AdapterRecord } from '../../src/generated/contract.js'
+import { SUPPORTED_HOST_VERSIONS, type AdapterRecord } from '../../src/generated/contract.js'
 import {
   BODY_ATTRIBUTE,
   BOOT_GLOBAL,
@@ -119,7 +119,6 @@ describe('computeBootState — acceptance per certified adapter', () => {
       contractHash: adapter.contractHash,
       catalogProfile: adapter.catalogProfile,
       profileKind: 'web',
-      compat: false,
       accepted: true,
       skinId: 'ivory-slate',
       cssHash: FIXTURE_BOOT_HASH,
@@ -234,31 +233,36 @@ describe('computeBootState — unknown / uncertified host versions', () => {
       expect(state.gate.accepted, version).toBe(false)
       expect(state.rows).toEqual([])
       expect(state.gate.codes).toContain('gate.version-mismatch')
-      expect(state.diagnostics.join('\n')).toContain('compatible versions')
+      // Release policy is exact-only: no compatibility promise in diagnostics.
+      expect(state.diagnostics.join('\n')).not.toContain('compat')
+      expect(state.diagnostics.join('\n')).not.toContain('compatible versions')
     },
   )
 
   it.each(['0.3.0-rc.1', '0.2.1', '0.2.2-rc.1', '0.2.0'])(
-    'accepts in-range uncertified version %s with the synthetic compat adapter',
+    'fails closed for readable in-range uncertified version %s (no compat injection)',
     (version) => {
+      // Exact released contracts only: a readable version inside the old
+      // compatibility range must NOT be served a different build's contract.
       const state = computeBootState({ ...unresolvedInput(version), skinId: 'fjord' })
-      expect(state.gate.accepted, version).toBe(true)
-      expect(state.accepted, version).toBe(true)
-      expect(state.compat, version).toBe(true)
-      expect(state.payload.compat, version).toBe(true)
-      expect(state.gate.adapterId, version).toBe('dsh-compat')
+      expect(state.gate.accepted, version).toBe(false)
+      expect(state.accepted, version).toBe(false)
+      expect(state.rows, version).toEqual([])
+      expect(state.gate.codes, version).toContain('gate.version-mismatch')
+      expect(state.gate.adapterId, version).toBe('')
+      expect(state.payload.adapterId, version).toBe('')
       expect(state.payload.hostVersion, version).toBe(version)
-      expect(state.rows.map((row) => row.kind), version).toEqual(['html', 'global', 'script'])
-      expect(state.gate.codes, version).toEqual([])
-      expect(state.adapter?.adapterId, version).toBe('dsh-compat')
-      expect(state.diagnostics.join('\n'), version).toContain('compat.mode')
+      expect(state.adapter, version).toBeUndefined()
       expect(state.diagnostics.join('\n'), version).toContain(version)
+      expect(state.diagnostics.join('\n'), version).not.toContain('compat.mode')
+      expect((state.payload as { compat?: boolean }).compat, version).toBeUndefined()
     },
   )
 
   it('trims whitespace around the observed version before the registry lookup', () => {
     // A padded-but-certified version is still the same exact version.
-    const certified = '0.2.0-rc.2'
+    const certified = SUPPORTED_HOST_VERSIONS[0]
+    if (certified === undefined) return
     const state = computeBootState(unresolvedInput(` ${certified} `))
     expect(state.gate.observedHostVersion).toBe(certified)
     expect(state.gate.codes).not.toContain('gate.version-unknown')

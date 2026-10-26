@@ -21,7 +21,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { CATALOG_PROFILES, CATALOG_PROFILE_IDS } from '../../src/generated/liveries.js'
 import type { CatalogProfile } from '../../src/generated/liveries.js'
-import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
+import { ADAPTERS, ADAPTER_IDENTITIES, SUPPORTED_HOST_VERSIONS } from '../../src/generated/contract.js'
 import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
 import type { BootPayload, CompiledLivery, LiveryCatalog } from '../../src/core/types.js'
 import { LIVERY_VERSION, SCHEMA_VERSION } from '../../src/core/types.js'
@@ -33,8 +33,6 @@ import type { CoreApi } from '../../src/client/runtime.js'
 import { liveryAvailability, missingContractCapabilities, previewFileName, previewUrl } from '../../src/client/model.js'
 import { dictionaries } from '../../src/i18n/index.js'
 import {
-  ADAPTER_020,
-  ADAPTER_021_2,
   adapterRecordOf,
   FakeConfigForm,
   FakeDocument,
@@ -93,8 +91,10 @@ function allGeneratedLiveries(): readonly CompiledLivery[] {
 }
 
 describe('certified adapter registry', () => {
-  it('certifies exactly the three supported host builds', () => {
-    expect(ADAPTERS.map(adapter => adapter.hostVersion)).toEqual(['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3'])
+  it('certifies the shipped formal-matrix builds and nothing else', () => {
+    const shippedVersions = [...new Set(ADAPTER_IDENTITIES.map(identity => identity.hostVersion))]
+    expect(shippedVersions.length).toBeGreaterThan(0)
+    expect([...SUPPORTED_HOST_VERSIONS]).toEqual(shippedVersions)
     expect(ADAPTER_IDENTITIES).toHaveLength(ADAPTERS.length)
     for (const identity of ADAPTER_IDENTITIES) {
       expect(ADAPTERS.some(adapter => adapter.adapterId === identity.adapterId
@@ -102,11 +102,8 @@ describe('certified adapter registry', () => {
         && adapter.hostVersion === identity.hostVersion
         && adapter.catalogProfile === identity.catalogProfile)).toBe(true)
     }
-  })
-
-  it('shares one catalog profile between the two render-equivalent 0.2.1 hosts', () => {
-    expect(ADAPTER_020.catalogProfile).not.toBe(ADAPTER_021_2.catalogProfile)
-    expect(ADAPTER_021_2.catalogProfile).toBe(ADAPTER_IDENTITIES[2]!.catalogProfile)
+    const shippedProfiles = [...new Set(ADAPTER_IDENTITIES.map(identity => identity.catalogProfile))]
+    expect(new Set(CATALOG_PROFILE_IDS)).toEqual(new Set(shippedProfiles))
   })
 
   it('seeds every platform module the client bundle requires', () => {
@@ -130,8 +127,10 @@ describe('certified adapter registry', () => {
 })
 
 describe('generated catalog profiles', () => {
-  it('generates exactly the two expected profiles', () => {
-    expect(CATALOG_PROFILE_IDS).toHaveLength(2)
+  it('generates exactly the profiles the shipped adapters reference', () => {
+    const shippedProfiles = [...new Set(ADAPTERS.map(adapter => adapter.catalogProfile))]
+    expect(shippedProfiles.length).toBeGreaterThan(0)
+    expect([...CATALOG_PROFILE_IDS].sort()).toEqual([...shippedProfiles].sort())
     expect(new Set(Object.keys(CATALOG_PROFILES))).toEqual(new Set(CATALOG_PROFILE_IDS))
   })
 
@@ -177,29 +176,36 @@ describe('generated catalog profiles', () => {
     }
   })
 
-  it('renders byte-identical CSS for adapters that share a profile', () => {
-    const two = ADAPTERS[1]!
-    const three = ADAPTERS[2]!
-    expect(two.catalogProfile).toBe(three.catalogProfile)
-    const a = catalogFor(two)
-    const b = catalogFor(three)
-    expect(a.liveries.map(livery => [livery.id, livery.cssHash]))
-      .toEqual(b.liveries.map(livery => [livery.id, livery.cssHash]))
+  it('renders the same CSS for every adapter that shares a profile', () => {
+    const groups = new Map<string, typeof ADAPTERS[number][]>()
+    for (const adapter of ADAPTERS) {
+      const group = groups.get(adapter.catalogProfile) ?? []
+      group.push(adapter)
+      groups.set(adapter.catalogProfile, group)
+    }
+    for (const [profile, adapters] of groups) {
+      const rendered = adapters.map(adapter => catalogFor(adapter).liveries.map(livery => [livery.id, livery.cssHash]))
+      for (const candidate of rendered) expect(candidate, profile).toEqual(rendered[0])
+      expect(CATALOG_PROFILES[profile]!.liveries.map(livery => [livery.id, livery.cssHash])).toEqual(rendered[0])
+    }
   })
 
   it('uses the capability-driven typography strategy per profile (no version logic)', () => {
-    const older = profileFor(adapterRecordOf(ADAPTER_020))
-    const newer = profileFor(adapterRecordOf(ADAPTER_021_2))
-    const olderTypography = older.liveries[0]!.css.typography
-    const newerTypography = newer.liveries[0]!.css.typography
-    // 0.2.0-rc.2: composite --dsw-font-family override strategy.
-    expect(/--dsw-font-family\s*:/.test(olderTypography)).toBe(true)
-    expect(olderTypography).not.toContain('--dsh-font-family-text')
-    // 0.2.1+: documented per-role font hooks only.
-    expect(newerTypography).toContain('--dsh-font-family-text')
-    expect(newerTypography).toContain('--dsh-font-family-code')
-    expect(/--dsw-font-family\s*:/.test(newerTypography)).toBe(false)
-    expect(older.liveries[0]!.cssHash).not.toBe(newer.liveries[0]!.cssHash)
+    for (const adapter of ADAPTERS) {
+      const profile = profileFor(adapter)
+      const typography = profile.liveries[0]!.css.typography
+      const roleHooks = adapter.capabilities['host-font-role-hooks']?.available === true
+      if (roleHooks) {
+        // Documented per-role font hooks only.
+        expect(typography, adapter.hostVersion).toContain('--dsh-font-family-text')
+        expect(typography, adapter.hostVersion).toContain('--dsh-font-family-code')
+        expect(/--dsw-font-family\s*:/.test(typography), adapter.hostVersion).toBe(false)
+      } else {
+        // Composite --dsw-font-family override strategy.
+        expect(/--dsw-font-family\s*:/.test(typography), adapter.hostVersion).toBe(true)
+        expect(typography, adapter.hostVersion).not.toContain('--dsh-font-family-text')
+      }
+    }
   })
 
   it('stays inside the per-livery CSS hard cap (12KB)', () => {
@@ -263,16 +269,21 @@ describe('per-adapter handshake + catalog identity', () => {
     }
   })
 
-  it('rejects a catalog served for another certified host', () => {
-    const expected = bootIdentity(checkBoot(bootFor(ADAPTER_020), ADAPTER_IDENTITIES))
-    const foreign = catalogFor(ADAPTERS[2]!)
-    const check = checkCatalog(foreign, { adapters: ADAPTER_IDENTITIES, expected })
+  it('rejects a catalog that does not describe the expected host identity', () => {
+    const shipped = ADAPTERS[0]!
+    const expected = {
+      hostVersion: '0.3.0-rc.1',
+      adapterId: 'dsh-compat',
+      contractHash: shipped.contractHash,
+      catalogProfile: shipped.catalogProfile,
+    }
+    const check = checkCatalog(catalogFor(shipped), { adapters: ADAPTER_IDENTITIES, expected })
     expect(check.catalog).toBeUndefined()
     expect(check.reasons.join(' ')).toContain('does not describe the host build')
   })
 
   it('rejects a catalog whose previewsBase is not profile-scoped', () => {
-    const catalog = catalogFor(adapterRecordOf(ADAPTER_020))
+    const catalog = catalogFor(ADAPTERS[0]!)
     const check = checkCatalog({ ...catalog, previewsBase: '/livery/assets/previews/' }, { adapters: ADAPTER_IDENTITIES })
     expect(check.catalog).toBeUndefined()
     expect(check.reasons.join(' ')).toContain('previewsBase')
@@ -288,10 +299,12 @@ describe('per-adapter handshake + catalog identity', () => {
     }
   })
 
-  it('exposes host-font-role-hooks on 0.2.1 and not on 0.2.0-rc.2', () => {
-    expect(adapterRecordOf(ADAPTER_020).capabilities['host-font-role-hooks']?.available).toBe(false)
-    for (const adapter of ADAPTERS.filter(candidate => candidate.hostVersion.startsWith('0.2.1'))) {
-      expect(adapter.capabilities['host-font-role-hooks']?.available, adapter.hostVersion).toBe(true)
+  it('exposes host-font-role-hooks consistently with the shipped capability facts', () => {
+    for (const adapter of ADAPTERS) {
+      const facts = adapter.capabilities['host-font-role-hooks']
+      expect(facts, adapter.hostVersion).toBeDefined()
+      // The shipped 0.2.1 build documents per-role font hooks.
+      expect(facts?.available, adapter.hostVersion).toBe(true)
     }
   })
 })

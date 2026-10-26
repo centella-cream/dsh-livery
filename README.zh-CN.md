@@ -2,15 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.x%20candidate%20%2B%200.x%20compat-6d6df6.svg)](#宿主支持与版本策略)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20limited%20release-6d6df6.svg)](#宿主支持与版本策略)
 
 **DeepSeek Harness 的视觉风格插件**：24 套受契约约束的风格、带在线图片搜索和虚化/磨砂效果的壁纸工作室，
 以及按风格分组的画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：未发布。** 当前候选构建只通过了项目内的 G0–G5 检查和 Web/Chrome 验收。
-> Desktop macOS/Windows、Web Edge、原生窗口门禁和 G6 仍未完成，因此
-> `pnpm gate:support-matrix` 与 `pnpm gate:release` 都会失败。请不要把此包当作已认证的
-> 正式发布版本。
+> **发布状态：0.1.0 有限发布。** 仅支持 DSH `0.2.1-rc.2` + Web Profile + Chrome。
+> Desktop macOS/Windows、Web Edge 和其他 DSH 版本均不支持，会被直接拒绝。发布产物必须与
+> 已提交的 evidence 文件绑定；`prepublish-check` 会拒绝不匹配的字节。
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -26,7 +25,7 @@ DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 | 接管 `ctx.theme`、注册主题、调用 `setTheme` | 每套风格只输出一组作用域内的语义 token；从不注册或拥有宿主主题 |
 | 绘制窗口装饰（标题栏、浮层） | 不绘制窗口装饰，窗口归宿主所有 |
 | 大量基于选择器的 CSS，宿主一重构就失效 | 纯 token 渲染 + body 作用域壁纸层；不使用宿主组件选择器 |
-| DSH 一更新就失效或只工作一半 | 精确版本有候选矩阵，范围内较新的版本有兼容模式；明确标注，不会直接失效 |
+| DSH 一更新就失效或只工作一半 | 正式限定范围：精确宿主版本 + Web + Chrome；其他宿主直接拒绝，不做猜测 |
 | “相信我”的主题 | 冻结的契约哈希、loader-ABI 检查、对比度/CSS 审计和公开的验收矩阵 |
 
 区别是：这是一套可以检查的视觉系统，不是一份样式表。它包含 24 套五维设计、壁纸工作室、风格画廊，
@@ -59,17 +58,17 @@ DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 
 ## 宿主支持与版本策略
 
-`engines.dsh` 声明的兼容范围是 **`>=0.2.0-rc.2 <1.0.0`**，分三种情况：
+`engines.dsh` 是精确版本 **`0.2.1-rc.2`**。这一发布线的支持范围刻意收窄：
 
-| 层级 | 宿主版本 | 当前证据 |
-|---|---|---|
-| **候选** | DSH `0.2.0-rc.2`、`0.2.1-rc.2` | 精确的六类契约哈希与 loader-ABI 检查，G0–G5 通过；Web Chrome 已测，Desktop macOS/Windows 和 Web Edge **仍待完成**。 |
-| **草稿** | DSH `0.2.1-rc.3` | 只有契约和 packaged runtime 冒烟；真实 Electron 运行不算完整的平台门禁。 |
-| **兼容模式** | 范围内其他可读版本 | 用最新的候选契约尽力渲染；面板与自检标注“未认证”；不会直接失效。 |
-| **拒绝** | 范围外或不可读版本 | 回退到原生外观，不注入任何样式。 |
+| 范围 | 取值 |
+|---|---|
+| DSH 版本 | 仅 `0.2.1-rc.2` |
+| Profile | Web Profile |
+| 浏览器 | Chrome（client target Chrome 120+，实测 Chrome 155） |
+| Desktop macOS/Windows、Web Edge、其他 DSH 版本 | 不安装、不支持；运行时回退 stock |
 
-目前没有任何 DSH 版本通过 G6，因此以上都**不是正式认证**。安装范围只是兼容声明，不是支持保证。
-机制见 [docs/design/multi-version.md](docs/design/multi-version.md)，当前证据见
+没有兼容模式。其他宿主版本会在安装时被拒绝，运行时不匹配的 payload/preview 也会被拒绝。可被机器检查的正式
+范围见 [contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json)，证据见
 [docs/verification.md](docs/verification.md)。
 
 ![风格差异](docs/assets/style-differences.jpg)
@@ -142,7 +141,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # 轻量封装
 
 ## 验收
 
-当前候选证据（未发布的 0.1.0）：Web `0.2.1-rc.2` 的隔离全量运行与真实 profile 克隆；Desktop
+有限发布证据（0.1.0）：Web `0.2.1-rc.2` 的隔离全量运行与真实 profile 克隆；Desktop
 `0.2.1-rc.3` 的打包 Web 载体与真实 Electron 渲染器。仓库检查包括 `tsc`、680+ 项测试、
 对比度/token/CSS 审计、loader ABI 与打包检查。原始证据在本地 `artifacts/` 生成，不提交。
 细节与已知限制见 [docs/verification.md](docs/verification.md)。

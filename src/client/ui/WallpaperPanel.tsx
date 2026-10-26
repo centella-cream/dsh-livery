@@ -28,6 +28,7 @@ import {
 } from '../wallpaper/history.js'
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
+import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
@@ -189,12 +190,17 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
 
   // Best-effort disk cache + history entry whenever an online wallpaper is chosen.
   const rememberRemote = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
+    const url = entry.url
     setRecent(rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() }))
     void (async () => {
-      const result = await cacheRemoteImage(entry.url, { images: imageStore })
+      const result = await cacheRemoteImage(url, { images: imageStore })
       if (!result.ok) return
-      if (mounted.current) rememberBlob(entry.url, result.record.blob)
-      controller?.setSelection({ kind: 'remote', url: entry.url }, result.record.blob)
+      // Keep the blob available for the recent-card thumbnail regardless of what
+      // is selected now, but only re-adopt it when the user is still on this
+      // wallpaper (A→B races must not switch the hero back to A).
+      if (mounted.current) rememberBlob(url, result.record.blob)
+      if (!mounted.current || !isCurrentRemoteSelection(controller?.getSnapshot().selection, url)) return
+      controller?.setSelection({ kind: 'remote', url }, result.record.blob)
     })()
   }
 
@@ -212,11 +218,17 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       const record = await loadCachedRemote(entry.url, imageStore)
       if (record !== undefined) {
         if (mounted.current) rememberBlob(entry.url, record.blob)
-        controller?.setSelection({ kind: 'remote', url: entry.url }, record.blob)
+        if (mounted.current && isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
+          controller?.setSelection({ kind: 'remote', url: entry.url }, record.blob)
+        }
         return
       }
       void cacheRemoteImage(entry.url, { images: imageStore }).then(result => {
-        if (result.ok && mounted.current) rememberBlob(entry.url, result.record.blob)
+        if (!result.ok || !mounted.current) return
+        rememberBlob(entry.url, result.record.blob)
+        if (isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
+          controller?.setSelection({ kind: 'remote', url: entry.url }, result.record.blob)
+        }
       })
     })()
   }

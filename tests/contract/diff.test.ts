@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { diffContracts, renderDiffMarkdown } from '../../src/contract/diff.js'
-import { gateRelease, gateSupportMatrix, validateMatrix } from '../../src/contract/matrix.js'
-import type { ContractSnapshot, SupportMatrix } from '../../src/contract/types.js'
+import {
+  gateRelease,
+  gateSupportMatrix,
+  notSupportedProfiles,
+  profileEntries,
+  shippedVersionsFromMatrix,
+  supportedProfiles,
+  validateMatrix,
+} from '../../src/contract/matrix.js'
+import type { ContractSnapshot, ProfileStatus, SupportMatrix, SupportMatrixEntry } from '../../src/contract/types.js'
 
 function makeSnapshot(overrides: {
   version?: string
@@ -122,7 +130,23 @@ describe('contract diff', () => {
   })
 })
 
-function makeMatrix(status: SupportMatrix['entries'][number]['status']): SupportMatrix {
+type MatrixStatus = SupportMatrixEntry['status']
+
+const PASSED_ALL: SupportMatrixEntry['profiles'] = {
+  desktop: { macos: 'passed', win32: 'passed' },
+  web: { chrome: 'passed', edge: 'passed' },
+}
+
+const NARROWED: SupportMatrixEntry['profiles'] = {
+  desktop: { macos: 'not-supported', win32: 'not-supported' },
+  web: { chrome: 'passed', edge: 'not-supported' },
+}
+
+function makeMatrix(
+  status: MatrixStatus,
+  profiles: SupportMatrixEntry['profiles'] = PASSED_ALL,
+  evidence = status === 'draft' || status === 'g0-g5-passed' ? [] : ['artifacts/acceptance/probe.json'],
+): SupportMatrix {
   return {
     schemaVersion: 1,
     updatedAt: '2026-10-24T00:00:00.000Z',
@@ -132,54 +156,90 @@ function makeMatrix(status: SupportMatrix['entries'][number]['status']): Support
         adapterId: 'dsh-0.2.0-rc.2-r1',
         contractHash: 'sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce',
         status,
-        profiles: {
-          desktop: { macos: status === 'draft' ? 'pending' : 'passed', win32: status === 'draft' ? 'pending' : 'passed' },
-          web: { chrome: 'passed', edge: 'passed' },
-        },
+        profiles,
         browserSupport: [{ family: 'chrome', minVersion: 120 }],
         clientTarget: 'chrome120',
-        evidence: status === 'draft' ? [] : ['artifacts/acceptance/probe.json'],
+        evidence,
         notes: [],
       },
     ],
   }
 }
 
-describe('support-matrix gates', () => {
+function withProfiles(matrix: SupportMatrix, profiles: SupportMatrixEntry['profiles']): SupportMatrix {
+  return { ...matrix, entries: [{ ...matrix.entries[0]!, profiles }] }
+}
+
+describe('support-matrix gates (round-15 profile semantics)', () => {
   it('accepts a fully certified g6-approved entry', () => {
     const result = gateSupportMatrix(makeMatrix('g6-approved'), '0.2.0-rc.2')
     expect(result.problems).toEqual([])
     expect(result.ok).toBe(true)
   })
 
-  it('blocks draft entries and incomplete profile evidence', () => {
-    const draft = gateSupportMatrix(makeMatrix('draft'), '0.2.0-rc.2')
-    expect(draft.ok).toBe(false)
-    const incomplete = makeMatrix('g6-approved')
-    const entry = incomplete.entries[0]!
-    const patched: SupportMatrix = {
-      ...incomplete,
-      entries: [{ ...entry, profiles: { ...entry.profiles, desktop: { macos: 'pending', win32: 'pending' } } }],
-    }
-    const result = gateSupportMatrix(patched, '0.2.0-rc.2')
-    expect(result.ok).toBe(false)
-    expect(result.problems.some((problem) => problem.includes('profile evidence incomplete'))).toBe(true)
+  it('accepts a narrowed scope: one passed profile, explicit not-supported for the rest', () => {
+    const matrix = makeMatrix('g6-approved', NARROWED, [])
+    expect(validateMatrix(matrix)).toEqual([])
+    const result = gateSupportMatrix(matrix, '0.2.0-rc.2')
+    expect(result.problems).toEqual([])
+    expect(result.ok).toBe(true)
+    const entry = matrix.entries[0]!
+    expect(supportedProfiles(entry)).toEqual(['web.chrome'])
+    expect(notSupportedProfiles(entry)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
+    expect(profileEntries(entry)).toHaveLength(4)
+    expect(shippedVersionsFromMatrix(matrix)).toEqual(['0.2.0-rc.2'])
   })
 
-  it('requires Phase 6 release promotion and evidence', () => {
+  it('blocks draft entries and pending/failed in-scope profiles, ignoring not-supported ones', () => {
+    expect(gateSupportMatrix(makeMatrix('draft'), '0.2.0-rc.2').ok).toBe(false)
+    expect(gateSupportMatrix(makeMatrix('g0-g5-passed'), '0.2.0-rc.2').ok).toBe(false)
+
+    const pending = gateSupportMatrix(
+      withProfiles(makeMatrix('g6-approved'), {
+        ...NARROWED,
+        web: { chrome: 'pending', edge: 'not-supported' },
+      }),
+      '0.2.0-rc.2',
+    )
+    expect(pending.ok).toBe(false)
+    expect(pending.problems.some((problem) => problem.includes('certification pending'))).toBe(true)
+
+    const failed = gateSupportMatrix(
+      makeMatrix('g6-approved', { ...PASSED_ALL, web: { chrome: 'failed', edge: 'not-supported' } }),
+      '0.2.0-rc.2',
+    )
+    expect(failed.ok).toBe(false)
+    expect(failed.problems.some((problem) => problem.includes('certification failed'))).toBe(true)
+
+    // All profiles explicitly out of scope is not a supported release line.
+    const noneInScope: SupportMatrixEntry['profiles'] = {
+      desktop: { macos: 'not-supported', win32: 'not-supported' },
+      web: { chrome: 'not-supported', edge: 'not-supported' },
+    }
+    const empty = gateSupportMatrix(makeMatrix('g6-approved', noneInScope), '0.2.0-rc.2')
+    expect(empty.ok).toBe(false)
+    expect(empty.problems.some((problem) => problem.includes('no supported profile'))).toBe(true)
+  })
+
+  it('requires Phase 6 release promotion plus evidence', () => {
     expect(gateRelease(makeMatrix('g6-approved'), '0.2.0-rc.2').ok).toBe(false)
     expect(gateRelease(makeMatrix('released'), '0.2.0-rc.2').ok).toBe(true)
+    // Narrowed-scope release with evidence still passes.
+    expect(gateRelease(makeMatrix('released', NARROWED), '0.2.0-rc.2').ok).toBe(true)
+    // Released without evidence is blocked even when profiles pass.
+    expect(gateRelease(makeMatrix('released', PASSED_ALL, []), '0.2.0-rc.2').ok).toBe(false)
   })
 
-  it('rejects malformed matrices', () => {
+  it('rejects malformed matrices and unknown profile states', () => {
     const malformed: SupportMatrix = {
-      ...makeMatrix('draft'),
+      ...makeMatrix('released'),
       entries: [
         {
-          ...makeMatrix('draft').entries[0]!,
+          ...makeMatrix('released').entries[0]!,
           adapterId: 'dsh-0.2.x',
           contractHash: 'not-a-hash',
           status: 'released',
+          evidence: [],
         },
       ],
     }
@@ -187,5 +247,17 @@ describe('support-matrix gates', () => {
     expect(problems.some((problem) => problem.includes('adapterId must be exact'))).toBe(true)
     expect(problems.some((problem) => problem.includes('contractHash must be a full sha256'))).toBe(true)
     expect(problems.some((problem) => problem.includes('released entries require evidence'))).toBe(true)
+
+    const unknownProfile = makeMatrix('g6-approved')
+    const bad = {
+      ...unknownProfile,
+      entries: [
+        {
+          ...unknownProfile.entries[0]!,
+          profiles: { ...PASSED_ALL, web: { chrome: 'skipped' as unknown as ProfileStatus, edge: 'passed' } },
+        },
+      ],
+    } satisfies SupportMatrix
+    expect(validateMatrix(bad).some((problem) => problem.includes('unknown profile status'))).toBe(true)
   })
 })

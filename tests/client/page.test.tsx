@@ -330,8 +330,13 @@ describe('settings page server render', () => {
     expect(html).toContain(ADAPTER_021_2.hostVersion)
   })
 
-  it('reports font role hooks as unavailable on the 0.2.0-rc.2 profile', () => {
-    const profileCatalog = makeCatalog(undefined, adapterRecordOf(TEST_ADAPTER).capabilities, TEST_ADAPTER)
+  it('reports font role hooks as unavailable when the host does not document them', () => {
+    const baseCapabilities = adapterRecordOf(TEST_ADAPTER).capabilities
+    const capabilities = {
+      ...baseCapabilities,
+      'host-font-role-hooks': { ...baseCapabilities['host-font-role-hooks']!, available: false },
+    }
+    const profileCatalog = makeCatalog(undefined, capabilities, TEST_ADAPTER)
     const snapshot = {
       ...READY,
       catalog: profileCatalog,

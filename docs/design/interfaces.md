@@ -157,17 +157,11 @@ Gate failure (unreadable/out-of-range version / adapter mismatch / required
 contract mismatch / no active livery / invalid compiled artifact): **no rows are
 pushed at all**; stock remains.
 
-**Compatibility mode (round 7):** a readable observed version inside the
-compatibility range `>=0.2.0-rc.2 <1.0.0` without a certified adapter resolves to
-the synthetic identity `dsh-compat` using the **newest certified contract**:
-`{ adapterId: 'dsh-compat', hostVersion: observed, contractHash: <newest>,
-catalogProfile: <newest profile>, capabilities: <newest adapter's> }`. The Host
-injects the newest compiled catalog and sets `payload.compat = true`; diagnostics
-carry a `compat.mode` line. The Client accepts that triple only when `compat` is
-true, the observed version is inside the same range, and the catalog repeats the
-same contract/profile; the self-check shows an unverified-compat notice. Because
-the range is still `<1.0.0`, a future 1.x host requires an explicit support
-decision rather than being silently accepted.
+**Compatibility mode was removed in round 15.** The production host now
+resolves exact matrix-approved adapters only; unknown or in-range uncertified
+host versions fail closed to stock and never receive first-frame rows, catalog
+data or wallpaper. The historical compat paragraph is intentionally gone for the
+limited 0.1.0 release (DSH `0.2.1-rc.2` / Web / Chrome).
 
 Client (`src/client/runtime.ts`) reads `globalThis.__DSH_LIVERY_BOOT__`, fetches
 `BootPayload.catalogUrl` once (lazily, starts on `start()` after settings load), and:

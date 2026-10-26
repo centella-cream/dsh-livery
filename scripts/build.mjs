@@ -167,9 +167,39 @@ async function checkSizes() {
   }
 
   const problems = []
+  try {
+    const pkgForBuild = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
+    const matrixForBuild = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
+    const expectedEngines = matrixForBuild.entries
+      .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
+      .map((entry) => entry.hostVersion)
+      .sort()
+      .join(' || ')
+    if (pkgForBuild.engines?.dsh !== expectedEngines) {
+      problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedEngines}", got "${String(pkgForBuild.engines?.dsh)}"`)
+    }
+  } catch (error) {
+    problems.push(`cannot validate narrow engines allowlist: ${error.message}`)
+  }
   if (clientGzip > CLIENT_GZIP_BUDGET) problems.push(`client gzip ${clientGzip}B exceeds ${CLIENT_GZIP_BUDGET}B budget`)
   if (maxLiveryCss > PER_LIVERY_CSS_BUDGET) problems.push(`largest livery css ${maxLiveryCss}B exceeds ${PER_LIVERY_CSS_BUDGET}B budget`)
-  if (profileReports < 2) problems.push(`expected at least 2 compiled catalog profiles, found ${profileReports}`)
+  // The formal support matrix decides the shipped adapter set; historical
+  // snapshots are not compiled. Today the narrowed release line has one adapter
+  // and therefore one catalog profile, but the check stays count-driven.
+  let shippedAdapters = 0
+  try {
+    const matrix = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
+    shippedAdapters = matrix.entries.filter(
+      (entry) => entry.status === 'g6-approved' || entry.status === 'released',
+    ).length
+  } catch (error) {
+    problems.push(`cannot read formal support matrix: ${error.message}`)
+  }
+  if (shippedAdapters === 0) problems.push('formal support matrix has no g6-approved/released adapter')
+  if (profileReports < 1) problems.push(`expected at least 1 compiled catalog profile, found ${profileReports}`)
+  if (profileIds.length > shippedAdapters) {
+    problems.push(`compiled ${profileIds.length} catalog profiles for only ${shippedAdapters} shipped adapter(s)`)
+  }
   if (liveryCount < 10) problems.push(`catalog profile has only ${liveryCount} liveries (expected the full design set)`)
   if (cssSafety === 'fail') problems.push('compiler CSS safety report failed')
   // Every profile must ship the same design set, and its preview index must hold

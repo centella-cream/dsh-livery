@@ -1,5 +1,13 @@
 # `scripts/acceptance/probe/` — acceptance-harness building blocks
 
+**Scope (round 15, narrowed release):** the shipped/certified target is
+**DSH 0.2.1-rc.2 + Web Profile + Chrome only** (formal matrix `g6-approved`,
+one adapter `dsh-0.2.1-rc.2-r1`, one catalog profile). Desktop macOS/Windows and
+Web Edge are **not-supported** and are not claimed. `desktop-probe.mjs` is
+historical tooling for older rounds and now refuses to run without
+`--allow-out-of-scope`; earlier lines in this README that mention 0.2.0-rc.2 /
+0.2.1-rc.3 are development-history notes, not current scope.
+
 These modules are the implementation of the black-box Web-profile acceptance
 harness (`scripts/acceptance/web.mjs`). They are plain ESM with **no runtime
 dependencies** beyond Node 22 builtins and a locally installed
@@ -43,7 +51,7 @@ apply flow only (~40 s). Use it to validate a new client build's navigation
 registration before paying for the full acceptance run (fonts, first paint,
 dark mode, responsive, restore stock, uninstall lifecycle).
 
-## Useful environment facts (verified on this machine, DSH 0.2.0-rc.2)
+## Useful environment facts (verified on this machine; historical builds noted inline)
 
 - `dsh plugin --profile web add file:<abs tgz>` initializes a missing profile
   from the shipped web template (`@deepseek-ai/dsh-base` + `@deepseek-ai/dsh-web-app`);

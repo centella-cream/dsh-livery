@@ -4,12 +4,12 @@
 
 | Version | Supported |
 |---|---|
-| `0.1.x` (unreleased) | Yes |
+| `0.1.x` (limited release) | Yes |
 
-Certified host builds and the compatibility policy are documented in
-[README.md](README.md#host-support-and-version-policy). Hosts outside the
-compatibility range fail closed to the stock appearance; in-range uncertified
-hosts run in clearly labelled compat mode.
+The supported scope (DSH `0.2.1-rc.2`, Web Profile, Chrome) is documented in
+[README.md](README.md#host-support-and-version-policy). Any other host version is
+rejected at install time; at runtime, uncertified payloads/contracts fail closed to
+the stock appearance. There is no default compatibility fallback.
 
 ## Reporting a vulnerability
 
@@ -36,7 +36,7 @@ small first-frame payload. It is designed to:
   choices and effects are stored locally, not in the profile;
 - **ship no secrets** and write only the plugin's own configuration field (`skinId`)
   plus scoped `style` elements and attributes it owns;
-- **fail closed** on unknown host versions and contract hashes rather than guessing;
+- **fail closed** on any host version other than the certified exact build and on unknown contract hashes;
 - **stay inside the runtime trust model:** it is not a sandbox boundary, and it runs
   inside the DeepSeek Harness plugin runtime.
 

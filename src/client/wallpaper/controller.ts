@@ -118,6 +118,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
   let started = false
+  let disposed = false
   let localImageUrl: string | undefined
 
   const notify = (): void => {
@@ -235,10 +236,10 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   // Online wallpapers may have a cached blob: restore it on hydrate so a
   // remembered remote background renders even when the network is down.
   const restoreRemote = async (): Promise<void> => {
-    if (selection === undefined || selection.kind !== 'remote') return
+    if (disposed || selection === undefined || selection.kind !== 'remote') return
     const { url } = selection
     const record = await loadCachedRemote(url, images)
-    if (record === undefined) return
+    if (disposed || record === undefined) return
     if (selection === undefined || selection.kind !== 'remote' || selection.url !== url) return
     replaceLocalImageUrl(record.blob)
     apply()
@@ -246,7 +247,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   }
 
   const restoreUpload = async (): Promise<void> => {
-    if (selection === undefined || selection.kind !== 'upload') return
+    if (disposed || selection === undefined || selection.kind !== 'upload') return
     const { key } = selection
     if (images === undefined || objectUrls === undefined) return
     let record: StoredImageRecord | undefined
@@ -255,6 +256,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     } catch {
       record = undefined
     }
+    if (disposed) return
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
     if (record === undefined) {
       selection = undefined
@@ -329,6 +331,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       void restoreRemote()
     },
     dispose: () => {
+      disposed = true
       flushSave()
       listeners.clear()
       replaceLocalImageUrl(undefined)

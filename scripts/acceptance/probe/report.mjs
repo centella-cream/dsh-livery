@@ -6,7 +6,7 @@
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { oneLine, redact, writeJson, writeText } from './util.mjs'
-import { SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
+import { ACCEPTANCE_SCOPE, SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
 
 const CHECK_AREA_TITLES = {
   env: 'Environment',
@@ -109,6 +109,11 @@ export function buildProbeReport(ctx) {
     contractHash: expectedAdapter?.contractHash ?? observedCatalog?.contractHash ?? null,
     catalogProfile: expectedAdapter?.catalogProfile ?? observedCatalog?.catalogProfile ?? null,
     sourceKind: expectedAdapter?.sourceKind ?? null,
+    scope: {
+      hostVersion: ACCEPTANCE_SCOPE.hostVersion,
+      profile: ACCEPTANCE_SCOPE.profile,
+      browser: ACCEPTANCE_SCOPE.browser,
+    },
   }
   const matrix = {
     certifiedVersions: SUPPORTED_HOST_VERSIONS,
@@ -305,7 +310,7 @@ export const PLAN20_ROWS = [
   {
     criterion: 'Colour + host-level font-family actually effective (not just the settings page)',
     checks: ['theme.light-tokens', 'theme.dark-tokens', 'fonts.zh-cjk', 'fonts.zh-role-hooks', 'css.token-scoping'],
-    note: 'font strategy is capability-selected: role hooks (--dsh-font-family-text/-code) on 0.2.1+, legacy composite tokens on 0.2.0-rc.2',
+    note: 'font strategy is capability-selected: this certified host exposes the documented role hooks (--dsh-font-family-text/-code); no legacy composite-token fallback is required',
   },
   {
     criterion: 'At least one safe layout capability actually effective',
@@ -388,9 +393,9 @@ export const PLAN20_ROWS = [
     checks: ['bundle.gzip-budget', 'css.size-budget', 'firstpaint.paint-timings'],
   },
   {
-    criterion: 'Desktop / Windows / native chrome / wallpaper',
+    criterion: 'Desktop / Windows / Edge / native chrome',
     checks: [],
-    note: 'Out of scope: the Web harness has no Electron surface. Desktop/Windows certification belongs to the desktop rows of §18.9/§20.',
+    note: 'Not-supported for this release line (explicitly not claimed): the narrowed release ships DSH 0.2.1-rc.2 + Web Profile + Chrome only; desktop macOS/Windows and Web Edge are outside the formal matrix scope.',
   },
 ]
 
@@ -416,6 +421,11 @@ export function renderMarkdown(report, { title } = {}) {
     `Run \`${report.runId}\` · ${report.mode === 'isolated' ? 'isolated DSH_HOME' : 'reuse of a running profile'} · ` +
       `**${summary.pass} passed / ${summary.fail} failed / ${summary.skip} skipped / ${summary.warn} warnings** · ` +
       `${report.ok ? 'RESULT: PASS' : 'RESULT: FAIL'}`,
+  )
+  lines.push('')
+  lines.push(
+    `**Scope (explicit):** DSH ${ACCEPTANCE_SCOPE.hostVersion} + Web Profile + Chrome only. ` +
+      'Desktop macOS/Windows and Web Edge are not-supported for this release line and are not claimed by this evidence.',
   )
   lines.push('')
   lines.push('## Environment')

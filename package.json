@@ -37,7 +37,7 @@
   ],
   "engines": {
     "node": "^22.23.1 || ^24.21.0",
-    "dsh": ">=0.2.0-rc.2 <1.0.0",
+    "dsh": "0.2.1-rc.2",
     "pnpm": ">=12"
   },
   "keywords": [
@@ -69,9 +69,7 @@
     },
     "compatibility": {
       "dshReleases": {
-        "0.2.0-rc.2": "compatible",
-        "0.2.1-rc.2": "compatible",
-        "0.2.1-rc.3": "compatible"
+        "0.2.1-rc.2": "compatible"
       }
     }
   },
@@ -106,8 +104,12 @@
     "contract:extract-desktop": "node scripts/prepare-desktop-contract.mjs",
     "test:browser": "node tests/browser/run.mjs",
     "release:check": "node scripts/cli.mjs gate:support-matrix -- --all && node scripts/cli.mjs gate:release -- --all && node scripts/release-check.mjs",
-    "prepublishOnly": "pnpm release:check",
-    "pack:candidate": "node scripts/release-check.mjs"
+    "prepublishOnly": "node scripts/prepublish-check.mjs",
+    "pack:candidate": "node scripts/release-check.mjs",
+    "verify:artifact": "node scripts/release-check.mjs",
+    "verify:evidence": "node scripts/release-evidence.mjs",
+    "promote:release": "node scripts/promote-release.mjs",
+    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
@@ -135,5 +137,8 @@
     "vitest": "^3.2.4"
   },
   "author": "DSH Livery contributors",
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
 }

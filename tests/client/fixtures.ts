@@ -22,17 +22,21 @@ import type { Presenter, PresenterSnapshot, SkinCss } from '../../src/client/pre
  * `AdapterIdentity` registry (the client never imports the full records, whose
  * capability prose/source evidence must stay out of the browser bundle).
  */
-export const ADAPTER_020: AdapterIdentity = ADAPTER_IDENTITIES[0]!
-export const ADAPTER_021_2: AdapterIdentity = ADAPTER_IDENTITIES[1]!
-export const ADAPTER_021_3: AdapterIdentity = ADAPTER_IDENTITIES[2]!
+// Round-15 narrowed registry: the shipped build is the only certified adapter.
+// Legacy alias names are kept for tests that used distinct historical builds;
+// they intentionally point at the shipped registry entry now.
+export const SHIPPED_IDENTITY: AdapterIdentity = ADAPTER_IDENTITIES[0]!
+export const ADAPTER_020: AdapterIdentity = SHIPPED_IDENTITY
+export const ADAPTER_021_2: AdapterIdentity = SHIPPED_IDENTITY
+export const ADAPTER_021_3: AdapterIdentity = SHIPPED_IDENTITY
 
-/** Default adapter used by fixtures: the already-accepted 0.2.0-rc.2 build. */
-export const TEST_ADAPTER: AdapterIdentity = ADAPTER_020
+/** Default adapter used by fixtures: the shipped certified build. */
+export const TEST_ADAPTER: AdapterIdentity = SHIPPED_IDENTITY
 
 /** Full generated records (tests only, for capability maps/platform modules). */
 export const ADAPTER_RECORD_020: AdapterRecord = ADAPTERS[0]!
-export const ADAPTER_RECORD_021_2: AdapterRecord = ADAPTERS[1]!
-export const ADAPTER_RECORD_021_3: AdapterRecord = ADAPTERS[2]!
+export const ADAPTER_RECORD_021_2: AdapterRecord = ADAPTER_RECORD_020
+export const ADAPTER_RECORD_021_3: AdapterRecord = ADAPTER_RECORD_020
 
 /**
  * Full generated record for one lite identity (tests that need its capability
@@ -438,7 +442,7 @@ export function makeLivery(
   }
 }
 
-/** Build one catalog fixture for a certified adapter (default: 0.2.0-rc.2). */
+/** Build one catalog fixture for a certified adapter (default: the shipped build). */
 export function makeCatalog(
   liveries: readonly CompiledLivery[] = [makeLivery('fjord', { order: 10 }), makeLivery('midnight', { order: 20, tags: ['deep', 'elegant'] })],
   capabilities: CapabilityMap = TEST_CAPABILITIES,

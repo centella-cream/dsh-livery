@@ -25,9 +25,11 @@ import type {
   ProfileSchemaContract,
   ServiceSignature,
   SupportMatrix,
+  SupportMatrixEntry,
   TokenContract,
   TokenDeclaration,
 } from './types.js'
+import { isShippedStatus, readFormalMatrix } from './matrix.js'
 
 const CLIENT_TARGET = 'chrome120'
 
@@ -888,6 +890,149 @@ async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, a
   return { matrix: merged, path }
 }
 
+/** One generated adapter-registry record (shape rendered into contract.ts). */
+export interface GeneratedAdapterRecord {
+  readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly loaderAbiHash: string
+  readonly hostApiHash: string
+  readonly clientApiHash: string
+  readonly tokenHash: string
+  readonly layoutHash: string
+  readonly profileSchemaHash: string
+  readonly nodeRange: string
+  readonly nodeRangeSource: string
+  readonly clientTarget: string
+  readonly platformModules: readonly string[]
+  readonly capabilities: Record<string, unknown>
+  readonly catalogProfile: string
+  readonly sourceKind: 'installed-package' | 'packaged-app'
+  readonly sourceEvidence: readonly string[]
+  readonly capturedAt: string
+}
+
+/**
+ * Build the shipped adapter record for one frozen contract snapshot.
+ * Deterministic and version-independent; the renderer only serializes this.
+ */
+export function adapterRecordFrom(snapshot: ContractSnapshot): GeneratedAdapterRecord {
+  return {
+    hostVersion: snapshot.hostVersion,
+    adapterId: snapshot.adapterId,
+    contractHash: snapshot.contractHash,
+    loaderAbiHash: snapshot.hashes.loaderAbi,
+    hostApiHash: snapshot.hashes.hostApi,
+    clientApiHash: snapshot.hashes.clientApi,
+    tokenHash: snapshot.hashes.token,
+    layoutHash: snapshot.hashes.layout,
+    profileSchemaHash: snapshot.hashes.profileSchema,
+    nodeRange: snapshot.source.nodeRange,
+    nodeRangeSource: snapshot.source.nodeRangeSource,
+    clientTarget: snapshot.source.clientTarget,
+    platformModules: snapshot.loaderAbi.platformModules.modules,
+    capabilities: buildCapabilityMap(snapshot),
+    catalogProfile: catalogProfileId(snapshot),
+    sourceKind: snapshot.source.kind,
+    sourceEvidence: snapshot.loaderAbi.evidence.map((file) => file.path),
+    capturedAt: snapshot.capturedAt,
+  }
+}
+
+/** One generated stock-token snapshot record (shape rendered into stock.ts). */
+export interface GeneratedStockSnapshot {
+  readonly version: string
+  readonly tokenContractHash: string
+  readonly tokens: Record<string, unknown>
+  readonly dshVariables: Record<string, unknown>
+}
+
+/** Build the shipped stock snapshot for one frozen contract snapshot. */
+export function stockSnapshotFrom(snapshot: ContractSnapshot): GeneratedStockSnapshot {
+  const values = new Map<string, string>()
+  for (const token of snapshot.tokens.tokens) values.set(token.name, token.light)
+  const tokens: Record<string, unknown> = {}
+  for (const token of snapshot.tokens.tokens) {
+    tokens[token.name] = {
+      category: token.category,
+      light: token.light,
+      dark: token.dark,
+      resolvedLight: resolveTokenValue(token.light, values),
+      resolvedDark: resolveTokenValue(token.dark, values),
+      selector: token.selector,
+      darkSelector: token.darkSelector,
+      themeInvariant: token.dark === token.light,
+      referencedBy: token.referencedBy,
+    }
+  }
+  const dshVariables: Record<string, unknown> = {}
+  for (const name of snapshot.layout.rootVariables) {
+    dshVariables[name] = { light: null, dark: null, notes: 'declared by host sheets', declared: true }
+  }
+  return {
+    version: snapshot.hostVersion,
+    tokenContractHash: snapshot.hashes.token,
+    tokens,
+    dshVariables,
+  }
+}
+
+/**
+ * Build one adapter manifest with certification claims derived strictly from the
+ * support-matrix entry (missing entry = no verified profile claimed).
+ */
+export function adapterManifestFrom(snapshot: ContractSnapshot, entry?: SupportMatrixEntry): AdapterManifest {
+  const browserMin = (family: string): number =>
+    entry?.browserSupport.find((browser) => browser.family === family)?.minVersion ?? 120
+  const webPassed = entry?.profiles.web.chrome === 'passed' || entry?.profiles.web.edge === 'passed'
+  const darwinPassed = entry?.profiles.desktop.macos === 'passed'
+  const win32Passed = entry?.profiles.desktop.win32 === 'passed'
+  const verifiedProfiles: string[] = []
+  if (webPassed) verifiedProfiles.push('web')
+  if (darwinPassed || win32Passed) verifiedProfiles.push('desktop')
+  const verifiedPlatforms: string[] = []
+  if (webPassed) verifiedPlatforms.push('web')
+  if (darwinPassed) verifiedPlatforms.push('darwin')
+  if (win32Passed) verifiedPlatforms.push('win32')
+  const browsers: Array<{ family: string; minVersion: number }> = []
+  if (entry?.profiles.web.chrome === 'passed') browsers.push({ family: 'chrome', minVersion: browserMin('chrome') })
+  if (entry?.profiles.web.edge === 'passed') browsers.push({ family: 'edge', minVersion: browserMin('edge') })
+  return {
+    hostVersion: snapshot.hostVersion,
+    adapterId: snapshot.adapterId,
+    loaderAbi: snapshot.hashes.loaderAbi,
+    hostApiContract: snapshot.hashes.hostApi,
+    clientApiContract: snapshot.hashes.clientApi,
+    tokenContract: snapshot.hashes.token,
+    layoutContract: snapshot.hashes.layout,
+    profileSchema: snapshot.hashes.profileSchema,
+    contractHash: snapshot.contractHash,
+    nodeRange: snapshot.source.nodeRange,
+    clientTarget: snapshot.source.clientTarget,
+    verifiedProfiles,
+    verifiedPlatforms,
+    verifiedBrowsers: browsers,
+  }
+}
+
+/**
+ * Frozen contract snapshots that the formal support matrix allows this build to
+ * generate and ship. Historical snapshots stay on disk for audit/diff, but only
+ * `g6-approved`/`released` entries reach the generated registry, the stock table
+ * and therefore the packaged plugin.
+ */
+export async function shippedSnapshots(workspace: string): Promise<ContractSnapshot[]> {
+  const [snapshots, matrix] = await Promise.all([readCommittedSnapshots(workspace), readFormalMatrix(workspace)])
+  const shipped = snapshots.filter((snapshot) => {
+    const entry = matrix.entries.find((candidate) => candidate.hostVersion === snapshot.hostVersion)
+    return entry !== undefined && isShippedStatus(entry.status)
+  })
+  if (shipped.length === 0) {
+    throw new Error('formal support-matrix has no g6-approved/released entry; refusing to generate an empty adapter registry')
+  }
+  return shipped
+}
+
 /** Ascending version order for display and registry stability. */
 export function compareVersions(a: string, b: string): number {
   const parse = (value: string): number[] => {
@@ -919,29 +1064,14 @@ export async function writeSnapshotArtifacts(
   await writeFile(contractPath, `${JSON.stringify(snapshot, null, 2)}\n`)
 
   const prepared = await readPreparedSource(install)
-  const adapter: AdapterManifest = {
-    hostVersion: version,
-    adapterId: snapshot.adapterId,
-    loaderAbi: snapshot.hashes.loaderAbi,
-    hostApiContract: snapshot.hashes.hostApi,
-    clientApiContract: snapshot.hashes.clientApi,
-    tokenContract: snapshot.hashes.token,
-    layoutContract: snapshot.hashes.layout,
-    profileSchema: snapshot.hashes.profileSchema,
-    contractHash: snapshot.contractHash,
-    nodeRange: snapshot.source.nodeRange,
-    clientTarget: snapshot.source.clientTarget,
-    verifiedProfiles: ['desktop', 'web'],
-    verifiedPlatforms: ['darwin', 'win32', 'web'],
-    verifiedBrowsers: [
-      { family: 'chrome', minVersion: 120 },
-      { family: 'edge', minVersion: 120 },
-    ],
-  }
+  const provisionalAdapter = adapterManifestFrom(snapshot)
+  const { matrix, path: matrixPath } = await writeMatrixEntry(workspace, snapshot, provisionalAdapter)
+  // Certification claims come strictly from the merged matrix entry: a fresh
+  // snapshot starts with no verified profiles until evidence is recorded.
+  const entry = matrix.entries.find((candidate) => candidate.hostVersion === version)
+  const adapter = adapterManifestFrom(snapshot, entry)
   const adapterPath = join(contractDir, 'adapter.json')
   await writeFile(adapterPath, `${JSON.stringify(adapter, null, 2)}\n`)
-
-  const { matrix, path: matrixPath } = await writeMatrixEntry(workspace, snapshot, adapter)
 
   // Evidence artifacts may record the local install path; they are never packaged.
   await writeFile(
@@ -1029,7 +1159,10 @@ export async function readCommittedSnapshots(workspace: string): Promise<Contrac
  * contract files. Deterministic: no wall clock, stable key order.
  */
 export async function regenerateGeneratedContracts(workspace: string): Promise<GeneratedRegistryPaths> {
-  const snapshots = await readCommittedSnapshots(workspace)
+  // Shipped adapters only: the formal support matrix decides which frozen
+  // contracts become runtime adapters. Historical snapshots remain on disk for
+  // audit/diff but never reach the generated registry or stock table.
+  const snapshots = await shippedSnapshots(workspace)
   const generatedDir = join(workspace, 'src', 'generated')
   await mkdir(generatedDir, { recursive: true })
   const contractPath = join(generatedDir, 'contract.ts')
@@ -1068,35 +1201,17 @@ export function catalogProfileId(snapshot: ContractSnapshot): string {
 }
 
 export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]): string {
-  const adapters = snapshots.map((snapshot) => ({
-    hostVersion: snapshot.hostVersion,
-    adapterId: snapshot.adapterId,
-    contractHash: snapshot.contractHash,
-    loaderAbiHash: snapshot.hashes.loaderAbi,
-    hostApiHash: snapshot.hashes.hostApi,
-    clientApiHash: snapshot.hashes.clientApi,
-    tokenHash: snapshot.hashes.token,
-    layoutHash: snapshot.hashes.layout,
-    profileSchemaHash: snapshot.hashes.profileSchema,
-    nodeRange: snapshot.source.nodeRange,
-    nodeRangeSource: snapshot.source.nodeRangeSource,
-    clientTarget: snapshot.source.clientTarget,
-    platformModules: snapshot.loaderAbi.platformModules.modules,
-    capabilities: buildCapabilityMap(snapshot),
-    /** Render-affecting contract facts; versions sharing one profile share one catalog. */
-    catalogProfile: catalogProfileId(snapshot),
-    sourceKind: snapshot.source.kind,
-    sourceEvidence: snapshot.loaderAbi.evidence.map((file) => file.path),
-    capturedAt: snapshot.capturedAt,
-  }))
+  const adapters = snapshots.map(adapterRecordFrom)
   const lines: string[] = []
   lines.push('/**')
   lines.push(' * GENERATED — do not edit by hand.')
   lines.push(' *')
-  lines.push(' * Frozen adapter registry for every certified DSH host build. Compatibility')
-  lines.push(' * is decided by exact version + adapter id + contract hash; unknown versions')
-  lines.push(' * fail closed to stock. Regenerate with')
-  lines.push(' * `pnpm contract:regenerate` after adding or refreshing a contract snapshot.')
+  lines.push(' * Shipped adapter registry: only host builds whose FORMAL support-matrix')
+  lines.push(' * (`contracts/dsh/support-matrix.json`) entry is `g6-approved` or `released`')
+  lines.push(' * are generated here. Historical contract snapshots stay on disk for audit')
+  lines.push(' * and diff, but they never become runtime adapters. Compatibility is exact')
+  lines.push(' * version + adapter id + contract hash; unknown versions fail closed to')
+  lines.push(' * stock. Regenerate with `pnpm contract:regenerate`.')
   lines.push(' */')
   lines.push("import type { CapabilityMap } from '../core/types.js'")
   lines.push('')
@@ -1129,7 +1244,7 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
   lines.push('  readonly capturedAt: string')
   lines.push('}')
   lines.push('')
-  lines.push('/** Every certified host build, ascending by version. */')
+  lines.push('/** Every shipped host build (formal matrix approved/released), ascending. */')
   lines.push(`export const ADAPTERS: readonly AdapterRecord[] = ${JSON.stringify(adapters, null, 2)}`)
   lines.push('')
   lines.push('/**')
@@ -1155,7 +1270,7 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
   }))
   lines.push(`export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = ${JSON.stringify(identities, null, 2)}`)
   lines.push('')
-  lines.push('/** Exact allowlist of host versions this build may style (lite form). */')
+  lines.push('/** Exact allowlist of shipped host versions (lite form). */')
   lines.push(`export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ${JSON.stringify(identities.map((identity) => identity.hostVersion))}`)
   lines.push('')
   lines.push('/** Registry by exact host version. */')
@@ -1168,10 +1283,10 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
   lines.push('  ADAPTERS.map((adapter) => [adapter.contractHash, adapter]),')
   lines.push(')')
   lines.push('')
-  lines.push('/** Exact allowlist of host versions this build may style. */')
+  lines.push('/** Exact allowlist of host versions this build may style (shipped only). */')
   lines.push('export const SUPPORTED_HOST_VERSIONS: readonly string[] = ADAPTERS.map((adapter) => adapter.hostVersion)')
   lines.push('')
-  lines.push('/** Newest certified adapter (used by build-time tooling defaults only). */')
+  lines.push('/** Newest shipped adapter (used by build-time tooling defaults only). */')
   lines.push('export const DEFAULT_ADAPTER: AdapterRecord = ADAPTERS[ADAPTERS.length - 1]!')
   lines.push('')
   lines.push('/** Resolve an exact host version, or undefined when uncertified. */')
@@ -1189,40 +1304,14 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
 
 export function renderGeneratedStockRegistry(snapshots: readonly ContractSnapshot[]): string {
   const byVersion: Record<string, unknown> = {}
-  for (const snapshot of snapshots) {
-    const values = new Map<string, string>()
-    for (const token of snapshot.tokens.tokens) values.set(token.name, token.light)
-    const tokens: Record<string, unknown> = {}
-    for (const token of snapshot.tokens.tokens) {
-      tokens[token.name] = {
-        category: token.category,
-        light: token.light,
-        dark: token.dark,
-        resolvedLight: resolveTokenValue(token.light, values),
-        resolvedDark: resolveTokenValue(token.dark, values),
-        selector: token.selector,
-        darkSelector: token.darkSelector,
-        themeInvariant: token.dark === token.light,
-        referencedBy: token.referencedBy,
-      }
-    }
-    const dshVariables: Record<string, unknown> = {}
-    for (const name of snapshot.layout.rootVariables) {
-      dshVariables[name] = { light: null, dark: null, notes: 'declared by host sheets', declared: true }
-    }
-    byVersion[snapshot.hostVersion] = {
-      version: snapshot.hostVersion,
-      tokenContractHash: snapshot.hashes.token,
-      tokens,
-      dshVariables,
-    }
-  }
+  for (const snapshot of snapshots) byVersion[snapshot.hostVersion] = stockSnapshotFrom(snapshot)
   return `/**
  * GENERATED — do not edit by hand.
  *
- * Per-host-version stock token snapshots. Each Livery catalog is compiled against
- * the stock tokens of the exact host version it targets, so a token added or
- * changed by the host can never silently inherit a different palette.
+ * Per-host-version stock token snapshots for the SHIPPED adapters only (formal
+ * support-matrix g6-approved/released entries). Each Livery catalog is compiled
+ * against the stock tokens of the exact host version it targets, so a token
+ * added or changed by the host can never silently inherit a different palette.
  * Regenerate with \`pnpm contract:regenerate\`.
  */
 import type { TokenMap } from "../core/types.js";

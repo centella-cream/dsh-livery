@@ -118,6 +118,10 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   private configSettled = false
   private catalogSettled = false
   private generation = 0
+  /** Latest config revision observed from the host form. */
+  private configRevision: number | undefined
+  /** Newer host config that arrived while a settings write was in flight. */
+  private pendingConfig: { readonly revision: number | undefined; readonly confirmedId: string } | undefined
   /** Phase to return to after cancel/rollback (ready or degraded). */
   private basePhase: 'ready' | 'degraded' = 'ready'
   /** Resolved CSS of the confirmed (non-stock) livery. */
@@ -279,6 +283,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const priorSkin = this.confirmedSkin
     const basePhase = this.basePhase
     const skin = this.previewSkin
+    const startRevision = this.configRevision
+    this.pendingConfig = undefined
     this.lastWrite = target === STOCK_ID ? { kind: 'restore' } : { kind: 'commit', id: target }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -290,6 +296,27 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       failure = 'transport'
     }
     if (this.disposed) return false
+    const pendingCommit = this.pendingConfigSnapshot()
+    if (pendingCommit !== undefined && pendingCommit.revision !== startRevision) {
+      // A newer host configuration landed while we waited: it wins over this
+      // older write result. Roll forward to the newest confirmed style instead
+      // of overwriting it with the stale target/rollback.
+      const newest = pendingCommit.confirmedId
+      this.pendingConfig = undefined
+      this.lastWrite = undefined
+      this.previewSkin = undefined
+      this.deps.presenter.rollbackPreview(undefined)
+      this.patch({
+        writing: false,
+        phase: basePhase,
+        previewId: undefined,
+        writeFailure: undefined,
+        notes: withNote(this.snapshot.notes, 'newer host configuration superseded the in-flight settings write'),
+      })
+      this.present(newest, false)
+      return accepted
+    }
+    this.pendingConfig = undefined
     if (accepted) {
       if (target === STOCK_ID || skin === undefined) {
         this.deps.presenter.clearSkin()
@@ -340,6 +367,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const form = this.form
     if (form === undefined) return false
     const basePhase = this.snapshot.phase === 'degraded' ? 'degraded' : 'ready'
+    const startRevision = this.configRevision
+    this.pendingConfig = undefined
     this.lastWrite = { kind: 'restore' }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -351,6 +380,22 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       failure = 'transport'
     }
     if (this.disposed) return false
+    const pendingRestore = this.pendingConfigSnapshot()
+    if (pendingRestore !== undefined && pendingRestore.revision !== startRevision) {
+      const newest = pendingRestore.confirmedId
+      this.pendingConfig = undefined
+      this.lastWrite = undefined
+      this.patch({
+        writing: false,
+        phase: basePhase,
+        previewId: undefined,
+        writeFailure: undefined,
+        notes: withNote(this.snapshot.notes, 'newer host configuration superseded the in-flight settings write'),
+      })
+      this.present(newest, false)
+      return accepted
+    }
+    this.pendingConfig = undefined
     if (accepted) {
       this.deps.presenter.clearSkin()
       this.confirmedSkin = undefined
@@ -420,6 +465,10 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   }
 
   // --- internals -----------------------------------------------------------
+
+  private pendingConfigSnapshot(): { readonly revision: number | undefined; readonly confirmedId: string } | undefined {
+    return this.pendingConfig
+  }
 
   private canInteract(): boolean {
     if (this.disposed) return false
@@ -504,6 +553,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const fallback = snapshot.status === 'unavailable' ? this.deps.boot.payload?.skinId : undefined
     const confirmedId = value ?? fallback ?? STOCK_ID
     this.configSettled = true
+    this.configRevision = snapshot.revision
     const previous = this.snapshot.confirmedId
     this.patch({
       configStatus: snapshot.status,
@@ -515,7 +565,12 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       return
     }
     if (confirmedId === previous) return
-    if (this.snapshot.writing) return
+    if (this.snapshot.writing) {
+      // Never present over an in-flight write, but remember the newest config so
+      // the write result can reconcile forward when it settles.
+      this.pendingConfig = { revision: snapshot.revision, confirmedId }
+      return
+    }
     if (this.snapshot.phase === 'previewing') {
       // An external config change supersedes the transient preview.
       this.previewSkin = undefined
