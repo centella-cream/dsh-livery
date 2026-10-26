@@ -1,3 +1,8 @@
+> **Status note (2026-10-27):** this page keeps the multi-version design history.
+> The shipped 0.1.0 limited release certifies only DSH `0.2.1-rc.2` / Web Profile /
+> Chrome 155 / Node `^22.23.1`. Desktop and Edge are unsupported/no-guarantee; there
+> is no compatibility mode. Historical rows below are not current support claims.
+
 > **Release 0.1.0 scope (round 15):** the compatibility mode described in the
 > historical sections below has been **removed**. Production supports exactly
 > DSH `0.2.1-rc.2` / Web Profile / Chrome; unknown host versions are rejected at
@@ -20,9 +25,8 @@ host builds:
 | `0.2.1-rc.3` | Electron `app.asar` (Desktop app) | Node v24.21.0, Electron 44.7.0 | Desktop/macOS (this round, native chrome limits documented) |
 
 On the certified path there is no semver inference: an exact build either has an
-adapter or it does not. `engines.node` is the union of the certified runtimes
-`^22.23.1 || ^24.21.0`. The install-time `engines.dsh` range also admits newer
-builds in compat mode, as described at the end of this document.
+adapter or it does not. The shipped 0.1.0 release certifies Node `^22.23.1` only;
+Desktop and Edge are unsupported/no-guarantee, and there is no compatibility mode.
 
 ## 1. Generated contract registry (`src/generated/contract.ts`)
 

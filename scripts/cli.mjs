@@ -92,8 +92,8 @@ async function packCheck(args) {
   } catch (error) {
     problems.push(`cannot validate narrow compatibility: ${error.message}`)
   }
-  if (typeof pkg.engines?.node !== 'string' || !pkg.engines.node.includes('^22.23.1') || !pkg.engines.node.includes('^24.21.0')) {
-    problems.push(`engines.node must cover the certified runtimes, got ${String(pkg.engines?.node)}`)
+  if (pkg.engines?.node !== '^22.23.1') {
+    problems.push(`engines.node must be exactly the certified runtime ^22.23.1, got ${String(pkg.engines?.node)}`)
   }
   if (pkg.dsh?.client?.platform !== 'web') problems.push('dsh.client.platform must be web')
   for (const external of pkg.dsh?.client?.external ?? []) {

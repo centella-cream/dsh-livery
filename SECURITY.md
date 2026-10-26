@@ -6,10 +6,12 @@
 |---|---|
 | `0.1.x` (limited release) | Yes |
 
-The supported scope (DSH `0.2.1-rc.2`, Web Profile, Chrome) is documented in
-[README.md](README.md#host-support-and-version-policy). Any other host version is
-rejected at install time; at runtime, uncertified payloads/contracts fail closed to
-the stock appearance. There is no default compatibility fallback.
+The supported scope (DSH `0.2.1-rc.2`, Web Profile, Chrome 155) is documented in
+[README.md](README.md#host-support-and-version-policy). Chrome 155 is the only
+certified browser version. Desktop/Edge on the same DSH build are unsupported and
+not guaranteed; they are not actively blocked. Other host versions are rejected at
+install time; at runtime, uncertified payloads/contracts fail closed to the stock
+appearance. There is no default compatibility fallback.
 
 ## Reporting a vulnerability
 

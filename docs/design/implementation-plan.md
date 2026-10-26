@@ -1,3 +1,11 @@
+> **Status note (2026-10-27):** this document is the original implementation plan.
+> The shipped 0.1.0 limited release supports only DSH `0.2.1-rc.2` + Web Profile +
+> Chrome 155 + Node 22.23.1. Desktop macOS/Windows and Web Edge are
+> unsupported/no-guarantee (same-version sessions may load but are not certified);
+> only unsupported DSH builds are rejected/fail closed. The authoritative scope is
+> `README.md` and `contracts/dsh/support-matrix.json`; the older Chrome 120+/Edge/
+> Desktop target tables below are historical.
+
 # DSH Livery 实施方案
 
 本文写于 0.1.0 开发初期，是一份历史实施方案，记录当时的版本基线、阶段计划和风险清单。

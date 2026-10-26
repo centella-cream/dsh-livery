@@ -163,7 +163,7 @@ describe('formal support matrix (round 15 narrowed release line)', () => {
       // Narrowed release line: only the web platform is claimed, with Chrome.
       expect(adapter.verifiedProfiles).toEqual(['web'])
       expect(adapter.verifiedPlatforms).toEqual(['web'])
-      expect(adapter.verifiedBrowsers).toEqual([{ family: 'chrome', minVersion: 120 }])
+      expect(adapter.verifiedBrowsers).toEqual([{ family: 'chrome', minVersion: 155 }])
     }
   })
 })
@@ -215,7 +215,7 @@ describe('generated shipped registry', () => {
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
     expect(pkg.engines?.dsh).toBe('0.2.1-rc.2')
-    expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
+    expect(pkg.engines?.node).toBe('^22.23.1')
     expect(pkg.dsh?.client?.platform).toBe('web')
     expect(pkg.dsh?.client?.external).toEqual([])
     expect(pkg.dsh?.compatibility?.dshReleases).toEqual({ '0.2.1-rc.2': 'compatible' })

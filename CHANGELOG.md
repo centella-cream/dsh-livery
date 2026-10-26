@@ -74,13 +74,15 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0`**; published tarball
   `dsh-livery-0.1.0.tgz`.
-- **Stable limited release (round 15):** support scope narrowed to DSH
-  `0.2.1-rc.2` + Web Profile + Chrome; production adapters/catalog/stock are
-  generated only from the formal released matrix (one adapter, one profile).
-  Compatibility mode removed; unknown versions fail closed. Release workflow
-  builds a candidate from the tag, verifies the downloaded artifact and evidence
-  on the default branch, and publishes the same accepted bytes; `private` is
-  off with `prepublishOnly` bound to the committed evidence.
+- **Stable limited release:** support scope is DSH `0.2.1-rc.2` + Web Profile +
+  Chrome 155 on Node 22.23.1; Desktop/Edge are unsupported/no-guarantee (same-version
+  sessions may load but are not certified), and only unsupported DSH builds are
+  rejected/fail closed. Production adapters/catalog/stock are generated only from
+  the formal released matrix (one adapter, one profile). Compatibility mode is
+  removed. Release workflow builds a candidate from the tag, verifies the
+  downloaded artifact and evidence on the default branch, and publishes the same
+  accepted bytes; `private` is off with `prepublishOnly` bound to the committed
+  evidence.
 - **Release pipeline (round 14 follow-up):** the release workflow now builds and
   uploads the candidate tarball first, then runs support/release gates on the
   same candidate identity; `gate:release -- --all` requires every packaged adapter
@@ -119,9 +121,10 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   recorded in `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`. The matrix entry
   is `released` and bound to that evidence file.
 - Limited-release acceptance on the exact artifact: Web `0.2.1-rc.2` isolated full
-  run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone
-  **228 / 0 / 4 / 4** (Chrome 155, macOS arm64). Desktop macOS/Windows and Web
-  Edge are explicitly not-supported.
+  run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone **227 / 0 / 4 / 5**
+  (Chrome 155, Node 22.23.1, macOS arm64; the extra clone warning is a clone-only
+  dependency-repair warning). Chrome 155 and Node 22.23.1 are the only certified
+  versions. Desktop macOS/Windows and Web Edge are unsupported/no-guarantee.
 - Repo gates: `tsc` clean, 713 tests (1 optional skip), 103 generated files /
   1 catalog profile in sync, all token/CSS/contrast audits, loader-ABI 8/8,
   `adapter:check`, `pack:check`, both release gates OK on the accepted artifact,
@@ -129,12 +132,12 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Known limitations
 
-- Native Electron window surfaces (traffic lights, vibrancy, Dock/rightbar, native
-  DPI beyond `devicePixelRatio`, packaged GPU/sandbox path) are not verified;
-  `desktop.macos` stays pending. Web/Edge is not certified (Chrome only).
-- Compatibility mode is best-effort and covered by unit/host tests only (a browser
-  cannot forge an uncertified host); a future DSH 1.x requires an explicit support
-  decision. Certification remains exact-build.
+- Desktop macOS/Windows and Web Edge are outside the certified scope and receive no
+  support guarantee; same-version sessions may load but are not claimed. Only
+  unsupported DSH builds are rejected/fail closed. There is no compatibility mode.
+- Chrome 155 and Node 22.23.1 are the only certified runtime versions; the build
+  target (`chrome120`) is not a browser certification claim. Other Chrome/Node
+  versions are not guaranteed.
 - Online wallpaper search is mocked in acceptance; live third-party APIs/image
   loading are not part of CI. Wallpaper effects are layer/token-level (no
   per-component backdrop filters), and wallpaper choices live in browser

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-26T10:54:40.989Z",
+  "updatedAt": "2026-10-27T00:20:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -20,7 +20,7 @@
       "browserSupport": [
         {
           "family": "chrome",
-          "minVersion": 120
+          "minVersion": 155
         }
       ],
       "clientTarget": "chrome120",
@@ -28,9 +28,10 @@
         "contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json"
       ],
       "notes": [
-        "Round-15 narrowed release target: DSH 0.2.1-rc.2 + Web Profile + Chrome only.",
-        "Desktop macOS/Windows and Web Edge are explicitly not-supported for this release line, not pending claims.",
-        "Status g6-approved while the release-tranche acceptance evidence is being collected; promotion to released happens in the release transaction only after that evidence exists."
+        "DSH 0.2.1-rc.2 + Web Profile + Chrome 155 only; Chrome 155 is the only certified browser version.",
+        "Desktop macOS/Windows and Web Edge are not-supported support boundaries, not active runtime gates: no support or guarantee is provided for those surfaces.",
+        "Only unsupported DSH builds are rejected at install/runtime and fail closed to stock.",
+        "clientTarget chrome120 records the build target, not a browser certification claim."
       ]
     }
   ]

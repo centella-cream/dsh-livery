@@ -1,15 +1,16 @@
 # DSH Livery（dsh-livery）
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome-6d6df6.svg)](#宿主支持与版本策略)
+[![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#宿主支持与版本策略)
 
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.0 有限发布。** 仅支持 DSH `0.2.1-rc.2` + Web Profile + Chrome。
-> Desktop macOS/Windows、Web Edge 和其他 DSH 版本均不支持，会被直接拒绝。发布产物必须与
-> 已提交的验收 evidence 绑定；`prepublish-check` 会拒绝不匹配的字节。
+> **发布状态：0.1.0 有限发布。** 仅支持 DSH `0.2.1-rc.2` + Web Profile + Chrome 155。
+> Desktop macOS/Windows 与 Web Edge 不在支持范围内，不提供保证；其他 DSH 版本会在安装/运行时
+> 被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝
+> 不匹配的字节。
 
 [English](README.md) · 中文
 
@@ -75,11 +76,13 @@
 |---|---|
 | DSH 版本 | 仅 `0.2.1-rc.2` |
 | Profile | Web Profile |
-| 浏览器 | Chrome（client target Chrome 120+，实测 Chrome 155） |
-| Desktop macOS/Windows、Web Edge、其他 DSH 版本 | 不支持；安装与运行时都会拒绝，然后回退 stock |
+| 浏览器 | Chrome 155（唯一认证版本；其他 Chrome 版本不保证） |
+| Desktop macOS/Windows、Web Edge | 不支持、不保证；同版本 Desktop/Edge 可能加载，但不在认证范围内 |
+| 其他 DSH 版本 | 不支持；安装/运行时会被拒绝并回退 stock |
 
-没有兼容模式。其他宿主版本会在安装时被拒绝，运行时不匹配的 payload / preview 也会被拒绝。可被机器
-检查的正式范围在仓库的 `contracts/dsh/support-matrix.json`；验收证据见
+没有兼容模式。其他宿主版本会在安装时被拒绝，运行时不匹配的 payload / preview 也会被拒绝。
+Profile 和浏览器是支持边界，不是运行时门禁：同一 DSH 版本下的 Desktop/Edge 可能加载，但不在认证
+范围内，不提供保证。可被机器检查的正式范围在仓库的 `contracts/dsh/support-matrix.json`；验收证据见
 [docs/verification.md](docs/verification.md)。
 
 ## 安装
@@ -130,7 +133,7 @@ dsh web                                 # 打开命令输出的地址
 
 ## 开发
 
-要求：Node `^22.23.1 || ^24.21.0`，pnpm 12。
+要求：Node `^22.23.1`，pnpm 12。
 
 ```bash
 pnpm install

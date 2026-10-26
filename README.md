@@ -1,17 +1,18 @@
 # DSH Livery (dsh-livery)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome-6d6df6.svg)](#host-support-and-version-policy)
+[![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#host-support-and-version-policy)
 
 A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio with
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
 > **Release status: 0.1.0 limited release.** Supported exactly for DSH
-> `0.2.1-rc.2` + Web Profile + Chrome. Desktop macOS/Windows, Web Edge and other
-> DSH builds are not supported and are rejected. The publishable artifact is bound
-> to committed acceptance evidence; `prepublish-check` refuses mismatched bytes.
+> `0.2.1-rc.2` + Web Profile + Chrome 155. Desktop macOS/Windows and Web Edge are
+> outside the supported scope (no support or guarantee). Other DSH builds are
+> rejected at install/runtime and fail closed. The publishable artifact is bound to
+> committed acceptance evidence; `prepublish-check` refuses mismatched bytes.
 
 English · [中文](README.zh-CN.md)
 
@@ -92,11 +93,14 @@ deliberately narrow:
 |---|---|
 | DSH build | `0.2.1-rc.2` only |
 | Profile | Web Profile |
-| Browser | Chrome (Chrome 120+ client target; tested on Chrome 155) |
-| Desktop macOS/Windows, Web Edge, older/newer DSH builds | Not supported; rejected at install and runtime, then fail closed to stock |
+| Browser | Chrome 155 (the only certified browser version; other Chrome versions are not guaranteed) |
+| Desktop macOS/Windows, Web Edge | Not supported, no guarantee; same-version Desktop/Edge may load but are outside certification |
+| Older/newer DSH builds | Not supported; rejected at install/runtime and fail closed to stock |
 
 There is no compatibility mode. A different host version is rejected at install
-time; a mismatched runtime payload or preview is rejected at runtime. The formal
+time; a mismatched runtime payload or preview is rejected at runtime. Profile and
+browser are support boundaries, not runtime gates: a Desktop/Edge session on the
+same DSH build is outside certification and receives no guarantee. The formal
 machine-checked scope lives in the repository at `contracts/dsh/support-matrix.json`;
 see [docs/verification.md](docs/verification.md) for the accepted evidence.
 
@@ -155,7 +159,7 @@ not remove the wallpaper.
 
 ## Development
 
-Requirements: Node `^22.23.1 || ^24.21.0`, pnpm 12.
+Requirements: Node `^22.23.1`, pnpm 12.
 
 ```bash
 pnpm install
