@@ -107,10 +107,9 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Verified
 
-- Published candidate artifact `dsh-livery-0.1.0.tgz` sha256
-  `6e58d4158d607824139aa8d70a0aa424bc4f68aea45f113a3ca21c1023df4172` (1,293,707 B, 163 files), accepted on commit `5323ad8e972f…`; matrix entry
-  promoted to `released` and bound to
-  `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`.
+- Published artifact `dsh-livery-0.1.0.tgz`; its exact sha256/bytes/commit are
+  recorded in `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`. The matrix entry
+  is `released` and bound to that evidence file.
 - Limited-release acceptance on the exact artifact: Web `0.2.1-rc.2` isolated full
   run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone
   **228 / 0 / 4 / 4** (Chrome 155, macOS arm64). Desktop macOS/Windows and Web
