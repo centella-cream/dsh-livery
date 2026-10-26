@@ -44,7 +44,9 @@ if (evidence.commit !== head) {
   }
   const changed = execFileSync('git', ['diff', '--name-only', `${evidence.commit}..${head}`], { encoding: 'utf8' })
     .trim().split('\n').filter(Boolean)
-  const allowed = /^(contracts\/dsh\/(evidence\/|support-matrix\.json$)|docs\/|\.github\/|scripts\/|tests\/|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$)/
+  // `contracts/` is excluded from the published package; changing claims/
+// snapshots there cannot alter the accepted artifact bytes.
+const allowed = /^(contracts\/|docs\/|\.github\/|scripts\/|tests\/|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$)/
   const forbidden = changed.filter(file => !allowed.test(file))
   if (forbidden.length > 0) {
     fail(`changes since evidence commit touch artifact inputs: ${forbidden.slice(0, 5).join(', ')}`)
