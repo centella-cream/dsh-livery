@@ -18,7 +18,6 @@
     "cordis.patch.yml",
     "schemas",
     "liveries",
-    "contracts",
     "README.md",
     "README.zh-CN.md",
     "NOTICE.md",
@@ -29,7 +28,12 @@
     "CONTRIBUTING.md",
     "CONTRIBUTING.zh-CN.md",
     "CODE_OF_CONDUCT.md",
-    "docs"
+    "docs",
+    "contracts/dsh/0.2.0-rc.2",
+    "contracts/dsh/0.2.1-rc.2",
+    "contracts/dsh/0.2.1-rc.3",
+    "contracts/dsh/support-matrix.json",
+    "contracts/dsh/support-matrix.proposed.json"
   ],
   "sideEffects": [
     "./lib/index.js",
