@@ -33,7 +33,11 @@ jobs:
     needs: candidate
     runs-on: ubuntu-latest
     steps:
+      # The artifact is built from the tag commit, but the released matrix and
+      # evidence live on the default branch (promotion happens after acceptance).
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
@@ -50,6 +54,8 @@ jobs:
       - name: Verify the downloaded bytes (no rebuild)
         run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz
       - name: Bind candidate to acceptance evidence
+        env:
+          RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
         run: |
           if [ ! -f .tmp/candidate/release-manifest.json ]; then
             echo "release-manifest.json missing from candidate artifact" >&2

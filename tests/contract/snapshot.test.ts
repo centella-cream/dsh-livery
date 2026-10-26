@@ -111,10 +111,9 @@ describe('formal support matrix (round 15 narrowed release line)', () => {
     const entry = matrix.entries[0]!
     expect(entry.adapterId).toBe('dsh-0.2.1-rc.2-r1')
     expect(entry.contractHash).toBe((await readContract('0.2.1-rc.2')).contractHash)
-    // g6-approved while acceptance evidence is collected; promotion to released
-    // happens only in the release transaction with evidence.
-    expect(entry.status).toBe('g6-approved')
-    expect(entry.evidence).toEqual([])
+    // Promoted in the release transaction after the exact artifact was accepted.
+    expect(entry.status).toBe('released')
+    expect(entry.evidence).toEqual(['contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json'])
     expect(supportedProfiles(entry)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(entry)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
     expect(entry.profiles.web.chrome).toBe('passed')
@@ -125,20 +124,20 @@ describe('formal support matrix (round 15 narrowed release line)', () => {
   it('gates in-scope profiles only: g6-approved supports, missing/pending/failed fail, release needs released+evidence', async () => {
     const matrix = await readFormalMatrix(workspace)
     expect(gateSupportMatrix(matrix, '0.2.1-rc.2').ok).toBe(true)
-    // g6-approved may be generated for acceptance builds, but not released.
-    expect(gateRelease(matrix, '0.2.1-rc.2').ok).toBe(false)
-    expect(gateRelease(matrix, '0.2.1-rc.2').problems.some((problem) => problem.includes('Phase 6'))).toBe(true)
+    expect(gateRelease(matrix, '0.2.1-rc.2').ok).toBe(true)
+    // Pre-promotion state: g6-approved may be generated but not released.
+    const approved: SupportMatrix = {
+      ...matrix,
+      entries: [{ ...matrix.entries[0]!, status: 'g6-approved', evidence: [] }],
+    }
+    expect(gateSupportMatrix(approved, '0.2.1-rc.2').ok).toBe(true)
+    expect(gateRelease(approved, '0.2.1-rc.2').ok).toBe(false)
+    expect(gateRelease(approved, '0.2.1-rc.2').problems.some((problem) => problem.includes('Phase 6'))).toBe(true)
     // Historical snapshots are not in the formal matrix and cannot ship.
     for (const version of ['0.2.0-rc.2', '0.2.1-rc.3']) {
       expect(gateSupportMatrix(matrix, version).ok).toBe(false)
       expect(gateRelease(matrix, version).ok).toBe(false)
     }
-
-    const released: SupportMatrix = {
-      ...matrix,
-      entries: [{ ...matrix.entries[0]!, status: 'released', evidence: ['artifacts/acceptance/probe.json'] }],
-    }
-    expect(gateRelease(released, '0.2.1-rc.2').ok).toBe(true)
   })
 
   it('keeps the full historical candidate matrix for the certification trail', async () => {

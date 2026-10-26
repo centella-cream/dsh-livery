@@ -72,8 +72,15 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Changed
 
-- Plugin version is fixed at **`0.1.0` (unreleased)**; tarball
+- Plugin version is fixed at **`0.1.0`**; published tarball
   `dsh-livery-0.1.0.tgz`.
+- **Stable limited release (round 15):** support scope narrowed to DSH
+  `0.2.1-rc.2` + Web Profile + Chrome; production adapters/catalog/stock are
+  generated only from the formal released matrix (one adapter, one profile).
+  Compatibility mode removed; unknown versions fail closed. Release workflow
+  builds a candidate from the tag, verifies the downloaded artifact and evidence
+  on the default branch, and publishes the same accepted bytes; `private` is
+  off with `prepublishOnly` bound to the committed evidence.
 - **Release pipeline (round 14 follow-up):** the release workflow now builds and
   uploads the candidate tarball first, then runs support/release gates on the
   same candidate identity; `gate:release -- --all` requires every packaged adapter
@@ -100,16 +107,18 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Verified
 
-- Candidate artifact `dsh-livery-0.1.0.tgz` sha256
-  `6f0910a43e100d6cde71039021074aa7d905af6bac98e4fdb729ed9a77f88bdd` (1,521,511 B, 259 files).
-- Four-target acceptance on the previous runtime `45c8f217…` (current candidate hardening is pending re-acceptance): Web `0.2.1-rc.2` isolated full
-  run 228/0/3/2, real-profile clone 229/0/3/4, Desktop `0.2.1-rc.3` packaged
-  carrier 228/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
-  profile (DSH Livery footer, recent-wallpaper history with cached blob re-apply,
-  auto online batch, no console errors).
-- Repo gates: `tsc` clean, 692 tests (1 optional skip), 204 generated files /
-  2 catalog profiles in sync, all token/CSS/contrast audits, loader-ABI 12/12,
-  `adapter:check`, `pack:check` (see `docs/verification.md` for evidence notes).
+- Published candidate artifact `dsh-livery-0.1.0.tgz` sha256
+  `6e58d4158d607824139aa8d70a0aa424bc4f68aea45f113a3ca21c1023df4172` (1,293,707 B, 163 files), accepted on commit `5323ad8e972f…`; matrix entry
+  promoted to `released` and bound to
+  `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`.
+- Limited-release acceptance on the exact artifact: Web `0.2.1-rc.2` isolated full
+  run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone
+  **228 / 0 / 4 / 4** (Chrome 155, macOS arm64). Desktop macOS/Windows and Web
+  Edge are explicitly not-supported.
+- Repo gates: `tsc` clean, 721 tests (1 optional skip), 103 generated files /
+  1 catalog profile in sync, all token/CSS/contrast audits, loader-ABI 8/8,
+  `adapter:check`, `pack:check`, both release gates OK on the accepted artifact,
+  `verify:evidence` and `prepublish-check` OK.md` for evidence notes).
 
 ### Known limitations
 

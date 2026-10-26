@@ -4,6 +4,11 @@
 Chrome. Desktop macOS/Windows, Web Edge and every other DSH build are explicitly
 **not supported** by this release line and are rejected at install/runtime.
 
+Published candidate artifact: `dsh-livery-0.1.0.tgz`
+sha256 `6e58d4158d607824139aa8d70a0aa424bc4f68aea45f113a3ca21c1023df4172` (1,293,707 B, 163 files), accepted on commit
+`5323ad8e972f…`. `pnpm gate:support-matrix -- --all` and
+`pnpm gate:release -- --all` pass for this matrix entry.
+
 Evidence for the published artifact is committed at
 [`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`](../contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json).
 That file records the exact candidate tarball sha256, bytes, commit, scope and

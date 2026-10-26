@@ -90,6 +90,7 @@ try {
   // Every frozen snapshot remains committed even when it is not shipped.
   for (const entry of await readdir(join(root, 'contracts', 'dsh'), { withFileTypes: true })) {
     if (!entry.isDirectory()) continue
+    if (entry.name === 'evidence') continue
     if (!existsSync(join(root, 'contracts', 'dsh', entry.name, 'contract.json'))) {
       problems.push(`contracts/dsh/${entry.name}/contract.json is missing (historical snapshots must stay on disk)`)
     }

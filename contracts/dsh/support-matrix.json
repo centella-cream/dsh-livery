@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-26T00:00:00.000Z",
+  "updatedAt": "2026-10-26T10:54:40.989Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
       "adapterId": "dsh-0.2.1-rc.2-r1",
       "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-      "status": "g6-approved",
+      "status": "released",
       "profiles": {
         "desktop": {
           "macos": "not-supported",
@@ -24,7 +24,9 @@
         }
       ],
       "clientTarget": "chrome120",
-      "evidence": [],
+      "evidence": [
+        "contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json"
+      ],
       "notes": [
         "Round-15 narrowed release target: DSH 0.2.1-rc.2 + Web Profile + Chrome only.",
         "Desktop macOS/Windows and Web Edge are explicitly not-supported for this release line, not pending claims.",
