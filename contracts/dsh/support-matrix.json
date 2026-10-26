@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-26T13:32:00.000Z",
+  "updatedAt": "2026-10-26T10:54:40.989Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -32,28 +32,6 @@
         "Desktop macOS/Windows and Web Edge are explicitly not-supported for this release line, not pending claims.",
         "Status g6-approved while the release-tranche acceptance evidence is being collected; promotion to released happens in the release transaction only after that evidence exists."
       ]
-    },
-    {
-      "hostVersion": "0.2.1-rc.3",
-      "adapterId": "dsh-0.2.1-rc.3-r1",
-      "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-      "status": "released",
-      "profiles": {
-        "desktop": {
-          "macos": "passed",
-          "win32": "not-supported"
-        },
-        "web": {
-          "chrome": "not-supported",
-          "edge": "not-supported"
-        }
-      },
-      "browserSupport": [],
-      "clientTarget": "chrome120",
-      "evidence": [
-        "contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json"
-      ],
-      "notes": "Desktop app macOS only; Windows/Web Edge not-supported."
     }
   ]
 }

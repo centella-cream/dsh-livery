@@ -2,18 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#host-support-and-version-policy)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20limited%20release-6d6df6.svg)](#host-support-and-version-policy)
 
 A visual styling plugin for DeepSeek Harness: 24 styles built on a frozen contract, a
 wallpaper studio with online image search and blur/frost effects, and a style
 gallery. It ships as a plugin that adds a visual layer **instead of taking over
 the host theme**.
 
-> **Release status: 0.1.0 limited release.** Supported exactly for:
-> DSH `0.2.1-rc.2` + Web Profile + Chrome, and DSH `0.2.1-rc.3` Desktop app on
-> macOS. Desktop Windows, Web Edge and all other DSH builds are not supported and
-> are rejected. The published artifact is bound to the committed evidence files;
-> `prepublish-check` refuses mismatched bytes.
+> **Release status: 0.1.0 limited release.** Supported exactly for DSH
+> `0.2.1-rc.2`, Web Profile, Chrome. Desktop macOS/Windows, Web Edge and other DSH
+> builds are not supported and are rejected. The published artifact is the one
+> bound to the committed evidence file; `prepublish-check` refuses mismatched bytes.
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -78,18 +77,19 @@ survives DSH updates.
 
 ## Host support and version policy
 
-`engines.dsh` is the exact allowlist **`0.2.1-rc.2 || 0.2.1-rc.3`**. The
-supported scope for this release line is deliberately narrow:
+`engines.dsh` is the exact version **`0.2.1-rc.2`**. The supported scope for
+this release line is deliberately narrow:
 
 | Scope | Value |
 |---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome (Chrome 120+ target; tested on Chrome 155) |
-| DSH `0.2.1-rc.3` | Desktop app on macOS (real Electron renderer) |
-| Everything else | Not installed and not supported; runtime fails closed to stock |
+| DSH build | `0.2.1-rc.2` only |
+| Profile | Web Profile |
+| Browser | Chrome (Chrome 120+ client target; tested on Chrome 155) |
+| Desktop macOS/Windows, Web Edge, older/newer DSH builds | Not installed and not supported; the runtime fails closed to stock |
 
-There is no compatibility mode. Any other host version is rejected at install
+There is no compatibility mode. A different host version is rejected at install
 time; a mismatched runtime payload/preview is rejected at runtime. The formal,
-machine-checked scope lives in `contracts/dsh/support-matrix.json` (repository)
+machine-checked scope lives in [contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json)
 and the evidence in [docs/verification.md](docs/verification.md).
 
 ![Style differences](docs/assets/style-differences.jpg)
@@ -104,11 +104,10 @@ dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # open the printed URL
 ```
 
-### Desktop Profile (0.2.1-rc.3, macOS)
+### Desktop Profile (0.2.1-rc.3)
 
 Install through the DeepSeek Harness Desktop app's plugin manager. The app runtime
-enforces `engines.dsh` at install time; this release supports the macOS Desktop app
-only. Disable any other theme/skin bundle before applying a visual style.
+enforces `engines.dsh` at install time.
 
 ## Uninstall
 

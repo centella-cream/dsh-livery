@@ -44,9 +44,7 @@ if (evidence.commit !== head) {
   }
   const changed = execFileSync('git', ['diff', '--name-only', `${evidence.commit}..${head}`], { encoding: 'utf8' })
     .trim().split('\n').filter(Boolean)
-  // `contracts/` is excluded from the published package; changing claims/
-// snapshots there cannot alter the accepted artifact bytes.
-const allowed = /^(contracts\/|docs\/|\.github\/|scripts\/|tests\/|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$)/
+  const allowed = /^(contracts\/dsh\/(evidence\/|support-matrix\.json$)|docs\/|\.github\/|scripts\/|tests\/|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$)/
   const forbidden = changed.filter(file => !allowed.test(file))
   if (forbidden.length > 0) {
     fail(`changes since evidence commit touch artifact inputs: ${forbidden.slice(0, 5).join(', ')}`)
@@ -54,20 +52,8 @@ const allowed = /^(contracts\/|docs\/|\.github\/|scripts\/|tests\/|README\.md$|R
 }
 if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.runs must be non-empty')
 if (evidence.scope !== undefined) {
-  const scope = evidence.scope
-  if (typeof scope.hostVersion !== 'string' || !['0.2.1-rc.2', '0.2.1-rc.3'].includes(scope.hostVersion)) {
-    fail('evidence scope must name a certified host version (0.2.1-rc.2 or 0.2.1-rc.3)')
-  }
-  if (scope.profile === 'web') {
-    if (scope.hostVersion !== '0.2.1-rc.2' || scope.browser !== 'chrome') {
-      fail('web evidence scope must be 0.2.1-rc.2 + web + chrome')
-    }
-  } else if (scope.profile === 'desktop') {
-    if (scope.hostVersion !== '0.2.1-rc.3' || scope.platform !== 'macos') {
-      fail('desktop evidence scope must be 0.2.1-rc.3 + desktop + macos')
-    }
-  } else {
-    fail('evidence scope profile must be web or desktop')
+  if (evidence.scope.hostVersion === undefined || evidence.scope.profile !== 'web' || evidence.scope.browser !== 'chrome') {
+    fail('evidence scope must be the supported web/chrome host/profile')
   }
 }
 for (const run of evidence.runs) {

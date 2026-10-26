@@ -167,10 +167,8 @@ describe.skipIf(!COMPILED)('generated adapter registry', () => {
       const first = group[0]
       if (first === undefined) throw new Error(`empty profile group ${profileId}`)
       for (const other of group.slice(1)) {
-        // A shared profile is defined by the token/presentation contract the
-        // compiler renders from; layout hashes may differ per host build without
-        // changing the compiled livery CSS.
         expect(other.tokenHash, profileId).toBe(first.tokenHash)
+        expect(other.layoutHash, profileId).toBe(first.layoutHash)
         expect(other.capabilities, profileId).toEqual(first.capabilities)
       }
     }

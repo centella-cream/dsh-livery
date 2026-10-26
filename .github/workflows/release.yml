@@ -9,7 +9,11 @@ jobs:
   candidate:
     runs-on: ubuntu-latest
     steps:
+      # Evidence commits are older than the tag and must be reachable locally;
+      # a shallow clone makes `git merge-base --is-ancestor` fail.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
@@ -38,6 +42,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
@@ -55,16 +60,14 @@ jobs:
         run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz
       - name: Bind candidate to acceptance evidence
         env:
-          RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
+          RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
         run: |
           if [ ! -f .tmp/candidate/release-manifest.json ]; then
             echo "release-manifest.json missing from candidate artifact" >&2
             exit 1
           fi
           if [ -n "${RELEASE_EVIDENCE:-}" ]; then
-            for evidence in $RELEASE_EVIDENCE; do
-              pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz --evidence "$evidence"
-            done
+            pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz --evidence "$RELEASE_EVIDENCE"
           else
             echo "No acceptance evidence supplied; release evidence binding is required before promotion." >&2
             exit 1
@@ -82,6 +85,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 12.3.4
@@ -99,7 +103,6 @@ jobs:
       - name: Verify the downloaded candidate against committed evidence
         run: |
           pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
-          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
           pnpm gate:support-matrix -- --all
           pnpm gate:release -- --all
       - name: Publish the exact accepted tarball

@@ -455,7 +455,7 @@ export async function checkCatalog(ctx) {
     runner.skip(
       'previews.profile-isolation',
       'previews are served per catalog profile; another profile directory is not exposed',
-      'both certified adapters share exactly one catalog profile — cross-profile isolation is not applicable',
+      'narrowed release ships exactly one certified catalog profile — cross-profile isolation is not applicable',
     )
   }
 

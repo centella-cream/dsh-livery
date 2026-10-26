@@ -10,11 +10,7 @@
   "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
   "nodeRange": "^24.21.0",
   "clientTarget": "chrome120",
-  "verifiedProfiles": [
-    "desktop"
-  ],
-  "verifiedPlatforms": [
-    "darwin"
-  ],
+  "verifiedProfiles": [],
+  "verifiedPlatforms": [],
   "verifiedBrowsers": []
 }

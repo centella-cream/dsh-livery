@@ -2,14 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#宿主支持与版本策略)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20limited%20release-6d6df6.svg)](#宿主支持与版本策略)
 
 **DeepSeek Harness 的视觉风格插件**：24 套受契约约束的风格、带在线图片搜索和虚化/磨砂效果的壁纸工作室，
 以及按风格分组的画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.0 有限发布。** 仅支持：DSH `0.2.1-rc.2` + Web Profile + Chrome，
-> 以及 DSH `0.2.1-rc.3` Desktop（macOS）。Desktop Windows、Web Edge 和其他 DSH 版本均不支持，
-> 会被直接拒绝。发布产物必须与已提交的 evidence 文件绑定；`prepublish-check` 会拒绝不匹配的字节。
+> **发布状态：0.1.0 有限发布。** 仅支持 DSH `0.2.1-rc.2` + Web Profile + Chrome。
+> Desktop macOS/Windows、Web Edge 和其他 DSH 版本均不支持，会被直接拒绝。发布产物必须与
+> 已提交的 evidence 文件绑定；`prepublish-check` 会拒绝不匹配的字节。
 
 [English](README.md) · [中文](README.zh-CN.md)
 
@@ -58,16 +58,17 @@ DSH 更新后容易失效的原因。DSH Livery 选择了相反的取舍：
 
 ## 宿主支持与版本策略
 
-`engines.dsh` 是精确允许列表 **`0.2.1-rc.2 || 0.2.1-rc.3`**。这一发布线的支持范围刻意收窄：
+`engines.dsh` 是精确版本 **`0.2.1-rc.2`**。这一发布线的支持范围刻意收窄：
 
 | 范围 | 取值 |
 |---|---|
-| DSH `0.2.1-rc.2` | Web Profile + Chrome（client target Chrome 120+，实测 Chrome 155） |
-| DSH `0.2.1-rc.3` | Desktop 应用，macOS（真实 Electron 渲染器） |
-| 其他 | 不安装、不支持；运行时回退 stock |
+| DSH 版本 | 仅 `0.2.1-rc.2` |
+| Profile | Web Profile |
+| 浏览器 | Chrome（client target Chrome 120+，实测 Chrome 155） |
+| Desktop macOS/Windows、Web Edge、其他 DSH 版本 | 不安装、不支持；运行时回退 stock |
 
 没有兼容模式。其他宿主版本会在安装时被拒绝，运行时不匹配的 payload/preview 也会被拒绝。可被机器检查的正式
-范围见 `contracts/dsh/support-matrix.json`（仓库内），证据见
+范围见 [contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json)，证据见
 [docs/verification.md](docs/verification.md)。
 
 ![风格差异](docs/assets/style-differences.jpg)
@@ -82,9 +83,9 @@ dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
 dsh web                                 # 打开命令输出的地址
 ```
 
-### Desktop Profile（0.2.1-rc.3，macOS）
+### Desktop Profile（0.2.1-rc.3）
 
-通过 DeepSeek Harness Desktop 应用的插件管理器安装；应用运行时会强制校验 `engines.dsh`。本版本只支持 macOS Desktop；应用视觉风格前请先停用其他皮肤/主题插件。
+通过 DeepSeek Harness Desktop 应用的插件管理器安装；应用运行时会强制校验 `engines.dsh`。
 
 ## 卸载
 
