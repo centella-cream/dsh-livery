@@ -15,28 +15,12 @@ host theme takeover.
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery in the real Web profile, with the dsh-charter session open](docs/assets/hero-en.jpg)
+![DSH Livery's Visual Style page](docs/assets/hero-en.jpg)
 
-## Real demo: dsh-charter
-
-The screenshots use a real Web profile running **dsh-charter**, the bilingual
-session-charter plugin for DSH (English/Chinese), not an unrelated demo project:
-
-- [dsh-charter on GitHub](https://github.com/centella-cream/dsh-charter) · [README.zh.md](https://github.com/centella-cream/dsh-charter/blob/main/README.zh.md)
-- The screenshots show its **Charter** tab with a demo charter record, and Livery
-  applied around it.
-
-![Six selected styles: Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night](docs/assets/styles-en.jpg)
-
-## Why another skin plugin is different
-
-| Typical skin plugin | DSH Livery |
-|---|---|
-| Takes over `ctx.theme`, registers theme ids, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
-| Paints window chrome | Draws no chrome; the host owns the window |
-| Broad selector CSS that breaks when the host refactors | Token-only CSS plus a body-scoped wallpaper layer; no host component selectors |
-| Breaks after DSH updates | Exact-version support matrix; unknown hosts fail closed instead of guessing |
-| "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits and committed acceptance evidence |
+All screenshots come from a real Web profile. The style montage and the
+wallpaper-coverage image use [dsh-charter](https://github.com/centella-cream/dsh-charter)
+— a separate bilingual session-charter plugin — as an example of another plugin's
+page being styled; the rest show DSH Livery's own UI.
 
 ## Features
 
@@ -52,10 +36,10 @@ session-charter plugin for DSH (English/Chinese), not an unrelated demo project:
   Openverse (CC0/PDM), draw another random batch, or load the next one. Local image
   upload (stored in IndexedDB) and https URLs are also supported. Effects: blur
   0–24 px, dim 0–70 %, frost 0–100 %, and a global atmosphere overlay that keeps the
-  wallpaper visible on **every** plugin page — including dsh-charter's Charter tab.
-  Both layers are viewport-relative `cover`, so portrait, ultrawide and resized
-  windows crop instead of distorting. Network requests start when you open the tab
-  or take an explicit action; your choices stay local.
+  wallpaper visible on **every** plugin page. Both layers are viewport-relative
+  `cover`, so portrait, ultrawide and resized windows crop instead of distorting.
+  Network requests start when you open the tab or take an explicit action; your
+  choices stay local.
 - **Card-based studio with one type scale.** Both pages use responsive cards. The
   style page pairs a current-style card with a gallery card and an Actions /
   Self-check rail; the wallpaper page has a preview, a search-first online card, a
@@ -69,9 +53,35 @@ session-charter plugin for DSH (English/Chinese), not an unrelated demo project:
 - **Missing features are reported.** Missing host capabilities and unverified modes
   are shown in the self-check instead of being faked.
 
+## Styles
+
+![Six selected styles over the dsh-charter page](docs/assets/styles-en.jpg)
+
+Six of the 24 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
+These captures render on the [dsh-charter](https://github.com/centella-cream/dsh-charter)
+Charter page to show how a complete, real plugin page looks when styled; dsh-charter
+is a separate bilingual project, not the subject of this README.
+
+## Wallpapers
+
 ![Wallpaper studio: Aurora, Tokyo Night style, tuned blur/frost/atmosphere](docs/assets/wallpaper-studio-en.jpg)
 
-![Aurora wallpaper visible across the dsh-charter page](docs/assets/wallpaper-coverage-en.jpg)
+![Aurora wallpaper over the dsh-charter Charter page](docs/assets/wallpaper-coverage-en.jpg)
+
+The studio page on the left is DSH Livery's own UI. The second capture shows the
+same Aurora wallpaper applied over the
+[dsh-charter](https://github.com/centella-cream/dsh-charter) Charter page, as an
+example of another plugin's surface staying covered.
+
+## Why another skin plugin is different
+
+| Typical skin plugin | DSH Livery |
+|---|---|
+| Takes over `ctx.theme`, registers theme ids, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
+| Paints window chrome | Draws no chrome; the host owns the window |
+| Broad selector CSS that breaks when the host refactors | Token-only CSS plus a body-scoped wallpaper layer; no host component selectors |
+| Breaks after DSH updates | Exact-version support matrix; unknown hosts fail closed instead of guessing |
+| "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits and committed acceptance evidence |
 
 ## Host support and version policy
 
@@ -122,7 +132,7 @@ Open the left sidebar and click **Visual Style** above the Workspaces section:
   draw another batch, pick one of 24 built-in designs, upload a local image or paste
   an https URL, then tune blur/dim/frost/atmosphere. Choices are stored in the
   browser and survive restarts; the global atmosphere keeps them visible on other
-  plugin pages such as dsh-charter.
+  plugin pages too.
 
 Applying a style and applying a wallpaper are independent: switching styles does
 not remove the wallpaper.
