@@ -173,6 +173,10 @@ export function createPresenter(
     adoptBootStyle(skin: SkinCss): boolean {
       const element = bootStyle()
       if (element === null) return false
+      // The declared hash alone is not proof: verify the actual stylesheet text
+      // before taking the zero-write path. A corrupted or replaced boot style
+      // falls back to the normal one-batch apply below.
+      if (element.textContent !== skin.cssText) return false
       element.id = TOKEN_STYLE_ID
       element.dataset.plugin = PLUGIN_MARKER
       element.dataset.pluginCss = TOKEN_CSS_FILE

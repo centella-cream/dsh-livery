@@ -11,12 +11,16 @@ evidence for the **unreleased `0.1.0`** package and how to reproduce it. Raw
 screenshots/probes are generated locally under `artifacts/` (not committed).
 
 Shipped artifact: `dsh-livery-0.1.0.tgz`
-sha256 `2013f40c9fb9dfdff32a6db7c85ad2f61510f3086d92dc0c4049e3fc614b665d`
+sha256 `6f0910a43e100d6cde71039021074aa7d905af6bac98e4fdb729ed9a77f88bdd`
 (551,026 B). After the matrix run the tarball was repacked once for a README/docs-only
 change; `lib/index.js`, `lib/client.js` and all runtime assets are byte-identical to
 the accepted `45c8f217436d…` artifact, so the results below apply unchanged.
 
-## Host matrix (release 0.1.0 — unreleased)
+Candidate artifact identity: `2f541d42…` (259 files, 1,521,093 bytes). The earlier
+`45c8f217…`/`2013f40c…` hashes refer to runtime-identical accepted builds; they are
+kept only as provenance and are not separate shipped artifacts.
+
+## Host matrix (candidate 0.1.0 — unreleased)
 
 | Target | Result | What it covers |
 |---|---|---|
@@ -179,7 +183,7 @@ releases.
 
 ## Repo gates on the same tree
 
-- `tsc --noEmit` clean, `vitest run` 690 tests green (1 optional skip).
+- `tsc --noEmit` clean, `vitest run` 692 tests green (1 optional skip).
 - `liveries:check`: 24 styles across 2 catalog profiles.
 - Token coverage: 0 missing; contrast: 2,832 assertions per profile, 0 failures.
 - Per-livery CSS under the 12 KiB hard cap; **client gzip 36,333 B** (48 KiB
@@ -196,7 +200,7 @@ The internal packaging labels `pkg-0.1.0` (this release line), `pkg-0.2.2`,
 released versions**. They are kept locally for reproducibility only; no public
 release history precedes 0.1.0. Two earlier candidate packs were dead on arrival (empty `vivid` family /
 stale installed bytes) and were never accepted;
-the shipped bytes are the `bbe991ba…` tarball above.
+the current candidate packaging is the `2f541d42…` tarball above.
 
 ## Reproduce
 

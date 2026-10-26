@@ -181,6 +181,15 @@ describe('wallpaper stylesheet builder', () => {
     expect(immersiveOnly).toContain('body[data-dsh-wallpaper]::before')
   })
 
+  it('drops decorative layers under forced-colors and reduced-transparency', () => {
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'aurora' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+    })
+    expect(css).toContain('@media (forced-colors: active)')
+    expect(css).toContain('@media (prefers-reduced-transparency: reduce)')
+  })
+
   it('keeps both layers viewport-relative (cover/center, blur bleed, no fixed aspect)', () => {
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'ocean' },

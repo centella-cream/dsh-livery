@@ -30,7 +30,7 @@ changes. DSH Livery makes the opposite trade:
 | Takes over `ctx.theme`, registers themes, calls `setTheme` | Emits one scoped semantic token pair per style; never registers or owns a host theme |
 | Paints window chrome (title bars, overlays) | Draws no chrome; the host owns the window |
 | Wide selector-based CSS that breaks when the host refactors | CSS built only from tokens, plus a body-scoped wallpaper layer; no host component selectors |
-| Breaks or half-works after DSH updates | A certified matrix for exact builds, plus compatibility mode for newer in-range builds; clearly labelled, never a hard break |
+| Breaks or half-works after DSH updates | A measured candidate matrix for exact builds, plus a compatibility mode for newer in-range builds; clearly labelled, never a hard break |
 | "Trust me" theming | Frozen contract hashes, loader-ABI checks, contrast/CSS audits and a published acceptance matrix |
 
 The result is a visual system you can check, not just a stylesheet: 24 styles
@@ -172,7 +172,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 
 ## Verification
 
-Current certified matrix (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
+Current candidate evidence (unreleased 0.1.0): Web `0.2.1-rc.2` isolated full run and a
 real-profile clone; Desktop `0.2.1-rc.3` packaged web carrier and real Electron
 renderer. Repo gates include `tsc`, 680+ tests, contrast/token/CSS audits, loader ABI
 and package checks. Raw evidence is generated locally under `artifacts/` and is not

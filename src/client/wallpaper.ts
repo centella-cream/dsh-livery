@@ -292,6 +292,18 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
       + `background-image:${image};background-size:cover;background-position:center;filter:blur(${blur}px);`
       + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
   }
+  // OS accessibility modes: never paint the wallpaper over the app. The glass
+  // effects are decorative and can hide or tint content in forced-colors mode.
+  const decorativeSelectors = `body[${WALLPAPER_ATTRIBUTE}]::before,body[${WALLPAPER_ATTRIBUTE}]::after`
+    + (atmosphere > 0 ? `,.${WALLPAPER_OVERLAY_CLASS}` : '')
+  rules.push(
+    `@media (forced-colors: active){${decorativeSelectors}{display:none}`
+    + `body[${WALLPAPER_ATTRIBUTE}]{background-color:revert}}`,
+  )
+  rules.push(
+    `@media (prefers-reduced-transparency: reduce){${decorativeSelectors}{display:none}`
+    + `body[${WALLPAPER_ATTRIBUTE}]{background-color:revert}}`,
+  )
   const tokens = input.tokens
   if (tokens !== undefined) {
     const light = tokenOverrides(`body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`, tokens.light, tokens.frost)

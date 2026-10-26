@@ -74,6 +74,16 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0` (unreleased)**; tarball
   `dsh-livery-0.1.0.tgz`.
+- **Release pipeline (round 14 follow-up):** the release workflow now builds and
+  uploads the candidate tarball first, then runs support/release gates on the
+  same candidate identity; `gate:release -- --all` requires every packaged adapter
+  to have a released matrix entry. `prepublishOnly` runs both gates against all
+  adapters, and `pack:candidate` produces the inspected tarball manifest.
+- **Runtime hardening (unit-tested, pending four-target re-acceptance):** boot
+  stylesheet text is verified before zero-write adoption; wallpaper does not start
+  on a rejected handshake; page tabs have roving focus, arrow/Home/End keys, and
+  cancel an active preview when leaving the style tab; wallpaper layers hide under
+  `forced-colors` and `prefers-reduced-transparency`.
 - **Release posture (round 14):** no build has passed G6, so the project is a
   release candidate, not a release. README/support wording now says candidate /
   draft and the compatibility range is explicitly not a support guarantee. The
@@ -90,14 +100,14 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Verified
 
-- Final artifact `dsh-livery-0.1.0.tgz` sha256
-  `2013f40c9fb9dfdff32a6db7c85ad2f61510f3086d92dc0c4049e3fc614b665d` (551,026 B, 233 files).
-- Four-target acceptance on the final artifact: Web `0.2.1-rc.2` isolated full
+- Candidate artifact `dsh-livery-0.1.0.tgz` sha256
+  `6f0910a43e100d6cde71039021074aa7d905af6bac98e4fdb729ed9a77f88bdd` (1,521,511 B, 259 files).
+- Four-target acceptance on the previous runtime `45c8f217…` (current candidate hardening is pending re-acceptance): Web `0.2.1-rc.2` isolated full
   run 228/0/3/2, real-profile clone 229/0/3/4, Desktop `0.2.1-rc.3` packaged
   carrier 228/0/3/2, real Electron renderer 27/0/1; live final-build QA on the real
   profile (DSH Livery footer, recent-wallpaper history with cached blob re-apply,
   auto online batch, no console errors).
-- Repo gates: `tsc` clean, 690 tests (1 optional skip), 204 generated files /
+- Repo gates: `tsc` clean, 692 tests (1 optional skip), 204 generated files /
   2 catalog profiles in sync, all token/CSS/contrast audits, loader-ABI 12/12,
   `adapter:check`, `pack:check` (see `docs/verification.md` for evidence notes).
 

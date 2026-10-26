@@ -517,20 +517,30 @@ async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, releas
     typeof parsed.flags.matrix === 'string'
       ? resolve(context.cwd, parsed.flags.matrix)
       : join(context.cwd, 'contracts', 'dsh', 'support-matrix.proposed.json')
-  const version = typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2'
+  const all = parsed.flags.all === true || parsed.flags.all === 'true'
   const matrix = await readMatrix(matrixPath)
-  const result = release ? gateRelease(matrix, version) : gateSupportMatrix(matrix, version)
+  const versions = all
+    ? (await readCommittedSnapshots(context.cwd)).map((entry) => entry.hostVersion)
+    : [typeof parsed.flags.version === 'string' ? parsed.flags.version : '0.2.0-rc.2']
   const artifactsDir = join(context.cwd, 'artifacts', 'release')
   await mkdir(artifactsDir, { recursive: true })
+  const results = versions.map((version) => release ? gateRelease(matrix, version) : gateSupportMatrix(matrix, version))
+  const output = all ? { generatedAt: new Date().toISOString(), matrix: matrixPath, results } : results[0]
   await writeFile(
-    join(artifactsDir, release ? `gate-release-${version}.json` : `gate-matrix-${version}.json`),
-    `${JSON.stringify(result, null, 2)}\n`,
+    join(artifactsDir, release ? `gate-release-${all ? 'all' : versions[0]}.json` : `gate-matrix-${all ? 'all' : versions[0]}.json`),
+    `${JSON.stringify(output, null, 2)}\n`,
   )
-  if (!result.ok) {
-    for (const problem of result.problems) context.error(`${release ? 'gate:release' : 'gate:support-matrix'}: BLOCKED ${problem}`)
-    return 1
+  let failed = false
+  for (const result of results) {
+    if (!result.ok) {
+      failed = true
+      for (const problem of result.problems) {
+        context.error(`${release ? 'gate:release' : 'gate:support-matrix'}: BLOCKED ${result.version}: ${problem}`)
+      }
+    }
   }
-  context.log(`${release ? 'gate:release' : 'gate:support-matrix'}: OK ${version}`)
+  if (failed) return 1
+  context.log(`${release ? 'gate:release' : 'gate:support-matrix'}: OK ${versions.join(', ')}`)
   return 0
 }
 

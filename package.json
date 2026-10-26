@@ -105,8 +105,9 @@
     "contract:regenerate": "node scripts/cli.mjs contract:regenerate",
     "contract:extract-desktop": "node scripts/prepare-desktop-contract.mjs",
     "test:browser": "node tests/browser/run.mjs",
-    "release:check": "node scripts/cli.mjs gate:support-matrix && node scripts/cli.mjs gate:release && node scripts/release-check.mjs",
-    "prepublishOnly": "pnpm release:check"
+    "release:check": "node scripts/cli.mjs gate:support-matrix -- --all && node scripts/cli.mjs gate:release -- --all && node scripts/release-check.mjs",
+    "prepublishOnly": "pnpm release:check",
+    "pack:candidate": "node scripts/release-check.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",

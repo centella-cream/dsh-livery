@@ -120,6 +120,17 @@ describe('host boot style adoption', () => {
     expect(doc.body.getAttribute('data-dsh-livery')).toBe('fjord')
   })
 
+  it('rejects a boot element whose declared hash does not match its actual text', () => {
+    const { doc, presenter } = setup()
+    const boot = doc.createElement('style')
+    boot.id = 'dsh-livery-boot'
+    boot.textContent = 'host{color:red}'
+    doc.head.appendChild(boot)
+    doc.body.setAttribute('data-dsh-livery', 'fjord')
+    doc.body.setAttribute('data-dsh-livery-hash', FJORD.hash)
+    expect(presenter.adoptBootStyle(FJORD)).toBe(false)
+  })
+
   it('reports false when the host element is missing (caller falls back to one batch)', () => {
     const { presenter } = setup()
     expect(presenter.adoptBootStyle(FJORD)).toBe(false)

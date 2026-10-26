@@ -11,7 +11,7 @@
  * visibility); every skin decision lives in the runtime and every DOM write
  * outside React lives in the presenter.
  */
-import { useCallback, useEffect, useId, useMemo, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Button, Modal, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   isStock,
@@ -69,9 +69,29 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
   const [previewLocaleChoice, setPreviewLocaleChoice] = useState<PreviewLocaleChoice>('follow')
   const [tab, setTabState] = useState<PageTab>(() => initialTab ?? rememberedPageTab() ?? 'style')
   const tabIdBase = useId()
+  const tabRefs = useRef<Record<PageTab, HTMLButtonElement | null>>({ style: null, wallpaper: null })
   const setTab = (next: PageTab): void => {
     setTabState(next)
     rememberPageTab(next)
+  }
+  const activateTab = (next: PageTab): void => {
+    // Preview controls live on the style tab; leaving it must cancel the
+    // preview instead of keeping an invisible style change active.
+    if (next !== 'style' && runtime.getSnapshot().phase === 'previewing') runtime.cancelPreview()
+    setTab(next)
+  }
+  const onTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
+    const order: PageTab[] = ['style', 'wallpaper']
+    const index = order.indexOf(tab)
+    let next: PageTab | undefined
+    if (event.key === 'ArrowRight') next = order[(index + 1) % order.length]
+    else if (event.key === 'ArrowLeft') next = order[(index + order.length - 1) % order.length]
+    else if (event.key === 'Home') next = order[0]
+    else if (event.key === 'End') next = order[order.length - 1]
+    if (next === undefined) return
+    event.preventDefault()
+    activateTab(next)
+    tabRefs.current[next]?.focus()
   }
 
   // Theme observation and preview rollback live exactly as long as the page.
@@ -140,7 +160,10 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
             data-testid={`livery-page-tab-${id}`}
             aria-selected={tab === id}
             aria-controls={`${tabIdBase}-panel-${id}`}
-            onClick={() => setTab(id)}
+            tabIndex={tab === id ? 0 : -1}
+            ref={element => { tabRefs.current[id] = element }}
+            onClick={() => activateTab(id)}
+            onKeyDown={onTabKeyDown}
           >
             {t(id === 'style' ? 'tab.style' : 'tab.wallpaper')}
           </button>

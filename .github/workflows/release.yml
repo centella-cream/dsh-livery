@@ -1,4 +1,4 @@
-name: release-gates
+name: release-candidate
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  gates:
+  candidate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,11 +19,34 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
-      - run: pnpm gate:support-matrix
-      - run: pnpm gate:release
-      - run: pnpm release:check
-      - name: Upload tarball manifest
+      - name: Build and inspect the real tarball
+        run: pnpm pack:candidate
+      - name: Upload candidate tarball + manifest
         uses: actions/upload-artifact@v4
         with:
-          name: release-manifest
-          path: .tmp/release-check/release-manifest.json
+          name: dsh-livery-candidate
+          path: |
+            .tmp/release-check/*.tgz
+            .tmp/release-check/release-manifest.json
+
+  release-gates:
+    needs: candidate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Enforce every packaged adapter against the formal matrix
+        run: |
+          pnpm gate:support-matrix -- --all
+          pnpm gate:release -- --all
+      # Publishing is intentionally not automated here. A controlled release
+      # first downloads the exact candidate artifact above, binds it to
+      # acceptance evidence, promotes the reviewed matrix entry, then re-runs
+      # both gates on the same bytes before a separate publish job.

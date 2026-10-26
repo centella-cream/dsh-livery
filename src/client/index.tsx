@@ -152,8 +152,9 @@ export function apply(ctx: Context): void {
 
   // Wallpaper is a client-only layer: mounted at plugin scope (not page scope) so
   // it survives navigation/reloads and is torn down only when the plugin unloads.
-  // It never reads or writes host configuration or the boot payload.
-  ctx.effect(() => {
+  // A rejected handshake must keep the whole visual layer stock, including a
+  // persisted wallpaper, so the controller only starts for a non-mismatched boot.
+  if (boot.kind !== 'mismatch') ctx.effect(() => {
     const wallpaper = createWallpaperController()
     setWallpaperController(wallpaper)
     const syncLiveryTokens = (): void => {
