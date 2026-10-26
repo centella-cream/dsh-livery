@@ -424,8 +424,8 @@ export function renderMarkdown(report, { title } = {}) {
   )
   lines.push('')
   lines.push(
-    `**Scope (explicit):** DSH ${ACCEPTANCE_SCOPE.hostVersion} + Web Profile + Chrome only. ` +
-      'Desktop macOS/Windows and Web Edge are not-supported for this release line and are not claimed by this evidence.',
+    `**Scope (explicit):** this run covers DSH ${ACCEPTANCE_SCOPE.hostVersion} + Web Profile + Chrome only. ` +
+      'The DSH 0.2.1-rc.3 Desktop/macOS target is covered by separate desktop Electron evidence; Windows and Web Edge are not-supported and not claimed.',
   )
   lines.push('')
   lines.push('## Environment')

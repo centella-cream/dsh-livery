@@ -13,15 +13,22 @@
  */
 
 /**
- * The single shipped/certified host build for this release line:
- * DSH 0.2.1-rc.2 + Web Profile + Chrome (formal matrix g6-approved).
- * Desktop macOS/Windows and Web Edge are explicitly not-supported and are not
- * claimed by this harness.
+ * Dual-scope release: DSH 0.2.1-rc.2 on the Web Profile/Chrome, and
+ * DSH 0.2.1-rc.3 on the Desktop Profile/macOS (real Electron renderer).
+ * Windows and Web Edge are explicitly not-supported and are not claimed.
+ * Both adapters share the same catalog profile.
  */
 export const ACCEPTANCE_SCOPE = Object.freeze({
   hostVersion: '0.2.1-rc.2',
   profile: 'web',
   browser: 'chrome',
+})
+
+/** Desktop-profile evidence scope (rc.3 Electron renderer on macOS). */
+export const DESKTOP_SCOPE = Object.freeze({
+  hostVersion: '0.2.1-rc.3',
+  profile: 'desktop',
+  platform: 'macos',
 })
 
 const CAPABILITIES_021 = Object.freeze({
@@ -47,6 +54,16 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',
+    capabilities: CAPABILITIES_021,
+  }),
+  Object.freeze({
+    hostVersion: '0.2.1-rc.3',
+    adapterId: 'dsh-0.2.1-rc.3-r1',
+    contractHash: 'sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60',
+    catalogProfile: 'sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50',
+    nodeRange: '^24.21.0',
+    platformModules: 11,
+    sourceKind: 'packaged-app',
     capabilities: CAPABILITIES_021,
   }),
 ])

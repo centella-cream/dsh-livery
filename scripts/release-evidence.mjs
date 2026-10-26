@@ -52,8 +52,20 @@ if (evidence.commit !== head) {
 }
 if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.runs must be non-empty')
 if (evidence.scope !== undefined) {
-  if (evidence.scope.hostVersion === undefined || evidence.scope.profile !== 'web' || evidence.scope.browser !== 'chrome') {
-    fail('evidence scope must be the supported web/chrome host/profile')
+  const scope = evidence.scope
+  if (typeof scope.hostVersion !== 'string' || !['0.2.1-rc.2', '0.2.1-rc.3'].includes(scope.hostVersion)) {
+    fail('evidence scope must name a certified host version (0.2.1-rc.2 or 0.2.1-rc.3)')
+  }
+  if (scope.profile === 'web') {
+    if (scope.hostVersion !== '0.2.1-rc.2' || scope.browser !== 'chrome') {
+      fail('web evidence scope must be 0.2.1-rc.2 + web + chrome')
+    }
+  } else if (scope.profile === 'desktop') {
+    if (scope.hostVersion !== '0.2.1-rc.3' || scope.platform !== 'macos') {
+      fail('desktop evidence scope must be 0.2.1-rc.3 + desktop + macos')
+    }
+  } else {
+    fail('evidence scope profile must be web or desktop')
   }
 }
 for (const run of evidence.runs) {

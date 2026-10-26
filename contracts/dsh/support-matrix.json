@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-26T13:15:00.000Z",
+  "updatedAt": "2026-10-26T13:32:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -37,10 +37,10 @@
       "hostVersion": "0.2.1-rc.3",
       "adapterId": "dsh-0.2.1-rc.3-r1",
       "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-      "status": "g6-approved",
+      "status": "released",
       "profiles": {
         "desktop": {
-          "macos": "pending",
+          "macos": "passed",
           "win32": "not-supported"
         },
         "web": {
@@ -50,12 +50,10 @@
       },
       "browserSupport": [],
       "clientTarget": "chrome120",
-      "evidence": [],
-      "notes": [
-        "Round-17: Desktop DSH 0.2.1-rc.3 (macOS Electron) added to the formal release line at the user's request.",
-        "desktop.macos is pending until real Electron acceptance evidence is recorded; promotion to released happens in the release transaction after that evidence exists.",
-        "desktop.win32, web.chrome and web.edge are explicitly not-supported for this entry."
-      ]
+      "evidence": [
+        "contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json"
+      ],
+      "notes": "Desktop app macOS only; Windows/Web Edge not-supported."
     }
   ]
 }
