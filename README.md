@@ -167,10 +167,12 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
 
 ## Verification
 
-For the 0.1.0 limited release: Web `0.2.1-rc.2` isolated full run **227 pass /
-0 fail / 4 skip / 2 warn**, real-profile clone **228 / 0 / 4 / 4**, Chrome 155,
-macOS arm64. Repo gates include `tsc`, **713 tests (1 optional skip)**, contrast /
-token / CSS audits, loader ABI and package checks. The exact artifact is bound to
+For the 0.1.0 limited release: Web `0.2.1-rc.2` isolated full run and
+real-profile clone both pass with **0 failures** (Chrome 155, macOS arm64); the
+clone pass includes a documented clone-only dependency-repair warning. Exact
+counts and report hashes are in the committed evidence. Repo gates include `tsc`,
+**713 tests (1 optional skip)**, contrast / token / CSS audits, loader ABI and
+package checks. The exact artifact is bound to
 `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`. Details and known limitations:
 [docs/verification.md](docs/verification.md).
 
