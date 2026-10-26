@@ -16,7 +16,7 @@ Run `2026-10-26T15-25-51-965Z-isolated` · isolated DSH_HOME · **227 passed / 0
 | playwright-core | 1.63.0 |
 | target package | dsh-livery@0.1.0 (`file:dsh-livery-0.1.0.tgz`) |
 | tarball sha256 | 877a6ec931e11b2e11300970ec49602e671590b519bef9597468375e94739628 |
-| commit | 8ceb1e3ca1cfef4b78461e35594d3a698d2ae9bb |
+| commit | 8dbf83acd5dbde45c3bdf8308be255f205cbbeee |
 | tarball bytes | 2144316 |
 | browser | headless Chrome, viewport 1440×900 |
 

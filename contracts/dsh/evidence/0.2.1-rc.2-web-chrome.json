@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "8ceb1e3ca1cfef4b78461e35594d3a698d2ae9bb",
+  "commit": "8dbf83acd5dbde45c3bdf8308be255f205cbbeee",
   "tarballSha256": "877a6ec931e11b2e11300970ec49602e671590b519bef9597468375e94739628",
   "tarballBytes": 2144316,
   "generatedAt": "2026-10-26T15:27:59.034Z",
@@ -22,7 +22,7 @@
         "warn": 2
       },
       "report": "contracts/dsh/evidence/reports/web-isolated-full.md",
-      "reportSha256": "bdf086d7c8f2c192fe1adec74648a538dbed7a2c92100fd9ac4e7055c1ae3817"
+      "reportSha256": "0da92138b3c0aff6895a75377dc649652fc1349b6765c33f2a052448c52c9885"
     },
     {
       "id": "web-real-profile-clone",
@@ -36,7 +36,7 @@
         "warn": 5
       },
       "report": "contracts/dsh/evidence/reports/web-real-profile-clone.md",
-      "reportSha256": "1a847ef88079d2050c6f5f3d5d7fc6e3ae2c4e9376b8877099d6000d635dba99"
+      "reportSha256": "2a55998713f9ccf4e942d4faee4d042c8c48fb8b937c32c8c3c0b010478e7398"
     }
   ]
 }
