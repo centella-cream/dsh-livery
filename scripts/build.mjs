@@ -251,16 +251,22 @@ async function main() {
   if (!existsSync(join(root, 'node_modules', 'esbuild'))) {
     throw new Error('node_modules is missing; run `pnpm install` first')
   }
+  const cliOnly = process.argv.includes('--cli-only')
   await ensureDir(join(root, 'lib'))
   await ensureDir(join(root, 'lib', 'cli'))
-  await ensureDir(join(root, 'lib', 'previews'))
-
-  // Remove stale artifacts from previous builds so drift is visible.
-  await rm(join(root, 'lib', 'cli'), { recursive: true, force: true })
-  await ensureDir(join(root, 'lib', 'cli'))
+  if (!cliOnly) {
+    await ensureDir(join(root, 'lib', 'previews'))
+    // Remove stale artifacts from previous builds so drift is visible.
+    await rm(join(root, 'lib', 'cli'), { recursive: true, force: true })
+    await ensureDir(join(root, 'lib', 'cli'))
+  }
 
   await buildNodeCli('src/compiler/cli.ts', 'lib/cli/compiler.js')
   await buildNodeCli('src/contract/cli.ts', 'lib/cli/contract.js')
+  if (cliOnly) {
+    console.log(`build:cli done in ${Date.now() - started}ms`)
+    return
+  }
   const compiled = await runCompiler('compile')
   if (compiled) {
     await buildHost()

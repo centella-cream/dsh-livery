@@ -74,6 +74,11 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0`**; published tarball
   `dsh-livery-0.1.0.tgz`.
+- **Release-workflow and upload-race hardening (round 18):** later release jobs build
+  only the gate CLIs (`pnpm build:cli`) so they work from a clean checkout without
+  rebuilding the candidate tgz; every wallpaper selection change (builtin, online,
+  URL, clear, recent restore) invalidates a pending local upload ticket, so a late
+  IndexedDB completion cannot roll the selection back.
 - **Stable limited release:** support scope is DSH `0.2.1-rc.2` + Web Profile +
   Chrome 155 on Node 22.23.1; Desktop/Edge are unsupported/no-guarantee (same-version
   sessions may load but are not certified), and only unsupported DSH builds are
@@ -125,7 +130,7 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   (Chrome 155, Node 22.23.1, macOS arm64; the extra clone warning is a clone-only
   dependency-repair warning). Chrome 155 and Node 22.23.1 are the only certified
   versions. Desktop macOS/Windows and Web Edge are unsupported/no-guarantee.
-- Repo gates: `tsc` clean, 713 tests (1 optional skip), 103 generated files /
+- Repo gates: `tsc` clean, 716 tests (1 optional skip), 103 generated files /
   1 catalog profile in sync, all token/CSS/contrast audits, loader-ABI 8/8,
   `adapter:check`, `pack:check`, both release gates OK on the accepted artifact,
   `verify:evidence` and `prepublish-check` OK.

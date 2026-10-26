@@ -19,6 +19,7 @@ import {
   remoteCacheKey,
 } from '../../src/client/wallpaper/cache.js'
 import { createWallpaperController } from '../../src/client/wallpaper/controller.js'
+import { commitSelection, createAsyncTicket } from '../../src/client/wallpaper/async-ticket.js'
 import type { WallpaperStorage } from '../../src/client/wallpaper/controller.js'
 import { DEFAULT_WALLPAPER_EFFECTS, WALLPAPER_STORAGE_KEY } from '../../src/client/wallpaper.js'
 import { WALLPAPER_STYLE_ID } from '../../src/client/wallpaper/apply.js'
@@ -263,5 +264,28 @@ describe('upload ordering and post-dispose mutations', () => {
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
     expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
     expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
+  })
+})
+
+
+describe('selection changes invalidate pending local uploads', () => {
+  it.each([
+    ['builtin', (tickets: ReturnType<typeof createAsyncTicket>, applied: string[]) => commitSelection(tickets, () => applied.push('builtin'))],
+    ['url', (tickets: ReturnType<typeof createAsyncTicket>, applied: string[]) => commitSelection(tickets, () => applied.push('url'))],
+    ['clear', (tickets: ReturnType<typeof createAsyncTicket>, applied: string[]) => commitSelection(tickets, () => applied.push('clear'))],
+  ])('ignores a delayed upload after selecting %s', async (_kind, select) => {
+    const tickets = createAsyncTicket()
+    const uploadTicket = tickets.next()
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const applied: string[] = []
+    const uploadCompletion = (async () => {
+      await gate
+      if (tickets.isCurrent(uploadTicket)) applied.push('upload')
+    })()
+    select(tickets, applied)
+    release()
+    await uploadCompletion
+    expect(applied).toEqual([_kind])
   })
 })

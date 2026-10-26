@@ -19,7 +19,7 @@ import {
   requestWallpaperResults,
   validateWallpaperUrl,
 } from '../wallpaper.js'
-import type { BuiltinWallpaperId, WallpaperEffects, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperUrlProblem } from '../wallpaper.js'
+import type { BuiltinWallpaperId, WallpaperEffects, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperSelection, WallpaperUrlProblem } from '../wallpaper.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
   clearRecentWallpapers,
@@ -29,7 +29,7 @@ import {
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
-import { createAsyncTicket } from '../wallpaper/async-ticket.js'
+import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
@@ -134,6 +134,15 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
   const uploadTickets = useRef(createAsyncTicket())
   const fileInput = useRef<HTMLInputElement | null>(null)
+  // Every selection-changing action invalidates a pending local upload: a
+  // late IndexedDB completion must never roll the visible/persisted selection
+  // back to an older upload.
+  const selectWallpaper = (selection: WallpaperSelection, blob?: Blob): void => {
+    commitSelection(uploadTickets.current, () => controller?.setSelection(selection, blob))
+  }
+  const clearWallpaper = (): void => {
+    commitSelection(uploadTickets.current, () => controller?.clear())
+  }
 
   useEffect(() => {
     mounted.current = true
@@ -202,12 +211,12 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       // wallpaper (A→B races must not switch the hero back to A).
       if (mounted.current) rememberBlob(url, result.record.blob)
       if (!mounted.current || !isCurrentRemoteSelection(controller?.getSnapshot().selection, url)) return
-      controller?.setSelection({ kind: 'remote', url }, result.record.blob)
+      selectWallpaper({ kind: 'remote', url }, result.record.blob)
     })()
   }
 
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
-    controller?.setSelection({ kind: 'remote', url: entry.url })
+    selectWallpaper({ kind: 'remote', url: entry.url })
     setAttribution({
       title: entry.title ?? t('wallpaper.customSelected'),
       creator: entry.creator ?? '',
@@ -221,7 +230,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       if (record !== undefined) {
         if (mounted.current) rememberBlob(entry.url, record.blob)
         if (mounted.current && isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
-          controller?.setSelection({ kind: 'remote', url: entry.url }, record.blob)
+          selectWallpaper({ kind: 'remote', url: entry.url }, record.blob)
         }
         return
       }
@@ -229,7 +238,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
         if (!result.ok || !mounted.current) return
         rememberBlob(entry.url, result.record.blob)
         if (isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
-          controller?.setSelection({ kind: 'remote', url: entry.url }, result.record.blob)
+          selectWallpaper({ kind: 'remote', url: entry.url }, result.record.blob)
         }
       })
     })()
@@ -277,13 +286,13 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   }, [recent.length])
 
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
-    controller?.setSelection({ kind: 'builtin', id })
+    selectWallpaper({ kind: 'builtin', id })
     setAttribution(undefined)
     setProblem(undefined)
     setUploadProblem(undefined)
   }
   const selectResult = (result: WallpaperRemoteResult): void => {
-    controller?.setSelection({ kind: 'remote', url: result.url })
+    selectWallpaper({ kind: 'remote', url: result.url })
     setAttribution({
       title: result.title,
       creator: result.creator,
@@ -308,7 +317,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       return
     }
     setProblem(undefined)
-    controller?.setSelection({ kind: 'remote', url: check.url })
+    selectWallpaper({ kind: 'remote', url: check.url })
     const source = new URL(check.url).hostname
     setAttribution({
       title: t('wallpaper.customSelected'), creator: '', license: '',
@@ -338,7 +347,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     setUploadProblem(undefined)
     setUploadSessionOnly(sessionOnly)
     setAttribution(undefined)
-    controller?.setSelection({ kind: 'upload', key }, file)
+    selectWallpaper({ kind: 'upload', key }, file)
   }
   const pickFiles = (files: FileList | null | undefined): void => {
     const file = files?.item(0)
@@ -406,7 +415,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   size="sm"
                   data-testid="wallpaper-clear"
                   disabled={selection === undefined}
-                  onClick={() => { controller?.clear(); setAttribution(undefined) }}
+                  onClick={() => { clearWallpaper(); setAttribution(undefined) }}
                 >
                   {t('wallpaper.clear')}
                 </Button>

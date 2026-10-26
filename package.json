@@ -107,13 +107,14 @@
     "contract:regenerate": "node scripts/cli.mjs contract:regenerate",
     "contract:extract-desktop": "node scripts/prepare-desktop-contract.mjs",
     "test:browser": "node tests/browser/run.mjs",
-    "release:check": "node scripts/cli.mjs gate:support-matrix -- --all && node scripts/cli.mjs gate:release -- --all && node scripts/release-check.mjs",
+    "release:check": "pnpm build:cli && node scripts/cli.mjs gate:support-matrix -- --all && node scripts/cli.mjs gate:release -- --all && node scripts/release-check.mjs",
     "prepublishOnly": "node scripts/prepublish-check.mjs",
     "pack:candidate": "node scripts/release-check.mjs",
     "verify:artifact": "node scripts/release-check.mjs",
     "verify:evidence": "node scripts/release-evidence.mjs",
     "promote:release": "node scripts/promote-release.mjs",
-    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json"
+    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.0.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json",
+    "build:cli": "node scripts/build.mjs --cli-only"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",

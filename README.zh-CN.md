@@ -156,7 +156,7 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # 薄封装
 
 0.1.0 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**
 （Chrome 155，macOS arm64）；克隆运行包含一项仅限克隆环境的依赖修复警告。精确计数和报告哈希见
-已提交的 evidence。仓库门禁包括 `tsc`、**713 个测试（1 个可选跳过）**、对比度 / token / CSS 审计、
+已提交的 evidence。仓库门禁包括 `tsc`、**716 个测试（1 个可选跳过）**、对比度 / token / CSS 审计、
 loader ABI 和打包检查。精确产物绑定到 `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`。
 详细说明和已知限制见 [docs/verification.md](docs/verification.md)。
 

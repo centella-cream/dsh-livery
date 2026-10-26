@@ -11,6 +11,16 @@ export interface AsyncTicket {
   invalidate(): void
 }
 
+/**
+ * Commit a user selection and invalidate every pending async upload. Any later
+ * upload completion must not overwrite the newly selected wallpaper, regardless
+ * of selection kind (builtin, remote, upload or clear).
+ */
+export function commitSelection(tickets: AsyncTicket, apply: () => void): void {
+  tickets.invalidate()
+  apply()
+}
+
 /** Create one ticket source. */
 export function createAsyncTicket(): AsyncTicket {
   let current = 0
