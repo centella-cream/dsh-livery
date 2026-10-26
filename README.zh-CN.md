@@ -4,6 +4,8 @@
 [![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#宿主支持与版本策略)
 
+> **让你的 DSH 更赏心悦目，让每次使用都焕发生机。**
+
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 

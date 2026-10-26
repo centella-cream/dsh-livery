@@ -1,7 +1,7 @@
 {
   "name": "dsh-livery",
   "version": "0.1.0",
-  "description": "Contract-bound color, typography, surface and wallpaper liveries for DeepSeek Harness",
+  "description": "Make your DSH beautiful to look at and alive to use. Contract-bound color, typography, surface and wallpaper liveries for DeepSeek Harness.",
   "license": "MIT",
   "type": "module",
   "main": "./lib/index.js",

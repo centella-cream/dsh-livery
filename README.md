@@ -4,6 +4,8 @@
 [![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#host-support-and-version-policy)
 
+> **Make your DSH beautiful to look at — and alive to use.**
+
 A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio with
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
