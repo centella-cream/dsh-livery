@@ -5,7 +5,7 @@ Chrome. Desktop macOS/Windows, Web Edge and every other DSH build are explicitly
 **not supported** by this release line and are rejected at install/runtime.
 
 The published artifact is the exact tarball named in the committed evidence
-file below. Both release gates pass for its released matrix entry; `prepublish-check`
+file (including committed report markdown + sha256 checks). Both release gates pass for its released matrix entry; `prepublish-check`
 refuses to publish bytes that differ from that evidence.
 
 Evidence for the published artifact is committed at
@@ -15,7 +15,7 @@ That file records the exact candidate tarball sha256, bytes, commit, scope and
 per-run probe/report results. Release gates and `prepublish-check` refuse to
 publish bytes that do not match it.
 
-## Acceptance runs (candidate artifact)
+## Acceptance runs (accepted artifact)
 
 | Run | Environment | Result |
 |---|---|---|
@@ -52,6 +52,10 @@ bundle URL deviation, the accepted CSS-size target and clone-composition warning
 - Native OS DPI beyond `devicePixelRatio`, Windows, and browser engines other
   than Chrome.
 - Malicious/corrupted host payloads beyond the client's structural validation.
+- Uninstall residue: DSH keeps the plugin's `livery` config row after plugin
+  removal (by design of the host profile store). A stock value is harmless; a
+  non-stock value can be inherited on reinstall. This is documented in the
+  README/SUPPORT uninstall notes and is not counted as "zero residue".
 
 ## Reproduce
 

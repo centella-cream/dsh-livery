@@ -187,10 +187,6 @@ export const enUS = {
   'write.rolledBack': 'The preview was cancelled; the applied visual style is unchanged.',
 
   // Page states.
-  'state.compatMode': 'Compatibility mode (unverified)',
-  'state.compatModeBody': 'This DSH version is outside our full test range. The UI works, but styling has only basic support and is not certified.',
-  'check.compatMode': 'Compatibility mode',
-  'check.compatModeValue': 'Unverified ({hostVersion})',
   'state.loading': 'Loading visual styles…',
   'state.offlineTitle': 'Visual styles are unavailable right now',
   'state.offlineBody': 'Wallpapers and visual styles cannot load right now. Any applied style stays visible.',

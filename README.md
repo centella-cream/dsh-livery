@@ -109,6 +109,13 @@ dsh web                                 # open the printed URL
 Install through the DeepSeek Harness Desktop app's plugin manager. The app runtime
 enforces `engines.dsh` at install time.
 
+## Uninstall
+
+Use the DSH plugin manager to remove the plugin. DSH leaves the plugin's
+`livery` configuration row in the profile; reinstalling may therefore restore the
+last applied style. To avoid inheriting it, choose **Restore default appearance**
+before uninstalling, or remove the `livery` row from the profile configuration.
+
 ## Usage
 
 Open the left sidebar and click **视觉风格 / Visual Style** above the Workspace

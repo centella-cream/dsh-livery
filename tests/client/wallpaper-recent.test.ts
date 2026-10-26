@@ -228,3 +228,40 @@ describe('late cache results and dispose races', () => {
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
   })
 })
+
+describe('upload ordering and post-dispose mutations', () => {
+  it('lets only the newest async operation own the result', async () => {
+    const { createAsyncTicket } = await import('../../src/client/wallpaper/async-ticket.js')
+    const tickets = createAsyncTicket()
+    const first = tickets.next()
+    const second = tickets.next()
+    const applied: string[] = []
+    const completions = [first, second].reverse() // out-of-order: second resolves first
+    for (const ticket of completions) {
+      if (tickets.isCurrent(ticket)) applied.push(`upload-${ticket}`)
+    }
+    expect(applied).toEqual(['upload-2'])
+    tickets.invalidate()
+    expect(tickets.isCurrent(second)).toBe(false)
+  })
+
+  it('ignores every public mutation after dispose (no DOM/object URL/save writes)', () => {
+    const storage = new MemoryStorage()
+    const doc = new FakeDocument()
+    const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
+    const controller = createWallpaperController({ storage, document: doc as never, images: new FakeImages(), objectUrls: urls })
+    controller.start()
+    controller.dispose()
+    controller.setSelection({ kind: 'upload', key: 'upload-1-late' }, blob())
+    controller.setSelection({ kind: 'remote', url: 'https://cdn.example/late.jpg' })
+    controller.setEffects({ blur: 20, atmosphere: 80 })
+    controller.setTokens({ '--dsw-alias-bg-base': '#000000' }, { '--dsw-alias-bg-base': '#ffffff' })
+    controller.clear()
+    controller.start()
+    expect(urls.create).not.toHaveBeenCalled()
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
+    expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
+    expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+    expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
+  })
+})

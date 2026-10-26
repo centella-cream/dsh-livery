@@ -153,74 +153,6 @@ describe('bootIdentity', () => {
   })
 })
 
-describe('checkBoot — compatibility mode (in-range but uncertified host)', () => {
-  const newest = ADAPTER_IDENTITIES[0]!
-  function compatPayload(overrides = {}) {
-    return makeBootPayload({
-      hostVersion: '0.3.0-rc.1',
-      adapterId: 'dsh-compat',
-      contractHash: newest.contractHash,
-      catalogProfile: newest.catalogProfile,
-      compat: true,
-      ...overrides,
-    })
-  }
-
-  it('accepts a compat payload that names the newest certified contract/profile', () => {
-    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('valid')
-    expect(check.compat).toBe(true)
-    expect(check.adapter).toBeUndefined()
-    expect(check.reasons).toEqual([])
-    expect(bootIdentity(check)).toEqual({
-      hostVersion: '0.3.0-rc.1',
-      adapterId: 'dsh-compat',
-      contractHash: newest.contractHash,
-      catalogProfile: newest.catalogProfile,
-    })
-  })
-
-  it('rejects compat mode outside the declared range', () => {
-    for (const version of ['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1']) {
-      const check = checkBoot(compatPayload({ hostVersion: version }), ADAPTER_IDENTITIES)
-      expect(check.kind, version).toBe('mismatch')
-      expect(check.compat, version).toBeFalsy()
-    }
-  })
-
-  it('rejects a compat payload that names an unknown contract/profile', () => {
-    const check = checkBoot(compatPayload({ contractHash: 'sha256:unknown' }), ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('mismatch')
-    expect(check.reasons.join(' ')).toContain('compat payload')
-  })
-
-  it('accepts a catalog for the accepted compat identity', () => {
-    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
-    const expected = bootIdentity(check)
-    const catalog = {
-      ...makeCatalog(undefined, undefined, newest),
-      adapterId: 'dsh-compat',
-      hostVersion: '0.3.0-rc.1',
-    }
-    const result = checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected })
-    expect(result.catalog).toBeDefined()
-    expect(result.reasons).toEqual([])
-  })
-
-  it('rejects a compat catalog for a different profile', () => {
-    const check = checkBoot(compatPayload(), ADAPTER_IDENTITIES)
-    const catalog = {
-      ...makeCatalog(undefined, undefined, newest),
-      adapterId: 'dsh-compat',
-      hostVersion: '0.3.0-rc.1',
-      catalogProfile: `sha256:${'1'.repeat(64)}`,
-      previewsBase: expectedPreviewsBase(`sha256:${'1'.repeat(64)}`),
-    }
-    expect(checkCatalog(catalog, { adapters: ADAPTER_IDENTITIES, expected: bootIdentity(check) }).catalog)
-      .toBeUndefined()
-  })
-})
-
 describe('checkCatalog — certified identity + profile', () => {
   it('accepts a catalog for every certified adapter', () => {
     for (const adapter of ADAPTER_IDENTITIES) {
@@ -348,6 +280,9 @@ describe('catalog deep validation (malformed livery rows)', () => {
       row => { row.requiredCapabilities = 'theme-css' },
       row => { (row.audit as Record<string, unknown>).contrastFailures = 'none' },
       row => { (row.audit as Record<string, unknown>).cssSafety = { pass: true } },
+      row => { delete ((row.light as Record<string, unknown>).seeds as Record<string, unknown>).accent },
+      row => { (((row.audit as Record<string, unknown>).contrast as Array<Record<string, unknown>>)[0]!).ratio = 'high' },
+      row => { ((row.audit as Record<string, unknown>).degraded as Array<Record<string, unknown>>).push({ id: 'x', reason: 'y' }) },
     ]
     for (const corrupt of corruptions) {
       const raw = base()
@@ -356,6 +291,20 @@ describe('catalog deep validation (malformed livery rows)', () => {
       const check = checkCatalog(raw, expectation)
       expect(check.catalog, 'corruption should be rejected').toBeUndefined()
       expect(check.reasons.join(' ')).toContain('malformed livery entries')
+    }
+  })
+
+  it('rejects malformed catalog capability maps without throwing', () => {
+    for (const capabilities of [
+      { 'theme-css': null },
+      { 'theme-css': { id: 'theme-css', available: 'yes' } },
+      { 'theme-css': { id: 'other', available: true } },
+      { 'theme-css': 'available' },
+    ]) {
+      const raw = base()
+      raw.capabilities = capabilities
+      expect(() => checkCatalog(raw, expectation)).not.toThrow()
+      expect(checkCatalog(raw, expectation).catalog).toBeUndefined()
     }
   })
 

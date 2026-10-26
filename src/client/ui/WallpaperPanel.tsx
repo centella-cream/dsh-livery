@@ -29,6 +29,7 @@ import {
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
+import { createAsyncTicket } from '../wallpaper/async-ticket.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
@@ -131,6 +132,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const mounted = useRef(true)
   const seq = useRef(0)
   const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
+  const uploadTickets = useRef(createAsyncTicket())
   const fileInput = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -320,7 +322,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       setUploadProblem(check.problem)
       return
     }
-    setUploadProblem(undefined)
+    const ticket = uploadTickets.current.next()
     const key = `upload-${Date.now()}-${Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 10)}`
     let sessionOnly = imageStore === undefined
     if (imageStore !== undefined) {
@@ -330,6 +332,10 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
         sessionOnly = true
       }
     }
+    // A newer upload (or teardown) owns the result now: late completions must
+    // not change errors/attribution/selection.
+    if (!mounted.current || !uploadTickets.current.isCurrent(ticket)) return
+    setUploadProblem(undefined)
     setUploadSessionOnly(sessionOnly)
     setAttribution(undefined)
     controller?.setSelection({ kind: 'upload', key }, file)

@@ -1,7 +1,6 @@
 /**
- * Compatibility-mode UI: an uncertified-but-in-range host is surfaced honestly
- * (banner + summary tag + self-check row) while the handshake itself stays
- * Lead-owned.
+ * No compatibility backdoor: the client accepts exact certified triples only.
+ * A payload claiming `dsh-compat` is rejected and no compat UI exists.
  */
 import { describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -9,42 +8,57 @@ import { renderToStaticMarkup } from 'react-dom/server'
 vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
   const React = await import('react')
   type AnyProps = Record<string, unknown>
-  const passthrough = (tag: string) => (props: AnyProps) =>
-    React.createElement(tag, props as never)
   return {
-    Button: passthrough('button'),
-    Input: passthrough('input'),
-    Tag: passthrough('span'),
+    Button: (props: AnyProps) => React.createElement('button', props as never),
+    Input: (props: AnyProps) => React.createElement('input', props as never),
+    Tag: (props: AnyProps) => React.createElement('span', props as never),
     Modal: () => null,
     Toast: () => null,
     writeClipboard: async () => true,
   }
 })
-import { COMPAT_ADAPTER_ID } from '../../src/core/compat.js'
+import { checkBoot, checkCatalog, bootIdentity } from '../../src/client/handshake.js'
 import { LiveryPanelPage } from '../../src/client/LiveryPanelPage.js'
 import type { LiveryPanelPageProps } from '../../src/client/platform.js'
-import { SelfCheck } from '../../src/client/ui/SelfCheck.js'
-import { isCompatIdentity } from '../../src/client/ui/compat.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
-import { formatDiagnostics } from '../../src/client/diagnostics.js'
 import { enUS, zhCN } from '../../src/i18n/index.js'
-import { makeCatalog, TEST_ADAPTER } from './fixtures.js'
+import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
+import { adapterRecordOf, makeBootPayload, makeCatalog, TEST_ADAPTER } from './fixtures.js'
 
-type Dict = Record<string, string>
-type Translate = (key: string, params?: Record<string, unknown>) => string
+const IDENTITY = {
+  adapterId: TEST_ADAPTER.adapterId,
+  contractHash: TEST_ADAPTER.contractHash,
+  pluginVersion: '0.1.0',
+  hostVersion: TEST_ADAPTER.hostVersion,
+}
+const catalog = makeCatalog()
+const READY: LiveryRuntimeSnapshot = {
+  ...createInitialSnapshot(IDENTITY, { status: 'valid', reason: undefined, diagnostics: [] }),
+  phase: 'ready',
+  bootStatus: 'valid',
+  catalogStatus: 'ready',
+  catalog,
+  capabilities: catalog.capabilities,
+  catalogProfile: catalog.catalogProfile,
+  configStatus: 'ready',
+  writable: true,
+  confirmedId: 'fjord',
+  effectiveId: 'fjord',
+  locale: 'en',
+}
 
-function translate(dict: Dict): Translate {
-  return (key: string, params?: Record<string, unknown>): string => {
+function translate(dict: Record<string, string>): (key: string, params?: Record<string, unknown>) => string {
+  return (key, params) => {
     const template = dict[key] ?? `!${key}`
     if (params === undefined) return template
-    return template.replace(/\{(\w+)\}/g, (_match, name: string) => String(params[name] ?? `{${name}}`))
+    return template.replace(/\{(\w+)\}/g, (_match, name) => String(params[name] ?? `{${name}}`))
   }
 }
 
-function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
+function fakeRuntime(): LiveryRuntimeApi {
   return {
-    getSnapshot: () => snapshot,
+    getSnapshot: () => READY,
     subscribe: () => () => undefined,
     preview: () => false,
     cancelPreview: () => undefined,
@@ -56,121 +70,61 @@ function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
   }
 }
 
-const base = createInitialSnapshot(
-  {
-    adapterId: TEST_ADAPTER.adapterId,
-    contractHash: TEST_ADAPTER.contractHash,
-    pluginVersion: '0.1.0',
-    hostVersion: TEST_ADAPTER.hostVersion,
-  },
-  { status: 'valid', reason: undefined, diagnostics: [], catalogProfile: TEST_ADAPTER.catalogProfile },
-)
-const catalog = makeCatalog()
-
-function snapshotWith(adapterId: string, hostVersion: string): LiveryRuntimeSnapshot {
-  return {
-    ...base,
-    phase: 'ready',
-    bootStatus: 'valid',
-    catalogStatus: 'ready',
-    catalog,
-    capabilities: catalog.capabilities,
-    catalogProfile: catalog.catalogProfile,
-    configStatus: 'ready',
-    writable: true,
-    confirmedId: 'fjord',
-    effectiveId: 'fjord',
-    locale: 'en',
-    identity: { adapterId, contractHash: TEST_ADAPTER.contractHash, pluginVersion: '0.1.0', hostVersion },
-  }
-}
-
-const COMPAT = snapshotWith(COMPAT_ADAPTER_ID, '0.3.0')
-const CERTIFIED = snapshotWith(TEST_ADAPTER.adapterId, TEST_ADAPTER.hostVersion)
-
-function renderPage(snapshot: LiveryRuntimeSnapshot, dict: Dict = enUS as unknown as Dict): string {
-  const props = {
-    t: translate(dict),
-    runtime: fakeRuntime(snapshot),
-  } as unknown as LiveryPanelPageProps
-  return renderToStaticMarkup(<LiveryPanelPage {...props} />)
-}
-
-describe('compat identity helper', () => {
-  it('recognizes only the synthesized compat adapter id', () => {
-    expect(isCompatIdentity({ adapterId: COMPAT_ADAPTER_ID })).toBe(true)
-    expect(isCompatIdentity({ adapterId: TEST_ADAPTER.adapterId })).toBe(false)
-  })
-})
-
-describe('compatibility-mode notice', () => {
-  it('shows the unverified banner and summary tag on a compat host', () => {
-    const html = renderPage(COMPAT)
-    expect(html).toContain('data-testid="livery-compat-notice"')
-    expect(html).toContain('Compatibility mode (unverified)')
-    expect(html).toContain('outside our full test range')
-    expect(html).toContain('data-testid="livery-current"')
-    expect(html).toContain('data-testid="livery-current-card"')
-    // Banner + hero-card tag both carry the honest warning.
-    expect(html.match(/Compatibility mode \(unverified\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
+describe('compatibility mode is rejected (exact certified triples only)', () => {
+  it('rejects a dsh-compat payload even with an in-range version', () => {
+    const payload = makeBootPayload({
+      adapterId: 'dsh-compat',
+      hostVersion: '0.3.0-rc.1',
+      contractHash: TEST_ADAPTER.contractHash,
+      catalogProfile: TEST_ADAPTER.catalogProfile,
+      compat: true,
+    })
+    const check = checkBoot(payload, ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('mismatch')
+    expect(check.adapter).toBeUndefined()
+    expect(bootIdentity(check)).toBeUndefined()
+    expect(check.reasons.join(' ')).toContain('uncertified host build')
   })
 
-  it('localizes the compat notice in zh', () => {
-    const html = renderPage(COMPAT, zhCN as unknown as Dict)
-    expect(html).toContain('data-testid="livery-compat-notice"')
-    expect(html).toContain('兼容模式（未认证）')
-  })
-
-  it('does not show the compat notice on a certified host', () => {
-    const html = renderPage(CERTIFIED)
-    expect(html).not.toContain('data-testid="livery-compat-notice"')
-    expect(html).not.toContain('Compatibility mode (unverified)')
-  })
-
-  it('shows the compat row and one-line explanation in the self-check', () => {
-    const props = {
-      t: translate(enUS as unknown as Dict),
-      snapshot: COMPAT,
-      onCopyResult: () => undefined,
-      copyFailed: false,
-      defaultOpen: true,
+  it('rejects a compat-shaped catalog so the runtime falls back to degraded/stock', () => {
+    const raw = {
+      ...makeCatalog(),
+      adapterId: 'dsh-compat',
+      hostVersion: '0.3.0-rc.1',
     }
-    const html = renderToStaticMarkup(<SelfCheck {...props} />)
-    expect(html).toContain('data-testid="livery-compat-selfcheck"')
-    expect(html).toContain('Compatibility mode')
-    expect(html).toContain('Unverified (0.3.0)')
-    expect(html).toContain('outside our full test range')
+    const check = checkCatalog(raw, { adapters: ADAPTER_IDENTITIES })
+    expect(check.catalog).toBeUndefined()
+    expect(check.reasons.join(' ')).toContain('uncertified catalog identity')
   })
 
-  it('omits the compat row in the self-check on a certified host', () => {
-    const props = {
-      t: translate(enUS as unknown as Dict),
-      snapshot: CERTIFIED,
-      onCopyResult: () => undefined,
-      copyFailed: false,
-      defaultOpen: true,
+  it('still accepts the exact shipped certified pair', () => {
+    const shipped = ADAPTERS[0]!
+    const boot = checkBoot(makeBootPayload({
+      hostVersion: shipped.hostVersion,
+      adapterId: shipped.adapterId,
+      contractHash: shipped.contractHash,
+      catalogProfile: shipped.catalogProfile,
+    }), ADAPTER_IDENTITIES)
+    expect(boot.kind).toBe('valid')
+    const served = makeCatalog(undefined, adapterRecordOf(shipped).capabilities, shipped)
+    expect(checkCatalog(served, { adapters: ADAPTER_IDENTITIES, expected: bootIdentity(boot) }).catalog)
+      .toBeDefined()
+  })
+})
+
+describe('no compat UI copy or markers remain', () => {
+  it('renders no compat banner/tag/self-check row on a page', () => {
+    const props = { t: translate(enUS as unknown as Record<string, string>), runtime: fakeRuntime() } as unknown as LiveryPanelPageProps
+    const html = renderToStaticMarkup(<LiveryPanelPage {...props} />)
+    expect(html).not.toContain('livery-compat-notice')
+    expect(html).not.toContain('livery-compat-selfcheck')
+    expect(html).not.toMatch(/compat(?:ibility)? mode/i)
+  })
+
+  it('removed the dead i18n keys in both locales', () => {
+    for (const key of ['state.compatMode', 'state.compatModeBody', 'check.compatMode', 'check.compatModeValue']) {
+      expect(key in enUS, `en ${key}`).toBe(false)
+      expect(key in zhCN, `zh ${key}`).toBe(false)
     }
-    const html = renderToStaticMarkup(<SelfCheck {...props} />)
-    expect(html).not.toContain('data-testid="livery-compat-selfcheck"')
-  })
-})
-
-describe('compat diagnostics', () => {
-  it('marks the uncertified mode in the copyable report only on compat hosts', () => {
-    const compatReport = formatDiagnostics(translate(enUS as unknown as Dict) as never, COMPAT, 'en')
-    expect(compatReport).toContain('Compatibility mode: Unverified (0.3.0)')
-    const certifiedReport = formatDiagnostics(translate(enUS as unknown as Dict) as never, CERTIFIED, 'en')
-    expect(certifiedReport).not.toContain('Compatibility mode')
-  })
-})
-
-describe('compat dictionary keys', () => {
-  it('ships both locales and keeps the explanation localizable', () => {
-    expect(enUS['state.compatMode']).toBe('Compatibility mode (unverified)')
-    expect(zhCN['state.compatMode']).toBe('兼容模式（未认证）')
-    expect(enUS['check.compatMode']).toBe('Compatibility mode')
-    expect(zhCN['check.compatMode']).toBe('兼容模式')
-    expect(enUS['state.compatModeBody']).toContain('full test range')
-    expect(zhCN['state.compatModeBody']).toContain('完整测试范围')
   })
 })

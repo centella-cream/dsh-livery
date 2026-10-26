@@ -280,6 +280,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       }
     },
     setSelection: (next: WallpaperSelection, blob?: Blob) => {
+      if (disposed) return
       if (sameSelection(selection, next)) {
         // Same wallpaper, newly available local copy (e.g. cache finished after
         // apply): switch the rendered image without touching persistence.
@@ -297,6 +298,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       notify()
     },
     setEffects: (patch: Partial<WallpaperEffects>) => {
+      if (disposed) return
       const merged = clampEffects({ ...effects, ...patch })
       if (
         merged.blur === effects.blur && merged.dim === effects.dim
@@ -308,6 +310,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       notify()
     },
     clear: () => {
+      if (disposed) return
       if (selection === undefined) return
       selection = undefined
       replaceLocalImageUrl(undefined)
@@ -316,13 +319,14 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       notify()
     },
     setTokens: (light: TokenMap | undefined, dark: TokenMap | undefined) => {
+      if (disposed) return
       if (tokens.light === light && tokens.dark === dark) return
       tokens = { light, dark }
       apply()
     },
     getRenderImage: () => backgroundImageValue(selection, localImageUrl),
     start: () => {
-      if (started) return
+      if (disposed || started) return
       started = true
       hydrate()
       apply()

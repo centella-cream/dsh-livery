@@ -185,10 +185,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'write.rolledBack': '预览已取消，原来的视觉风格保持不变。',
 
   // Page states.
-  'state.compatMode': '兼容模式（未认证）',
-  'state.compatModeBody': '这个 DSH 版本不在完整测试范围内。界面可以正常使用，但样式只做了基础适配，未经过认证。',
-  'check.compatMode': '兼容模式',
-  'check.compatModeValue': '未认证（{hostVersion}）',
   'state.loading': '正在加载视觉风格…',
   'state.offlineTitle': '视觉风格暂时无法加载',
   'state.offlineBody': '暂时无法加载壁纸和视觉风格；已经应用的样式仍会显示。',

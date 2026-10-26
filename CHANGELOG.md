@@ -86,7 +86,15 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   same candidate identity; `gate:release -- --all` requires every packaged adapter
   to have a released matrix entry. `prepublishOnly` runs both gates against all
   adapters, and `pack:candidate` produces the inspected tarball manifest.
-- **Runtime hardening (unit-tested, pending four-target re-acceptance):** boot
+- **Final release hardening (round 16):** uploads use a monotonic ticket so a
+  late local upload cannot overwrite a newer one; all controller mutations are
+  no-ops after dispose; catalog validation covers capability values, light/dark
+  seeds and contrast/degraded internals; the client compat branch/UI/i18n keys and
+  the unused core compat module were removed. Evidence now includes committed
+  report markdown plus sha256 checks so a clean CI checkout can verify it; the
+  release workflow has a publish job that verifies and publishes the exact
+  downloaded candidate tarball. Uninstall config residue is documented.
+- **Runtime hardening (round 15):** boot
   stylesheet text is verified before zero-write adoption; wallpaper does not start
   on a rejected handshake; page tabs have roving focus, arrow/Home/End keys, and
   cancel an active preview when leaving the style tab; wallpaper layers hide under
@@ -114,10 +122,10 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
   run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone
   **228 / 0 / 4 / 4** (Chrome 155, macOS arm64). Desktop macOS/Windows and Web
   Edge are explicitly not-supported.
-- Repo gates: `tsc` clean, 721 tests (1 optional skip), 103 generated files /
+- Repo gates: `tsc` clean, 713 tests (1 optional skip), 103 generated files /
   1 catalog profile in sync, all token/CSS/contrast audits, loader-ABI 8/8,
   `adapter:check`, `pack:check`, both release gates OK on the accepted artifact,
-  `verify:evidence` and `prepublish-check` OK.md` for evidence notes).
+  `verify:evidence` and `prepublish-check` OK.
 
 ### Known limitations
 

@@ -21,7 +21,6 @@ import {
 import type { LiveryRuntimeSnapshot } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import { capabilityLabel } from './capability-names.js'
-import { isCompatIdentity } from './compat.js'
 
 /** Props of the self-check panel. */
 export interface SelfCheckProps {
@@ -99,14 +98,6 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
               <p className="livery-check__value">
                 {t('check.adapter')}: {snapshot.identity.adapterId}
               </p>
-              {isCompatIdentity(snapshot.identity) && (
-                <>
-                  <p className="livery-check__value" data-testid="livery-compat-selfcheck">
-                    {t('check.compatMode')}: {t('check.compatModeValue', { hostVersion: snapshot.identity.hostVersion })}
-                  </p>
-                  <p className="livery-check__value">{t('state.compatModeBody')}</p>
-                </>
-              )}
               <p className="livery-check__value">
                 {t('check.contract')}: {shortHash(snapshot.identity.contractHash)}
               </p>

@@ -21,7 +21,8 @@
         "skip": 4,
         "warn": 2
       },
-      "report": "artifacts/acceptance/pkg-0.1.0-r17/web-0.2.1-rc.2/report.md"
+      "report": "contracts/dsh/evidence/reports/web-isolated-full.md",
+      "reportSha256": "96e73d24b939028549970f7244ce68774b7a75a4cd686ade8f99d8bfc2e13e6a"
     },
     {
       "id": "web-real-profile-clone",
@@ -34,7 +35,8 @@
         "skip": 4,
         "warn": 4
       },
-      "report": "artifacts/acceptance/pkg-0.1.0-r17/web-real-profile-clone/report.md"
+      "report": "contracts/dsh/evidence/reports/web-real-profile-clone.md",
+      "reportSha256": "e2b3029b2ab5a81b37dbd45dc8b578581473700401a7c9f1a2a72536ede8806e"
     }
   ]
 }

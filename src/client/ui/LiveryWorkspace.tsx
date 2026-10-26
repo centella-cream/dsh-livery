@@ -24,7 +24,6 @@ import {
 import type { LiveryRuntimeApi, PreviewLocaleChoice } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import { capabilityList } from './capability-names.js'
-import { isCompatIdentity } from './compat.js'
 import { rememberedPageTab, rememberPageTab } from './tabs.js'
 import type { PageTab } from './tabs.js'
 import { Gallery } from './Gallery.js'
@@ -188,14 +187,6 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
             aria-labelledby={`${tabIdBase}-tab-style`}
             data-testid="livery-tabpanel-style"
           >
-            {isCompatIdentity(snapshot.identity) && (
-              <div className="livery-notice livery-notice--warn" data-testid="livery-compat-notice" role="status">
-                <div className="livery-notice__copy">
-                  <span className="livery-notice__title">{t('state.compatMode')}</span>
-                  <span className="livery-notice__body">{t('state.compatModeBody')}</span>
-                </div>
-              </div>
-            )}
       {loading && (
         <div className="livery-loading" data-testid="livery-loading" role="status">
           {t('state.loading')}
@@ -236,7 +227,6 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
                     <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>
                   )}
                   {degraded && <Tag tone="warning">{t('current.degraded')}</Tag>}
-                  {isCompatIdentity(snapshot.identity) && <Tag tone="warning">{t('state.compatMode')}</Tag>}
                   {snapshot.invalidSkinId !== undefined && (
                     <Tag tone="danger">{t('current.incompatible')}</Tag>
                   )}

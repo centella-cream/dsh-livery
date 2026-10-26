@@ -65,10 +65,15 @@ for (const run of evidence.runs) {
   if (typeof summary.fail !== 'number' || summary.fail !== 0) fail(`${run.id}: failing checks recorded`)
   if (run.tarballSha256 !== undefined && run.tarballSha256 !== digest) fail(`${run.id}: run was not executed on this tarball`)
   if (typeof run.report === 'string') {
+    let report
     try {
-      readFileSync(resolve(run.report))
+      report = readFileSync(resolve(run.report))
     } catch {
       fail(`${run.id}: report file is missing: ${run.report}`)
+    }
+    if (typeof run.reportSha256 === 'string') {
+      const hash = createHash('sha256').update(report).digest('hex')
+      if (hash !== run.reportSha256) fail(`${run.id}: report sha mismatch: file=${hash} evidence=${run.reportSha256}`)
     }
   }
 }
