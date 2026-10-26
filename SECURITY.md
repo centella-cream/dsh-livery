@@ -6,8 +6,8 @@
 |---|---|
 | `0.1.x` (limited release) | Yes |
 
-The supported scope (DSH `0.2.1-rc.2`, Web Profile, Chrome) is documented in
-[README.md](README.md#host-support-and-version-policy). Any other host version is
+The supported scope (DSH `0.2.1-rc.2` Web/Chrome and DSH `0.2.1-rc.3` Desktop/macOS)
+is documented in [README.md](README.md#host-support-and-version-policy). Any other host version is
 rejected at install time; at runtime, uncertified payloads/contracts fail closed to
 the stock appearance. There is no default compatibility fallback.
 

@@ -221,6 +221,27 @@ describe('support-matrix gates (round-15 profile semantics)', () => {
     expect(empty.problems.some((problem) => problem.includes('no supported profile'))).toBe(true)
   })
 
+  it('allows a g6-approved candidate to keep acceptance evidence pending without invalidating the matrix', () => {
+    // Round-17 shape: rc.3 candidate ships its adapter for acceptance with
+    // desktop.macos still pending; structural validation accepts it, the support
+    // gate blocks the claim until the profile passes.
+    const candidate = makeMatrix('g6-approved', {
+      desktop: { macos: 'pending', win32: 'not-supported' },
+      web: { chrome: 'not-supported', edge: 'not-supported' },
+    }, [])
+    expect(validateMatrix(candidate)).toEqual([])
+    const support = gateSupportMatrix(candidate, '0.2.0-rc.2')
+    expect(support.ok).toBe(false)
+    expect(support.problems.some((problem) => problem.includes('certification pending'))).toBe(true)
+    expect(gateRelease(candidate, '0.2.0-rc.2').ok).toBe(false)
+    // A released claim may never carry pending evidence.
+    const releasedPending = makeMatrix('released', {
+      desktop: { macos: 'pending', win32: 'not-supported' },
+      web: { chrome: 'not-supported', edge: 'not-supported' },
+    })
+    expect(validateMatrix(releasedPending).some((problem) => problem.includes('certification pending'))).toBe(true)
+  })
+
   it('requires Phase 6 release promotion plus evidence', () => {
     expect(gateRelease(makeMatrix('g6-approved'), '0.2.0-rc.2').ok).toBe(false)
     expect(gateRelease(makeMatrix('released'), '0.2.0-rc.2').ok).toBe(true)

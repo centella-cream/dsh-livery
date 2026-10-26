@@ -74,9 +74,10 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 - Plugin version is fixed at **`0.1.0`**; published tarball
   `dsh-livery-0.1.0.tgz`.
-- **Stable limited release (round 15):** support scope narrowed to DSH
-  `0.2.1-rc.2` + Web Profile + Chrome; production adapters/catalog/stock are
-  generated only from the formal released matrix (one adapter, one profile).
+- **Stable limited release (rounds 15-17):** support scope is DSH `0.2.1-rc.2` +
+  Web/Chrome and DSH `0.2.1-rc.3` Desktop/macOS; production adapters/catalog/stock are
+  generated only from the formal released matrix (two adapters sharing one catalog
+  profile).
   Compatibility mode removed; unknown versions fail closed. Release workflow
   builds a candidate from the tag, verifies the downloaded artifact and evidence
   on the default branch, and publishes the same accepted bytes; `private` is
@@ -116,12 +117,12 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 ### Verified
 
 - Published artifact `dsh-livery-0.1.0.tgz`; its exact sha256/bytes/commit are
-  recorded in `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`. The matrix entry
-  is `released` and bound to that evidence file.
-- Limited-release acceptance on the exact artifact: Web `0.2.1-rc.2` isolated full
-  run **227 pass / 0 fail / 4 skip / 2 warn**, real-profile clone
-  **228 / 0 / 4 / 4** (Chrome 155, macOS arm64). Desktop macOS/Windows and Web
-  Edge are explicitly not-supported.
+  recorded in the committed Web and Desktop evidence files. Both formal matrix
+  entries are `released` and bound to their evidence.
+- Limited-release acceptance on the exact artifact covers DSH `0.2.1-rc.2` Web
+  (isolated + real-profile clone) and DSH `0.2.1-rc.3` Desktop/macOS (real Electron
+  renderer). Exact counts and report hashes are in the committed evidence files.
+  Desktop Windows, Web Edge and other DSH versions are explicitly not-supported.
 - Repo gates: `tsc` clean, 713 tests (1 optional skip), 103 generated files /
   1 catalog profile in sync, all token/CSS/contrast audits, loader-ABI 8/8,
   `adapter:check`, `pack:check`, both release gates OK on the accepted artifact,
