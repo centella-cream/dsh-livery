@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-27T13:20:00.000Z",
+  "measuredFrom": {
+    "candidate": "dsh-livery-0.1.3.tgz",
+    "commit": "0b2a2c07e68d051898acf60eb62e60132611a2f9",
+    "chromeVersion": "156.0.8078.48",
+    "note": "catalog size and cold-start samples measured on the merged 0.1.3 candidate (c4d304a3) during task-72 acceptance; wallpaper-on samples via persisted-state reload probe"
+  },
+  "catalogJson": {
+    "bytes": 1313436,
+    "maxBytes": 1511424,
+    "headroomRatio": 0.15,
+    "method": "raw bytes of GET /livery/api/catalog in the isolated rc.2 Web run"
+  },
+  "coldStart": {
+    "off": {
+      "samplesMs": [
+        2435,
+        1214,
+        1918,
+        1615
+      ],
+      "p50Ms": 2435,
+      "p95Ms": 2435,
+      "observedSampleRangeMs": [
+        1214,
+        2435
+      ],
+      "method": "host cold boot ready (dsh web line) with stock/off wallpaper; conservative p50/p95 kept at the initial merged-candidate measurement, final-run observed samples recorded separately"
+    },
+    "on": {
+      "samplesMs": [
+        160,
+        171,
+        273
+      ],
+      "p50Ms": 171,
+      "p95Ms": 273,
+      "method": "wallpaper-on renderer cold paint: persisted state-v2 aurora wallpaper, hard reload to app-ready; totalMs samples (two runs had no paint-timing entry)"
+    }
+  },
+  "openverseCanary": {
+    "enabled": true,
+    "timeoutMs": 10000,
+    "blocking": false,
+    "note": "real third-party canary is warn/skip only"
+  }
+}

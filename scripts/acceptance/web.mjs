@@ -61,6 +61,8 @@ import {
   checkLiveryPanelFlow,
   checkLayoutStructure,
   checkVisualMatrix,
+  checkMergedFeatures,
+  checkPerformance,
   checkStockInitial,
   checkStyleContrast,
   checkWallpaperStudio,
@@ -453,6 +455,7 @@ async function main() {
       bootBaseUrl = bootHandle.baseUrl
       ctx.config.baseUrl = bootHandle.baseUrl
       ctx.runner.pass('lifecycle.boot', '`dsh --profile web --no-open --port 0` boots and prints its authenticated URL', `ready in ${bootHandle.readyMs}ms on port ${bootHandle.port}; log=${bootHandle.logPath}`, { url: redact(bootHandle.url), readyMs: bootHandle.readyMs, pid: bootHandle.pid })
+      ctx.state.bootReadyMs = bootHandle.readyMs
       const bootLog = bootHandle.logText()
       ctx.state.bootLogTail = bootLog.split('\n').slice(-40).join('\n')
       const skippedLines = bootLog.split('\n').filter((line) => /skipped|incompatible|warning/i.test(line)).slice(0, 12)
@@ -561,6 +564,8 @@ async function main() {
             ['style', async () => checkStyleContrast(ctx)],
             ['wallpaper', async () => checkWallpaperStudio(ctx)],
             ['visual', async () => checkVisualMatrix(ctx)],
+            ['merged', async () => checkMergedFeatures(ctx)],
+            ['perf', async () => checkPerformance(ctx)],
             ['restore', async () => checkRestoreStock(ctx)],
           ]
         : []),

@@ -79,6 +79,8 @@ import {
   readGallery,
   readPaintTimings,
   readThemeSnapshot,
+  openSettings,
+  closeSettings,
   waitForAppReady,
   waitForBootGraph,
 } from './browser.mjs'
@@ -528,6 +530,9 @@ async function main() {
     await page.route('https://api.openverse.org/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
+    await page.route('https://images.example.test/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG }),
+    )
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
     const desktopWallpaperInitial = await readWallpaperState(page)
@@ -550,6 +555,97 @@ async function main() {
         desktopWallpaper.overlay?.present === true,
       `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
     )
+    // ---------- merged 0.1.3: focal position, reduced transparency, floating surfaces ----------
+    await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/desktop.jpg')
+    await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/desktop.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+    await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForTimeout(400)
+    const desktopPosition = await page.evaluate(() => {
+      let stored = null
+      try { stored = JSON.parse(window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? 'null') } catch { stored = null }
+      const style = document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? ''
+      const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+      const hero = document.querySelector('[data-testid="wallpaper-hero-preview"]')
+      return {
+        stored,
+        styleHasTopLeft: /0%\s+0%/u.test(style),
+        overlayPosition: overlay ? getComputedStyle(overlay).backgroundPosition : null,
+        heroPosition: hero ? getComputedStyle(hero).backgroundPosition : null,
+        group: document.querySelector('[data-testid="wallpaper-position"]') !== null,
+      }
+    })
+    await captureScreenshot(page, path.join(screensDir, 'zh-position-desktop.png'), { label: 'desktop focal position top-left' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'position-top-left' }))
+    expect(
+      runner,
+      'desktop.position-remote',
+      'desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position',
+      desktopPosition.group === true &&
+        desktopPosition.stored?.schemaVersion === 2 &&
+        desktopPosition.stored?.position?.x === 0 && desktopPosition.stored?.position?.y === 0 &&
+        (desktopPosition.styleHasTopLeft || /0%\s+0%/u.test(String(desktopPosition.overlayPosition ?? '')) || /0%\s+0%/u.test(String(desktopPosition.heroPosition ?? ''))),
+      JSON.stringify(desktopPosition),
+    )
+    let desktopReduced = null
+    let desktopCdp = null
+    try {
+      desktopCdp = await page.context().newCDPSession(page)
+      await desktopCdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] })
+      await page.waitForTimeout(500)
+      desktopReduced = await page.evaluate(() => {
+        const card = document.querySelector('[data-testid="wallpaper-online-card"]')
+        const style = card ? getComputedStyle(card) : null
+        return {
+          media: matchMedia('(prefers-reduced-transparency: reduce)').matches,
+          backdrop: style?.backdropFilter ?? null,
+          background: style?.backgroundColor ?? null,
+        }
+      })
+      await captureScreenshot(page, path.join(screensDir, 'zh-reduced-transparency-desktop.png'), { label: 'desktop reduced transparency' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'reduced-transparency' }))
+      await desktopCdp.send('Emulation.setEmulatedMedia', { features: [] })
+    } catch (error) {
+      desktopReduced = { error: error instanceof Error ? error.message : String(error) }
+    } finally {
+      if (desktopCdp) await desktopCdp.detach().catch(() => {})
+    }
+    if (desktopReduced?.media === true) {
+      expect(
+        runner,
+        'desktop.reduced-transparency',
+        'desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce',
+        desktopReduced.backdrop === 'none' || /rgb\(/u.test(String(desktopReduced.background ?? '')),
+        JSON.stringify(desktopReduced),
+      )
+    } else {
+      runner.skip('desktop.reduced-transparency', 'desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce', `emulation unavailable: ${JSON.stringify(desktopReduced)}`)
+    }
+    let desktopFloating = null
+    try {
+      await openSettings(page)
+      desktopFloating = await page.evaluate(() => {
+        const dialog = document.querySelector('[role="dialog"]')
+        if (!dialog) return null
+        const style = getComputedStyle(dialog)
+        const alpha = String(style.backgroundColor).match(/rgba?\(([^)]*)\)/u)
+        const parts = alpha ? alpha[1].split(',').map((part) => part.trim()) : []
+        return { background: style.backgroundColor, alpha: parts.length === 4 ? Number(parts[3]) : 1, backdrop: style.backdropFilter }
+      })
+      await closeSettings(page)
+    } catch {
+      desktopFloating = null
+    }
+    if (desktopFloating === null) {
+      runner.skip('desktop.floating-surfaces', 'desktop host floating surfaces stay opaque above wallpaper', 'host Settings dialog unavailable in this renderer run')
+    } else {
+      expect(
+        runner,
+        'desktop.floating-surfaces',
+        'desktop host floating surfaces stay opaque above wallpaper',
+        desktopFloating.alpha >= 0.99 && desktopFloating.backdrop === 'none',
+        JSON.stringify(desktopFloating),
+      )
+    }
     await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 })
     await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null && !document.body.hasAttribute('data-dsh-wallpaper'), undefined, { timeout: 10_000 }).catch(() => {})
     await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 })

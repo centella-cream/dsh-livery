@@ -22,6 +22,8 @@ import {
   openSettings,
   openSettingsDetailed,
   readFirstPaintSamples,
+  readClipboardText,
+  bootstrapPage,
   inspectPanellist,
   liveryPanelRoot,
   liveryPanelVisible,
@@ -69,6 +71,7 @@ import {
   oneLine,
   pngColorStats,
   sha256Text,
+  WORKSPACE_ROOT,
   sleep,
   writeJson,
   writeText,
@@ -92,6 +95,15 @@ const CLIENT_GZIP_BUDGET_LABEL = '56 KiB'
 const RENDERED_CSS_BUDGET_BYTES = 20 * 1024
 const RENDERED_CSS_TARGET_BYTES = 16 * 1024
 const RENDERED_CSS_BUDGET_LABEL = '20 KiB'
+
+/** Load the committed performance baseline, or undefined when absent. */
+async function loadPerfBaseline() {
+  try {
+    return JSON.parse(await readFile(path.join(WORKSPACE_ROOT, 'contracts', 'dsh', 'perf-baseline.json'), 'utf8'))
+  } catch {
+    return null
+  }
+}
 
 /** The UI locale the running page actually presents (host pin wins over flags). */
 async function detectUiLocale(page) {
@@ -229,6 +241,7 @@ export async function checkCatalog(ctx) {
     return
   }
   const catalog = response.json
+  ctx.state.catalogResponseBytes = response.body?.length ?? null
   if (!ctx.environment.packageVersion && typeof catalog.compilerVersion === 'string') ctx.environment.packageVersion = catalog.compilerVersion
   ctx.state.catalog = catalog
   ctx.artifacts.catalog = catalog
@@ -3809,12 +3822,16 @@ export async function checkWallpaperStudio(ctx) {
       try { return (window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? '') === '' } catch { return true }
     }, undefined, { timeout: 8_000 }).catch(() => {})
     const cleared = await readWallpaperState(page)
+    let clearedRecord = null
+    try { clearedRecord = cleared.stored === null || cleared.stored === '' ? null : JSON.parse(cleared.stored) } catch { clearedRecord = 'unparseable' }
+    const clearedStoredOk = clearedRecord === null
+      || (clearedRecord?.schemaVersion === 2 && clearedRecord?.selection?.kind === 'none')
     expect(
       runner,
       'wallpaper.clear',
-      'clear removes the owned stylesheet, atmosphere overlay, body attribute and stored record',
-      cleared.stylePresent === false && cleared.attribute === null && cleared.overlay.present === false && (cleared.stored === null || cleared.stored === ''),
-      `stylePresent=${cleared.stylePresent}; attribute=${cleared.attribute}; overlay=${cleared.overlay.present}; stored=${cleared.stored}`,
+      'clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key)',
+      cleared.stylePresent === false && cleared.attribute === null && cleared.overlay.present === false && clearedStoredOk,
+      `stylePresent=${cleared.stylePresent}; attribute=${cleared.attribute}; overlay=${cleared.overlay.present}; stored=${oneLine(cleared.stored ?? '', 220)}`,
     )
     state.wallpaperEvidence = {
       builtinCount: initial.builtins.length,
@@ -4593,6 +4610,615 @@ export async function checkVisualMatrix(ctx) {
     }
     await page.emulateMedia({ colorScheme: 'light', forcedColors: 'none' }).catch(() => {})
     await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
+  }
+}
+
+
+/** Small PNG used by upload/remote fixtures. */
+const MERGED_TINY_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+)
+
+/** Read state-v2 wallpaper storage plus the visible position/preset/clear UI. */
+async function readMergedWallpaper(page) {
+  return page.evaluate(() => {
+    const KEY = 'dsh-livery.wallpaper.v1'
+    let storedRaw = null
+    let stored = null
+    try {
+      storedRaw = window.localStorage.getItem(KEY)
+      stored = storedRaw === null ? null : JSON.parse(storedRaw)
+    } catch {
+      stored = null
+    }
+    const style = document.querySelector('style#dsh-livery-wallpaper')
+    const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+    const hero = document.querySelector('[data-testid="wallpaper-hero-preview"]')
+    const positionGroup = document.querySelector('[data-testid="wallpaper-position"]')
+    const radios = [...document.querySelectorAll('[data-testid^="wallpaper-position-"]')].filter((node) => node instanceof HTMLInputElement)
+    const clearResult = document.querySelector('[data-testid="wallpaper-clear-local-result"]')
+    const preset = {
+      card: document.querySelector('[data-testid="preset-card"]') !== null,
+      exportButton: document.querySelector('[data-testid="preset-export"]') !== null,
+      importFile: document.querySelector('[data-testid="preset-import-file"]') !== null,
+      diff: document.querySelector('[data-testid="preset-diff"]') !== null,
+      diffRows: document.querySelectorAll('[data-testid="preset-diff-row"]').length,
+      apply: document.querySelector('[data-testid="preset-apply"]') !== null,
+      cancel: document.querySelector('[data-testid="preset-cancel"]') !== null,
+      exportStatus: (document.querySelector('[data-testid="preset-export-status"]')?.textContent ?? '').trim(),
+      importStatus: (document.querySelector('[data-testid="preset-import-status"]')?.textContent ?? '').trim(),
+      applyStatus: (document.querySelector('[data-testid="preset-apply-status"]')?.textContent ?? '').trim(),
+      error: (() => {
+        const node = document.querySelector('[data-testid="preset-error"]')
+        if (node === null) return null
+        const importButton = document.querySelector('[data-testid="preset-import"]')
+        return {
+          id: node.id,
+          kind: node.getAttribute('data-error-kind'),
+          code: node.getAttribute('data-error-code'),
+          text: (node.textContent ?? '').trim(),
+          importAriaInvalid: importButton?.getAttribute('aria-invalid') ?? null,
+          importDescribedBy: importButton?.getAttribute('aria-describedby') ?? null,
+          importErrorMessage: importButton?.getAttribute('aria-errormessage') ?? null,
+          retryWallpaper: document.querySelector('[data-testid="preset-retry-wallpaper"]') !== null,
+        }
+      })(),
+    }
+    return {
+      storedRaw,
+      stored,
+      schemaVersion: stored?.schemaVersion ?? null,
+      revision: stored?.revision ?? null,
+      selection: stored?.selection ?? null,
+      effects: stored?.effects ?? null,
+      position: stored?.position ?? null,
+      stylePresent: style !== null,
+      styleText: style?.textContent ?? '',
+      attribute: document.body.getAttribute('data-dsh-wallpaper'),
+      heroPosition: hero === null ? null : getComputedStyle(hero).backgroundPosition,
+      overlay: overlay === null
+        ? { present: false }
+        : {
+            present: true,
+            position: getComputedStyle(overlay).backgroundPosition,
+            opacity: getComputedStyle(overlay).opacity,
+            zIndex: getComputedStyle(overlay).zIndex,
+          },
+      positionGroup: positionGroup === null
+        ? { present: false }
+        : {
+            present: true,
+            radios: radios.length,
+            name: radios[0]?.name ?? null,
+            checked: radios.find((radio) => radio.checked)?.getAttribute('data-testid') ?? null,
+            checkedValue: radios.find((radio) => radio.checked)?.value ?? null,
+          },
+      recentRaw: (() => { try { return window.localStorage.getItem('dsh-livery.wallpaper.recent.v1') } catch { return null } })(),
+      clearResult: clearResult === null
+        ? null
+        : { status: clearResult.getAttribute('data-status'), removed: clearResult.getAttribute('data-removed'), text: (clearResult.textContent ?? '').trim() },
+      preset,
+    }
+  })
+}
+
+async function openWallpaperPanelForMerged(ctx) {
+  const { page } = ctx.session
+  const uiLocale = ctx.state.actualLocale ?? 'zh'
+  await openLiveryDetailed(page, { labels: labelsFor(uiLocale), locale: uiLocale, timeoutMs: 25_000 })
+  if (!(await page.locator('[data-testid="wallpaper-panel"]').count())) {
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 8_000 }).catch(() => {})
+  }
+  await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 12_000 })
+  await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-builtin"]').length === 24, undefined, { timeout: 12_000 }).catch(() => {})
+}
+
+/**
+ * Merged 0.1.3 client features: state-v2 position, two-tab sync, presets,
+ * v1→v2 migration, local-data cleanup and the merged visual states.
+ */
+export async function checkMergedFeatures(ctx) {
+  const { runner, session, state } = ctx
+  const { page } = session
+  const uiLocale = state.actualLocale ?? 'zh'
+  const tinyPng = MERGED_TINY_PNG
+  let routed = false
+  try {
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (url.includes('/v2/list')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+    })
+    await page.route('https://api.openverse.org/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }))
+    await page.route('https://images.example.test/**', (route) => {
+      if (route.request().url().includes('broken')) return route.fulfill({ status: 500, contentType: 'text/plain', body: 'broken' })
+      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+    })
+    routed = true
+    await openWallpaperPanelForMerged(ctx)
+
+    // ---------- nine-grid focal position (remote only) ----------
+    await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/remote.jpg')
+    await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/remote.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position-center"]')?.checked === true, undefined, { timeout: 8_000 }).catch(() => {})
+    const positionInitial = await readMergedWallpaper(page)
+    await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 6_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position-top-left"]')?.checked === true, undefined, { timeout: 8_000 }).catch(() => {})
+    await sleep(350)
+    const positionTopLeft = await readMergedWallpaper(page)
+    const positionCss = `${positionTopLeft.styleText}\n${positionTopLeft.heroPosition}\n${positionTopLeft.overlay.position ?? ''}`
+    await capture(page, ctx, { state: 'merged-position-top-left', mode: 'light' })
+    await page.locator('[data-testid="wallpaper-position-bottom-right"]').click({ timeout: 6_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position-bottom-right"]')?.checked === true, undefined, { timeout: 8_000 }).catch(() => {})
+    await sleep(300)
+    const positionBottomRight = await readMergedWallpaper(page)
+    await capture(page, ctx, { state: 'merged-position-bottom-right', mode: 'light' })
+    expect(
+      runner,
+      'merged.position-remote',
+      'nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position',
+      positionInitial.positionGroup.present === true &&
+        positionInitial.positionGroup.radios === 9 &&
+        positionInitial.positionGroup.name === 'wallpaper-position' &&
+        positionInitial.positionGroup.checked === 'wallpaper-position-center' &&
+        positionInitial.position?.x === 50 && positionInitial.position?.y === 50 &&
+        positionTopLeft.position?.x === 0 && positionTopLeft.position?.y === 0 &&
+        /0%\s+0%/u.test(positionCss) &&
+        positionBottomRight.position?.x === 100 && positionBottomRight.position?.y === 100 &&
+        /100%\s+100%/u.test(`${positionBottomRight.styleText}\n${positionBottomRight.heroPosition}\n${positionBottomRight.overlay.position ?? ''}`),
+      `initial=${JSON.stringify(positionInitial.positionGroup)} position=${JSON.stringify(positionInitial.position)}; topLeft=${JSON.stringify(positionTopLeft.position)} cssMatch=${/0%\s+0%/u.test(positionCss)}; bottomRight=${JSON.stringify(positionBottomRight.position)}`,
+      { positionInitial: positionInitial.positionGroup, positionTopLeft: positionTopLeft.position, positionBottomRight: positionBottomRight.position },
+    )
+    // Keyboard radio semantics: focus the center radio and move right with ArrowRight.
+    await page.locator('[data-testid="wallpaper-position-center"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await sleep(300)
+    const keyboardPosition = await readMergedWallpaper(page)
+    await page.locator('[data-testid="wallpaper-position-center"]').click({ timeout: 6_000 }).catch(() => {})
+    expect(
+      runner,
+      'merged.position-keyboard',
+      'position radios are keyboard operable with native radio semantics',
+      keyboardPosition.positionGroup.present === true &&
+        keyboardPosition.positionGroup.radios === 9 &&
+        keyboardPosition.position?.x === 100 && keyboardPosition.position?.y === 50,
+      `keyboard=${JSON.stringify(keyboardPosition.position)} group=${JSON.stringify(keyboardPosition.positionGroup)}`,
+    )
+    // Built-in wallpaper hides the position control (built-ins stay centered).
+    await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 6_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position"]') === null, undefined, { timeout: 8_000 }).catch(() => {})
+    const builtinPosition = await readMergedWallpaper(page)
+    expect(
+      runner,
+      'merged.position-builtin-hidden',
+      'built-in wallpaper hides the focal-position control',
+      builtinPosition.positionGroup.present === false && builtinPosition.attribute !== null && builtinPosition.stylePresent === true,
+      `group=${JSON.stringify(builtinPosition.positionGroup)} attr=${builtinPosition.attribute}`,
+    )
+
+    // ---------- preset export ----------
+    await page.evaluate(() => {
+      window.__CLIPBOARD_CAPTURED__ = null
+      const clipboard = navigator.clipboard
+      if (clipboard && typeof clipboard.writeText === 'function') {
+        const original = clipboard.writeText.bind(clipboard)
+        clipboard.writeText = async (text) => {
+          window.__CLIPBOARD_CAPTURED__ = String(text)
+          return original(text)
+        }
+      }
+    })
+    await page.locator('[data-testid="preset-export"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="preset-export-result"]', { timeout: 10_000 }).catch(() => {})
+    const copyButton = page.locator('[data-testid="preset-copy"]')
+    if ((await copyButton.count()) > 0) await copyButton.click({ timeout: 6_000 }).catch(() => {})
+    await sleep(400)
+    let exportedText = await page.evaluate(() => window.__CLIPBOARD_CAPTURED__).catch(() => null)
+    if (exportedText === null || exportedText === '') {
+      const clipboard = await readClipboardText(page).catch(() => ({ ok: false, text: '' }))
+      if (clipboard.ok) exportedText = clipboard.text
+    }
+    let exportedPreset = null
+    try {
+      exportedPreset = exportedText === null ? null : JSON.parse(exportedText)
+    } catch {
+      exportedPreset = null
+    }
+    expect(
+      runner,
+      'merged.preset-export',
+      'preset export produces schema-v1 JSON with style/wallpaper/effects/position and no executable data',
+      exportedPreset !== null &&
+        exportedPreset.schemaVersion === 1 &&
+        typeof exportedPreset.createdWith === 'string' &&
+        typeof exportedPreset.styleId === 'string' &&
+        exportedPreset.effects !== null && typeof exportedPreset.effects === 'object' &&
+        exportedPreset.position !== null && typeof exportedPreset.position === 'object' &&
+        !['css', 'tokens', 'fonts', 'history', 'localPath', 'blob'].some((key) => key in exportedPreset),
+      `bytes=${exportedText?.length ?? 0}; preset=${oneLine(JSON.stringify(exportedPreset), 500)}`,
+      { exported: oneLine(String(exportedText), 1200) },
+    )
+
+    // ---------- valid preset import: diff, atomic apply, screenshot ----------
+    const catalogIds = (state.catalog?.liveries ?? []).map((livery) => livery.id)
+    const targetStyle = catalogIds.find((id) => id !== state.appliedSkin && id !== 'stock') ?? 'plum'
+    const validPreset = {
+      schemaVersion: 1,
+      createdWith: 'dsh-livery/0.1.3',
+      styleId: targetStyle,
+      wallpaper: { kind: 'remote', url: 'https://images.example.test/preset.jpg' },
+      effects: { blur: 14, dim: 30, frost: 45, atmosphere: 25 },
+      position: { x: 100, y: 100 },
+    }
+    const presetBuffer = () => Buffer.from(JSON.stringify(validPreset))
+    const importPreset = async (value, name = 'preset.json') => {
+      const buffer = Buffer.isBuffer(value) ? value : Buffer.from(JSON.stringify(value))
+      await page.locator('[data-testid="preset-import-file"]').setInputFiles({ name, mimeType: 'application/json', buffer })
+      await sleep(500)
+      return readMergedWallpaper(page)
+    }
+    const imported = await importPreset(validPreset)
+    await page.waitForSelector('[data-testid="preset-diff"]', { timeout: 10_000 }).catch(() => {})
+    const diffState = await readMergedWallpaper(page)
+    await capture(page, ctx, { state: 'merged-preset-diff', mode: 'light' })
+    expect(
+      runner,
+      'merged.preset-import-diff',
+      'valid preset import shows a diff with the changed style/wallpaper/effects/position',
+      imported.preset.card === true &&
+        diffState.preset.diff === true &&
+        diffState.preset.diffRows > 0 &&
+        diffState.preset.apply === true &&
+        diffState.preset.error === null,
+      `preset=${JSON.stringify(imported.preset)} diffRows=${diffState.preset.diffRows}`,
+    )
+    await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="preset-apply-status"]', { timeout: 15_000 }).catch(() => {})
+    await sleep(500)
+    const appliedPreset = await readMergedWallpaper(page)
+    await capture(page, ctx, { state: 'merged-preset-applied', mode: 'light' })
+    expect(
+      runner,
+      'merged.preset-apply-atomic',
+      'preset apply switches style + wallpaper + effects + position together from one confirmed action',
+      appliedPreset.preset.applyStatus !== '' &&
+        appliedPreset.schemaVersion === 2 &&
+        appliedPreset.selection?.kind === 'remote' &&
+        appliedPreset.selection?.url === validPreset.wallpaper.url &&
+        appliedPreset.effects?.frost === validPreset.effects.frost &&
+        appliedPreset.position?.x === 100 && appliedPreset.position?.y === 100,
+      `applyStatus="${oneLine(appliedPreset.preset.applyStatus, 120)}" stored=${oneLine(appliedPreset.storedRaw ?? '', 220)}`,
+    )
+
+    // ---------- invalid presets: stable ID + ARIA error, no silent stock ----------
+    const invalidCases = [
+      { name: 'unknown-field', value: { ...validPreset, css: 'body{color:red}' }, expectCode: /unknown-field/u },
+      { name: 'bad-url', value: { ...validPreset, wallpaper: { kind: 'remote', url: 'http://insecure.test/x.jpg' } }, expectCode: /wallpaper-url/u },
+      { name: 'bad-position', value: { ...validPreset, position: { x: 42, y: 7 } }, expectCode: /position/u },
+      { name: 'oversize', value: Buffer.from(JSON.stringify(validPreset).padEnd(64 * 1024 + 1, ' ')), expectCode: /too-large/u },
+    ]
+    const invalidResults = []
+    for (const invalid of invalidCases) {
+      const snapshot = await importPreset(invalid.value, `${invalid.name}.json`)
+      await page.waitForSelector('[data-testid="preset-error"]', { timeout: 10_000 }).catch(() => {})
+      const errorState = await readMergedWallpaper(page)
+      invalidResults.push({ name: invalid.name, error: errorState.preset.error })
+      if (invalid.name === 'unknown-field') await capture(page, ctx, { state: 'merged-preset-error', mode: 'light' })
+      await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 6_000 }).catch(() => {})
+      await sleep(150)
+    }
+    expect(
+      runner,
+      'merged.preset-invalid-rejected',
+      'invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage',
+      invalidResults.every((result) =>
+        result.error !== null &&
+        result.error.id === 'preset-error' &&
+        result.error.importAriaInvalid === 'true' &&
+        result.error.importDescribedBy === 'preset-error' &&
+        result.error.importErrorMessage === 'preset-error'
+      ),
+      JSON.stringify(invalidResults.map((result) => ({ name: result.name, error: result.error }))),
+    )
+
+    // ---------- partial failure: style applies, wallpaper failure surfaces retry ----------
+    const partialPreset = { ...validPreset, styleId: targetStyle, wallpaper: { kind: 'remote', url: 'https://images.example.test/broken.jpg' } }
+    await importPreset(partialPreset)
+    await page.waitForSelector('[data-testid="preset-diff"]', { timeout: 10_000 }).catch(() => {})
+    await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="preset-error"]', { timeout: 20_000 }).catch(() => {})
+    await sleep(500)
+    const partial = await readMergedWallpaper(page)
+    if (partial.preset.error === null) {
+      // URL-level wallpaper application is accepted even when the image fetch
+      // fails; the product treats cache failure as non-fatal. There is no
+      // non-destructive way to force a style-vs-wallpaper partial failure in
+      // this shell, so record the boundary explicitly instead of a fake pass.
+      runner.skip(
+        'merged.preset-partial-failure',
+        'partial preset failure keeps the style change and surfaces a wallpaper retry action',
+        'wallpaper application is URL-level and cache failures are non-fatal by design; no non-destructive apply failure could be induced in this shell (unit tests cover the retry UI)',
+      )
+    } else {
+      expect(
+        runner,
+        'merged.preset-partial-failure',
+        'partial preset failure keeps the style change and surfaces a wallpaper retry action',
+        partial.preset.error.kind === 'apply' &&
+          partial.preset.error.code === 'wallpaper' &&
+          partial.preset.error.retryWallpaper === true,
+        JSON.stringify(partial.preset.error),
+      )
+    }
+    await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 6_000 }).catch(() => {})
+
+    // ---------- state-v2 migration from a real v1 flat record ----------
+    await page.evaluate(() => {
+      try {
+        window.localStorage.setItem('dsh-livery.wallpaper.v1', JSON.stringify({
+          kind: 'builtin', id: 'aurora', blur: 12, dim: 40, frost: 35, atmosphere: 60,
+        }))
+      } catch { /* ignore */ }
+    })
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await waitForBootGraph(page)
+    await waitForAppReady(page)
+    await openWallpaperPanelForMerged(ctx)
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null && document.body.getAttribute('data-dsh-wallpaper') !== null, undefined, { timeout: 10_000 }).catch(() => {})
+    await sleep(600)
+    const migratedVisible = await readMergedWallpaper(page)
+    // Force one state transition so the migrated in-memory state is persisted as v2.
+    await setRangeValue(page, 'wallpaper-frost', 60)
+    await sleep(900)
+    const migratedPersisted = await readMergedWallpaper(page)
+    // Corrupt storage event must be ignored without clearing the live wallpaper.
+    await page.evaluate(() => {
+      try {
+        const oldValue = window.localStorage.getItem('dsh-livery.wallpaper.v1')
+        window.localStorage.setItem('dsh-livery.wallpaper.v1', '{not-json')
+        window.dispatchEvent(new StorageEvent('storage', { key: 'dsh-livery.wallpaper.v1', oldValue, newValue: '{not-json' }))
+      } catch { /* ignore */ }
+    })
+    await sleep(600)
+    const corruptIgnored = await readMergedWallpaper(page)
+    expect(
+      runner,
+      'merged.state-migration-v1',
+      'legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored',
+      String(migratedVisible.storedRaw ?? '').includes('"kind":"builtin"') && String(migratedVisible.storedRaw ?? '').includes('"id":"aurora"') &&
+        migratedPersisted.schemaVersion === 2 &&
+        migratedPersisted.position?.x === 50 && migratedPersisted.position?.y === 50 &&
+        migratedPersisted.selection?.kind === 'builtin' && migratedPersisted.selection?.id === 'aurora' &&
+        migratedPersisted.stylePresent === true &&
+        corruptIgnored.stylePresent === true,
+      `visible=${oneLine(migratedVisible.storedRaw ?? '', 160)} style=${migratedVisible.stylePresent} attr=${JSON.stringify(migratedVisible.attribute)}; persisted=${oneLine(migratedPersisted.storedRaw ?? '', 220)} style=${migratedPersisted.stylePresent} attr=${JSON.stringify(migratedPersisted.attribute)}; corruptStyle=${corruptIgnored.stylePresent} corruptAttr=${JSON.stringify(corruptIgnored.attribute)} corruptStored=${oneLine(corruptIgnored.storedRaw ?? '', 120)}`,
+    )
+
+    // ---------- local data cleanup preserves current wallpaper ----------
+    await page.keyboard.press('Escape').catch(() => {})
+    await dismissFirstRunDialogs(page).catch(() => {})
+    await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 4_000 }).catch(() => {})
+    await page.locator('[data-testid="wallpaper-upload"]').setInputFiles({ name: 'upload.png', mimeType: 'image/png', buffer: tinyPng })
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
+    await sleep(400)
+    const uploaded = await readMergedWallpaper(page)
+    const dbBefore = await page.evaluate(async () => {
+      try {
+        const db = await new Promise((resolve, reject) => {
+          const request = indexedDB.open('dsh-livery-wallpapers', 2)
+          request.onsuccess = () => resolve(request.result)
+          request.onerror = () => reject(request.error)
+        })
+        const tx = db.transaction('images', 'readonly')
+        const records = await new Promise((resolve, reject) => {
+          const request = tx.objectStore('images').getAll()
+          request.onsuccess = () => resolve(request.result)
+          request.onerror = () => reject(request.error)
+        })
+        db.close()
+        return { version: 2, records: records.map((record) => ({ kind: record.kind, size: record.size, createdAt: record.createdAt, lastUsedAt: record.lastUsedAt, sourceUrl: record.sourceUrl ?? null, hasBlob: record.blob instanceof Blob })) }
+      } catch (error) {
+        return { error: String(error) }
+      }
+    })
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.locator('[data-testid="wallpaper-clear-local-data"]').scrollIntoViewIfNeeded({ timeout: 6_000 }).catch(() => {})
+    await page.locator('[data-testid="wallpaper-clear-local-data"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-clear-local-result"]', { timeout: 15_000 }).catch(() => {})
+    await sleep(500)
+    const cleared = await readMergedWallpaper(page)
+    const dbAfter = await page.evaluate(async () => {
+      try {
+        const db = await new Promise((resolve, reject) => {
+          const request = indexedDB.open('dsh-livery-wallpapers', 2)
+          request.onsuccess = () => resolve(request.result)
+          request.onerror = () => reject(request.error)
+        })
+        const tx = db.transaction('images', 'readonly')
+        const keys = await new Promise((resolve, reject) => {
+          const request = tx.objectStore('images').getAllKeys()
+          request.onsuccess = () => resolve(request.result)
+          request.onerror = () => reject(request.error)
+        })
+        db.close()
+        return keys.map(String)
+      } catch (error) {
+        return { error: String(error) }
+      }
+    })
+    await page.evaluate(() => {
+      try { window.localStorage.setItem('dsh-livery.wallpaper.recent.v1', JSON.stringify([{ url: 'https://images.example.test/old.jpg', addedAt: 1 }])) } catch { /* ignore */ }
+    })
+    await page.locator('[data-testid="wallpaper-clear-local-data"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-clear-local-result"]', { timeout: 15_000 }).catch(() => {})
+    await sleep(400)
+    const clearedAgain = await readMergedWallpaper(page)
+    expect(
+      runner,
+      'merged.clear-local-data',
+      'clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache',
+      uploaded.styleText.includes('blob:') &&
+        dbBefore.version === 2 &&
+        dbBefore.records.length > 0 &&
+        dbBefore.records.every((record) => ['upload', 'remote'].includes(record.kind) && typeof record.size === 'number' && record.hasBlob) &&
+        cleared.clearResult !== null &&
+        cleared.styleText !== '' &&
+        cleared.attribute !== null &&
+        clearedAgain.recentRaw === null,
+      `dbBefore=${JSON.stringify(dbBefore.records)}; cleared=${JSON.stringify(cleared.clearResult)}; currentBlob=${cleared.styleText.includes('blob:')} attr=${cleared.attribute}`,
+    )
+
+    // ---------- two real pages in the same profile: storage-event sync ----------
+    const pageB = await session.context.newPage()
+    try {
+      await pageB.goto(ctx.config.baseUrl ?? String(ctx.dshWebLine).replace(/^dsh web:\s*/u, ''), { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      await waitForBootGraph(pageB)
+      await waitForAppReady(pageB)
+      const openB = async () => {
+        let lastError = null
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          try {
+            await dismissFirstRunDialogs(pageB).catch(() => {})
+            await openLiveryDetailed(pageB, { labels: labelsFor(uiLocale), locale: uiLocale, timeoutMs: 25_000 })
+            const tab = pageB.locator('[data-testid="livery-page-tab-wallpaper"]')
+            await tab.waitFor({ state: 'visible', timeout: 10_000 })
+            await tab.click({ timeout: 8_000 })
+            await pageB.waitForSelector('[data-testid="wallpaper-panel"]', { state: 'visible', timeout: 12_000 })
+            return
+          } catch (error) {
+            lastError = error
+            await pageB.keyboard.press('Escape').catch(() => {})
+            await pageB.waitForTimeout(500)
+          }
+        }
+        const diagnostics = {
+          url: pageB.url(),
+          panels: await pageB.locator('[data-testid="wallpaper-panel"]').count().catch(() => -1),
+          tabs: await pageB.locator('[data-testid="livery-page-tab-wallpaper"]').count().catch(() => -1),
+          text: oneLine(await pageB.locator('body').innerText().catch(() => ''), 400),
+        }
+        throw new Error(`second-page wallpaper panel unavailable: ${lastError?.message ?? 'unknown'}; diagnostics=${JSON.stringify(diagnostics)}`)
+      }
+      await openB()
+      await pageB.evaluate(() => {
+        window.__STORAGE_EVENTS__ = 0
+        window.addEventListener('storage', () => { window.__STORAGE_EVENTS__ += 1 })
+      })
+      await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/sync.jpg')
+      await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
+      await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/sync.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+      await page.locator('[data-testid="wallpaper-position-top-left"]').waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {})
+      await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 6_000 }).catch(() => {})
+      await pageB.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/sync.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+      await sleep(700)
+      const syncedB = await readMergedWallpaper(pageB)
+      const syncEvents = await pageB.evaluate(() => window.__STORAGE_EVENTS__ ?? 0)
+      expect(
+        runner,
+        'merged.two-tab-sync',
+        'a second real page in the same profile applies wallpaper/position changes through storage events without reload loops',
+        syncedB.selection?.kind === 'remote' &&
+          syncedB.selection?.url === 'https://images.example.test/sync.jpg' &&
+          syncedB.position?.x === 0 && syncedB.position?.y === 0 &&
+          syncedB.attribute !== null && syncedB.stylePresent === true &&
+          syncEvents > 0 && syncEvents < 40,
+        `selection=${JSON.stringify(syncedB.selection)} position=${JSON.stringify(syncedB.position)} style=${syncedB.stylePresent} attr=${JSON.stringify(syncedB.attribute)} storageEvents=${syncEvents}`,
+      )
+      await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 }).catch(() => {})
+      await pageB.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 12_000 }).catch(() => {})
+      const clearedB = await readMergedWallpaper(pageB)
+      expect(
+        runner,
+        'merged.two-tab-clear',
+        'clearing wallpaper in page A clears page B through the same sync path',
+        clearedB.stylePresent === false && clearedB.attribute === null,
+        `style=${clearedB.stylePresent} attr=${clearedB.attribute}`,
+      )
+    } finally {
+      await pageB.close().catch(() => {})
+    }
+  } catch (error) {
+    runner.fail('merged.features', 'merged 0.1.3 client acceptance completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
+  } finally {
+    if (routed) {
+      await page.unroute('https://picsum.photos/**').catch(() => {})
+      await page.unroute('https://api.openverse.org/**').catch(() => {})
+      await page.unroute('https://images.example.test/**').catch(() => {})
+    }
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.locator('[data-testid="wallpaper-clear"]').first().click({ timeout: 4_000 }).catch(() => {})
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 5_000 }).catch(() => {})
+    await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
+  }
+}
+
+/**
+ * Non-blocking performance/network checks: catalog response size budget,
+ * cold-start sample comparison against the committed baseline, and a real
+ * Openverse canary (warn/skip on third-party failure only).
+ */
+export async function checkPerformance(ctx) {
+  const { runner, state } = ctx
+  const baseline = await loadPerfBaseline()
+  const catalogBytes = state.catalogResponseBytes
+  if (typeof catalogBytes === 'number') {
+    const cap = baseline?.catalogJson?.maxBytes ?? null
+    const status = cap === null ? 'skip' : catalogBytes > Math.ceil(cap * 1.5) ? 'fail' : catalogBytes > cap ? 'warn' : 'pass'
+    if (status === 'skip') {
+      runner.skip('perf.catalog-size', 'catalog JSON response stays within the measured headroom cap', `baseline missing; measured ${catalogBytes} bytes`)
+    } else {
+      runner.add(
+        status,
+        'perf.catalog-size',
+        'catalog JSON response stays within the measured headroom cap (+50% extreme regression tolerated as warning)',
+        `actual ${catalogBytes} bytes; cap ${cap} bytes (${baseline.measuredFrom?.commit ?? 'candidate'}); ${status === 'pass' ? 'within cap' : status === 'warn' ? 'above cap, below extreme threshold' : 'extreme regression'}`,
+        { catalogBytes, cap, baseline: baseline.catalogJson },
+      )
+    }
+  }
+  const bootMs = state.bootReadyMs ?? null
+  const paint = state.firstPaint?.paintTimings ?? null
+  const sample = bootMs === null ? null : { bootMs, firstContentfulPaintMs: paint?.firstContentfulPaint ?? null, firstPaintMs: paint?.firstPaint ?? null }
+  const cold = baseline?.coldStart?.off
+  if (sample === null) {
+    runner.skip('perf.cold-start', 'cold-start time stays near the measured baseline (warn only unless extreme)', 'boot timing unavailable')
+  } else if (!cold || typeof cold.p95Ms !== 'number') {
+    runner.skip('perf.cold-start', 'cold-start time stays near the measured baseline (warn only unless extreme)', `baseline missing; measured boot=${sample.bootMs}ms fcp=${sample.firstContentfulPaintMs}ms`)
+  } else {
+    const extremeMs = Math.ceil(cold.p95Ms * 4)
+    const status = sample.bootMs > extremeMs ? 'fail' : sample.bootMs > Math.ceil(cold.p95Ms * 2) ? 'warn' : 'pass'
+    runner.add(
+      status,
+      'perf.cold-start',
+      'cold-start time stays near the measured baseline (warn only unless extreme)',
+      `actual boot=${sample.bootMs}ms fcp=${sample.firstContentfulPaintMs}ms; baseline p50=${cold.p50Ms}ms p95=${cold.p95Ms}ms; ${status}`,
+      { sample, baseline: cold },
+    )
+  }
+  // Real (non-mocked) Openverse canary: non-blocking by design.
+  const timeoutMs = 10_000
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const response = await fetch('https://api.openverse.org/v1/images/?q=wallpaper&page_size=1', {
+      signal: controller.signal,
+      headers: { 'user-agent': 'dsh-livery-acceptance-canary/0.1.3' },
+    })
+    const body = await response.text()
+    if (response.status === 200 && /"results"\s*:/u.test(body)) {
+      runner.pass('network.openverse-canary', 'real Openverse API responds with a results payload (non-blocking canary)', `HTTP ${response.status}, ${body.length} bytes`)
+    } else {
+      runner.warn('network.openverse-canary', 'real Openverse API canary is non-blocking', `HTTP ${response.status}, ${oneLine(body, 180)}`)
+    }
+  } catch (error) {
+    runner.warn('network.openverse-canary', 'real Openverse API canary is non-blocking', `network unavailable/third-party failure: ${error instanceof Error ? error.message : String(error)}`)
+  } finally {
+    clearTimeout(timer)
   }
 }
 
