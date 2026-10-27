@@ -3223,13 +3223,98 @@ export async function checkWallpaperStudio(ctx) {
       builtinApplied.overlay.present === true &&
         builtinApplied.overlay.id === 'dsh-livery-wallpaper-overlay' &&
         builtinApplied.overlay.pointerEvents === 'none' &&
-        builtinApplied.overlay.zIndex === '2147483000' &&
+        builtinApplied.overlay.zIndex === '90' &&
         Number(builtinApplied.overlay.opacity) === 0.3 &&
         builtinApplied.overlay.mixBlendMode === 'soft-light' &&
         allCover(builtinApplied.overlay.backgroundSize) &&
         allCover(builtinApplied.pseudoBackgroundSize),
       `overlay=${JSON.stringify(builtinApplied.overlay)}; body::before cover=${builtinApplied.pseudoBackgroundSize}`,
     )
+    const selectedWallpaper = builtinApplied.builtins.filter((entry) => entry.pressed)
+    const selectionVisual = await page.evaluate(() => {
+      const tab = document.querySelector('[data-testid="livery-page-tab-wallpaper"]')
+      const swatch = document.querySelector('[data-testid="wallpaper-builtin"][aria-pressed="true"]')
+      if (!(tab instanceof HTMLElement) || !(swatch instanceof HTMLElement)) return null
+      const tabStyle = getComputedStyle(tab)
+      const swatchStyle = getComputedStyle(swatch)
+      return {
+        tabSelected: tab.getAttribute('aria-selected'),
+        tabBorder: tabStyle.borderColor,
+        tabColor: tabStyle.color,
+        swatchOutline: swatchStyle.outlineWidth,
+        swatchShadow: swatchStyle.boxShadow,
+      }
+    })
+    expect(
+      runner,
+      'wallpaper.selected-state',
+      'the active wallpaper and tab expose a visible selected state',
+      selectedWallpaper.length === 1 &&
+        selectionVisual !== null &&
+        selectionVisual.tabSelected === 'true' &&
+        selectionVisual.swatchOutline !== '0px' &&
+        selectionVisual.swatchShadow !== 'none',
+      `selected=${JSON.stringify(selectedWallpaper)}; tab=${selectionVisual?.tabBorder}/${selectionVisual?.tabColor}; swatch outline=${selectionVisual?.swatchOutline}, shadow=${selectionVisual?.swatchShadow}`,
+    )
+    const opaqueHostTokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.body)
+      return ['--dsw-alias-bg-layer-2', '--dsw-alias-bg-layer-1', '--dsw-alias-tooltip-bg'].map((token) => ({
+        token,
+        value: style.getPropertyValue(token).trim(),
+      }))
+    })
+    expect(
+      runner,
+      'wallpaper.host-surfaces-opaque',
+      'frost never rewrites host modal, input or tooltip surface tokens',
+      opaqueHostTokens.every(({ value }) => value.length > 0 && !/color-mix|transparent/i.test(value)),
+      opaqueHostTokens.map(({ token, value }) => `${token}=${value}`).join('; '),
+    )
+    // The atmosphere must sit below every host floating layer: plain Menu /
+    // Tooltip / HoverCard use z-index 100/101, Modal 1000 and Toast 1100.
+    expect(
+      runner,
+      'wallpaper.atmosphere-below-floating',
+      'the atmosphere layer stays below host Menu/Tooltip/HoverCard/Modal surfaces',
+      Number(builtinApplied.overlay.zIndex) < 100 &&
+        Number(builtinApplied.overlay.zIndex) < 1000 &&
+        Number(builtinApplied.overlay.zIndex) < 1100,
+      `atmosphere z-index=${builtinApplied.overlay.zIndex}; host ordinary floats=100/101, Modal=1000, Toast=1100`,
+    )
+    // A real host modal with the wallpaper active must remain opaque and above
+    // the atmosphere. If Settings is unavailable in this shell, record a skip
+    // rather than turning a UI regression into a false pass.
+    let modalLayering = null
+    try {
+      const dialog = await openSettings(page)
+      modalLayering = await page.evaluate(() => {
+        const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+        const dialog = document.querySelector('[role="dialog"]')
+        if (dialog === null) return null
+        const dialogStyle = getComputedStyle(dialog)
+        return {
+          overlayZ: overlay === null ? null : Number(getComputedStyle(overlay).zIndex),
+          dialogZ: Number(dialogStyle.zIndex),
+          dialogBackground: dialogStyle.backgroundColor,
+          dialogBackdrop: dialogStyle.backdropFilter,
+        }
+      })
+      await closeSettings(page)
+    } catch {
+      modalLayering = null
+    }
+    if (modalLayering === null) {
+      runner.skip('wallpaper.modal-clear', 'host Settings modal stays opaque above the atmosphere when wallpaper frost is active', 'host Settings dialog unavailable in this shell')
+    } else {
+      const opaque = !/rgba\([^)]*,\s*0\.\d+\)/.test(modalLayering.dialogBackground)
+      expect(
+        runner,
+        'wallpaper.modal-clear',
+        'host Settings modal stays opaque above the atmosphere when wallpaper frost is active',
+        opaque && modalLayering.overlayZ !== null && modalLayering.overlayZ < 1000,
+        `overlay z=${modalLayering.overlayZ}; modal z=${modalLayering.dialogZ}; background=${modalLayering.dialogBackground}; backdrop=${modalLayering.dialogBackdrop}`,
+      )
+    }
     await capture(page, ctx, { state: 'wallpaper-builtin', mode: 'light' })
     await setRangeValue(page, 'wallpaper-atmosphere', 0)
     await page.waitForFunction(() => document.getElementById('dsh-livery-wallpaper-overlay') === null, undefined, { timeout: 8_000 }).catch(() => {})
@@ -4031,12 +4116,12 @@ export async function checkLayoutStructure(ctx) {
     await sleep(450)
     const wallpaperNarrow = await readLayoutStructure(page, 'wallpaper')
     const wallpaperNarrowTracks = wallpaperNarrow.layout.trackCount ?? 0
-    const wallpaperStacked = wallpaperNarrow.main !== null && wallpaperNarrow.rail !== null && wallpaperNarrow.rail.top > wallpaperNarrow.main.top && Math.abs(wallpaperNarrow.rail.left - wallpaperNarrow.main.left) <= 2
+    const wallpaperStacked = wallpaperNarrow.main !== null && wallpaperNarrow.rail !== null && wallpaperNarrow.rail.top < wallpaperNarrow.main.top && Math.abs(wallpaperNarrow.rail.left - wallpaperNarrow.main.left) <= 2
     const slidersNarrow = wallpaperNarrow.sliderWidths ?? []
     expect(
       runner,
       'layout.wallpaper-stacked-1024',
-      'wallpaper page stacks to a single column at 1024×800 with a 2-track effects grid and bounded sliders',
+      'wallpaper page stacks to a single column at 1024×800 with effects/built-ins before the current wallpaper and bounded sliders',
       wallpaperNarrow.layout.present === true &&
         wallpaperNarrowTracks === 1 &&
         wallpaperStacked &&

@@ -46,6 +46,7 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain('text-shadow:0 1px 2px rgba(0,0,0,.9)')
     expect(CLIENT_CSS).toContain('.wallpaper-hero__empty')
     expect(CLIENT_CSS).toContain('.livery-diag{')
+    expect(CLIENT_CSS).toMatch(/@media \(prefers-reduced-transparency: reduce\),\(forced-colors: active\)\{\.livery-ui-card/)
     expect(CLIENT_CSS).toContain('.wallpaper-file-input{')
     expect(CLIENT_CSS).toContain('.wallpaper-rail{order:-1}')
     // Effect sliders are bounded inside the rail card, never viewport-wide.

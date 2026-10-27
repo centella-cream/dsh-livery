@@ -214,22 +214,20 @@ export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?
  * Documented livery background tokens the frost effect makes translucent.
  * Only names present in the active livery's token map are emitted.
  *
- * `--dsw-alias-bg-layer-2` is intentionally absent: the host uses it as the
- * modal/dialog panel surface. Making that token translucent lets the page
- * underneath show through the Settings overlay and makes both layers of text
- * readable at once, so modal surfaces stay opaque while the page glass stays.
+ * Host floating/control surfaces are intentionally absent: Modal uses layer-2,
+ * Tooltip uses tooltip-bg, Input uses layer-1, and overlay covers badges and
+ * other compact controls. Making those translucent lets underlying page text
+ * show through floating surfaces, which is never acceptable. Plugin cards use
+ * the private `--dsh-livery-card-surface` variable in cardSurfaceOverride().
  */
 export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-alias-bg-base',
-  '--dsw-alias-bg-layer-1',
   '--dsw-alias-bg-layer-3',
   '--dsw-alias-bg-document-preview',
   '--dsw-alias-bg-module-platform',
-  '--dsw-alias-bg-overlay',
   '--dsw-alias-interactive-bg-hover-solid',
   '--dsw-alias-scrollbar-bg-l1',
   '--dsw-alias-scrollbar-bg-l2',
-  '--dsw-alias-tooltip-bg',
   '--dsw-alias-turn-trigger-bg',
 ]
 
@@ -304,10 +302,10 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   // Generic coverage for pages whose surfaces are opaque: a non-interactive
   // atmospheric copy of the wallpaper above all app content.
   if (atmosphere > 0) {
-    // Keep the atmosphere below host-owned overlays (Modal z-index 1000,
-    // Toast 1100, menus/tooltips higher) so floating surfaces stay legible and
-    // are never tinted by the wallpaper.
-    rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:900;pointer-events:none;`
+    // Keep the atmosphere below host-owned floating layers: plain Menu,
+    // Tooltip and HoverCard use 100/101, Modal uses 1000 and Toast 1100. This
+    // keeps floating surfaces readable and un-tinted by the wallpaper.
+    rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:90;pointer-events:none;`
       + `background-image:${image};background-size:cover;background-position:center;filter:blur(${blur}px);`
       + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
   }
@@ -327,14 +325,20 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   if (tokens !== undefined) {
     const lightSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`
     const darkSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]`
+    const glass: string[] = []
     const light = tokenOverrides(lightSelector, tokens.light, tokens.frost)
-    if (light.length > 0) rules.push(light)
+    if (light.length > 0) glass.push(light)
     const lightCard = cardSurfaceOverride(lightSelector, tokens.light, tokens.frost)
-    if (lightCard.length > 0) rules.push(lightCard)
+    if (lightCard.length > 0) glass.push(lightCard)
     const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost)
-    if (dark.length > 0) rules.push(dark)
+    if (dark.length > 0) glass.push(dark)
     const darkCard = cardSurfaceOverride(darkSelector, tokens.dark, tokens.frost)
-    if (darkCard.length > 0) rules.push(darkCard)
+    if (darkCard.length > 0) glass.push(darkCard)
+    // High-contrast and reduced-transparency users get the original opaque
+    // host surfaces: no translucency, no private card surface, no blur rules.
+    if (glass.length > 0) {
+      rules.push(`@media (prefers-reduced-transparency: no-preference) and (forced-colors: none){${glass.join('\n')}}`)
+    }
   }
   return rules.join('\n')
 }

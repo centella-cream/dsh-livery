@@ -557,7 +557,15 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   aria-label={t('wallpaper.uploadTitle')}
                   onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
                 />
-                <Button variant="outline" size="sm" data-testid="wallpaper-upload-button" onClick={() => fileInput.current?.click()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="wallpaper-upload-button"
+                  aria-invalid={uploadProblem !== undefined}
+                  aria-describedby={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
+                  aria-errormessage={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
+                  onClick={() => fileInput.current?.click()}
+                >
                   {t('wallpaper.uploadButton')}
                 </Button>
               </div>
@@ -567,6 +575,9 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                 role="button"
                 tabIndex={0}
                 aria-label={t('wallpaper.uploadButton')}
+                aria-invalid={uploadProblem !== undefined}
+                aria-describedby={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
+                aria-errormessage={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
                 onClick={() => fileInput.current?.click()}
                 onKeyDown={event => {
                   if (event.key !== 'Enter' && event.key !== ' ') return
@@ -584,7 +595,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                 {t('wallpaper.uploadDrop')}
               </div>
               {uploadProblem !== undefined && (
-                <div className="livery-notice livery-notice--error" data-testid="wallpaper-upload-error" role="alert">
+                <div id="wallpaper-upload-error" className="livery-notice livery-notice--error" data-testid="wallpaper-upload-error" role="alert">
                   <span className="livery-notice__body">{t(UPLOAD_PROBLEM_KEYS[uploadProblem])}</span>
                 </div>
               )}
@@ -600,6 +611,9 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   value={urlText}
                   maxLength={2048}
                   aria-label={t('wallpaper.customTitle')}
+                  aria-invalid={problem !== undefined}
+                  aria-describedby={problem === undefined ? undefined : 'wallpaper-url-error'}
+                  aria-errormessage={problem === undefined ? undefined : 'wallpaper-url-error'}
                   placeholder={t('wallpaper.customPlaceholder')}
                   onChange={event => { setUrlText(event.target.value); if (problem !== undefined) setProblem(undefined) }}
                 />
@@ -608,7 +622,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                 </Button>
               </div>
               {problem !== undefined && (
-                <div className="livery-notice livery-notice--error" data-testid="wallpaper-url-error" role="alert">
+                <div id="wallpaper-url-error" className="livery-notice livery-notice--error" data-testid="wallpaper-url-error" role="alert">
                   <span className="livery-notice__body">{t(PROBLEM_KEYS[problem])}</span>
                 </div>
               )}

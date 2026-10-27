@@ -2,6 +2,7 @@
  * Wallpaper studio server-render tests: page tabs, built-in swatches, effect
  * sliders, custom URL controls, online controls and hydrated persisted state.
  */
+import { readFileSync } from 'node:fs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -262,6 +263,16 @@ describe('recent wallpapers card', () => {
     const html = renderPanel()
     vi.unstubAllGlobals()
     expect(html).not.toContain('data-testid="wallpaper-recent-card"')
+  })
+})
+
+describe('wallpaper error accessibility', () => {
+  it('associates upload and URL errors with their controls', () => {
+    const source = readFileSync(new URL('../../src/client/ui/WallpaperPanel.tsx', import.meta.url), 'utf8')
+    expect(source).toContain('id="wallpaper-upload-error"')
+    expect(source).toContain('aria-describedby={uploadProblem === undefined ? undefined : \'wallpaper-upload-error\'}')
+    expect(source).toContain('id="wallpaper-url-error"')
+    expect(source).toContain('aria-describedby={problem === undefined ? undefined : \'wallpaper-url-error\'}')
   })
 })
 

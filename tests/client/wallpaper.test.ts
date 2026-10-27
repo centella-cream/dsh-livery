@@ -163,7 +163,7 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).toContain('.dsh-livery-wallpaper-overlay{')
     expect(css).toContain('position:fixed')
     expect(css).toContain('inset:0')
-    expect(css).toContain('z-index:900')
+    expect(css).toContain('z-index:90')
     expect(css).toContain('pointer-events:none')
     expect(css).toContain(BUILTIN_WALLPAPERS.sea)
     expect(css).toContain('background-size:cover')
@@ -218,7 +218,7 @@ describe('wallpaper stylesheet builder', () => {
   it('emits translucent livery surface tokens with color-mix math', () => {
     const light = {
       '--dsw-alias-bg-base': '#101820',
-      '--dsw-alias-bg-layer-1': '#1b2430',
+      '--dsw-alias-bg-layer-3': '#1b2430',
       '--dsw-alias-label-primary': '#ffffff',
     }
     const dark = { '--dsw-alias-bg-base': '#05070a' }
@@ -229,7 +229,7 @@ describe('wallpaper stylesheet builder', () => {
     })
     expect(css).toContain('body[data-dsh-livery][data-dsh-wallpaper]')
     expect(css).toContain('--dsw-alias-bg-base:color-mix(in srgb, #101820 65%, transparent)')
-    expect(css).toContain('--dsw-alias-bg-layer-1:color-mix(in srgb, #1b2430 65%, transparent)')
+    expect(css).toContain('--dsw-alias-bg-layer-3:color-mix(in srgb, #1b2430 65%, transparent)')
     expect(css).not.toContain('--dsw-alias-label-primary:color-mix')
     expect(css).toContain('body[data-dsh-livery][data-dsh-wallpaper][data-ds-dark-theme]')
     expect(css).toContain('--dsw-alias-bg-base:color-mix(in srgb, #05070a 65%, transparent)')
@@ -257,8 +257,10 @@ describe('wallpaper stylesheet builder', () => {
       },
     })
     expect(css).not.toContain('--dsw-alias-bg-layer-2:color-mix')
+    expect(css).not.toContain('--dsw-alias-bg-layer-1:color-mix')
+    expect(css).not.toContain('--dsw-alias-tooltip-bg:color-mix')
     expect(css).toContain('--dsh-livery-card-surface:color-mix')
-    expect(css).toContain('--dsw-alias-bg-layer-1:color-mix')
+    expect(css).toContain('@media (prefers-reduced-transparency: no-preference) and (forced-colors: none)')
   })
 
   it('maps frost percentage to the remaining color percentage', () => {

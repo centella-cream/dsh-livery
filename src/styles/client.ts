@@ -129,11 +129,12 @@ export const CLIENT_CSS = `
 .livery-about,.livery-about__note{display:flex;flex-direction:column;gap:4px}
 .livery-about__note{color:var(--lw-2);font-size:var(--lw-fs-label)}
 .livery-search :is(input,textarea){font-size:var(--lw-fs-body)}
-.livery-about{display:flex;flex-direction:column;gap:4px}
-.livery-about__note{color:var(--lw-2)}
-.wallpaper-hero__empty{display:grid;place-items:center;min-height:180px;aspect-ratio:16/9;border:1px dashed var(--lw-line2);border-radius:10px;background:color-mix(in srgb,var(--lw-layer2) 55%,transparent);color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh);text-align:center}
+
+.wallpaper-hero__empty{display:grid;place-items:center;min-height:180px;aspect-ratio:16/9;border:1px dashed var(--lw-line2);border-radius:10px;color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh);text-align:center}
 .wallpaper-file-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .livery-diag{max-width:100%;max-height:220px;overflow:auto;margin:0;padding:8px;border:1px solid var(--lw-line);border-radius:8px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer));color:var(--lw-2);font-family:var(--lw-mono);font-size:var(--lw-fs-caption);line-height:var(--lw-lh);white-space:pre-wrap;overflow-wrap:anywhere}
+@media (prefers-reduced-transparency: reduce),(forced-colors: active){.livery-ui-card,.livery-layout .livery-check{backdrop-filter:none}}
+.livery-about{display:flex;flex-direction:column;gap:4px}
 .wallpaper-recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
 .wallpaper-recent-item{display:flex;flex-direction:column;gap:3px;min-width:0;padding:0;border:1px solid color-mix(in srgb,var(--lw-fg) 14%,transparent);border-radius:9px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer2));color:inherit;font:inherit;font-size:var(--lw-fs-caption);text-align:start;cursor:pointer;overflow:hidden}
 .wallpaper-recent-thumb{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--lw-layer2)}
