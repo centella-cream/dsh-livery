@@ -552,6 +552,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   ref={fileInput}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif"
+                  className="wallpaper-file-input"
                   data-testid="wallpaper-upload"
                   aria-label={t('wallpaper.uploadTitle')}
                   onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
@@ -563,6 +564,15 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
               <div
                 className={`wallpaper-dropzone${dragOver ? ' wallpaper-dropzone--over' : ''}`}
                 data-testid="wallpaper-upload-dropzone"
+                role="button"
+                tabIndex={0}
+                aria-label={t('wallpaper.uploadButton')}
+                onClick={() => fileInput.current?.click()}
+                onKeyDown={event => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return
+                  event.preventDefault()
+                  fileInput.current?.click()
+                }}
                 onDragOver={event => { event.preventDefault(); setDragOver(true) }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={event => {

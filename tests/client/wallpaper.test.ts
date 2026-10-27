@@ -163,7 +163,7 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).toContain('.dsh-livery-wallpaper-overlay{')
     expect(css).toContain('position:fixed')
     expect(css).toContain('inset:0')
-    expect(css).toContain('z-index:2147483000')
+    expect(css).toContain('z-index:900')
     expect(css).toContain('pointer-events:none')
     expect(css).toContain(BUILTIN_WALLPAPERS.sea)
     expect(css).toContain('background-size:cover')
@@ -257,6 +257,7 @@ describe('wallpaper stylesheet builder', () => {
       },
     })
     expect(css).not.toContain('--dsw-alias-bg-layer-2:color-mix')
+    expect(css).toContain('--dsh-livery-card-surface:color-mix')
     expect(css).toContain('--dsw-alias-bg-layer-1:color-mix')
   })
 

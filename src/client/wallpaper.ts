@@ -268,6 +268,18 @@ function tokenOverrides(selector: string, tokens: TokenMap, frost: number): stri
 }
 
 /**
+ * Expose the frosty card surface without changing the host's layer-2 token.
+ * Host dialogs use --dsw-alias-bg-layer-2 directly; they stay opaque, while this
+ * plugin-only variable lets Livery cards keep their glass-over-wallpaper look.
+ */
+function cardSurfaceOverride(selector: string, tokens: TokenMap, frost: number): string {
+  const layer2 = tokens['--dsw-alias-bg-layer-2']
+  if (typeof layer2 !== 'string' || layer2.length === 0) return ''
+  const remaining = Math.max(0, Math.min(100, 100 - frost))
+  return `${selector}{--dsh-livery-card-surface:color-mix(in srgb, ${layer2} ${remaining}%, transparent)}`
+}
+
+/**
  * Build the complete plugin-owned wallpaper stylesheet.
  *
  * Layer: two fixed pseudo-elements on `body[data-dsh-wallpaper]` (image + dim
@@ -292,7 +304,10 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   // Generic coverage for pages whose surfaces are opaque: a non-interactive
   // atmospheric copy of the wallpaper above all app content.
   if (atmosphere > 0) {
-    rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:2147483000;pointer-events:none;`
+    // Keep the atmosphere below host-owned overlays (Modal z-index 1000,
+    // Toast 1100, menus/tooltips higher) so floating surfaces stay legible and
+    // are never tinted by the wallpaper.
+    rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:900;pointer-events:none;`
       + `background-image:${image};background-size:cover;background-position:center;filter:blur(${blur}px);`
       + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
   }
@@ -310,14 +325,16 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   )
   const tokens = input.tokens
   if (tokens !== undefined) {
-    const light = tokenOverrides(`body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`, tokens.light, tokens.frost)
+    const lightSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`
+    const darkSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]`
+    const light = tokenOverrides(lightSelector, tokens.light, tokens.frost)
     if (light.length > 0) rules.push(light)
-    const dark = tokenOverrides(
-      `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]`,
-      tokens.dark,
-      tokens.frost,
-    )
+    const lightCard = cardSurfaceOverride(lightSelector, tokens.light, tokens.frost)
+    if (lightCard.length > 0) rules.push(lightCard)
+    const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost)
     if (dark.length > 0) rules.push(dark)
+    const darkCard = cardSurfaceOverride(darkSelector, tokens.dark, tokens.frost)
+    if (darkCard.length > 0) rules.push(darkCard)
   }
   return rules.join('\n')
 }

@@ -304,6 +304,8 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('accept="image/jpeg,image/png,image/webp,image/avif"')
     expect(html).toContain('data-testid="wallpaper-upload-button"')
     expect(html).toContain('data-testid="wallpaper-upload-dropzone"')
+    expect(html).toContain('class="wallpaper-file-input"')
+    expect(html).toMatch(/data-testid="wallpaper-upload-dropzone" role="button" tabindex="0"/)
     expect(html).not.toContain('data-testid="wallpaper-upload-error"')
     expect(html).toContain('data-testid="wallpaper-url"')
     expect(html).toContain('maxLength="2048"')

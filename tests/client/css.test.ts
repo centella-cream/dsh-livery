@@ -38,6 +38,16 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain('background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2))')
     expect(CLIENT_CSS).toContain('box-shadow:0 1px 2px rgba(0,0,0,.06)')
     expect(CLIENT_CSS).toContain('backdrop-filter:blur(14px) saturate(1.08)')
+    // Wallpaper views: visible selected tabs/swatches, readable swatch labels,
+    // compact empty state and bounded diagnostics in narrow panels.
+    expect(CLIENT_CSS).toMatch(/\.livery-chip\[aria-pressed='true'\],\.livery-chip\[aria-selected='true'\]/)
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-swatch\[aria-pressed='true'\]/)
+    expect(CLIENT_CSS).toContain('.wallpaper-swatch::after')
+    expect(CLIENT_CSS).toContain('text-shadow:0 1px 2px rgba(0,0,0,.9)')
+    expect(CLIENT_CSS).toContain('.wallpaper-hero__empty')
+    expect(CLIENT_CSS).toContain('.livery-diag{')
+    expect(CLIENT_CSS).toContain('.wallpaper-file-input{')
+    expect(CLIENT_CSS).toContain('.wallpaper-rail{order:-1}')
     // Effect sliders are bounded inside the rail card, never viewport-wide.
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effect input\{flex:1 1 100px;width:100%;min-width:96px;max-width:140px/)
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effect output\{flex:0 0 54px/)
@@ -85,7 +95,7 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
 
   it('only uses documented --dsw-* tokens for color/spacing', () => {
     const custom = [...CLIENT_CSS.matchAll(/var\((--[a-z0-9-]+)/gi)].map(match => match[1]!)
-    const allowed = new Set(['--lw-fg', '--lw-2', '--lw-3', '--lw-line', '--lw-line2', '--lw-brand', '--lw-layer', '--lw-layer2', '--lw-mono', '--lw-on-brand', '--lw-err', '--lw-warn', '--lw-fs-display', '--lw-fs-title', '--lw-fs-body', '--lw-fs-label', '--lw-fs-caption', '--lw-lh', '--livery-accent', '--livery-secondary', '--livery-surface', '--livery-text'])
+    const allowed = new Set(['--lw-fg', '--lw-2', '--lw-3', '--lw-line', '--lw-line2', '--lw-brand', '--lw-layer', '--lw-layer2', '--lw-mono', '--lw-on-brand', '--lw-err', '--lw-warn', '--lw-fs-display', '--lw-fs-title', '--lw-fs-body', '--lw-fs-label', '--lw-fs-caption', '--lw-lh', '--dsh-livery-card-surface', '--livery-accent', '--livery-secondary', '--livery-surface', '--livery-text'])
     for (const token of custom) {
       expect(token.startsWith('--dsw-') || allowed.has(token), `unexpected custom property: ${token}`).toBe(true)
     }
