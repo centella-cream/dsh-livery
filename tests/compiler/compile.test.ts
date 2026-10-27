@@ -65,7 +65,7 @@ describe('compileCatalog — shipped adapters only', () => {
   it('compiles one catalog per distinct catalogProfile for the shipped adapter set', () => {
     expect(first.problems, JSON.stringify(first.problems, null, 2)).toEqual([])
     expect(first.ok).toBe(true)
-    // Generated adapters are filtered by the formal support matrix: the 0.1.1
+    // Generated adapters are filtered by the formal support matrix: the 0.1.2
     // release line ships Web rc.2 + Desktop rc.3 (historical 0.2.0 stays on disk).
     const groups = groupAdaptersByProfile(ADAPTERS)
     expect(first.profileCount).toBe(groups.length)

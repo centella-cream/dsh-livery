@@ -59,7 +59,7 @@ jobs:
           name: dsh-livery-candidate
           path: .tmp/candidate
       - name: Verify the downloaded bytes (no rebuild)
-        run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.1.tgz
+        run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz
       - name: Bind candidate to acceptance evidence
         env:
           RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
@@ -70,7 +70,7 @@ jobs:
           fi
           if [ -n "${RELEASE_EVIDENCE:-}" ]; then
             for evidence in $RELEASE_EVIDENCE; do
-              pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.1.tgz --evidence "$evidence"
+              pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence "$evidence"
             done
           else
             echo "No acceptance evidence supplied; release evidence binding is required before promotion." >&2
@@ -108,11 +108,11 @@ jobs:
           path: .tmp/candidate
       - name: Verify the downloaded candidate against committed evidence
         run: |
-          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.1.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
-          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.1.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
+          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
+          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
           pnpm gate:support-matrix -- --all
           pnpm gate:release -- --all
       - name: Publish the exact accepted tarball
-        run: npm publish .tmp/candidate/dsh-livery-0.1.1.tgz --access public
+        run: npm publish .tmp/candidate/dsh-livery-0.1.2.tgz --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

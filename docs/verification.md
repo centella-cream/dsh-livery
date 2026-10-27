@@ -1,6 +1,6 @@
 # Verification
 
-**Release scope for 0.1.1 (limited release):**
+**Release scope for 0.1.2 (limited release):**
 
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
@@ -29,8 +29,8 @@ Each file records the exact sha256, byte size, commit, scope and per-run results
 
 | Run | Environment | Result |
 |---|---|---|
-| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node 22.23.1, Chrome 155.0.8059.85 | 227 pass / 0 fail / 4 skip / 2 warn |
-| Web real-profile clone | same | 227 pass / 0 fail / 4 skip / 5 warn (clone-only dependency-repair warning) |
+| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node 22.23.1, Chrome 155.0.8059.85 | 231 pass / 0 fail / 4 skip / 2 warn |
+| Web real-profile clone | same | 232 pass / 0 fail / 4 skip / 4 warn (clone-only dependency-repair warning) |
 | Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node 24.21.0 | recorded in the committed Desktop evidence/report |
 
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
@@ -47,6 +47,11 @@ Electron app, the official rc.3 plugin manager and an isolated app
 - Style gallery, preview language switching, family filters and keyboard tabs.
 - Wallpaper studio: built-in designs, online search/random, uploads (IndexedDB),
   recent history/cache, effects and global atmosphere.
+- Floating-surface layering: atmosphere `z-index:90` below host ordinary
+  Menu/Tooltip/HoverCard (100/101), Modal (1000) and Toast (1100); host Settings
+  modal is opaque while wallpaper frost is active.
+- Wallpaper selection: active tab/swatch state, selected-swatch ring, readable
+  light-swatch labels, hidden native file input and keyboard-operable dropzone.
 - Desktop app: official install, renderer boot, panel, apply/persist, reload
   handshake and stock restore.
 - CSS/token/contrast audits: 0 missing tokens, contrast assertions and 0 failures.
@@ -68,6 +73,9 @@ Electron app, the official rc.3 plugin manager and an isolated app
   removal (by design of the host profile store). A stock value is harmless; a
   non-stock value can be inherited on reinstall. This is documented in the
   README/SUPPORT uninstall notes and is not counted as "zero residue".
+- All host surfaces using `--dsw-alias-bg-layer-2` remain opaque under frost
+  (not only Modal). This is an accepted 0.1.2 product boundary; plugin cards keep
+  the glass effect through `--dsh-livery-card-surface`.
 
 ## Reproduce
 
@@ -78,8 +86,8 @@ pnpm build:cli
 pnpm gate:support-matrix -- --all
 pnpm gate:release -- --all
 pnpm pack:candidate
-pnpm verify:evidence -- --tgz dsh-livery-0.1.1.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
-pnpm verify:evidence -- --tgz dsh-livery-0.1.1.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
+pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
+pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
 ```
 
 Raw probes and screenshots are generated locally under `artifacts/` and are not

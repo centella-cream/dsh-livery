@@ -178,7 +178,7 @@ async function main() {
     console.log('usage: node scripts/acceptance/probe/desktop-probe.mjs [--tgz path] [--out dir] [--report md] [--dsh-home /tmp/dsh-livery-desktop-runtime] [--profile-mode minimal|clone] [--clone-from dir]')
     return 0
   }
-  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.1.tgz'))
+  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.2.tgz'))
   const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
   const home = assertIsolatedHome(options['dsh-home'] ?? '/tmp/dsh-livery-desktop-runtime')

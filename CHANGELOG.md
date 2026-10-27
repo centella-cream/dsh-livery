@@ -1,9 +1,41 @@
 # Changelog
 
 All notable changes to DSH Livery are recorded here. `0.1.0` was the first limited
-release for DSH `0.2.1-rc.2` Web/Chrome; `0.1.1` adds Desktop `0.2.1-rc.3` macOS
-support. Earlier development rounds used temporary internal version numbers for
-evidence packaging; they are folded into the `0.1.0` entry.
+release for DSH `0.2.1-rc.2` Web/Chrome; `0.1.1` added Desktop `0.2.1-rc.3` macOS
+support; `0.1.2` is a wallpaper/UI correctness release. Earlier development rounds
+used temporary internal version numbers for evidence packaging; they are folded
+into the `0.1.0` entry.
+
+## [0.1.2] — 2026-10-27
+
+### Fixed
+
+- The global wallpaper atmosphere now sits below host floating surfaces
+  (Menu/Tooltip/HoverCard `z-index` 100/101, Modal 1000, Toast 1100) instead of
+  tinting menus, tooltips, dialogs and toasts from above.
+- Frost no longer rewrites host-modal, input or tooltip surface tokens. Host
+  `--dsw-alias-bg-layer-2`, `--dsw-alias-bg-layer-1` and
+  `--dsw-alias-tooltip-bg` stay opaque; plugin cards keep their glass effect via
+  the plugin-private `--dsh-livery-card-surface` variable.
+- `forced-colors` and `prefers-reduced-transparency` now suppress the frost token
+  overrides, the private card surface and card backdrop blur; decorative wallpaper
+  layers remain hidden.
+- Top tabs expose an `aria-selected` visual state and built-in swatches expose an
+  `aria-pressed` outline/ring; light-swatch labels gain a dark gradient and text
+  shadow for contrast.
+- Upload controls no longer show a duplicate native file input: the native input
+  is visually hidden and the dropzone is clickable, focusable and Enter/Space
+  operable; upload/URL errors are linked with `aria-invalid`,
+  `aria-describedby` and `aria-errormessage`.
+- Narrow layouts wrap the search toolbar, show effects/built-in wallpapers before
+  online/upload modules, keep the empty wallpaper state 16:9 to prevent layout
+  jump, and bound diagnostics with wrapping/scrolling.
+
+### Known limitations
+
+- All host surfaces that use `--dsw-alias-bg-layer-2` stay opaque under frost
+  (not only Modal). This is an accepted product boundary for 0.1.2; plugin-owned
+  cards retain the glass effect through their private surface token.
 
 ## [0.1.1] — 2026-10-27
 

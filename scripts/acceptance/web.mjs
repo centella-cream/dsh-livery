@@ -4,7 +4,7 @@
  *
  * One command proves the shipped plugin works in the real Web profile:
  *
- *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.1.tgz
+ *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.2.tgz
  *   node scripts/acceptance/web.mjs --reuse "http://127.0.0.1:3080/?token=…"   # read-only
  *
  * The isolated path creates its own DSH_HOME under `.tmp/acceptance/`, installs

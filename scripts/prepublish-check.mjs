@@ -28,7 +28,7 @@ const candidates = matrix.entries.flatMap((entry) => entry.evidence ?? [])
 if (candidates.length === 0) fail('no evidence files in the formal matrix')
 for (const evidence of candidates) {
   try {
-    execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.1.tgz', '--evidence', evidence], { cwd: root, stdio: 'inherit' })
+    execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.2.tgz', '--evidence', evidence], { cwd: root, stdio: 'inherit' })
   } catch {
     fail(`candidate artifact / evidence verification failed for ${evidence}`)
   }

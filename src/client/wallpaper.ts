@@ -217,8 +217,10 @@ export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?
  * Host floating/control surfaces are intentionally absent: Modal uses layer-2,
  * Tooltip uses tooltip-bg, Input uses layer-1, and overlay covers badges and
  * other compact controls. Making those translucent lets underlying page text
- * show through floating surfaces, which is never acceptable. Plugin cards use
- * the private `--dsh-livery-card-surface` variable in cardSurfaceOverride().
+ * show through floating surfaces, which is never acceptable. This means all
+ * host layer-2 surfaces (Modal, Settings, plugin manager, previews) stay opaque;
+ * that is an accepted 0.1.2 product boundary. Plugin cards use the private
+ * `--dsh-livery-card-surface` variable in cardSurfaceOverride().
  */
 export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-alias-bg-base',

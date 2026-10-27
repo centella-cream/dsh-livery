@@ -29,7 +29,7 @@ import { adapterRecordOf, makeBootPayload, makeCatalog, TEST_ADAPTER } from './f
 const IDENTITY = {
   adapterId: TEST_ADAPTER.adapterId,
   contractHash: TEST_ADAPTER.contractHash,
-  pluginVersion: '0.1.1',
+  pluginVersion: '0.1.2',
   hostVersion: TEST_ADAPTER.hostVersion,
 }
 const catalog = makeCatalog()

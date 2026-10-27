@@ -20,7 +20,7 @@ const workspace = process.cwd()
 
 /** Every frozen contract snapshot stays on disk for audit/diff. */
 const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3']
-/** Formal support matrix: these host builds are generated/shipped (0.1.1). */
+/** Formal support matrix: these host builds are generated/shipped (0.1.2). */
 const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3']
 
 // Optional local verification: set DSH_INSTALL to a matching @deepseek-ai/dsh
@@ -102,7 +102,7 @@ describe('frozen historical contracts', () => {
   })
 })
 
-describe('formal support matrix (0.1.1: Web rc.2 + Desktop rc.3)', () => {
+describe('formal support matrix (0.1.2: Web rc.2 + Desktop rc.3)', () => {
   it('is the release authority: rc.2 Web/Chrome and rc.3 Desktop/macOS released', async () => {
     const matrix = await readFormalMatrix(workspace)
     expect(validateMatrix(matrix)).toEqual([])
@@ -257,7 +257,7 @@ describe('generated shipped registry', () => {
       engines?: { dsh?: string; node?: string }
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.1.1')
+    expect(pkg.version).toBe('0.1.2')
     expect(pkg.engines?.dsh).toBe('0.2.1-rc.2 || 0.2.1-rc.3')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')

@@ -11,7 +11,7 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.1 limited release.** Supported exactly for:
+> **Release status: 0.1.2 limited release.** Supported exactly for:
 > DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1, and DSH
 > `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime. Desktop Windows,
 > Web Edge and other DSH builds are outside the supported scope. Other DSH versions
@@ -109,12 +109,12 @@ at `contracts/dsh/support-matrix.json`; see
 
 ## Install
 
-Published package: [`dsh-livery@0.1.1`](https://www.npmjs.com/package/dsh-livery).
+Published package: [`dsh-livery@0.1.2`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile (CLI)
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.1
+dsh plugin --profile web add dsh-livery@0.1.2
 dsh web                                 # open the URL printed by dsh
 ```
 
@@ -122,7 +122,7 @@ dsh web                                 # open the URL printed by dsh
 
 The Desktop app installs plugins from its plugin manager:
 **Settings → Plugins → Install by package name**, then enter
-`dsh-livery@0.1.1`. The `0.2.1-rc.3` Desktop runtime is accepted by this release;
+`dsh-livery@0.1.2`. The `0.2.1-rc.3` Desktop runtime is accepted by this release;
 the plugin installs and runs in the Electron renderer. Native macOS window chrome,
 traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are host-owned and
 outside the plugin's certification surface.
@@ -184,18 +184,18 @@ Generated contracts, stock snapshots and compiled catalogs are committed, so
 Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.1.tgz
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.1.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.1.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.2.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.2.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.2.tgz      # thin wrapper
 ```
 
 ## Verification
 
-For the 0.1.1 limited release: Web `0.2.1-rc.2` isolated full run and real-profile
+For the 0.1.2 limited release: Web `0.2.1-rc.2` isolated full run and real-profile
 clone pass with **0 failures** (Chrome 155, Node 22.23.1); Desktop `0.2.1-rc.3`
 passes the real Electron install/renderer acceptance (Node 24.21.0). Exact counts
 and report hashes are in the committed evidence files. Repo gates include `tsc`,
-**716 tests (1 optional skip)**, contrast / token / CSS audits, loader ABI and
+**718 tests (1 optional skip)**, contrast / token / CSS audits, loader ABI and
 package checks. The exact artifact is bound to
 `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json` and
 `contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`. Details and known

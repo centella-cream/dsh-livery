@@ -15,7 +15,7 @@
 /**
  * Dual-scope release: DSH 0.2.1-rc.2 on the Web Profile/Chrome, and
  * DSH 0.2.1-rc.3 on the Desktop Profile/macOS (real Electron renderer).
- * Both certified adapters share the same 0.1.1 catalog profile.
+ * Both certified adapters share the same 0.1.2 catalog profile.
  * Windows and Web Edge are not-supported and are not claimed.
  */
 export const ACCEPTANCE_SCOPE = Object.freeze({
