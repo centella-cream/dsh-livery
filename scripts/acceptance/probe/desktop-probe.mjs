@@ -58,6 +58,8 @@ import {
   runDsh,
 } from './dsh-home.mjs'
 import { DESKTOP_SCOPE, SUPPORTED_HOST_VERSIONS, adapterForVersion, describeAdapter } from './certified-adapters.mjs'
+import { certificationFor, desktopMacosStatusFor } from './support-matrix.mjs'
+import { buildDesktopClaims, validateDesktopClaims } from './report-claims.mjs'
 import {
   captureScreenshot,
   dismissFirstRunDialogs,
@@ -178,7 +180,7 @@ async function main() {
     console.log('usage: node scripts/acceptance/probe/desktop-probe.mjs [--tgz path] [--out dir] [--report md] [--dsh-home /tmp/dsh-livery-desktop-runtime] [--profile-mode minimal|clone] [--clone-from dir]')
     return 0
   }
-  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.2.tgz'))
+  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.3.tgz'))
   const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
   const home = assertIsolatedHome(options['dsh-home'] ?? '/tmp/dsh-livery-desktop-runtime')
@@ -758,6 +760,20 @@ async function main() {
     }
   }
 
+  // ------------------------------------------------- report truthfulness
+  const matrixStatus = desktopMacosStatusFor(ctx.config.expectedVersion)
+  const desktopCertification = certificationFor(ctx.config.expectedVersion ?? '').certification
+  const claims = buildDesktopClaims({ checks: runner.checks, matrixStatus })
+  const consistencyProblems = validateDesktopClaims(claims, matrixStatus)
+  runner.add(
+    consistencyProblems.length === 0 ? 'pass' : 'fail',
+    'desktop.matrix-consistency',
+    'desktop report claims do not exceed the support matrix desktop.macos status',
+    consistencyProblems.length === 0
+      ? `matrix desktop.macos=${String(matrixStatus)}; report claimLevel=${claims.claimLevel}; first-paint=${claims.firstPaint.status ?? 'missing'}${claims.firstPaint.verified ? ' (verified)' : ' (not verified)'}`
+      : consistencyProblems.join('; '),
+    { matrixStatus, claimLevel: claims.claimLevel, contradictions: consistencyProblems, firstPaint: claims.firstPaint },
+  )
   const summary = runner.summary
   const report = {
     schemaVersion: 1,
@@ -782,7 +798,12 @@ async function main() {
         hostVersion: DESKTOP_SCOPE.hostVersion,
         profile: DESKTOP_SCOPE.profile,
         platform: DESKTOP_SCOPE.platform,
+        browser: 'chrome',
+        browserVersion: environment.chromeVersion ?? null,
       },
+      certification: desktopCertification,
+      matrixStatus: matrixStatus ?? null,
+      claims,
     },
     checks: runner.checks,
     artifacts: {
@@ -819,6 +840,7 @@ async function main() {
   lines.push(`| renderer URL | ${artifacts.renderer?.url ?? '—'} (window ${artifacts.renderer?.outer?.join('×') ?? '—'}, DPR ${artifacts.renderer?.devicePixelRatio ?? '—'}) |`)
   lines.push(`| package | dsh-livery@${artifacts.install?.packageVersion ?? '?'} · tarball sha256 \`${artifacts.install?.tarballSha256 ?? '—'}\` |`)
   lines.push(`| certified adapter | ${environment.expectedAdapter ?? '—'} |`)
+  lines.push(`| support matrix | desktop.macos = ${claims.matrixStatus ?? 'missing'} · claimTier ${desktopCertification.claimTier ?? '—'} / channel ${desktopCertification.distributionChannel ?? '—'} · certified browsers [${(desktopCertification.certifiedBrowserVersions ?? []).join(', ') || '—'}] · runtimes [${(desktopCertification.certifiedRuntimeVersions ?? []).join(', ') || '—'}] |`)
   lines.push(`| isolated home | \`${home}\` (outside the repository; deleted after the run unless --keep) |`)
   lines.push('')
   lines.push('## Official install acceptance (app-bundled rc.3 runtime)')
@@ -850,9 +872,17 @@ async function main() {
   lines.push('')
   lines.push('## Honest scope statement — what this proves and what it does not')
   lines.push('')
-  lines.push('**Verified:** the shipped tarball installs through the official rc.3 plugin manager with no version exemption; the bundled Electron application (0.2.1-rc.3, Electron 44.7.0, Node 24.21.0) renders the real desktop shell; the Livery client module is in the boot graph; the catalog route reports the certified rc.3 adapter and the shared 0.2.1 catalog profile; settings gallery, preview/cancel, apply-persist, reload boot handshake, light/dark tokens, documented font role hooks, first-paint samples and stock restore all behave in the real desktop renderer.')
+  lines.push(`**${claims.statement}**`)
   lines.push('')
-  lines.push('**NOT verified (explicit):** native macOS window chrome (traffic lights/leading), vibrancy/transparency, Dock/rightbar native window states, OS-level DPI scaling beyond `window.devicePixelRatio`, and behaviour of the packaged Chromium sandbox/GPU path (the probe had to pass `--no-sandbox --disable-gpu` to run inside this file-sandboxed automation session). The desktop profile itself cannot be booted by the CLI; all runtime evidence comes from the Electron application. `desktop.macos` therefore remains **pending** in the support matrix — adapted, runtime verification partial.')
+  lines.push('**Verified in this run (only claims backed by passed checks):**')
+  lines.push('')
+  if (claims.verified.length === 0) lines.push('- none')
+  for (const verified of claims.verified) lines.push(`- ${verified}`)
+  lines.push('')
+  lines.push('**NOT verified (explicit):**')
+  lines.push('')
+  for (const notVerified of claims.notVerified) lines.push(`- ${notVerified}`)
+  lines.push('')
   lines.push('')
   if (limitations.length) {
     lines.push('## Known limitations')

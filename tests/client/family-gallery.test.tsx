@@ -41,7 +41,7 @@ import { makeCatalog, makeLivery, TEST_ADAPTER } from './fixtures.js'
 const IDENTITY = {
   adapterId: TEST_ADAPTER.adapterId,
   contractHash: TEST_ADAPTER.contractHash,
-  pluginVersion: '0.1.2',
+  pluginVersion: '0.1.3',
   hostVersion: TEST_ADAPTER.hostVersion,
 }
 

@@ -860,7 +860,11 @@ interface MatrixMergeResult {
 
 async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, adapter: AdapterManifest): Promise<MatrixMergeResult> {
   const path = join(workspace, 'contracts', 'dsh', 'support-matrix.proposed.json')
-  let matrix: SupportMatrix = { schemaVersion: 1, updatedAt: snapshot.capturedAt, entries: [] }
+  let matrix: SupportMatrix = {
+    schemaVersion: 2,
+    updatedAt: snapshot.capturedAt,
+    entries: [],
+  }
   if (existsSync(path)) {
     try {
       matrix = JSON.parse(await readFile(path, 'utf8')) as SupportMatrix
@@ -869,7 +873,10 @@ async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, a
     }
   }
   const previous = matrix.entries.find((entry) => entry.hostVersion === snapshot.hostVersion)
-  const entry = {
+  // Schema-2 defaults for a freshly frozen snapshot: a draft candidate with no
+  // certification claims and no upstream provenance yet. The release tier and
+  // exact versions are recorded only when evidence is reviewed.
+  const entry: SupportMatrixEntry = {
     hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
     contractHash: snapshot.contractHash,
@@ -878,14 +885,18 @@ async function writeMatrixEntry(workspace: string, snapshot: ContractSnapshot, a
       desktop: { macos: 'pending' as const, win32: 'pending' as const },
       web: { chrome: 'pending' as const, edge: 'pending' as const },
     },
-    browserSupport: previous?.browserSupport ?? adapter.verifiedBrowsers,
+    claimTier: previous?.claimTier ?? 'preview',
+    distributionChannel: previous?.distributionChannel ?? 'next',
+    certifiedBrowserVersions: previous?.certifiedBrowserVersions ?? [],
+    certifiedRuntimeVersions: previous?.certifiedRuntimeVersions ?? [],
+    upstream: previous?.upstream ?? { githubTag: null, npmVersion: snapshot.hostVersion },
     clientTarget: adapter.clientTarget,
     evidence: previous?.evidence ?? [],
     notes: previous?.notes ?? ['Contract snapshot frozen; waiting for certification evidence.'],
   }
   const others = matrix.entries.filter((candidate) => candidate.hostVersion !== snapshot.hostVersion)
   const entries = [...others, entry].sort((a, b) => compareVersions(a.hostVersion, b.hostVersion))
-  const merged: SupportMatrix = { schemaVersion: 1, updatedAt: snapshot.capturedAt, entries }
+  const merged: SupportMatrix = { schemaVersion: 2, updatedAt: snapshot.capturedAt, entries }
   await writeFile(path, `${JSON.stringify(merged, null, 2)}\n`)
   return { matrix: merged, path }
 }
@@ -980,23 +991,30 @@ export function stockSnapshotFrom(snapshot: ContractSnapshot): GeneratedStockSna
 /**
  * Build one adapter manifest with certification claims derived strictly from the
  * support-matrix entry (missing entry = no verified profile claimed).
+ *
+ * Browser claims are the EXACT certified versions from the matrix; there is no
+ * minVersion fallback. The family names the certified rendering engine: Web
+ * profiles certify `chrome`/`edge`, while a Desktop Electron renderer certifies
+ * the embedded `chromium` version.
  */
 export function adapterManifestFrom(snapshot: ContractSnapshot, entry?: SupportMatrixEntry): AdapterManifest {
-  const browserMin = (family: string): number =>
-    entry?.browserSupport.find((browser) => browser.family === family)?.minVersion ?? 120
-  const webPassed = entry?.profiles.web.chrome === 'passed' || entry?.profiles.web.edge === 'passed'
-  const darwinPassed = entry?.profiles.desktop.macos === 'passed'
-  const win32Passed = entry?.profiles.desktop.win32 === 'passed'
+  const webChromePassed = entry?.profiles.web.chrome === 'passed'
+  const webEdgePassed = entry?.profiles.web.edge === 'passed'
+  const desktopPassed = entry?.profiles.desktop.macos === 'passed' || entry?.profiles.desktop.win32 === 'passed'
   const verifiedProfiles: string[] = []
-  if (webPassed) verifiedProfiles.push('web')
-  if (darwinPassed || win32Passed) verifiedProfiles.push('desktop')
+  if (webChromePassed || webEdgePassed) verifiedProfiles.push('web')
+  if (desktopPassed) verifiedProfiles.push('desktop')
   const verifiedPlatforms: string[] = []
-  if (webPassed) verifiedPlatforms.push('web')
-  if (darwinPassed) verifiedPlatforms.push('darwin')
-  if (win32Passed) verifiedPlatforms.push('win32')
-  const browsers: Array<{ family: string; minVersion: number }> = []
-  if (entry?.profiles.web.chrome === 'passed') browsers.push({ family: 'chrome', minVersion: browserMin('chrome') })
-  if (entry?.profiles.web.edge === 'passed') browsers.push({ family: 'edge', minVersion: browserMin('edge') })
+  if (webChromePassed || webEdgePassed) verifiedPlatforms.push('web')
+  if (entry?.profiles.desktop.macos === 'passed') verifiedPlatforms.push('darwin')
+  if (entry?.profiles.desktop.win32 === 'passed') verifiedPlatforms.push('win32')
+  const versions = [...(entry?.certifiedBrowserVersions ?? [])]
+  const verifiedBrowsers: Array<{ family: string; versions: string[] }> = []
+  if (versions.length > 0) {
+    if (webChromePassed) verifiedBrowsers.push({ family: 'chrome', versions: [...versions] })
+    if (webEdgePassed) verifiedBrowsers.push({ family: 'edge', versions: [...versions] })
+    if (desktopPassed) verifiedBrowsers.push({ family: 'chromium', versions: [...versions] })
+  }
   return {
     hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
@@ -1011,7 +1029,7 @@ export function adapterManifestFrom(snapshot: ContractSnapshot, entry?: SupportM
     clientTarget: snapshot.source.clientTarget,
     verifiedProfiles,
     verifiedPlatforms,
-    verifiedBrowsers: browsers,
+    verifiedBrowsers,
   }
 }
 
@@ -1173,7 +1191,7 @@ export async function regenerateGeneratedContracts(workspace: string): Promise<G
 }
 
 /** Detection format of a compiled catalog profile; bump with schema/compiler changes. */
-const CATALOG_COMPILER_VERSION = '0.1.2'
+const CATALOG_COMPILER_VERSION = '0.1.3'
 
 /**
  * Render-affecting contract facts. Two host versions with the same profile can

@@ -4,7 +4,7 @@
  *
  * One command proves the shipped plugin works in the real Web profile:
  *
- *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.2.tgz
+ *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.3.tgz
  *   node scripts/acceptance/web.mjs --reuse "http://127.0.0.1:3080/?token=…"   # read-only
  *
  * The isolated path creates its own DSH_HOME under `.tmp/acceptance/`, installs
@@ -60,6 +60,7 @@ import {
   checkSelfCheck,
   checkLiveryPanelFlow,
   checkLayoutStructure,
+  checkVisualMatrix,
   checkStockInitial,
   checkStyleContrast,
   checkWallpaperStudio,
@@ -70,6 +71,7 @@ import { labelOverrides } from './probe/labels-runtime.mjs'
 import { labelsFor } from './probe/labels.mjs'
 import { writeEvidence, writeMarkdownReport } from './probe/report.mjs'
 import { probeBrowserTrust, probePluginBundle } from './probe/http.mjs'
+import { validateBrowserVersion, certificationFor, describeCertification } from './probe/support-matrix.mjs'
 
 const USAGE = `DSH Livery Web-profile acceptance harness
 
@@ -91,6 +93,9 @@ Options:
   --profile-name <name>   Screenshot/profile bucket name (default: <host-version>-web-chrome / reuse)
   --expect-version <v>    Exact certified host version this run must certify
                           (default: dsh --version for isolated runs; optional for --reuse)
+  --expect-browser-version <full>
+                          Exact full system Chrome version (e.g. 156.0.8078.48);
+                          mismatch is a fail-fast startup error (exit 2)
   --expect-profile-kind <web|desktop>
                           Expected BootPayload.profileKind (default: web for isolated web runs)
   --clone-from <dir>      Byte-clone an existing profile directory into the isolated home
@@ -177,6 +182,7 @@ async function main() {
         'dsh-bin',
         'title',
         'expect-version',
+        'expect-browser-version',
         'expect-profile-kind',
         'clone-from',
         'notes',
@@ -210,7 +216,11 @@ async function main() {
   const mode = reuse ? 'reuse' : 'isolated'
   const cloneFrom = options['clone-from'] ? path.resolve(options['clone-from']) : null
   const expectVersionOption = options['expect-version'] ?? null
+  const expectBrowserVersionOption = options['expect-browser-version'] ?? null
   const expectProfileKindOption = options['expect-profile-kind'] ?? null
+  if (expectBrowserVersionOption !== null && !/^\d+\.\d+\.\d+\.\d+$/u.test(expectBrowserVersionOption)) {
+    failStartup(`--expect-browser-version must be a full Chrome version (four numeric parts), got "${expectBrowserVersionOption}"`)
+  }
   if (expectProfileKindOption !== null && !['web', 'desktop'].includes(expectProfileKindOption)) {
     failStartup(`--expect-profile-kind must be web or desktop, got "${expectProfileKindOption}"`)
   }
@@ -255,6 +265,7 @@ async function main() {
       title: options.title ?? null,
       liveryMode: pluginId === 'dsh-livery',
       expectVersionOption,
+      expectBrowserVersionOption,
       expectedVersion: expectedAdapterByOption?.hostVersion ?? null,
       expectedAdapter: expectedAdapterByOption,
       expectedProfileKind: expectProfileKindOption ?? (reuse ? null : 'web'),
@@ -465,7 +476,32 @@ async function main() {
       ctx.environment.chromeVersion = browserInfo.chromeVersion
       ctx.environment.playwrightVersion = browserInfo.playwrightVersion
       ctx.browser = browserInfo.browser
-      ctx.runner.pass('env.browser', 'system Chrome launches through playwright-core (no browser download)', `Chrome ${browserInfo.chromeVersion}; playwright-core ${browserInfo.playwrightVersion} at ${oneLine(browserInfo.playwrightPath, 160)}`)
+      const browserCertification = validateBrowserVersion({
+        hostVersion: ctx.config.expectedVersion,
+        actualVersion: browserInfo.chromeVersion,
+        expectedVersion: ctx.config.expectBrowserVersionOption,
+      })
+      ctx.state.browserCertification = browserCertification
+      ctx.environment.certifiedBrowserVersions = browserCertification.certified
+      ctx.environment.certification = certificationFor(ctx.config.expectedVersion ?? '').certification
+      if (!browserCertification.ok) {
+        await browserInfo.browser.close().catch(() => {})
+        failStartup(
+          `system Chrome ${browserInfo.chromeVersion ?? '(unknown)'} does not match the exact certified browser requirement: ${browserCertification.problems.join('; ')}`,
+          browserCertification,
+        )
+      }
+      ctx.runner.pass(
+        'env.browser',
+        'system Chrome launches through playwright-core (no browser download)',
+        `Chrome ${browserInfo.chromeVersion}; playwright-core ${browserInfo.playwrightVersion} at ${oneLine(browserInfo.playwrightPath, 160)}`,
+      )
+      ctx.runner.pass(
+        'env.browser-version',
+        'actual full Chrome version matches the exact certified browser version requirement',
+        `${browserInfo.chromeVersion}${ctx.config.expectBrowserVersionOption ? ` (--expect-browser-version ${ctx.config.expectBrowserVersionOption})` : ''}; ${browserCertification.certified.length > 0 ? `matrix certifiedBrowserVersions=[${browserCertification.certified.join(', ')}]` : 'legacy matrix has no certifiedBrowserVersions field'}; ${describeCertification(ctx.config.expectedVersion ?? '')}`,
+        { actual: browserInfo.chromeVersion, expected: ctx.config.expectBrowserVersionOption, certified: browserCertification.certified },
+      )
       p.record(true, `Chrome ${browserInfo.chromeVersion}`)
     }
 
@@ -524,6 +560,7 @@ async function main() {
             ['layout', async () => checkLayoutStructure(ctx)],
             ['style', async () => checkStyleContrast(ctx)],
             ['wallpaper', async () => checkWallpaperStudio(ctx)],
+            ['visual', async () => checkVisualMatrix(ctx)],
             ['restore', async () => checkRestoreStock(ctx)],
           ]
         : []),
@@ -646,7 +683,13 @@ async function main() {
   try {
     report = await writeEvidence(ctx)
     if (reportPath) await writeMarkdownReport(report, reportPath, ctx.config.title ? { title: ctx.config.title } : undefined)
-    if (ctx.runner.checks.some((check) => check.status === 'fail')) process.exitCode = 1
+    if (ctx.startupError) {
+      // Fail-fast startup errors (e.g. an exact browser-version mismatch) keep
+      // exit code 2 even though a diagnostic probe with a failing check exists.
+      process.exitCode = 2
+    } else if (ctx.runner.checks.some((check) => check.status === 'fail')) {
+      process.exitCode = 1
+    }
   } catch (error) {
     console.error(`failed to write evidence: ${error instanceof Error ? error.stack : error}`)
     process.exitCode = 2
@@ -684,7 +727,10 @@ function printSummary(ctx, report) {
   console.log(`mode:        ${ctx.config.mode}${ctx.config.mode === 'isolated' ? ` (isolated DSH_HOME: ${ctx.config.dshHome})` : ' (read-only reuse)'}`)
   console.log(`target:      ${ctx.config.packageName}@${ctx.environment.packageVersion ?? '?'}  plugin id: ${ctx.config.pluginId}`)
   console.log(`environment: dsh ${ctx.environment.dshVersion ?? '?'} · Chrome ${ctx.environment.chromeVersion ?? '?'} · playwright-core ${ctx.environment.playwrightVersion ?? '?'}`)
-  console.log(`scope:       DSH ${ctx.config.expectedVersion ?? ctx.environment.dshVersion ?? '?'} + Web profile + Chrome (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`)
+  console.log(
+    `scope:       DSH ${ctx.config.expectedVersion ?? ctx.environment.dshVersion ?? '?'} + Web profile + Chrome ${ctx.environment.chromeVersion ?? '?'}` +
+      `${ctx.state.browserCertification?.certified?.length ? ` (certified [${ctx.state.browserCertification.certified.join(', ')}])` : ''} (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`,
+  )
   console.log(`result:      ${passed.length} passed, ${failures.length} failed, ${skips.length} skipped, ${warnings.length} warnings`)
   console.log(`evidence:    ${path.relative(WORKSPACE_ROOT, ctx.config.jsonPath)}`)
   if (ctx.config.reportPath) console.log(`report:      ${path.relative(WORKSPACE_ROOT, ctx.config.reportPath)}`)

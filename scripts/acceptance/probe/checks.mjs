@@ -4164,6 +4164,420 @@ export async function checkLayoutStructure(ctx) {
   }
 }
 
+
+/**
+ * Visual acceptance matrix (0.1.3).
+ *
+ * Real computed-style + screenshot assertions across widths 1440/1024/767,
+ * light/dark, wallpaper off/on, frost 0/35/80, atmosphere 0/30/60,
+ * forced-colors and reduced-transparency, keyboard focus and selected states.
+ * Host-only floating surfaces that cannot be triggered without synthetic hacks
+ * are skipped with an explicit reason.
+ */
+export async function checkVisualMatrix(ctx) {
+  const { runner, session, state } = ctx
+  const { page } = session
+  if (!state.appliedSkin || !state.activeLivery) {
+    runner.skip('visual.matrix-shots', 'visual matrix renders real screenshots across widths/themes/wallpaper states', 'no active livery')
+    return
+  }
+  const uiLocale = state.actualLocale ?? 'zh'
+  const uiLabels = labelsFor(uiLocale)
+  const tinyPng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  )
+  const shot = async (name, mode = 'light') => {
+    await sleep(240)
+    return capture(page, ctx, { state: name, mode })
+  }
+  const readOverflow = () =>
+    page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      bodyScrollWidth: document.body ? document.body.scrollWidth : null,
+    }))
+  const readCardBoxes = () =>
+    page.evaluate(() => {
+      const ids = ['wallpaper-effects-card', 'wallpaper-builtins-card', 'wallpaper-online-card', 'wallpaper-custom-card']
+      const out = {}
+      for (const id of ids) {
+        const el = document.querySelector(`[data-testid="${id}"]`)
+        if (!el) {
+          out[id] = null
+          continue
+        }
+        const rect = el.getBoundingClientRect()
+        out[id] = { top: rect.top, left: rect.left, width: rect.width, height: rect.height, visible: rect.width > 0 && rect.height > 0 }
+      }
+      return out
+    })
+  const readCardSurface = () =>
+    page.evaluate(() => {
+      const card = document.querySelector('[data-testid="wallpaper-online-card"]')
+      if (!card) return null
+      const style = getComputedStyle(card)
+      const alpha = (value) => {
+        const match = String(value).match(/rgba?\(([^)]*)\)/u)
+        if (!match) return 1
+        const parts = match[1].split(',').map((part) => part.trim())
+        return parts.length === 4 ? Number(parts[3]) : 1
+      }
+      return {
+        backgroundColor: style.backgroundColor,
+        backgroundAlpha: alpha(style.backgroundColor),
+        backdropFilter: style.backdropFilter,
+        border: `${style.borderTopWidth} ${style.borderTopStyle}`,
+        boxShadow: style.boxShadow,
+      }
+    })
+  const setTheme = async (mode) => {
+    await page.emulateMedia({ colorScheme: mode })
+    await page
+      .waitForFunction((theme) => (theme === 'dark' ? document.body.hasAttribute('data-ds-dark-theme') : !document.body.hasAttribute('data-ds-dark-theme')), mode, { timeout: 8_000 })
+      .catch(() => {})
+    await sleep(200)
+  }
+  const clearWallpaper = async () => {
+    const button = page.locator('[data-testid="wallpaper-clear"]').first()
+    if ((await button.count()) > 0 && !(await button.isDisabled().catch(() => true))) {
+      await button.click({ timeout: 5_000 }).catch(() => {})
+    }
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 6_000 }).catch(() => {})
+    await sleep(180)
+  }
+  const selectBuiltin = async () => {
+    const first = page.locator('[data-testid="wallpaper-builtin"]').first()
+    if ((await first.count()) > 0) await first.click({ timeout: 6_000 }).catch(() => {})
+    await page
+      .waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 })
+      .catch(() => {})
+    await sleep(260)
+  }
+  const setSlider = async (testId, value) => {
+    await setRangeValue(page, testId, value)
+    await sleep(220)
+  }
+  let routed = false
+  try {
+    await page.route('https://api.openverse.org/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
+    )
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (url.includes('/v2/list')) {
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
+    })
+    await page.route('https://images.example.test/**', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }))
+    routed = true
+
+    await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale, timeoutMs: 25_000 })
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 12_000 })
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-builtin"]').length === 24, undefined, { timeout: 12_000 }).catch(() => {})
+
+    // ---------- 12-state screenshot matrix: width × theme × wallpaper on/off ----------
+    const matrixShots = []
+    for (const [width, height] of [[1440, 900], [1024, 800], [767, 900]]) {
+      await page.setViewportSize({ width, height })
+      await sleep(300)
+      await setTheme('light')
+      await clearWallpaper()
+      matrixShots.push(await shot(`visual-${width}-light-off`, 'light'))
+      await selectBuiltin()
+      matrixShots.push(await shot(`visual-${width}-light-on`, 'light'))
+      await setTheme('dark')
+      matrixShots.push(await shot(`visual-${width}-dark-on`, 'dark'))
+      await clearWallpaper()
+      matrixShots.push(await shot(`visual-${width}-dark-off`, 'dark'))
+    }
+    const matrixBytes = []
+    for (const frame of matrixShots) matrixBytes.push(await readFile(frame.path).then((buffer) => buffer.length).catch(() => 0))
+    expect(
+      runner,
+      'visual.matrix-shots',
+      'real screenshots captured for 1440/1024/767 × light/dark × wallpaper off/on',
+      matrixShots.length === 12 && matrixBytes.every((bytes) => bytes > 1000),
+      `frames=${matrixShots.length}; bytes=${JSON.stringify(matrixBytes)}`,
+      { frames: matrixShots.map((frame) => frame.path), bytes: matrixBytes },
+    )
+
+    // ---------- 767 narrow: no overflow + effects/built-ins before online/upload ----------
+    await page.setViewportSize({ width: 767, height: 900 })
+    await setTheme('light')
+    await clearWallpaper()
+    const overflowOff = await readOverflow()
+    await selectBuiltin()
+    const overflowOn = await readOverflow()
+    const narrowBoxes = await readCardBoxes()
+    const noOverflow = (overflow) => overflow.scrollWidth <= overflow.clientWidth + 1
+    expect(
+      runner,
+      'visual.no-overflow-767',
+      'no horizontal overflow at 767px with wallpaper off and on',
+      noOverflow(overflowOff) && noOverflow(overflowOn),
+      `off=${overflowOff.scrollWidth}/${overflowOff.clientWidth}; on=${overflowOn.scrollWidth}/${overflowOn.clientWidth}`,
+      { overflowOff, overflowOn },
+    )
+    expect(
+      runner,
+      'visual.narrow-card-order',
+      'at 767px the effects/built-ins rail renders before online/upload cards',
+      Boolean(narrowBoxes['wallpaper-effects-card']?.visible) &&
+        Boolean(narrowBoxes['wallpaper-builtins-card']?.visible) &&
+        Boolean(narrowBoxes['wallpaper-online-card']?.visible) &&
+        Boolean(narrowBoxes['wallpaper-custom-card']?.visible) &&
+        narrowBoxes['wallpaper-effects-card'].top < narrowBoxes['wallpaper-online-card'].top - 8 &&
+        narrowBoxes['wallpaper-builtins-card'].top < narrowBoxes['wallpaper-custom-card'].top - 8,
+      JSON.stringify(narrowBoxes),
+      { boxes: narrowBoxes },
+    )
+
+    // ---------- light/dark real token swap at 1440 with wallpaper on ----------
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await setTheme('light')
+    await clearWallpaper()
+    await selectBuiltin()
+    const lightSnapshot = await readThemeSnapshot(page)
+    const lightSurface = await readCardSurface()
+    await setTheme('dark')
+    const darkSnapshot = await readThemeSnapshot(page)
+    const darkSurface = await readCardSurface()
+    expect(
+      runner,
+      'visual.theme-tokens',
+      'light/dark themes swap computed livery background tokens with wallpaper active',
+      lightSnapshot.bodyAttribute !== null &&
+        darkSnapshot.bodyAttribute === lightSnapshot.bodyAttribute &&
+        lightSnapshot.tokens.bgBaseCanonical !== '' &&
+        lightSnapshot.tokens.bgBaseCanonical !== darkSnapshot.tokens.bgBaseCanonical,
+      `attr light=${lightSnapshot.bodyAttribute} dark=${darkSnapshot.bodyAttribute}; light=${lightSnapshot.tokens.bgBaseCanonical}; dark=${darkSnapshot.tokens.bgBaseCanonical}; darkAttr=${JSON.stringify(darkSnapshot.darkAttribute)}; lightCard=${JSON.stringify(lightSurface)}; darkCard=${JSON.stringify(darkSurface)}`,
+      { light: lightSnapshot.tokens, dark: darkSnapshot.tokens },
+    )
+    await setTheme('light')
+
+    // ---------- frost 0 / 35 / 80 with atmosphere 30 ----------
+    await setSlider('wallpaper-atmosphere', 30)
+    const frostStates = []
+    for (const frost of [0, 35, 80]) {
+      await setSlider('wallpaper-frost', frost)
+      await page.waitForFunction((value) => document.querySelector('[data-testid="wallpaper-frost"]')?.value === String(value), frost, { timeout: 6_000 }).catch(() => {})
+      const wallpaper = await readWallpaperState(page)
+      const surface = await readCardSurface()
+      frostStates.push({ frost, styleUsesColorMix: /color-mix\(/u.test(wallpaper.styleText ?? ''), bgBase: wallpaper.bgBaseToken ?? '', surface })
+      await shot(`visual-frost-${frost}`, 'light')
+    }
+    const frostCardGlass = frostStates[2]?.surface?.backdropFilter && frostStates[2].surface.backdropFilter !== 'none'
+    const frostPercent = (state) => {
+      const match = String(state.bgBase ?? '').match(/(\d+(?:\.\d+)?)%/u)
+      return match ? Number(match[1]) : null
+    }
+    expect(
+      runner,
+      'visual.frost-steps',
+      'frost 0/35/80 changes active token transparency while plugin cards keep their private glass',
+      frostStates.length === 3 &&
+        frostStates.every((state) => state.styleUsesColorMix) &&
+        frostPercent(frostStates[0]) === 100 &&
+        frostPercent(frostStates[2]) !== null &&
+        frostPercent(frostStates[2]) < frostPercent(frostStates[0]) &&
+        (frostCardGlass || (frostStates[2]?.surface?.backgroundAlpha ?? 1) < 1),
+      frostStates.map((state) => `frost=${state.frost} colorMix=${state.styleUsesColorMix} pct=${frostPercent(state)} bgBase="${oneLine(state.bgBase, 90)}" card=${JSON.stringify(state.surface)}`).join(' | '),
+      { frostStates },
+    )
+
+    // ---------- atmosphere 0 / 30 / 60 with frost 35 ----------
+    await setSlider('wallpaper-frost', 35)
+    const atmosphereStates = []
+    for (const atmosphere of [0, 30, 60]) {
+      await setSlider('wallpaper-atmosphere', atmosphere)
+      await page
+        .waitForFunction(
+          (value) => {
+            if (value === 0) return document.getElementById('dsh-livery-wallpaper-overlay') === null
+            const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+            return overlay !== null && Math.abs(Number(getComputedStyle(overlay).opacity) - value / 100) < 0.02
+          },
+          atmosphere,
+          { timeout: 6_000 },
+        )
+        .catch(() => {})
+      const wallpaper = await readWallpaperState(page)
+      atmosphereStates.push({ atmosphere, overlay: wallpaper.overlay })
+      await shot(`visual-atmosphere-${atmosphere}`, 'light')
+    }
+    expect(
+      runner,
+      'visual.atmosphere-steps',
+      'atmosphere 0/30/60 maps to no overlay / 0.30 / 0.60 opacity, below floating UI',
+      atmosphereStates.length === 3 &&
+        atmosphereStates[0].overlay.present === false &&
+        Math.abs(Number(atmosphereStates[1].overlay.opacity) - 0.3) < 0.02 &&
+        Math.abs(Number(atmosphereStates[2].overlay.opacity) - 0.6) < 0.02 &&
+        Number(atmosphereStates[2].overlay.zIndex) < 100,
+      atmosphereStates.map((state) => `atmo=${state.atmosphere} overlay=${JSON.stringify(state.overlay)}`).join(' | '),
+      { atmosphereStates },
+    )
+
+    // ---------- forced-colors + reduced-transparency ----------
+    await page.emulateMedia({ colorScheme: 'light', forcedColors: 'active' })
+    await page.waitForFunction(() => matchMedia('(forced-colors: active)').matches, undefined, { timeout: 6_000 }).catch(() => {})
+    await sleep(260)
+    const forcedSnapshot = await readThemeSnapshot(page)
+    const forcedSurface = await readCardSurface()
+    await shot('visual-forced-colors', 'light')
+    expect(
+      runner,
+      'visual.forced-colors',
+      'forced-colors active keeps the livery scoped and removes translucent card glass',
+      forcedSnapshot.bodyAttribute !== null &&
+        (forcedSurface?.backdropFilter === 'none' || (forcedSurface?.backgroundAlpha ?? 0) >= 1),
+      `attr=${forcedSnapshot.bodyAttribute}; card=${JSON.stringify(forcedSurface)}`,
+      { card: forcedSurface },
+    )
+    await page.emulateMedia({ colorScheme: 'light', forcedColors: 'none' }).catch(() => {})
+
+    let cdp = null
+    try {
+      cdp = await page.context().newCDPSession(page)
+      await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] })
+      await sleep(280)
+      const reducedMedia = await page.evaluate(() => matchMedia('(prefers-reduced-transparency: reduce)').matches)
+      const reducedSurface = await readCardSurface()
+      await shot('visual-reduced-transparency', 'light')
+      expect(
+        runner,
+        'visual.reduced-transparency',
+        'prefers-reduced-transparency:reduce removes card blur/translucent private surface',
+        reducedMedia === true && (reducedSurface?.backdropFilter === 'none' || (reducedSurface?.backgroundAlpha ?? 0) >= 1),
+        `media=${reducedMedia}; card=${JSON.stringify(reducedSurface)}`,
+        { card: reducedSurface },
+      )
+    } catch (error) {
+      runner.skip('visual.reduced-transparency', 'prefers-reduced-transparency:reduce removes translucent card glass', `emulation not supported: ${error instanceof Error ? error.message : String(error)}`)
+    } finally {
+      if (cdp) {
+        await cdp.send('Emulation.setEmulatedMedia', { features: [] }).catch(() => {})
+        await cdp.detach().catch(() => {})
+      }
+    }
+
+    // ---------- keyboard focus + selected state ----------
+    await clearWallpaper()
+    await setTheme('light')
+    const firstBuiltin = page.locator('[data-testid="wallpaper-builtin"]').first()
+    await firstBuiltin.focus()
+    // Return focus through the keyboard so the browser applies :focus-visible.
+    await page.keyboard.press('Tab').catch(() => {})
+    await page.keyboard.press('Shift+Tab').catch(() => {})
+    await sleep(220)
+    const focusState = await page.evaluate(() => {
+      const element = document.activeElement
+      if (!(element instanceof HTMLElement)) return null
+      const style = getComputedStyle(element)
+      return {
+        testId: element.getAttribute('data-testid'),
+        outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`,
+        boxShadow: style.boxShadow,
+      }
+    })
+    await page.keyboard.press('Enter')
+    await sleep(380)
+    const selectedState = await page.evaluate(() => {
+      const pressed = [...document.querySelectorAll('[data-testid="wallpaper-builtin"]')].filter((element) => element.getAttribute('aria-pressed') === 'true')
+      return { count: pressed.length, id: pressed[0]?.getAttribute('data-wallpaper-id') ?? null, pressed: pressed[0]?.getAttribute('aria-pressed') ?? null }
+    })
+    await shot('visual-keyboard-selected', 'light')
+    expect(
+      runner,
+      'visual.keyboard-focus',
+      'keyboard focus reaches a builtin and shows a visible focus ring',
+      focusState?.testId === 'wallpaper-builtin' && ((focusState?.outline ?? '').split(' ')[0] !== 'none' || (focusState?.boxShadow ?? 'none') !== 'none'),
+      `focused=${JSON.stringify(focusState)}`,
+      { focusState },
+    )
+    expect(
+      runner,
+      'visual.selected-state',
+      'keyboard Enter selects exactly one builtin with a visible selected state',
+      selectedState.count === 1 && selectedState.pressed === 'true' && typeof selectedState.id === 'string',
+      JSON.stringify(selectedState),
+      { selectedState },
+    )
+
+    // ---------- floating host surfaces above atmosphere/frost ----------
+    await setSlider('wallpaper-frost', 80)
+    await setSlider('wallpaper-atmosphere', 60)
+    let modalSurface = null
+    try {
+      await openSettings(page)
+      modalSurface = await page.evaluate(() => {
+        const dialog = document.querySelector('[role="dialog"]')
+        if (!dialog) return null
+        const style = getComputedStyle(dialog)
+        const match = String(style.backgroundColor).match(/rgba?\(([^)]*)\)/u)
+        const parts = match ? match[1].split(',').map((part) => part.trim()) : []
+        const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
+        return {
+          background: style.backgroundColor,
+          alpha: parts.length === 4 ? Number(parts[3]) : 1,
+          backdrop: style.backdropFilter,
+          overlayZ: overlay ? Number(getComputedStyle(overlay).zIndex) : null,
+        }
+      })
+      await closeSettings(page)
+    } catch {
+      modalSurface = null
+    }
+    if (modalSurface === null) {
+      runner.skip('visual.floating-surfaces', 'host Settings modal stays opaque above frost+atmosphere', 'host Settings dialog unavailable in this shell')
+    } else {
+      expect(
+        runner,
+        'visual.floating-surfaces',
+        'host Settings modal stays opaque above frost+atmosphere',
+        modalSurface.alpha >= 0.99 && (modalSurface.overlayZ === null || modalSurface.overlayZ < 1000),
+        JSON.stringify(modalSurface),
+        { modalSurface },
+      )
+    }
+    runner.skip(
+      'visual.other-floating-surfaces',
+      'confirm dialog / Toast / Tooltip / Menu / HoverCard stay opaque above the atmosphere',
+      'not triggerable without synthetic host interactions in this shell; Settings modal path covers the shared floating-surface token',
+    )
+
+    // ---------- restore a clean interactive state ----------
+    await clearWallpaper()
+    await setSlider('wallpaper-frost', 35)
+    await setSlider('wallpaper-atmosphere', 60)
+    await setSlider('wallpaper-blur', 12)
+    await setSlider('wallpaper-dim', 40)
+    await setTheme('light')
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForSelector('[data-testid="livery-tabpanel-style"]', { timeout: 8_000 }).catch(() => {})
+    state.visualMatrix = {
+      shots: matrixShots.map((frame) => frame.path),
+      narrowBoxes,
+      frostStates,
+      atmosphereStates,
+      forcedSurface,
+    }
+  } catch (error) {
+    runner.fail('visual.matrix', 'visual acceptance matrix completes with real computed-style/screenshot evidence', error instanceof Error ? (error.stack ?? error.message) : String(error))
+  } finally {
+    if (routed) {
+      await page.unroute('https://api.openverse.org/**').catch(() => {})
+      await page.unroute('https://images.example.test/**').catch(() => {})
+      await page.unroute('https://picsum.photos/**').catch(() => {})
+    }
+    await page.emulateMedia({ colorScheme: 'light', forcedColors: 'none' }).catch(() => {})
+    await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
+  }
+}
+
 /** Raw profile patch state persisted in probe.json (redacted not needed: no secrets). */
 export async function collectProfileEvidence(ctx) {
   if (ctx.config.mode !== 'isolated') return null

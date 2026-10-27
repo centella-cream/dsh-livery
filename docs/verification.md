@@ -1,24 +1,19 @@
 # Verification
 
-**Release `0.1.2` — published 2026-10-27.** Exact artifact:
+**Release `0.1.3` — release candidate.** The exact accepted artifact, sha256,
+byte size and commit are recorded in the three committed evidence files at
+`contracts/dsh/evidence/0.1.3/`; the publication workflow downloads the same bytes
+from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub
+Release. `0.1.2` evidence is retained unchanged under
+`contracts/dsh/evidence/` for the prior release.
 
-```text
-dsh-livery-0.1.2.tgz
-sha256 0899b94bba55586cdbe2f4ba0d9ace88bf492ab866920aca72cbaea5b23db82c
-2,151,426 bytes · 165 files
-```
+**Release scope for 0.1.3 (limited release):**
 
-- npm: `dsh-livery@0.1.2` (`latest`)
-- GitHub release: https://github.com/centella-cream/dsh-livery/releases/tag/v0.1.2
-- release commit/tag: `d6bb34c1373ad68047e0812d7797c46b76f10b05` / `v0.1.2`
-
-**Release scope for 0.1.2 (limited release):**
-
-| Host | Profile / platform | Runtime | Status |
+| Host | Profile / platform | Certified runtime | Status |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Stable certified (npm `latest`) |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Next-channel preview (npm `next`; no GitHub tag yet) |
-| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron / Node 24.21.0 | Stable certified renderer surface (GitHub-tagged) |
+| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (npm `latest`) |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; no GitHub tag yet) |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node `24.21.0` (Chromium `152.0.7977.130`) | Stable certified renderer surface (GitHub-tagged) |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install and
@@ -27,33 +22,35 @@ and the signed npm tarball; `0.2.1-rc.4` is verified against the signed npm `nex
 tarball but has no upstream GitHub tag yet, so it is a preview compatibility claim,
 not a channel-stability promise. The Desktop certification covers plugin
 installation, boot, the Electron renderer, settings/gallery, persistence and the
-first-frame handshake.
-Native macOS window chrome, traffic lights/leading, vibrancy, Dock/rightbar and
-OS-level DPI are host-owned and outside the plugin's certification surface.
+restart handshake; native macOS window chrome, traffic lights/leading, vibrancy,
+Dock/rightbar, OS-level DPI and the packaged GPU/sandbox path remain outside the
+certification surface. First-paint sampling is only claimed when the Desktop report
+contains actual sample data.
 
-The published artifact is the exact tarball named in the committed evidence files
+The candidate artifact is the exact tarball named in the committed evidence files
 (including committed report markdown + sha256 checks). Both release gates and
 `prepublish-check` refuse to publish bytes that do not match them.
 
 Evidence:
 
-- `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json`
-- `contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`
+- `contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json`
+- `contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json`
+- `contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json`
 
-Each file records the exact sha256, byte size, commit, scope and per-run results.
+Each file records the exact sha256, byte size, commit, exact browser/runtime
+versions, scope and per-run results. The `0.1.2` evidence files are never rewritten.
 
 ## Acceptance runs (accepted artifact)
 
 | Run | Environment | Result |
 |---|---|---|
-| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node 22.23.1, Chrome 155.0.8059.85 | 231 pass / 0 fail / 4 skip / 2 warn |
-| Web real-profile clone | same | 232 pass / 0 fail / 4 skip / 4 warn (clone-only dependency-repair warning) |
-| Latest Web isolated | DSH `0.2.1-rc.4`, macOS arm64, Node 22.23.1, Chrome 155 | 231 pass / 0 fail / 4 skip / 2 warn |
-| Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node 24.21.0 | recorded in the committed Desktop evidence/report |
+| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | recorded in the committed rc.2 evidence/report |
+| Web real-profile clone | same | recorded in the committed rc.2 evidence/report |
+| Latest Web isolated | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | recorded in the committed rc.4 evidence/report |
+| Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node `24.21.0` | recorded in the committed Desktop evidence/report |
 
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
-22.23.1 and Playwright with system Chrome 155. The Desktop run uses the real
+22.23.1 and Playwright with system Chrome 156.0.8078.48. The Desktop run uses the real
 Electron app, the official rc.3 plugin manager and an isolated app
 `DSH_HOME`/user-data-dir, driving the actual renderer.
 
@@ -81,7 +78,7 @@ Electron app, the official rc.3 plugin manager and an isolated app
 - Native macOS window chrome, traffic lights/leading clearance, vibrancy,
   Dock/rightbar window states, OS-level DPI and the packaged GPU/sandbox path.
   These are host-owned and outside this plugin's certification.
-- Desktop Windows, Web Edge, any browser other than Chrome 155, any Node other than
+- Desktop Windows, Web Edge, any browser other than Chrome 156.0.8078.48, any Node other than
   the two certified runtimes, DSH Desktop rc.4 (not released/available), and any
   other DSH version.
 - A second catalog profile or any second theme registry. The build intentionally
@@ -94,7 +91,7 @@ Electron app, the official rc.3 plugin manager and an isolated app
   non-stock value can be inherited on reinstall. This is documented in the
   README/SUPPORT uninstall notes and is not counted as "zero residue".
 - All host surfaces using `--dsw-alias-bg-layer-2` remain opaque under frost
-  (not only Modal). This is an accepted 0.1.2 product boundary; plugin cards keep
+  (not only Modal). This is an accepted 0.1.3 product boundary; plugin cards keep
   the glass effect through `--dsh-livery-card-surface`.
 
 ## Reproduce
@@ -106,10 +103,16 @@ pnpm build:cli
 pnpm gate:support-matrix -- --all
 pnpm gate:release -- --all
 pnpm pack:candidate
-pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
-pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json
-pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
+# exact candidate produced above; version is derived from package.json
+pnpm release:prepare -- --tgz .tmp/release-check/dsh-livery-<version>.tgz
 ```
+
+The publication workflow downloads the accepted candidate, verifies every
+matrix evidence file, publishes that exact tarball, then downloads the version
+back from npm and checks sha256, byte size and package version. The accepted
+tarball, `SHA256SUMS` and release manifest are attached to the GitHub Release.
+The Web acceptance harness must be run with `--expect-browser-version
+156.0.8078.48` for the Web hosts; any other system Chrome version fails the run.
 
 Raw probes and screenshots are generated locally under `artifacts/` and are not
 committed; the committed evidence files record their result summaries and the exact

@@ -18,7 +18,14 @@
  */
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { EvidenceStatus, ProfileStatus, SupportMatrix, SupportMatrixEntry } from './types.js'
+import type {
+  ClaimTier,
+  DistributionChannel,
+  EvidenceStatus,
+  ProfileStatus,
+  SupportMatrix,
+  SupportMatrixEntry,
+} from './types.js'
 
 export interface GateResult {
   readonly ok: boolean
@@ -35,6 +42,25 @@ export const SHIPPED_STATUSES: readonly EvidenceStatus[] = ['g6-approved', 'rele
 
 /** Per-profile certification states, including the explicit scope decision. */
 export const PROFILE_STATUSES: readonly ProfileStatus[] = ['pending', 'passed', 'failed', 'not-supported'] as const
+
+/** Schema version carrying exact certification claims (0.1.3). */
+export const MATRIX_SCHEMA_VERSION = 2 as const
+
+/** Stability promise of a certification claim. */
+export const CLAIM_TIERS: readonly ClaimTier[] = ['stable', 'preview'] as const
+
+/** Distribution channel the certified build was published to. */
+export const DISTRIBUTION_CHANNELS: readonly DistributionChannel[] = ['latest', 'next', 'desktop-app'] as const
+
+/**
+ * Exact browser/Chromium version formats. Shipped claims must be FULL versions
+ * (`156.0.8078.48`); the looser form keeps the historical 0.2.0-rc.2 claim
+ * (`120`) representable in the candidate matrix without pretending it is a
+ * full certification string.
+ */
+const FULL_BROWSER_VERSION = /^\d+\.\d+\.\d+\.\d+$/u
+const HISTORICAL_BROWSER_VERSION = /^\d+(?:\.\d+){0,3}$/u
+const RUNTIME_VERSION = /^\d+\.\d+\.\d+$/u
 
 /** Formal release authority (checked into the repo, read by every gate). */
 export const FORMAL_MATRIX_PATH = 'contracts/dsh/support-matrix.json'
@@ -115,9 +141,89 @@ export function profileGateProblems(entry: SupportMatrixEntry): string[] {
   return problems
 }
 
+/** Whether a browser version string is a full exact version (shipped claims). */
+export function isFullBrowserVersion(version: string): boolean {
+  return FULL_BROWSER_VERSION.test(version)
+}
+
+/** Exact runtime version (Node) format. */
+export function isExactRuntimeVersion(version: string): boolean {
+  return RUNTIME_VERSION.test(version)
+}
+
+/** Problems for the schema-v2 exact certification fields of one entry. */
+function claimProblems(entry: SupportMatrixEntry): string[] {
+  const problems: string[] = []
+  const raw = entry as unknown as Record<string, unknown>
+  // Legacy schema-1 field: exact versions replaced the family/minVersion table.
+  if ('browserSupport' in raw) {
+    problems.push('legacy browserSupport field is not allowed; use certifiedBrowserVersions')
+  }
+  if (!CLAIM_TIERS.includes(entry.claimTier)) {
+    problems.push(`unknown claimTier "${String(entry.claimTier)}"`)
+  }
+  if (!DISTRIBUTION_CHANNELS.includes(entry.distributionChannel)) {
+    problems.push(`unknown distributionChannel "${String(entry.distributionChannel)}"`)
+  }
+  const upstream = raw.upstream as Record<string, unknown> | undefined
+  if (upstream === null || typeof upstream !== 'object' || Array.isArray(upstream)) {
+    problems.push('upstream provenance object is required ({ githubTag, npmVersion })')
+  } else {
+    const tag = upstream.githubTag
+    if (tag !== null && typeof tag !== 'string') problems.push('upstream.githubTag must be a string or null')
+    if (typeof upstream.npmVersion !== 'string' || upstream.npmVersion === '') {
+      problems.push('upstream.npmVersion must be a non-empty exact version string')
+    } else if (upstream.npmVersion !== entry.hostVersion) {
+      problems.push(`upstream.npmVersion "${String(upstream.npmVersion)}" must equal the host version "${entry.hostVersion}"`)
+    }
+  }
+  if (!Array.isArray(entry.certifiedBrowserVersions)) {
+    problems.push('certifiedBrowserVersions must be an exact version string array')
+  } else {
+    for (const version of entry.certifiedBrowserVersions) {
+      if (typeof version !== 'string' || !HISTORICAL_BROWSER_VERSION.test(version)) {
+        problems.push(`certifiedBrowserVersions entry "${String(version)}" is not an exact version string`)
+      }
+    }
+  }
+  if (!Array.isArray(entry.certifiedRuntimeVersions)) {
+    problems.push('certifiedRuntimeVersions must be an exact version string array')
+  } else {
+    for (const version of entry.certifiedRuntimeVersions) {
+      if (typeof version !== 'string' || !RUNTIME_VERSION.test(version)) {
+        problems.push(`certifiedRuntimeVersions entry "${String(version)}" is not an exact Node version string`)
+      }
+    }
+  }
+  if (entry.claimTier === 'stable') {
+    const tag = upstream?.githubTag
+    if (typeof tag !== 'string' || tag === '') {
+      problems.push('stable claims require a non-null upstream.githubTag')
+    }
+    if (entry.distributionChannel === 'next') {
+      problems.push('stable claims cannot use the next distribution channel')
+    }
+  }
+  // Shipped claims need real exact values; in-flight/draft entries may leave the
+  // arrays empty until certification evidence is recorded.
+  if (isShippedStatus(entry.status)) {
+    if (!Array.isArray(entry.certifiedBrowserVersions) || entry.certifiedBrowserVersions.length === 0) {
+      problems.push('shipped entries require at least one exact certifiedBrowserVersions value')
+    } else if (!entry.certifiedBrowserVersions.every(isFullBrowserVersion)) {
+      problems.push('shipped entries require FULL certifiedBrowserVersions values')
+    }
+    if (!Array.isArray(entry.certifiedRuntimeVersions) || entry.certifiedRuntimeVersions.length === 0) {
+      problems.push('shipped entries require at least one exact certifiedRuntimeVersions value')
+    }
+  }
+  return problems
+}
+
 export function validateMatrix(matrix: SupportMatrix): string[] {
   const problems: string[] = []
-  if (matrix.schemaVersion !== 1) problems.push('support matrix schemaVersion must be 1')
+  if (matrix.schemaVersion !== MATRIX_SCHEMA_VERSION) {
+    problems.push(`support matrix schemaVersion must be ${MATRIX_SCHEMA_VERSION}`)
+  }
   const seen = new Set<string>()
   for (const entry of matrix.entries) {
     if (seen.has(entry.hostVersion)) problems.push(`duplicate version entry: ${entry.hostVersion}`)
@@ -136,6 +242,7 @@ export function validateMatrix(matrix: SupportMatrix): string[] {
         problems.push(`${entry.hostVersion}: unknown profile status "${String(profile.status)}" for ${profile.profile}`)
       }
     }
+    problems.push(...claimProblems(entry).map((problem) => `${entry.hostVersion}: ${problem}`))
     if (entry.status === 'released') {
       // A released entry is a support claim: every in-scope profile must be
       // resolved (passed) and the evidence list must be non-empty.

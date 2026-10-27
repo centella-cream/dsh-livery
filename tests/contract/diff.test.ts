@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { diffContracts, renderDiffMarkdown } from '../../src/contract/diff.js'
 import {
+  MATRIX_SCHEMA_VERSION,
   gateRelease,
   gateSupportMatrix,
   notSupportedProfiles,
@@ -9,7 +10,12 @@ import {
   supportedProfiles,
   validateMatrix,
 } from '../../src/contract/matrix.js'
-import type { ContractSnapshot, ProfileStatus, SupportMatrix, SupportMatrixEntry } from '../../src/contract/types.js'
+import type {
+  ContractSnapshot,
+  ProfileStatus,
+  SupportMatrix,
+  SupportMatrixEntry,
+} from '../../src/contract/types.js'
 
 function makeSnapshot(overrides: {
   version?: string
@@ -148,7 +154,7 @@ function makeMatrix(
   evidence = status === 'draft' || status === 'g0-g5-passed' ? [] : ['artifacts/acceptance/probe.json'],
 ): SupportMatrix {
   return {
-    schemaVersion: 1,
+    schemaVersion: MATRIX_SCHEMA_VERSION,
     updatedAt: '2026-10-24T00:00:00.000Z',
     entries: [
       {
@@ -157,7 +163,11 @@ function makeMatrix(
         contractHash: 'sha256:42abf8ebc5ec1df1e6abd6760680ec82fd062db650036e5e9f2a052138b6b2ce',
         status,
         profiles,
-        browserSupport: [{ family: 'chrome', minVersion: 120 }],
+        claimTier: 'stable',
+        distributionChannel: 'latest',
+        certifiedBrowserVersions: ['156.0.8078.48'],
+        certifiedRuntimeVersions: ['22.23.1'],
+        upstream: { githubTag: 'dsh-v0.2.0-rc.2', npmVersion: '0.2.0-rc.2' },
         clientTarget: 'chrome120',
         evidence,
         notes: [],
@@ -170,7 +180,7 @@ function withProfiles(matrix: SupportMatrix, profiles: SupportMatrixEntry['profi
   return { ...matrix, entries: [{ ...matrix.entries[0]!, profiles }] }
 }
 
-describe('support-matrix gates (round-15 profile semantics)', () => {
+describe('support-matrix gates (schema v2 profile semantics)', () => {
   it('accepts a fully certified g6-approved entry', () => {
     const result = gateSupportMatrix(makeMatrix('g6-approved'), '0.2.0-rc.2')
     expect(result.problems).toEqual([])
@@ -228,6 +238,77 @@ describe('support-matrix gates (round-15 profile semantics)', () => {
     expect(gateRelease(makeMatrix('released', NARROWED), '0.2.0-rc.2').ok).toBe(true)
     // Released without evidence is blocked even when profiles pass.
     expect(gateRelease(makeMatrix('released', PASSED_ALL, []), '0.2.0-rc.2').ok).toBe(false)
+  })
+
+  it('validates exact schema-v2 certification fields (tier/channel/browser/runtime/upstream)', () => {
+    const base = makeMatrix('released')
+    expect(validateMatrix(base)).toEqual([])
+    const entry = base.entries[0]!
+    expect(entry.claimTier).toBe('stable')
+    expect(entry.distributionChannel).toBe('latest')
+    expect(entry.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
+    expect(entry.certifiedRuntimeVersions).toEqual(['22.23.1'])
+    expect(entry.upstream).toEqual({ githubTag: 'dsh-v0.2.0-rc.2', npmVersion: '0.2.0-rc.2' })
+
+    // Stable claims need a real upstream tag and may not sit on the next channel.
+    const taglessStable: SupportMatrix = {
+      ...base,
+      entries: [{ ...entry, upstream: { githubTag: null, npmVersion: '0.2.0-rc.2' } }],
+    }
+    expect(validateMatrix(taglessStable).some((problem) => problem.includes('stable claims require a non-null upstream.githubTag'))).toBe(true)
+    const nextStable: SupportMatrix = {
+      ...base,
+      entries: [{ ...entry, distributionChannel: 'next' }],
+    }
+    expect(validateMatrix(nextStable).some((problem) => problem.includes('stable claims cannot use the next distribution channel'))).toBe(true)
+
+    // Preview claims may be tagless/next-channel.
+    const preview: SupportMatrix = {
+      ...base,
+      entries: [
+        {
+          ...entry,
+          claimTier: 'preview',
+          distributionChannel: 'next',
+          upstream: { githubTag: null, npmVersion: '0.2.0-rc.2' },
+        },
+      ],
+    }
+    expect(validateMatrix(preview)).toEqual([])
+
+    // Exact array + full-version requirements for shipped claims.
+    const loose: SupportMatrix = {
+      ...base,
+      entries: [{ ...entry, certifiedBrowserVersions: ['120'], certifiedRuntimeVersions: [] }],
+    }
+    expect(validateMatrix(loose).some((problem) => problem.includes('FULL certifiedBrowserVersions'))).toBe(true)
+    expect(validateMatrix(loose).some((problem) => problem.includes('at least one exact certifiedRuntimeVersions'))).toBe(true)
+
+    // Legacy schema-1 field is rejected outright.
+    const legacy: SupportMatrix = {
+      ...base,
+      entries: [{ ...entry, ...({ browserSupport: [{ family: 'chrome', minVersion: 120 }] } as Record<string, unknown>) }],
+    }
+    expect(validateMatrix(legacy).some((problem) => problem.includes('legacy browserSupport'))).toBe(true)
+
+    // Unknown enums and npm-version drift are rejected.
+    const unknown: SupportMatrix = {
+      ...base,
+      entries: [
+        {
+          ...entry,
+          claimTier: 'beta' as unknown as SupportMatrixEntry['claimTier'],
+          distributionChannel: 'stable' as unknown as SupportMatrixEntry['distributionChannel'],
+          upstream: { githubTag: 'dsh-v0.2.0-rc.2', npmVersion: '0.2.1-rc.2' },
+        },
+      ],
+    }
+    const unknownProblems = validateMatrix(unknown)
+    expect(unknownProblems.some((problem) => problem.includes('unknown claimTier'))).toBe(true)
+    expect(unknownProblems.some((problem) => problem.includes('unknown distributionChannel'))).toBe(true)
+    expect(unknownProblems.some((problem) => problem.includes('must equal the host version'))).toBe(true)
+    // Schema 1 is no longer accepted.
+    expect(validateMatrix({ ...base, schemaVersion: 1 } as unknown as SupportMatrix).some((problem) => problem.includes('schemaVersion must be 2'))).toBe(true)
   })
 
   it('rejects malformed matrices and unknown profile states', () => {

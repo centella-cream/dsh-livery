@@ -87,7 +87,7 @@ export const CLIENT_CSS = `
 
 
 .wallpaper-dropzone{display:flex;align-items:center;justify-content:center;padding:12px;border:1px dashed var(--lw-line2);border-radius:10px;color:var(--lw-2);font-size:var(--lw-fs-label);text-align:center;cursor:pointer}
-.wallpaper-dropzone--over{border-color:var(--lw-brand);color:var(--lw-brand)}
+.wallpaper-dropzone--over{border-color:var(--lw-brand)}
 
 /* Card system + two-column studio layouts (hero / main modules / side rail). */
 .livery-ui-card{display:flex;flex-direction:column;gap:12px;min-width:0;padding:16px 18px;border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent);border-radius:14px;background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2));box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 28px -22px rgba(0,0,0,.45);backdrop-filter:blur(14px) saturate(1.08)}
@@ -137,7 +137,8 @@ export const CLIENT_CSS = `
 .livery-about{display:flex;flex-direction:column;gap:4px}
 .wallpaper-recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
 .wallpaper-recent-item{display:flex;flex-direction:column;gap:3px;min-width:0;padding:0;border:1px solid color-mix(in srgb,var(--lw-fg) 14%,transparent);border-radius:9px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer2));color:inherit;font:inherit;font-size:var(--lw-fs-caption);text-align:start;cursor:pointer;overflow:hidden}
-.wallpaper-recent-thumb{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:var(--lw-layer2)}
+.wallpaper-recent-thumb{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
 .wallpaper-recent-title,.wallpaper-recent-source{display:block;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wallpaper-recent-source{padding-bottom:6px;color:var(--lw-2)}
+.wallpaper-dropzone:focus-visible{outline:2px solid var(--lw-brand);outline-offset:2px}
 `

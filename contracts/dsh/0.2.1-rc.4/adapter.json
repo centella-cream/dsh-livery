@@ -19,7 +19,9 @@
   "verifiedBrowsers": [
     {
       "family": "chrome",
-      "minVersion": 155
+      "versions": [
+        "156.0.8078.48"
+      ]
     }
   ]
 }

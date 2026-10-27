@@ -186,7 +186,11 @@ export interface AdapterManifest {
   readonly clientTarget: string
   readonly verifiedProfiles: readonly string[]
   readonly verifiedPlatforms: readonly string[]
-  readonly verifiedBrowsers: readonly { readonly family: string; readonly minVersion: number }[]
+  /** Certified browser/Chromium families with the EXACT full versions accepted. */
+  readonly verifiedBrowsers: readonly {
+    readonly family: string
+    readonly versions: readonly string[]
+  }[]
 }
 
 export type EvidenceStatus =
@@ -204,6 +208,25 @@ export type EvidenceStatus =
  */
 export type ProfileStatus = 'pending' | 'passed' | 'failed' | 'not-supported'
 
+/**
+ * Stability promise of a certification claim.
+ *
+ * `stable` requires a real upstream GitHub tag/release AND the matching signed
+ * npm package; a next-channel-only host is `preview`, never stable.
+ */
+export type ClaimTier = 'stable' | 'preview'
+
+/** Distribution channel the certified build was published to. */
+export type DistributionChannel = 'latest' | 'next' | 'desktop-app'
+
+/** Upstream provenance of the exact host build. */
+export interface UpstreamProvenance {
+  /** Official GitHub tag/release name, or `null` for a preview-only build. */
+  readonly githubTag: string | null
+  /** Exact signed npm package version. */
+  readonly npmVersion: string
+}
+
 export interface SupportMatrixEntry {
   readonly hostVersion: string
   readonly adapterId: string
@@ -213,7 +236,13 @@ export interface SupportMatrixEntry {
     readonly desktop: { readonly macos: ProfileStatus; readonly win32: ProfileStatus }
     readonly web: { readonly chrome: ProfileStatus; readonly edge: ProfileStatus }
   }
-  readonly browserSupport: readonly { readonly family: string; readonly minVersion: number }[]
+  readonly claimTier: ClaimTier
+  readonly distributionChannel: DistributionChannel
+  /** EXACT certified browser/Chromium versions (full version strings). */
+  readonly certifiedBrowserVersions: readonly string[]
+  /** EXACT certified runtime versions (Node/Electron Node version strings). */
+  readonly certifiedRuntimeVersions: readonly string[]
+  readonly upstream: UpstreamProvenance
   readonly clientTarget: string
   readonly evidence: readonly string[]
   readonly notes: readonly string[]
@@ -227,7 +256,8 @@ export interface SupportMatrixEntry {
  * trail and is never read by the release gates.
  */
 export interface SupportMatrix {
-  readonly schemaVersion: 1
+  /** Schema 2 carries exact certification claims (tier/channel/browser/runtime/upstream). */
+  readonly schemaVersion: 2
   readonly updatedAt: string
   readonly entries: readonly SupportMatrixEntry[]
 }

@@ -1,8 +1,8 @@
 # Multi-version policy
 
-**Status (0.1.2):** current policy. This page replaces the earlier
+**Status (0.1.3):** current policy. This page replaces the earlier
 compatibility-range/compat-mode proposal, which was removed and is archived
-under [`docs/archive/`](../archive/README.md).
+under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
 ## 1. Exact versions, no compatibility mode
 
@@ -25,6 +25,21 @@ real host acceptance, not inferred from semver.
 | `0.2.1-rc.2` | npm `latest` + official GitHub release | Stable certified (Web) |
 | `0.2.1-rc.3` | GitHub-tagged Desktop app | Stable certified (Desktop/macOS renderer) |
 | `0.2.1-rc.4` | npm `next` package; no matching GitHub tag yet | Next-channel preview (Web) |
+
+Matrix entries also carry the exact certification fields:
+
+- `claimTier` — `stable` or `preview`.
+- `distributionChannel` — `latest`, `next` or `desktop-app`.
+- `certifiedBrowserVersions` — full versions (for example `156.0.8078.48`),
+  not an ambiguous minimum.
+- `certifiedRuntimeVersions` — exact Node versions; Electron/Chromium details stay
+  in the Desktop report and notes.
+- `upstream` — `githubTag` (nullable) and `npmVersion`.
+
+A `stable` claim is invalid without an upstream GitHub tag and must not use the
+`next` channel. A tagless npm `next` build is `preview`. The adapter's
+`verifiedBrowsers` is generated from these exact versions; acceptance fails if
+the observed Chrome version is not in `certifiedBrowserVersions`.
 
 Stable support requires **both** an official GitHub tag/release and the matching
 signed npm package. A version that exists only on npm's `next` channel cannot be
@@ -56,7 +71,7 @@ minimum sequence is:
    its own profile, previews and tests; a matching contract should stay in the
    shared profile.
 5. **Run all declared scopes.** The release gate must re-run every previously
-   declared host plus the new one (Web rc.2, rc.4; Desktop rc.3 in 0.1.2), using
+   declared host plus the new one (Web rc.2, rc.4; Desktop rc.3 in 0.1.3), using
    the same exact candidate tarball. Preserve the old evidence rather than
    replacing it with an unbound report.
 6. **Update release surfaces.** README/README.zh-CN, CHANGELOG, docs index,

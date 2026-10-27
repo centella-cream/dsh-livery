@@ -30,6 +30,8 @@ import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
+import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUploadKey } from '../wallpaper/lifecycle.js'
+import { handleDropzoneKeyDown } from '../wallpaper/upload-a11y.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
@@ -138,10 +140,17 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   // late IndexedDB completion must never roll the visible/persisted selection
   // back to an older upload.
   const selectWallpaper = (selection: WallpaperSelection, blob?: Blob): void => {
+    const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.setSelection(selection, blob))
+    // Only the active upload stays on disk: replace/switch/clear deletes the old one.
+    const obsolete = obsoleteUploadKey(previous, selection)
+    if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'previous upload')
   }
   const clearWallpaper = (): void => {
+    const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.clear())
+    const obsolete = obsoleteUploadKey(previous, undefined)
+    if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'cleared')
   }
 
   useEffect(() => {
@@ -202,9 +211,17 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   // Best-effort disk cache + history entry whenever an online wallpaper is chosen.
   const rememberRemote = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
     const url = entry.url
-    setRecent(rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() }))
+    const previous = recent
+    const next = rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() })
+    setRecent(next)
+    // History eviction: drop the evicted remote blobs unless still applied.
+    const currentSelection = controller?.getSnapshot().selection
+    const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
+    for (const evicted of evictedRecentUrls(previous, next, protectedUrl)) {
+      void deleteCachedRemote(evicted, imageStore, recentStorage)
+    }
     void (async () => {
-      const result = await cacheRemoteImage(url, { images: imageStore })
+      const result = await cacheRemoteImage(url, { images: imageStore, storage: recentStorage, protectedUrl })
       if (!result.ok) return
       // Keep the blob available for the recent-card thumbnail regardless of what
       // is selected now, but only re-adopt it when the user is still on this
@@ -234,7 +251,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
         }
         return
       }
-      void cacheRemoteImage(entry.url, { images: imageStore }).then(result => {
+      void cacheRemoteImage(entry.url, { images: imageStore, storage: recentStorage, protectedUrl: entry.url }).then(result => {
         if (!result.ok || !mounted.current) return
         rememberBlob(entry.url, result.record.blob)
         if (isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
@@ -246,9 +263,13 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
 
   const clearRecent = (): void => {
     const entries = recent
+    const currentSelection = controller?.getSnapshot().selection
+    const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
     clearRecentWallpapers(recentStorage)
     setRecent([])
-    for (const entry of entries) void deleteCachedRemote(entry.url, imageStore)
+    for (const url of clearableRecentUrls(entries, protectedUrl)) {
+      void deleteCachedRemote(url, imageStore, recentStorage)
+    }
     setCachedUrls(previous => {
       for (const objectUrl of Object.values(previous)) {
         try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
@@ -342,8 +363,11 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       }
     }
     // A newer upload (or teardown) owns the result now: late completions must
-    // not change errors/attribution/selection.
-    if (!mounted.current || !uploadTickets.current.isCurrent(ticket)) return
+    // not change errors/attribution/selection, and their orphan blob is removed.
+    if (!mounted.current || !uploadTickets.current.isCurrent(ticket)) {
+      if (imageStore !== undefined) void deleteStoredImage(imageStore, key, 'obsolete upload')
+      return
+    }
     setUploadProblem(undefined)
     setUploadSessionOnly(sessionOnly)
     setAttribution(undefined)
@@ -553,6 +577,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif"
                   className="wallpaper-file-input"
+                  tabIndex={-1}
                   data-testid="wallpaper-upload"
                   aria-label={t('wallpaper.uploadTitle')}
                   onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
@@ -579,11 +604,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                 aria-describedby={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
                 aria-errormessage={uploadProblem === undefined ? undefined : 'wallpaper-upload-error'}
                 onClick={() => fileInput.current?.click()}
-                onKeyDown={event => {
-                  if (event.key !== 'Enter' && event.key !== ' ') return
-                  event.preventDefault()
-                  fileInput.current?.click()
-                }}
+                onKeyDown={event => handleDropzoneKeyDown(event, () => fileInput.current?.click())}
                 onDragOver={event => { event.preventDefault(); setDragOver(true) }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={event => {

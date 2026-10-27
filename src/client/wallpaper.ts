@@ -219,7 +219,7 @@ export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?
  * other compact controls. Making those translucent lets underlying page text
  * show through floating surfaces, which is never acceptable. This means all
  * host layer-2 surfaces (Modal, Settings, plugin manager, previews) stay opaque;
- * that is an accepted 0.1.2 product boundary. Plugin cards use the private
+ * that is an accepted 0.1.3 product boundary. Plugin cards use the private
  * `--dsh-livery-card-surface` variable in cardSurfaceOverride().
  */
 export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [

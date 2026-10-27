@@ -139,7 +139,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478",
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -246,7 +246,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478",
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec",
     "sourceKind": "packaged-app",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -353,7 +353,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478",
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -381,19 +381,19 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
     "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478"
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
     "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478"
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
-    "catalogProfile": "sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478"
+    "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec"
   }
 ]
 

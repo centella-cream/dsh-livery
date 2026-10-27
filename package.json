@@ -1,6 +1,6 @@
 {
   "name": "dsh-livery",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Make your DSH beautiful to look at and alive to use. Contract-bound color, typography, surface and wallpaper liveries for DeepSeek Harness.",
   "license": "MIT",
   "type": "module",
@@ -28,12 +28,16 @@
     "CONTRIBUTING.md",
     "CONTRIBUTING.zh-CN.md",
     "CODE_OF_CONDUCT.md",
-    "docs",
+    "docs/README.md",
+    "docs/verification.md",
+    "docs/design",
+    "docs/research/design-references.md",
+    "docs/research/design-table.json",
+    "docs/assets",
     "contracts/dsh/0.2.1-rc.2",
     "contracts/dsh/0.2.1-rc.3",
     "contracts/dsh/0.2.1-rc.4",
-    "contracts/dsh/support-matrix.json",
-    "contracts/dsh/support-matrix.proposed.json"
+    "contracts/dsh/support-matrix.json"
   ],
   "sideEffects": [
     "./lib/index.js",
@@ -115,7 +119,7 @@
     "verify:artifact": "node scripts/release-check.mjs",
     "verify:evidence": "node scripts/release-evidence.mjs",
     "promote:release": "node scripts/promote-release.mjs",
-    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json",
+    "release:prepare": "node scripts/release-prepare.mjs",
     "build:cli": "node scripts/build.mjs --cli-only"
   },
   "devDependencies": {

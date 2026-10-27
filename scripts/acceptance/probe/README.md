@@ -1,7 +1,7 @@
 # `scripts/acceptance/probe/` — acceptance-harness building blocks
 
-**Scope (0.1.2):** the shipped/certified Web targets are **DSH 0.2.1-rc.2 and
-the latest 0.2.1-rc.4 + Web Profile + Chrome 155**, plus **DSH 0.2.1-rc.3
+**Scope (0.1.3):** the shipped/certified Web targets are **DSH 0.2.1-rc.2 and
+the latest 0.2.1-rc.4 + Web Profile + Chrome 156.0.8078.48**, plus **DSH 0.2.1-rc.3
 Desktop/macOS** via the real Electron probe. All three adapters share one catalog
 profile. Desktop Windows and Web Edge are **not-supported** and are not claimed;
 DSH 0.2.1-rc.4 Desktop is not certified because no rc.4 Desktop app is available.
@@ -81,3 +81,36 @@ dark mode, responsive, restore stock, uninstall lifecycle).
   `[data-slot="sidebar"] nav[aria-label="全局面板"] button[aria-label="皮肤"]`
   (selected row carries `aria-current="page"`), main column `[data-slot="main"]`,
   workspace section `[data-slot="sidebar.workspaces"]`.
+
+## 0.1.3 acceptance additions (verifier-owned)
+
+- **Exact browser certification.** `scripts/acceptance/web.mjs` accepts
+  `--expect-browser-version <full version>`; a mismatch is a fail-fast startup
+  error (exit 2). The probe also records the actual full Chrome version in
+  `target.scope.browserVersion` and copies the matrix certification block
+  (`claimTier`, `distributionChannel`, `certifiedBrowserVersions`,
+  `certifiedRuntimeVersions`, `upstream`) into `target.certification`.
+  `support-matrix.mjs` reads matrix schemaVersion 1 (legacy) and 2 (0.1.3 exact
+  claims); when `certifiedBrowserVersions` is present the actual Chrome version
+  must be an exact member.
+- **Evidence layout.** New evidence for 0.1.3 lives under
+  `contracts/dsh/evidence/0.1.3/` and must include `target.scope.browserVersion`
+  plus `target.certification` copied from the matrix. Never rewrite 0.1.2
+  evidence or reports. `scripts/release-evidence.mjs` enforces the matrix fields
+  for new-surface evidence and keeps legacy 0.1.2 files readable only where no
+  stronger claim is involved.
+- **Desktop truthfulness.** `desktop-probe.mjs` generates its Verified list only
+  from passed checks; a skipped first-paint sampling check is explicitly listed
+  as NOT verified. `report-claims.mjs` maps claim strength to matrix
+  `profiles.desktop.macos` (`passed` → renderer-verified; `pending` /
+  `not-supported` → diagnostic-only) and the probe adds the automated
+  `desktop.matrix-consistency` check.
+- **Visual matrix.** `checkVisualMatrix` in `checks.mjs` renders real screenshots
+  and computed-style assertions for 1440/1024/767 × light/dark × wallpaper
+  off/on, frost 0/35/80, atmosphere 0/30/60, forced-colors,
+  prefers-reduced-transparency:reduce, keyboard focus/selected state, 767
+  overflow/order, floating Settings modal opacity, and private card frost. Host
+  surfaces that need synthetic interactions are skipped with an explicit reason.
+- **Selftest.** `node scripts/acceptance/selftest.mjs` verifies the exact-browser
+  rules, matrix certification copying, first-paint truthfulness and
+  report/matrix consistency without touching product artifacts.

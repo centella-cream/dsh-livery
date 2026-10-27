@@ -13,24 +13,28 @@ import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { matrixEvidence, readMatrix, readPackageJson, tarballName } from './release-lib.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const work = join(root, '.tmp', 'release-check')
+const rootPackage = readPackageJson()
 const argv = process.argv.slice(2)
 const flag = (name) => {
   const index = argv.indexOf(name)
   return index === -1 ? undefined : argv[index + 1]
 }
 const supplied = flag('--tgz')
-rmSync(work, { recursive: true, force: true })
 mkdirSync(work, { recursive: true })
 
 let tarball
 if (supplied !== undefined) {
   // Verify an already-produced candidate artifact: acceptance must refer to the
-  // exact bytes that will be published, so never rebuild when a path is passed.
+  // exact bytes that will be published, so never rebuild or delete it when a
+  // path is passed (it may itself live under .tmp/release-check).
   tarball = resolve(root, supplied)
 } else {
+  rmSync(work, { recursive: true, force: true })
+  mkdirSync(work, { recursive: true })
   execFileSync('pnpm', ['build'], { cwd: root, stdio: 'inherit' })
   const packed = execFileSync('pnpm', ['pack', '--pack-destination', work], { cwd: root, encoding: 'utf8' })
   const tgz = packed.trim().split('\n').at(-1)
@@ -44,8 +48,10 @@ if (!files.has('package.json')) {
   process.exit(1)
 }
 const packageJson = JSON.parse(execFileSync('tar', ['-xOzf', tarball, 'package/package.json'], { encoding: 'utf8' }))
-if (packageJson.version !== '0.1.2') {
-  console.error(`release-check: candidate version must be the unreleased 0.1.2, got ${String(packageJson.version)}`)
+if (packageJson.name !== rootPackage.name || packageJson.version !== rootPackage.version) {
+  console.error(
+    `release-check: candidate package mismatch: expected ${rootPackage.name}@${rootPackage.version}, got ${String(packageJson.name)}@${String(packageJson.version)}`,
+  )
   process.exit(1)
 }
 // Narrow compatibility: engines.dsh must be the exact formal-matrix shipped set.
@@ -79,7 +85,13 @@ const required = [
   'CONTRIBUTING.md',
   'CONTRIBUTING.zh-CN.md',
   'CODE_OF_CONDUCT.md',
+  'docs/README.md',
   'docs/verification.md',
+  'docs/design/interfaces.md',
+  'docs/design/multi-version.md',
+  'docs/design/style-system.md',
+  'docs/research/design-references.md',
+  'docs/research/design-table.json',
   'cordis.patch.yml',
 ]
 const missing = required.filter(file => !files.has(file))
@@ -105,13 +117,17 @@ if (broken.length > 0) {
 const hash = createHash('sha256').update(readFileSync(tarball)).digest('hex')
 const manifest = {
   generatedAt: new Date().toISOString(),
+  packageName: rootPackage.name,
+  version: rootPackage.version,
   file: tarball.split('/').at(-1),
+  expectedTarball: tarballName(rootPackage),
   sha256: hash,
   bytes: readFileSync(tarball).length,
   files: files.size,
   required: required.length,
+  evidence: matrixEvidence(readMatrix()),
   readmeLinks: 'ok',
   mode: supplied === undefined ? 'built' : 'supplied',
 }
 writeFileSync(join(work, 'release-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
-console.log(`release-check: OK ${manifest.mode} ${manifest.sha256} (${manifest.files} files) — manifest: ${join(work, 'release-manifest.json')}`)
+console.log(`release-check: OK ${manifest.mode} ${manifest.packageName}@${manifest.version} ${manifest.sha256} (${manifest.files} files) — manifest: ${join(work, 'release-manifest.json')}`)

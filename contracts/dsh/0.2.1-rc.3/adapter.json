@@ -16,5 +16,12 @@
   "verifiedPlatforms": [
     "darwin"
   ],
-  "verifiedBrowsers": []
+  "verifiedBrowsers": [
+    {
+      "family": "chromium",
+      "versions": [
+        "152.0.7977.130"
+      ]
+    }
+  ]
 }

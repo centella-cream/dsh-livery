@@ -2,9 +2,58 @@
 
 All notable changes to DSH Livery are recorded here. `0.1.0` was the first limited
 release for DSH `0.2.1-rc.2` Web/Chrome; `0.1.1` added Desktop `0.2.1-rc.3` macOS
-support; `0.1.2` is a wallpaper/UI correctness release. Earlier development rounds
-used temporary internal version numbers for evidence packaging; they are folded
-into the `0.1.0` entry.
+support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
+`0.1.3` is the release-trust, storage-reliability and accessibility release.
+Earlier development rounds used temporary internal version numbers for evidence
+packaging; they are folded into the `0.1.0` entry.
+
+## [0.1.3] — 2026-10-27
+
+### Fixed
+
+- Web certification now records and enforces the exact Chrome version
+  (`156.0.8078.48`); the acceptance harness fails on any other system browser
+  version instead of silently accepting `minVersion`.
+- Desktop evidence no longer contradicts itself: skipped first-paint sampling is
+  reported as not verified, the report distinguishes renderer certification from
+  native window certification, and the release gate checks report claims against
+  the support matrix.
+- Uploaded wallpapers and remote wallpaper caches no longer accumulate orphaned
+  IndexedDB records: replaced/cleared uploads are deleted, cached history entries
+  are evicted with their blobs, and the cache is bounded by 24 entries / 128 MiB
+  LRU with the current wallpaper protected.
+- Remote wallpaper downloads check `Content-Length` and stream body chunks with a
+  15 MiB cap and timeout, so oversized responses never fully enter memory; failed,
+  timed-out or non-image downloads fall back to the original URL without an
+  IndexedDB write.
+- The visually hidden native file input is removed from the Tab order, the
+  dropzone has a visible focus ring and a single Enter/Space activation, and
+  upload/URL errors stay linked to both visible controls through ARIA.
+
+### Changed
+
+- Release tooling derives the version, candidate tarball name and evidence list
+  from `package.json` and the formal support matrix; no release script or workflow
+  path hardcodes a version or tarball name. `release:prepare` no longer lists
+  evidence files manually.
+- After npm publication, a workflow job downloads the exact registry tarball,
+  verifies its sha256, byte size and package version against the accepted
+  candidate, and fails the release without republishing on mismatch.
+- GitHub Release assets include the accepted tarball, `SHA256SUMS` and the release
+  manifest.
+- The formal matrix now distinguishes `claimTier` (`stable`/`preview`),
+  `distributionChannel`, exact `certifiedBrowserVersions`,
+  `certifiedRuntimeVersions` and upstream provenance. `0.2.1-rc.4` remains a
+  next-channel preview until upstream publishes a matching GitHub tag.
+- The npm package carries only the current documentation tree and shipped
+  contracts; historical archive material and the proposed matrix are no longer
+  packaged. The 0.1.2 evidence and CHANGELOG entry remain unchanged.
+
+### Compatibility
+
+- DSH `0.2.1-rc.2` Web/Chrome, `0.2.1-rc.3` Desktop/macOS and `0.2.1-rc.4`
+  Web/Chrome remain the exact allowlist.
+- Desktop Windows, Web Edge and other DSH builds remain unsupported.
 
 ## [0.1.2] — 2026-10-27
 

@@ -7,6 +7,7 @@ import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { oneLine, redact, writeJson, writeText } from './util.mjs'
 import { SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
+import { certificationFor } from './support-matrix.mjs'
 
 const CHECK_AREA_TITLES = {
   env: 'Environment',
@@ -113,10 +114,17 @@ export function buildProbeReport(ctx) {
       hostVersion: ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? null,
       profile: 'web',
       browser: 'chrome',
+      browserVersion: ctx.environment?.chromeVersion ?? null,
     },
+    certification: certificationFor(
+      ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? '',
+    ).certification,
   }
   const matrix = {
     certifiedVersions: SUPPORTED_HOST_VERSIONS,
+    certification: certificationFor(
+      ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? '',
+    ).certification,
     expected: expectedAdapter
       ? {
           hostVersion: expectedAdapter.hostVersion,
@@ -437,6 +445,11 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push(`| Node | ${environment.nodeVersion} |`)
   lines.push(`| OS | ${environment.platform} ${environment.osRelease ?? ''} (${environment.arch}) |`)
   lines.push(`| Chrome | ${environment.chromeVersion ?? '—'} (system Chrome via playwright-core, \`channel: 'chrome'\`) |`)
+  const certification = report.target?.certification ?? {}
+  lines.push(`| certified browser versions | ${(certification.certifiedBrowserVersions ?? []).join(', ') || '— (legacy matrix)'} |`)
+  lines.push(`| claim tier / channel | ${certification.claimTier ?? '—'} / ${certification.distributionChannel ?? '—'} |`)
+  lines.push(`| certified runtime versions | ${(certification.certifiedRuntimeVersions ?? []).join(', ') || '—'} |`)
+  lines.push(`| upstream | ${certification.upstream?.githubTag === null || certification.upstream?.githubTag === undefined ? 'no GitHub tag' : String(certification.upstream.githubTag)} / npm ${certification.upstream?.npmVersion ?? '—'} |`)
   lines.push(`| playwright-core | ${environment.playwrightVersion ?? '—'} |`)
   lines.push(`| target package | ${target.packageName}@${target.packageVersion ?? '?'} (\`${target.tarball ?? '—'}\`) |`)
   lines.push(`| tarball sha256 | ${target.tarballSha256 ?? '—'} |`)

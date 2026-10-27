@@ -4,6 +4,9 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { adapterFrom } from '../../src/contract/cli.js'
 import {
+  CLAIM_TIERS,
+  DISTRIBUTION_CHANNELS,
+  MATRIX_SCHEMA_VERSION,
   gateRelease,
   gateSupportMatrix,
   notSupportedProfiles,
@@ -20,7 +23,7 @@ const workspace = process.cwd()
 
 /** Every frozen contract snapshot stays on disk for audit/diff. */
 const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4']
-/** Formal support matrix: these host builds are generated/shipped (0.1.2). */
+/** Formal support matrix: these host builds are generated/shipped (0.1.3). */
 const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4']
 
 // Optional local verification: set DSH_INSTALL to a matching @deepseek-ai/dsh
@@ -102,45 +105,139 @@ describe('frozen historical contracts', () => {
   })
 })
 
-describe('formal support matrix (0.1.2: Web rc.2/rc.4 + Desktop rc.3)', () => {
-  it('is the release authority: rc.2/rc.4 Web/Chrome and rc.3 Desktop/macOS released', async () => {
+describe('formal support matrix schema v2 (0.1.3 exact certification claims)', () => {
+  it('is the release authority: exact stable/preview claims with browser/runtime/upstream provenance', async () => {
     const matrix = await readFormalMatrix(workspace)
+    expect(matrix.schemaVersion).toBe(MATRIX_SCHEMA_VERSION)
     expect(validateMatrix(matrix)).toEqual([])
     expect(shippedVersionsFromMatrix(matrix)).toEqual(SHIPPED_VERSIONS)
     expect(matrix.entries.map((entry) => entry.hostVersion)).toEqual(SHIPPED_VERSIONS)
 
+    // Schema v1's family/minVersion table is gone everywhere.
+    for (const entry of matrix.entries) {
+      expect('browserSupport' in (entry as unknown as Record<string, unknown>)).toBe(false)
+      expect(CLAIM_TIERS).toContain(entry.claimTier)
+      expect(DISTRIBUTION_CHANNELS).toContain(entry.distributionChannel)
+    }
+
+    // 0.2.1-rc.2: stable Web/Chrome on npm latest, exact full versions.
     const web = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.2')!
     expect(web.adapterId).toBe('dsh-0.2.1-rc.2-r1')
     expect(web.contractHash).toBe((await readContract('0.2.1-rc.2')).contractHash)
     expect(web.status).toBe('released')
-    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json'])
+    expect(web.claimTier).toBe('stable')
+    expect(web.distributionChannel).toBe('latest')
+    expect(web.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
+    expect(web.certifiedRuntimeVersions).toEqual(['22.23.1'])
+    expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
+    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json'])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
     expect(web.profiles.web.chrome).toBe('passed')
-    expect(web.browserSupport).toEqual([{ family: 'chrome', minVersion: 155 }])
 
+    // 0.2.1-rc.3: stable Desktop app, Electron Chromium + Node 24 exact versions.
     const desktop = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.3')!
     expect(desktop.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(desktop.contractHash).toBe((await readContract('0.2.1-rc.3')).contractHash)
-    // Promoted after the real Electron acceptance.
     expect(desktop.status).toBe('released')
-    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json'])
-    expect(desktop.browserSupport).toEqual([])
+    expect(desktop.claimTier).toBe('stable')
+    expect(desktop.distributionChannel).toBe('desktop-app')
+    expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
+    expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
+    expect(desktop.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.3', npmVersion: '0.2.1-rc.3' })
+    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json'])
     expect(supportedProfiles(desktop)).toEqual(['desktop.macos'])
     expect(notSupportedProfiles(desktop)).toEqual(['desktop.win32', 'web.chrome', 'web.edge'])
     expect(desktop.profiles.desktop.macos).toBe('passed')
-    expect(desktop.profiles.desktop.win32).toBe('not-supported')
 
-    const latest = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
-    expect(latest.adapterId).toBe('dsh-0.2.1-rc.4-r1')
-    expect(latest.contractHash).toBe((await readContract('0.2.1-rc.4')).contractHash)
-    expect(latest.status).toBe('released')
-    expect(latest.evidence).toEqual(['contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json'])
-    expect(latest.browserSupport).toEqual([{ family: 'chrome', minVersion: 155 }])
-    expect(supportedProfiles(latest)).toEqual(['web.chrome'])
-    expect(notSupportedProfiles(latest)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
-    expect(latest.profiles.web.chrome).toBe('passed')
-    expect(latest.profiles.desktop.macos).toBe('not-supported')
+    // 0.2.1-rc.4: next-channel preview, no upstream GitHub tag.
+    const preview = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
+    expect(preview.adapterId).toBe('dsh-0.2.1-rc.4-r1')
+    expect(preview.contractHash).toBe((await readContract('0.2.1-rc.4')).contractHash)
+    expect(preview.status).toBe('released')
+    expect(preview.claimTier).toBe('preview')
+    expect(preview.distributionChannel).toBe('next')
+    expect(preview.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
+    expect(preview.certifiedRuntimeVersions).toEqual(['22.23.1'])
+    expect(preview.upstream).toEqual({ githubTag: null, npmVersion: '0.2.1-rc.4' })
+    expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json'])
+    expect(supportedProfiles(preview)).toEqual(['web.chrome'])
+    expect(preview.profiles.web.chrome).toBe('passed')
+    expect(preview.profiles.desktop.macos).toBe('not-supported')
+  })
+
+  it('rejects schema-v1 matrices, legacy browserSupport and non-exact claims', async () => {
+    const matrix = await readFormalMatrix(workspace)
+    const schema1 = { ...matrix, schemaVersion: 1 } as unknown as SupportMatrix
+    expect(validateMatrix(schema1).some((problem) => problem.includes('schemaVersion must be 2'))).toBe(true)
+
+    const legacy: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) => ({
+        ...entry,
+        ...({ browserSupport: [{ family: 'chrome', minVersion: 155 }] } as Record<string, unknown>),
+      })),
+    }
+    expect(validateMatrix(legacy).some((problem) => problem.includes('legacy browserSupport'))).toBe(true)
+
+    const looseVersions: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) =>
+        entry.hostVersion === '0.2.1-rc.2'
+          ? { ...entry, certifiedBrowserVersions: ['156'], certifiedRuntimeVersions: ['22.23'] }
+          : entry,
+      ),
+    }
+    const loose = validateMatrix(looseVersions)
+    expect(loose.some((problem) => problem.includes('FULL certifiedBrowserVersions'))).toBe(true)
+    expect(loose.some((problem) => problem.includes('certifiedRuntimeVersions entry "22.23" is not an exact Node version'))).toBe(true)
+
+    const missingArrays: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) =>
+        entry.hostVersion === '0.2.1-rc.2'
+          ? { ...entry, certifiedBrowserVersions: [], certifiedRuntimeVersions: [] }
+          : entry,
+      ),
+    }
+    expect(validateMatrix(missingArrays).some((problem) => problem.includes('at least one exact certifiedBrowserVersions'))).toBe(true)
+  })
+
+  it('requires stable claims to have an upstream tag and a non-next channel; preview may be tagless', async () => {
+    const matrix = await readFormalMatrix(workspace)
+    const taglessStable: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) =>
+        entry.hostVersion === '0.2.1-rc.2'
+          ? { ...entry, upstream: { githubTag: null, npmVersion: '0.2.1-rc.2' } }
+          : entry,
+      ),
+    }
+    expect(validateMatrix(taglessStable).some((problem) => problem.includes('stable claims require a non-null upstream.githubTag'))).toBe(true)
+
+    const nextStable: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) =>
+        entry.hostVersion === '0.2.1-rc.2' ? { ...entry, distributionChannel: 'next' as const } : entry,
+      ),
+    }
+    expect(validateMatrix(nextStable).some((problem) => problem.includes('stable claims cannot use the next distribution channel'))).toBe(true)
+
+    // Preview with a null tag is valid (the rc.4 entry already proves it), and a
+    // mismatched npm version is rejected.
+    const mismatched: SupportMatrix = {
+      ...matrix,
+      entries: matrix.entries.map((entry) =>
+        entry.hostVersion === '0.2.1-rc.4'
+          ? { ...entry, upstream: { githubTag: null, npmVersion: '0.2.1-rc.5' } }
+          : entry,
+      ),
+    }
+    expect(validateMatrix(mismatched).some((problem) => problem.includes('must equal the host version'))).toBe(true)
+    const previewEntry = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
+    expect(previewEntry.claimTier).toBe('preview')
+    expect(previewEntry.upstream.githubTag).toBeNull()
+    expect(validateMatrix(matrix)).toEqual([])
   })
 
   it('gates in-scope profiles only: both released entries pass and pending blocks', async () => {
@@ -175,11 +272,21 @@ describe('formal support matrix (0.1.2: Web rc.2/rc.4 + Desktop rc.3)', () => {
     expect(gateRelease(pending, '0.2.1-rc.3').ok).toBe(false)
   })
 
-  it('keeps the full historical candidate matrix for the certification trail', async () => {
+  it('keeps the full historical candidate matrix on schema v2 for the certification trail', async () => {
     const proposed = await readProposedMatrix(workspace)
+    expect(proposed.schemaVersion).toBe(MATRIX_SCHEMA_VERSION)
     expect(validateMatrix(proposed)).toEqual([])
     expect(proposed.entries.map((entry) => entry.hostVersion).sort()).toEqual([...HISTORICAL_VERSIONS].sort())
     for (const entry of proposed.entries) expect(entry.status).not.toBe('released')
+    // The historical 0.2.0 claim keeps the exact legacy browser version, and the
+    // rc.4 preview keeps its tagless next-channel provenance.
+    const legacy = proposed.entries.find((entry) => entry.hostVersion === '0.2.0-rc.2')!
+    expect(legacy.certifiedBrowserVersions).toEqual(['120'])
+    expect(legacy.certifiedRuntimeVersions).toEqual(['22.23.1'])
+    expect(legacy.upstream).toEqual({ githubTag: 'dsh-v0.2.0-rc.2', npmVersion: '0.2.0-rc.2' })
+    const preview = proposed.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
+    expect(preview.claimTier).toBe('preview')
+    expect(preview.upstream.githubTag).toBeNull()
     // The formal matrix is the only generation authority; the proposed file must
     // not be read for shipping decisions (asserted by the generation tests).
     expect(existsSync(join(workspace, 'contracts', 'dsh', 'support-matrix.json'))).toBe(true)
@@ -187,10 +294,26 @@ describe('formal support matrix (0.1.2: Web rc.2/rc.4 + Desktop rc.3)', () => {
 
   it('keeps shipped adapters in sync with their formal matrix entries', async () => {
     const matrix = await readFormalMatrix(workspace)
-    const expectedClaims: Record<string, { profiles: string[]; platforms: string[]; browsers: { family: string; minVersion: number }[] }> = {
-      '0.2.1-rc.2': { profiles: ['web'], platforms: ['web'], browsers: [{ family: 'chrome', minVersion: 155 }] },
-      '0.2.1-rc.3': { profiles: ['desktop'], platforms: ['darwin'], browsers: [] },
-      '0.2.1-rc.4': { profiles: ['web'], platforms: ['web'], browsers: [{ family: 'chrome', minVersion: 155 }] },
+    const expectedClaims: Record<
+      string,
+      { profiles: string[]; platforms: string[]; browsers: { family: string; versions: string[] }[] }
+    > = {
+      '0.2.1-rc.2': {
+        profiles: ['web'],
+        platforms: ['web'],
+        browsers: [{ family: 'chrome', versions: ['156.0.8078.48'] }],
+      },
+      '0.2.1-rc.3': {
+        profiles: ['desktop'],
+        platforms: ['darwin'],
+        // Desktop certifies the Electron renderer's embedded Chromium version.
+        browsers: [{ family: 'chromium', versions: ['152.0.7977.130'] }],
+      },
+      '0.2.1-rc.4': {
+        profiles: ['web'],
+        platforms: ['web'],
+        browsers: [{ family: 'chrome', versions: ['156.0.8078.48'] }],
+      },
     }
     for (const version of SHIPPED_VERSIONS) {
       const contract = await readContract(version)
@@ -203,7 +326,22 @@ describe('formal support matrix (0.1.2: Web rc.2/rc.4 + Desktop rc.3)', () => {
       expect(adapter.verifiedProfiles).toEqual(expectedClaims[version]!.profiles)
       expect(adapter.verifiedPlatforms).toEqual(expectedClaims[version]!.platforms)
       expect(adapter.verifiedBrowsers).toEqual(expectedClaims[version]!.browsers)
+      // Certification claims are exact versions only: no minVersion fallback.
+      for (const browser of adapter.verifiedBrowsers) {
+        expect(browser.versions.length).toBeGreaterThan(0)
+        expect('minVersion' in (browser as unknown as Record<string, unknown>)).toBe(false)
+      }
     }
+  })
+
+  it('keeps the historical 0.2.0-rc.2 adapter claim exact without shipping it', async () => {
+    const adapter = JSON.parse(
+      await readFile(join(workspace, 'contracts', 'dsh', '0.2.0-rc.2', 'adapter.json'), 'utf8'),
+    ) as AdapterManifest
+    expect(adapter.verifiedBrowsers).toEqual([{ family: 'chrome', versions: ['120'] }])
+    const registry = await import('../../src/generated/contract.js')
+    expect(registry.adapterForVersion('0.2.0-rc.2')).toBeUndefined()
+    expect(registry.SUPPORTED_HOST_VERSIONS).not.toContain('0.2.0-rc.2')
   })
 })
 
@@ -276,7 +414,7 @@ describe('generated shipped registry', () => {
       files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.1.2')
+    expect(pkg.version).toBe('0.1.3')
     expect(pkg.engines?.dsh).toBe('0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')

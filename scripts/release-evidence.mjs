@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { readMatrix } from './release-lib.mjs'
 
 const argv = process.argv.slice(2)
 const flag = (name) => {
@@ -30,6 +31,11 @@ if (tgzPath === undefined || evidencePath === undefined) {
 const tarball = resolve(tgzPath)
 const digest = createHash('sha256').update(readFileSync(tarball)).digest('hex')
 const evidence = JSON.parse(readFileSync(resolve(evidencePath), 'utf8'))
+// Scope and certification claims are checked against the formal matrix; no
+// host version list or browser/runtime list is hardcoded in this script.
+const matrix = readMatrix()
+const matrixEntryFor = (hostVersion) =>
+  matrix.entries.find((entry) => entry.hostVersion === hostVersion) ?? null
 if (evidence.schemaVersion !== 1) fail(`unsupported evidence schemaVersion ${String(evidence.schemaVersion)}`)
 if (evidence.tarballSha256 !== digest) fail(`tarball sha mismatch: file=${digest} evidence=${String(evidence.tarballSha256)}`)
 if (!/^[0-9a-f]{40}$/u.test(evidence.commit ?? '')) fail('evidence.commit must be a full git commit')
@@ -44,29 +50,74 @@ if (evidence.commit !== head) {
   }
   const changed = execFileSync('git', ['diff', '--name-only', `${evidence.commit}..${head}`], { encoding: 'utf8' })
     .trim().split('\n').filter(Boolean)
-  const allowed = /^(contracts\/dsh\/(evidence\/|support-matrix\.json$)|docs\/|\.github\/|scripts\/|tests\/|vitest\.config\.ts$|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$)/
+  const allowed = /^(contracts\/dsh\/(evidence\/|support-matrix\.json$)|docs\/|\.github\/|scripts\/|tests\/|vitest\.config\.ts$|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$|AGENTS\.md$)/
   const forbidden = changed.filter(file => !allowed.test(file))
   if (forbidden.length > 0) {
     fail(`changes since evidence commit touch artifact inputs: ${forbidden.slice(0, 5).join(', ')}`)
   }
 }
+// Every current evidence manifest must copy the exact matrix certification and
+// record the exact browser version; nothing is keyed to a specific release path.
+{
+  const targetScope = evidence.target?.scope
+  if (!targetScope || typeof targetScope.browserVersion !== 'string' || !/^\d+\.\d+\.\d+\.\d+$/u.test(targetScope.browserVersion)) {
+    fail('evidence must record target.scope.browserVersion as a full four-part version')
+  }
+  const hostVersion = targetScope.hostVersion ?? evidence.scope?.hostVersion
+  const entry = matrixEntryFor(hostVersion)
+  if (!entry) fail(`evidence target.scope.hostVersion ${String(hostVersion)} has no matrix entry`)
+  const certification = evidence.target?.certification
+  if (!certification || typeof certification !== 'object') {
+    fail('evidence must copy target.certification from the support matrix')
+  }
+  for (const field of ['claimTier', 'distributionChannel', 'certifiedBrowserVersions', 'certifiedRuntimeVersions', 'upstream']) {
+    const expected = JSON.stringify(entry[field] ?? null)
+    const actual = JSON.stringify(certification[field] ?? null)
+    if (expected !== actual) fail(`evidence target.certification.${field} does not match the support matrix`)
+  }
+  if (targetScope.profile === 'web' && targetScope.browser !== 'chrome') fail('web evidence target.scope.browser must be chrome')
+  if (targetScope.profile === 'desktop' && targetScope.platform !== 'macos') fail('desktop evidence target.scope.platform must be macos')
+}
 if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.runs must be non-empty')
 if (evidence.scope !== undefined) {
   const scope = evidence.scope
-  if (typeof scope.hostVersion !== 'string' || !['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4'].includes(scope.hostVersion)) {
-    fail('evidence scope must name a certified host version (0.2.1-rc.2, 0.2.1-rc.3 or 0.2.1-rc.4)')
-  }
+  const entry = matrix.entries.find((candidate) => candidate.hostVersion === scope.hostVersion)
+  if (entry === undefined) fail(`evidence scope hostVersion ${String(scope.hostVersion)} is not in the formal matrix`)
   if (scope.profile === 'web') {
-    if (!['0.2.1-rc.2', '0.2.1-rc.4'].includes(scope.hostVersion) || scope.browser !== 'chrome') {
-      fail('web evidence scope must be 0.2.1-rc.2 or 0.2.1-rc.4 + web + chrome')
+    if (entry.profiles.web.chrome !== 'passed' || scope.browser !== 'chrome') {
+      fail(`web evidence for ${scope.hostVersion} requires a passed web.chrome matrix entry`)
+    }
+    const browserVersion = scope.browserVersion ?? evidence.target?.scope?.browserVersion
+    if (typeof browserVersion !== 'string') fail('web evidence must record an exact scope.browserVersion')
+    if (!entry.certifiedBrowserVersions?.includes(browserVersion)) {
+      fail(`browser ${browserVersion} is not certified for ${scope.hostVersion} (certified: ${(entry.certifiedBrowserVersions ?? []).join(', ')})`)
     }
   } else if (scope.profile === 'desktop') {
-    if (scope.hostVersion !== '0.2.1-rc.3' || scope.platform !== 'macos') {
-      fail('desktop evidence scope must be 0.2.1-rc.3 + desktop + macos')
+    if (entry.profiles.desktop.macos !== 'passed' || scope.platform !== 'macos') {
+      fail(`desktop evidence for ${scope.hostVersion} requires a passed desktop.macos matrix entry`)
     }
   } else {
     fail('evidence scope profile must be web or desktop')
   }
+  const claimed = evidence.target?.certification
+  if (claimed !== undefined) {
+    const expected = {
+      claimTier: entry.claimTier,
+      distributionChannel: entry.distributionChannel,
+      certifiedBrowserVersions: entry.certifiedBrowserVersions,
+      certifiedRuntimeVersions: entry.certifiedRuntimeVersions,
+      upstream: entry.upstream,
+    }
+    for (const [key, value] of Object.entries(expected)) {
+      if (JSON.stringify(claimed[key]) !== JSON.stringify(value)) {
+        fail(`evidence target.certification.${key} does not match the formal matrix`)
+      }
+    }
+  }
+}
+{
+  const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
+  if (evidence.packageVersion !== pkg.version) fail(`evidence packageVersion ${String(evidence.packageVersion)} != package.json ${pkg.version}`)
 }
 for (const run of evidence.runs) {
   if (typeof run.id !== 'string' || typeof run.hostVersion !== 'string' || typeof run.adapterId !== 'string') {
