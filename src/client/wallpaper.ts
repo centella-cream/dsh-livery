@@ -213,11 +213,15 @@ export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?
 /**
  * Documented livery background tokens the frost effect makes translucent.
  * Only names present in the active livery's token map are emitted.
+ *
+ * `--dsw-alias-bg-layer-2` is intentionally absent: the host uses it as the
+ * modal/dialog panel surface. Making that token translucent lets the page
+ * underneath show through the Settings overlay and makes both layers of text
+ * readable at once, so modal surfaces stay opaque while the page glass stays.
  */
 export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-alias-bg-base',
   '--dsw-alias-bg-layer-1',
-  '--dsw-alias-bg-layer-2',
   '--dsw-alias-bg-layer-3',
   '--dsw-alias-bg-document-preview',
   '--dsw-alias-bg-module-platform',

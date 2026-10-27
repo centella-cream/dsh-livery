@@ -10,6 +10,7 @@ import {
   DEFAULT_WALLPAPER_EFFECTS,
   MAX_WALLPAPER_URL_LENGTH,
   WALLPAPER_STORAGE_KEY,
+  WALLPAPER_SURFACE_TOKENS,
   backgroundImageValue,
   buildWallpaperCss,
   clampEffects,
@@ -236,6 +237,27 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).not.toContain('!important')
     expect(css).not.toMatch(/\[[a-z-]+="_r_|div\.|\.[a-z]+[_]{2}/)
     expect(css).not.toContain('@font-face')
+  })
+
+  it('keeps host dialog surfaces opaque so settings never show page text through', () => {
+    // Dialog/modal panels use --dsw-alias-bg-layer-2; making it translucent
+    // would leak the underlying page through the Settings overlay.
+    expect(WALLPAPER_SURFACE_TOKENS).not.toContain('--dsw-alias-bg-layer-2')
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'dusk' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, frost: 60 },
+      tokens: {
+        light: {
+          '--dsw-alias-bg-base': '#ffffff',
+          '--dsw-alias-bg-layer-1': '#f5f5f5',
+          '--dsw-alias-bg-layer-2': '#ffffff',
+        },
+        dark: {},
+        frost: 60,
+      },
+    })
+    expect(css).not.toContain('--dsw-alias-bg-layer-2:color-mix')
+    expect(css).toContain('--dsw-alias-bg-layer-1:color-mix')
   })
 
   it('maps frost percentage to the remaining color percentage', () => {
