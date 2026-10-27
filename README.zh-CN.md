@@ -1,6 +1,7 @@
 # DSH Livery（dsh-livery）
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#宿主支持与版本策略)
 
@@ -89,16 +90,21 @@ Profile 和浏览器是支持边界，不是运行时门禁：同一 DSH 版本�
 
 ## 安装
 
+已发布包：[`dsh-livery@0.1.0`](https://www.npmjs.com/package/dsh-livery)。
+
 ### Web Profile（CLI）
 
 ```bash
-pnpm install
-pnpm build && pnpm pack                 # 生成 dsh-livery-0.1.0.tgz
-dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
+dsh plugin --profile web add dsh-livery@0.1.0
 dsh web                                 # 打开命令输出的地址
 ```
 
-0.1.0 有限发布目前尚未发布到 npm。Desktop 不在这一发布线的支持范围内。
+### Desktop 应用
+
+Desktop 应用通过插件管理器安装：**Settings → Plugins → Install by package name**，
+输入 `dsh-livery@0.1.0`。本版本只认证 Web/Chrome；当前 Desktop 运行时
+（`0.2.1-rc.3`）不满足本包的 `engines.dsh`（`0.2.1-rc.2`），官方安装器会拒绝，
+因此 0.1.0 不支持 Desktop 安装目标。
 
 ## 卸载
 

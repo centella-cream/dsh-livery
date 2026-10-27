@@ -1,6 +1,7 @@
 # DSH Livery (dsh-livery)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
 [![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#host-support-and-version-policy)
 
@@ -108,17 +109,23 @@ see [docs/verification.md](docs/verification.md) for the accepted evidence.
 
 ## Install
 
+Published package: [`dsh-livery@0.1.0`](https://www.npmjs.com/package/dsh-livery).
+
 ### Web Profile (CLI)
 
 ```bash
-pnpm install
-pnpm build && pnpm pack                 # produces dsh-livery-0.1.0.tgz
-dsh plugin --profile web add ./dsh-livery-0.1.0.tgz
+dsh plugin --profile web add dsh-livery@0.1.0
 dsh web                                 # open the URL printed by dsh
 ```
 
-The 0.1.0 limited release is not published to npm yet. Desktop is not part of this
-release's support scope.
+### Desktop app
+
+The Desktop app installs plugins from its plugin manager:
+**Settings → Plugins → Install by package name**, then enter
+`dsh-livery@0.1.0`. This release is certified for Web/Chrome only; the current
+Desktop runtime (`0.2.1-rc.3`) does not satisfy this package's
+`engines.dsh` (`0.2.1-rc.2`), so the official installer rejects it. Desktop is not a
+supported installation target for 0.1.0.
 
 ## Uninstall
 
