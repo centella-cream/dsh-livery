@@ -49,7 +49,7 @@ Electron app, the official rc.3 plugin manager and an isolated app
 - Style page: preview, single-mutation Apply, restore, persistence, self-check.
 - Style gallery, preview language switching, family filters and keyboard tabs.
 - Wallpaper studio: built-in designs, online search/random, uploads (IndexedDB),
-  recent history/cache, effects and global atmosphere.
+  recent history/cache, effects and global atmosphere (safe layering: below all floating UI; no visual-coverage guarantee on opaque third-party plugin pages).
 - Floating-surface layering: atmosphere `z-index:90` below host ordinary
   Menu/Tooltip/HoverCard (100/101), Modal (1000) and Toast (1100); host Settings
   modal is opaque while wallpaper frost is active.

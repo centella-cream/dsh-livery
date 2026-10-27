@@ -301,8 +301,9 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     // Let the under-content immersive layer show through the host's body canvas.
     `body[${WALLPAPER_ATTRIBUTE}]{background-color:transparent}`,
   ]
-  // Generic coverage for pages whose surfaces are opaque: a non-interactive
-  // atmospheric copy of the wallpaper above all app content.
+  // Optional page tint for surfaces whose background can show it: a
+  // non-interactive atmospheric copy above normal page content but below every
+  // host floating layer. It is not a visual-coverage guarantee on opaque pages.
   if (atmosphere > 0) {
     // Keep the atmosphere below host-owned floating layers: plain Menu,
     // Tooltip and HoverCard use 100/101, Modal uses 1000 and Toast 1100. This

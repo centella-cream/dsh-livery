@@ -43,6 +43,10 @@ into the `0.1.0` entry.
 - All host surfaces that use `--dsw-alias-bg-layer-2` stay opaque under frost
   (not only Modal). This is an accepted product boundary for 0.1.2; plugin-owned
   cards retain the glass effect through their private surface token.
+- The global atmosphere layer is deliberately below all floating UI. It tints
+  page surfaces only where host layering permits it; opaque third-party plugin
+  pages may show no perceptible atmosphere change, and no visual-coverage over
+  other plugins is claimed.
 
 ## [0.1.1] — 2026-10-27
 

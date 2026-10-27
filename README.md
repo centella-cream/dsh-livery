@@ -41,11 +41,13 @@ page being styled; the rest show DSH Livery's own UI.
   Opening the wallpaper tab loads one random Picsum batch automatically; search
   Openverse (CC0/PDM), draw another random batch, or load the next one. Local image
   upload (stored in IndexedDB) and https URLs are also supported. Effects: blur
-  0–24 px, dim 0–70 %, frost 0–100 %, and a global atmosphere overlay that keeps the
-  wallpaper visible on **every** plugin page. Both layers are viewport-relative
-  `cover`, so portrait, ultrawide and resized windows crop instead of distorting.
-  Network requests start when you open the tab or take an explicit action; your
-  choices stay local.
+  0–24 px, dim 0–70 %, frost 0–100 %, and a global atmosphere overlay. The
+  atmosphere layer is intentionally below all floating UI (menus, tooltips,
+  dialogs, toasts), so it adds page tint only where the page layering permits it;
+  opaque third-party plugin pages may show no perceptible change. Both wallpaper
+  layers are viewport-relative `cover`, so portrait, ultrawide and resized windows
+  crop instead of distorting. Network requests start when you open the tab or take
+  an explicit action; your choices stay local.
 - **Card-based studio with one type scale.** Both pages use responsive cards. The
   style page pairs a current-style card with a gallery card and an Actions /
   Self-check rail; the wallpaper page has a preview, a search-first online card, a
@@ -146,8 +148,8 @@ Open the left sidebar and click **Visual Style** above the Workspaces section:
 - **Wallpapers**: opening the tab loads a random online batch. Search Openverse,
   draw another batch, pick one of 24 built-in designs, upload a local image or paste
   an https URL, then tune blur/dim/frost/atmosphere. Choices are stored in the
-  browser and survive restarts; the global atmosphere keeps them visible on other
-  plugin pages too.
+  browser and survive restarts. The atmosphere layer stays below floating UI and
+  may not be visibly perceptible on opaque third-party plugin pages.
 
 Applying a style and applying a wallpaper are independent: switching styles does
 not remove the wallpaper.

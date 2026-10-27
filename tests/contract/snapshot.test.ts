@@ -273,6 +273,7 @@ describe('generated shipped registry', () => {
     const pkg = JSON.parse(await readFile(join(workspace, 'package.json'), 'utf8')) as {
       version?: string
       engines?: { dsh?: string; node?: string }
+      files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
     expect(pkg.version).toBe('0.1.2')
@@ -285,6 +286,8 @@ describe('generated shipped registry', () => {
       '0.2.1-rc.3': 'compatible',
       '0.2.1-rc.4': 'compatible',
     })
+    expect(pkg.files).toContain('contracts/dsh/0.2.1-rc.4')
+    expect(pkg.files).not.toContain('contracts/dsh/0.2.0-rc.2')
   })
 })
 

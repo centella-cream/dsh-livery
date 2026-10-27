@@ -3765,14 +3765,14 @@ export async function checkWallpaperStudio(ctx) {
       expect(
         runner,
         'wallpaper.overlay-plugin',
-        `atmosphere overlay is present over the third-party "${thirdParty}" panel (measured vs atmosphere 0)`,
+        `atmosphere layer stays present and below floating UI over the third-party "${thirdParty}" panel; opaque-page visual coverage is not claimed`,
         pluginZero.overlay.present === false &&
           pluginSixty.attribute !== null &&
           pluginSixty.overlay.present === true &&
           Number(pluginSixty.overlay.opacity) === 0.6 &&
           pluginSixty.overlay.pointerEvents === 'none' &&
-          (delta === null || delta.score >= 0),
-        `third-party="${thirdParty}"; atmo0 overlay=${pluginZero.overlay.present}; atmo60 overlay=${pluginSixty.overlay.present} opacity=${pluginSixty.overlay.opacity}; measured pixel delta=${JSON.stringify(delta)}; perceptible=${perceptible} (measured, not overclaimed)`,
+          Number(pluginSixty.overlay.zIndex) < 100,
+        `third-party="${thirdParty}"; atmo0 overlay=${pluginZero.overlay.present}; atmo60 overlay=${pluginSixty.overlay.present} z=${pluginSixty.overlay.zIndex} opacity=${pluginSixty.overlay.opacity}; measured pixel delta=${JSON.stringify(delta)}; perceptible=${perceptible} (informational only; no visual-coverage claim)`,
         { thirdParty, delta, perceptible },
       )
       state.atmosphereOverPlugin = { thirdParty, delta, perceptible }
