@@ -4,14 +4,18 @@
 
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Certified |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Certified (latest DSH) |
-| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron / Node 24.21.0 | Certified renderer surface |
+| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Stable certified (npm `latest`) |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Next-channel preview (npm `next`; no GitHub tag yet) |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron / Node 24.21.0 | Stable certified renderer surface (GitHub-tagged) |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install and
-fails closed at runtime. The Desktop certification covers plugin installation, boot,
-the Electron renderer, settings/gallery, persistence and the first-frame handshake.
+fails closed at runtime. Stable claims require both an official GitHub tag/release
+and the signed npm tarball; `0.2.1-rc.4` is verified against the signed npm `next`
+tarball but has no upstream GitHub tag yet, so it is a preview compatibility claim,
+not a channel-stability promise. The Desktop certification covers plugin
+installation, boot, the Electron renderer, settings/gallery, persistence and the
+first-frame handshake.
 Native macOS window chrome, traffic lights/leading, vibrancy, Dock/rightbar and
 OS-level DPI are host-owned and outside the plugin's certification surface.
 

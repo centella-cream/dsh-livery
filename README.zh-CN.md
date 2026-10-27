@@ -10,11 +10,18 @@
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.2 有限发布。** 仅支持：DSH `0.2.1-rc.2` 与最新版 `0.2.1-rc.4` +
-> Web Profile + Chrome 155 + Node 22.23.1，以及 DSH `0.2.1-rc.3` + macOS Desktop 应用及其
-> Electron/Node 24 运行时。Desktop Windows、Web Edge 和其他 DSH 版本不在支持范围内；其他
-> DSH 版本会在安装/运行时被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；
-> `prepublish-check` 会拒绝不匹配的字节。
+> **发布状态：0.1.2 有限发布。**
+>
+> **稳定认证：** DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1，以及
+> DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。
+>
+> **next 通道预览：** DSH `0.2.1-rc.4` + Web Profile + Chrome 155 + Node 22.23.1。
+> 官方 npm 包已签名，精确 tarball 已纳入验收 evidence；但上游尚未发布对应的 GitHub
+> tag/release，因此这是兼容性预览，不是对预发布通道的稳定性承诺。
+>
+> Desktop Windows、Web Edge 和其他 DSH 版本不在支持范围内；其他 DSH 版本会在安装/运行时
+> 被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝
+> 不匹配的字节。
 
 [English](README.md) · 中文
 
@@ -80,15 +87,21 @@
 
 | 宿主 | Profile / 平台 | 运行时 | 状态 |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile，Chrome 155 | Node 22.23.1 | 已认证 |
-| DSH `0.2.1-rc.4` | Web Profile，Chrome 155 | Node 22.23.1 | 已认证（最新 DSH） |
-| DSH `0.2.1-rc.3` | Desktop 应用，macOS | Electron/Node 24.21.0 | 已认证渲染器表面 |
+| DSH `0.2.1-rc.2` | Web Profile，Chrome 155 | Node 22.23.1 | **稳定认证**（npm `latest`） |
+| DSH `0.2.1-rc.4` | Web Profile，Chrome 155 | Node 22.23.1 | **next 通道预览**（npm `next`；尚无 GitHub tag） |
+| DSH `0.2.1-rc.3` | Desktop 应用，macOS | Electron/Node 24.21.0 | **稳定认证**渲染器表面（GitHub 已 tag） |
 | Desktop Windows、Web Edge、其他 DSH 版本 | — | — | 不支持、不保证 |
 
-没有兼容模式。其他 DSH 版本会在安装时被拒绝，运行时 fail closed。Desktop 认证覆盖插件安装、启动、
-渲染器、设置/画廊、持久化和首帧握手；macOS 原生窗口装饰、红绿灯/leading、vibrancy、Dock/rightbar
-和系统级 DPI 属于宿主所有，不在插件认证范围内。可被机器检查的正式范围在
-`contracts/dsh/support-matrix.json`；验收证据见 [docs/verification.md](docs/verification.md)。
+没有兼容模式。其他 DSH 版本会在安装时被拒绝，运行时 fail closed。稳定支持只授予以官方
+GitHub tag/release + 对应签名 npm 包同时存在的宿主版本（当前是 `0.2.1-rc.2` 与
+`0.2.1-rc.3`）。`0.2.1-rc.4` adapter 是针对官方 npm `next` 通道签名 tarball 实测验证的；
+由于上游尚未在 GitHub 打 tag，它作为预览兼容性发布，若上游撤回或正式晋升，会重新认证或移除。
+这样既避免新版本安装不兼容，也不会把仅有预发布 npm 包的版本误称为稳定版本。
+
+Desktop 认证覆盖插件安装、启动、渲染器、设置/画廊、持久化和首帧握手；macOS 原生窗口装饰、
+红绿灯/leading、vibrancy、Dock/rightbar 和系统级 DPI 属于宿主所有，不在插件认证范围内。
+可被机器检查的正式范围在 `contracts/dsh/support-matrix.json`；验收证据见
+[docs/verification.md](docs/verification.md)。
 
 ## 安装
 
@@ -107,6 +120,23 @@ Desktop 应用通过插件管理器安装：**Settings → Plugins → Install b
 输入 `dsh-livery@0.1.2`。0.2.1-rc.3 Desktop 运行时会被本版本接受，插件可安装并在
 Electron 渲染器中运行。macOS 原生窗口装饰、红绿灯/leading、vibrancy、Dock/rightbar 和
 系统级 DPI 属于宿主所有，不在插件认证范围内。
+
+#### 本地 npm tarball 安装（新版本 24 小时校验窗口）
+
+Desktop 插件管理器会执行 minimum-release-age / 供应链校验；刚发布不足约 24 小时的版本可能被拒绝，
+即使包本身有效。需要立即安装时，先在本地拉取精确 npm tarball，再从文件安装：
+
+```bash
+npm pack dsh-livery@0.1.2 --pack-destination "$HOME/Downloads"
+shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.2.tgz"
+# 与 GitHub Release / npm 制品哈希核对后再安装
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
+  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.2.tgz"
+```
+
+安装后重启 Desktop 应用。`npm pack` 只是下载已发布 tarball，不会绕过包校验；本地文件路径会绕过
+registry 的 release-age 门禁，所以必须先核对 sha256，不要安装来源不明的 tarball。该方式也适用于
+离线或网络受限机器。
 
 ## 卸载
 

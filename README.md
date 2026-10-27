@@ -11,11 +11,19 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.2 limited release.** Supported exactly for:
-> DSH `0.2.1-rc.2` and the latest `0.2.1-rc.4` + Web Profile + Chrome 155 + Node
-> 22.23.1, and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24
-> runtime. Desktop Windows, Web Edge and other DSH builds are outside the supported
-> scope. Other DSH versions are rejected at install/runtime and fail closed. The
+> **Release status: 0.1.2 limited release.**
+>
+> **Stable certified:** DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1,
+> and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime.
+>
+> **Next-channel preview:** DSH `0.2.1-rc.4` + Web Profile + Chrome 155 + Node
+> 22.23.1. The official npm package is signed and the exact tarball is in the
+> acceptance evidence, but upstream has not yet published a matching GitHub
+> tag/release; this is compatibility preview, not a stability promise for a
+> pre-release channel.
+>
+> Desktop Windows, Web Edge and other DSH builds are outside the supported scope.
+> Other DSH versions are rejected at install/runtime and fail closed. The
 > publishable artifact is bound to committed acceptance evidence;
 > `prepublish-check` refuses mismatched bytes.
 
@@ -98,18 +106,27 @@ The supported scope is deliberately narrow:
 
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Certified |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Certified (latest DSH) |
-| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node 24.21.0 | Certified renderer surface |
+| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | **Stable certified** (npm `latest`) |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | **Next-channel preview** (npm `next`; no GitHub tag yet) |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node 24.21.0 | **Stable certified** renderer surface (GitHub-tagged) |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install time
-and fails closed at runtime. The Desktop certification covers plugin install, boot,
-renderer, settings/gallery, persistence and the first-frame handshake; native macOS
-window chrome, traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are
-host-owned and outside the plugin's certification surface. The formal matrix lives
-at `contracts/dsh/support-matrix.json`; see
-[docs/verification.md](docs/verification.md) for both evidence files.
+and fails closed at runtime. Stable support is claimed only for host releases that
+have both an official GitHub tag/release and the matching signed npm package
+(currently `0.2.1-rc.2` and `0.2.1-rc.3`). The `0.2.1-rc.4` adapter was verified
+against the signed official npm tarball from the `next` channel; because upstream
+has not tagged it on GitHub, it is shipped as preview compatibility and may be
+removed or re-certified if upstream withdraws or promotes it. This is how the
+project follows upstream without silently claiming stability for prerelease-only
+builds.
+
+The Desktop certification covers plugin install, boot, renderer, settings/gallery,
+persistence and the first-frame handshake; native macOS window chrome, traffic
+lights/leading, vibrancy, Dock/rightbar and OS-level DPI are host-owned and outside
+the plugin's certification surface. The formal matrix lives at
+`contracts/dsh/support-matrix.json`; see
+[docs/verification.md](docs/verification.md) for all evidence files.
 
 ## Install
 
@@ -130,6 +147,27 @@ The Desktop app installs plugins from its plugin manager:
 the plugin installs and runs in the Electron renderer. Native macOS window chrome,
 traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are host-owned and
 outside the plugin's certification surface.
+
+#### Local npm tarball fallback (new-release age window)
+
+The Desktop plugin manager applies a minimum-release-age/supply-chain check. A
+version published less than ~24 hours ago can be rejected even though it is
+valid. To install immediately, download the exact npm tarball locally and install
+that file:
+
+```bash
+npm pack dsh-livery@0.1.2 --pack-destination "$HOME/Downloads"
+shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.2.tgz"
+# Compare this hash with the GitHub Release / npm artifact hash before installing.
+"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
+  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.2.tgz"
+```
+
+Then restart the Desktop app. `npm pack` only downloads the published tarball; it
+does not bypass package verification. The local-file path bypasses the registry
+age gate, so verify the sha256 against the release artifact and never install an
+unverified tarball. The same local-file command is useful for air-gapped or
+network-restricted machines.
 
 ## Uninstall
 

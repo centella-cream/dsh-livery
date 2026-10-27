@@ -10,10 +10,16 @@ into the `0.1.0` entry.
 
 ### Added
 
-- Latest DSH `0.2.1-rc.4` Web/Chrome 155 support alongside the already-declared
-  `0.2.1-rc.2` Web and `0.2.1-rc.3` Desktop/macOS adapters. `engines.dsh` now
-  admits the exact allowlist `0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4`; rc.4
-  Desktop is not claimed because no rc.4 Desktop app was available.
+- Next-channel preview for DSH `0.2.1-rc.4` Web/Chrome 155 alongside the stable
+  `0.2.1-rc.2` Web and `0.2.1-rc.3` Desktop/macOS adapters. The rc.4 package was
+  verified from the signed official npm `next` tarball; upstream has no matching
+  GitHub tag yet, so this is preview compatibility, not a stability promise.
+  `engines.dsh` admits the exact allowlist
+  `0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4`; rc.4 Desktop is not claimed because
+  no rc.4 Desktop app was available.
+- Desktop docs now cover the local-npm-tarball fallback for the plugin manager's
+  ~24-hour minimum-release-age/supply-chain window: `npm pack`, verify sha256,
+  then install the local `.tgz` through the app-bundled CLI and restart.
 
 ### Fixed
 
