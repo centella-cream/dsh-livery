@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-27T13:20:00.000Z",
+  "generatedAt": "2026-10-28T00:05:00.000Z",
   "measuredFrom": {
     "candidate": "dsh-livery-0.1.3.tgz",
-    "commit": "0b2a2c07e68d051898acf60eb62e60132611a2f9",
+    "sha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
+    "commit": "81d5ecafaae192e8fbdf1c90d9d188cd87a95178",
     "chromeVersion": "156.0.8078.48",
-    "note": "catalog size and cold-start samples measured on the merged 0.1.3 candidate (c4d304a3) during task-72 acceptance; wallpaper-on samples via persisted-state reload probe"
+    "note": "remeasured on the final correctness-fix 0.1.3 candidate"
   },
   "catalogJson": {
     "bytes": 1313436,
@@ -16,28 +17,23 @@
   "coldStart": {
     "off": {
       "samplesMs": [
-        2435,
-        1214,
-        1918,
-        1615
+        1917,
+        1315,
+        1213
       ],
-      "p50Ms": 2435,
-      "p95Ms": 2435,
-      "observedSampleRangeMs": [
-        1214,
-        2435
-      ],
-      "method": "host cold boot ready (dsh web line) with stock/off wallpaper; conservative p50/p95 kept at the initial merged-candidate measurement, final-run observed samples recorded separately"
+      "p50Ms": 1315,
+      "p95Ms": 1917,
+      "method": "host cold boot ready (dsh web line) with stock/off wallpaper, three serial boots on one isolated home"
     },
     "on": {
       "samplesMs": [
-        160,
-        171,
-        273
+        191,
+        198,
+        151
       ],
-      "p50Ms": 171,
-      "p95Ms": 273,
-      "method": "wallpaper-on renderer cold paint: persisted state-v2 aurora wallpaper, hard reload to app-ready; totalMs samples (two runs had no paint-timing entry)"
+      "p50Ms": 191,
+      "p95Ms": 198,
+      "method": "wallpaper-on renderer cold paint: persisted state-v2 aurora wallpaper, hard reload to app-ready; totalMs samples"
     }
   },
   "openverseCanary": {

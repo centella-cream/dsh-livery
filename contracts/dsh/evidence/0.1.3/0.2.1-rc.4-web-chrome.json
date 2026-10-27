@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "commit": "0b2a2c07e68d051898acf60eb62e60132611a2f9",
+  "commit": "81d5ecafaae192e8fbdf1c90d9d188cd87a95178",
   "packageVersion": "0.1.3",
-  "tarballSha256": "c4d304a3a0f8c43fbe82e76219b8f34342347af745499565d8281b06561b66b3",
-  "tarballBytes": 2091583,
-  "generatedAt": "2026-10-27T13:48:35.820Z",
+  "tarballSha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
+  "tarballBytes": 2093678,
+  "generatedAt": "2026-10-27T16:10:27.846Z",
   "scope": {
     "hostVersion": "0.2.1-rc.4",
     "profile": "web",
@@ -33,12 +33,74 @@
       }
     }
   },
+  "criticalChecks": [
+    {
+      "id": "env.browser-version",
+      "status": "pass",
+      "title": "actual full Chrome version matches the exact certified browser version requirement"
+    },
+    {
+      "id": "handshake.certified-adapter",
+      "status": "pass",
+      "title": "live host matches a certified adapter record (exact version + adapter + contract + catalog profile)"
+    },
+    {
+      "id": "catalog.certified-identity",
+      "status": "pass",
+      "title": "catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple"
+    },
+    {
+      "id": "merged.two-tab-sync",
+      "status": "pass",
+      "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops"
+    },
+    {
+      "id": "merged.two-tab-clear",
+      "status": "pass",
+      "title": "clearing wallpaper in page A clears page B through the same sync path"
+    },
+    {
+      "id": "merged.state-migration-v1",
+      "status": "pass",
+      "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored"
+    },
+    {
+      "id": "merged.preset-import-diff",
+      "status": "pass",
+      "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position"
+    },
+    {
+      "id": "merged.preset-apply-atomic",
+      "status": "pass",
+      "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action"
+    },
+    {
+      "id": "merged.preset-invalid-rejected",
+      "status": "pass",
+      "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage"
+    },
+    {
+      "id": "merged.position-remote",
+      "status": "pass",
+      "title": "nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position"
+    },
+    {
+      "id": "merged.clear-local-data",
+      "status": "pass",
+      "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache"
+    },
+    {
+      "id": "visual.floating-surfaces",
+      "status": "pass",
+      "title": "host Settings modal stays opaque above frost+atmosphere"
+    }
+  ],
   "runs": [
     {
       "id": "web-rc4-isolated",
       "hostVersion": "0.2.1-rc.4",
       "adapterId": "dsh-0.2.1-rc.4-r1",
-      "tarballSha256": "c4d304a3a0f8c43fbe82e76219b8f34342347af745499565d8281b06561b66b3",
+      "tarballSha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
       "summary": {
         "pass": 256,
         "fail": 0,
@@ -46,7 +108,7 @@
         "warn": 2
       },
       "report": "contracts/dsh/evidence/0.1.3/reports/web-rc4-isolated.md",
-      "reportSha256": "787ccbce6b259c5bcfbde9b9d9950bcc1448e642ee1aff5dd0e0422380a4c7b7"
+      "reportSha256": "ebe20c012da9f9b88fd001456f7c42f0dbd613fe68160457949b9fb4afe2caed"
     }
   ]
 }

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "commit": "0b2a2c07e68d051898acf60eb62e60132611a2f9",
+  "commit": "81d5ecafaae192e8fbdf1c90d9d188cd87a95178",
   "packageVersion": "0.1.3",
-  "tarballSha256": "c4d304a3a0f8c43fbe82e76219b8f34342347af745499565d8281b06561b66b3",
-  "tarballBytes": 2091583,
-  "generatedAt": "2026-10-27T13:48:35.820Z",
+  "tarballSha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
+  "tarballBytes": 2093678,
+  "generatedAt": "2026-10-27T16:10:27.846Z",
   "scope": {
     "hostVersion": "0.2.1-rc.3",
     "profile": "desktop",
@@ -35,12 +35,64 @@
       }
     }
   },
+  "criticalChecks": [
+    {
+      "id": "desktop.official-install",
+      "status": "pass",
+      "title": "official rc.3 plugin-manager install accepts the package with no version exemption"
+    },
+    {
+      "id": "desktop.certified-runtime",
+      "status": "pass",
+      "title": "app-bundled CLI reports a certified host version"
+    },
+    {
+      "id": "desktop.renderer-launches",
+      "status": "pass",
+      "title": "real Electron renderer launches under the isolated app runtime"
+    },
+    {
+      "id": "desktop.boot-graph-row",
+      "status": "pass",
+      "title": "boot graph lists the dsh-livery client module"
+    },
+    {
+      "id": "desktop.apply-persists",
+      "status": "pass",
+      "title": "apply writes exactly one livery config mutation into the isolated desktop profile patch"
+    },
+    {
+      "id": "desktop.position-remote",
+      "status": "pass",
+      "title": "desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position"
+    },
+    {
+      "id": "desktop.reduced-transparency",
+      "status": "pass",
+      "title": "desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce"
+    },
+    {
+      "id": "desktop.floating-surfaces",
+      "status": "pass",
+      "title": "desktop host floating surfaces stay opaque above wallpaper"
+    },
+    {
+      "id": "desktop.restore-stock",
+      "status": "pass",
+      "title": "restore stock removes the livery from the desktop renderer"
+    },
+    {
+      "id": "desktop.matrix-consistency",
+      "status": "pass",
+      "title": "desktop report claims do not exceed the support matrix desktop.macos status"
+    }
+  ],
   "runs": [
     {
       "id": "desktop-electron-macos",
       "hostVersion": "0.2.1-rc.3",
       "adapterId": "dsh-0.2.1-rc.3-r1",
-      "tarballSha256": "c4d304a3a0f8c43fbe82e76219b8f34342347af745499565d8281b06561b66b3",
+      "tarballSha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
       "summary": {
         "pass": 31,
         "fail": 0,
@@ -48,7 +100,7 @@
         "warn": 0
       },
       "report": "contracts/dsh/evidence/0.1.3/reports/desktop-macos-electron.md",
-      "reportSha256": "7b8cc3ed0c646273d799f10835535cc9aa437f1a13e38d381bffd3ed82f85892"
+      "reportSha256": "4bc763d4cc354f1d0102bde522b0e75e25fded8ed50c7f728f9f7cecde7a658f"
     }
   ]
 }
