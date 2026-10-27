@@ -104,7 +104,48 @@ export type WallpaperSelection =
   | { readonly kind: 'upload'; readonly key: string }
   | undefined
 
-/** Persisted shape (schema v1). */
+/** Persisted schema version written by this client (v1 flat records migrate on read). */
+export const WALLPAPER_STATE_SCHEMA_VERSION = 2
+
+/** Focal-position coordinate in percent: only the nine-grid stops are persisted. */
+export type WallpaperPositionValue = 0 | 50 | 100
+
+/** Focal point of a remote/upload wallpaper; built-in designs stay centered. */
+export interface WallpaperPosition {
+  readonly x: WallpaperPositionValue
+  readonly y: WallpaperPositionValue
+}
+
+/** Allowed focal-position values, in ascending order. */
+export const WALLPAPER_POSITION_VALUES: readonly WallpaperPositionValue[] = [0, 50, 100]
+
+/** Default focal point: centered (the only behaviour schema v1 could express). */
+export const DEFAULT_WALLPAPER_POSITION: WallpaperPosition = { x: 50, y: 50 }
+
+/** Stable id of one nine-grid option (also used by the UI `data-testid`s). */
+export type WallpaperPositionId =
+  | 'top-left' | 'top' | 'top-right'
+  | 'left' | 'center' | 'right'
+  | 'bottom-left' | 'bottom' | 'bottom-right'
+
+/** The nine focal-position options in reading order (`x` grows right, `y` grows down). */
+export const WALLPAPER_POSITION_OPTIONS: readonly {
+  readonly id: WallpaperPositionId
+  readonly x: WallpaperPositionValue
+  readonly y: WallpaperPositionValue
+}[] = [
+  { id: 'top-left', x: 0, y: 0 },
+  { id: 'top', x: 50, y: 0 },
+  { id: 'top-right', x: 100, y: 0 },
+  { id: 'left', x: 0, y: 50 },
+  { id: 'center', x: 50, y: 50 },
+  { id: 'right', x: 100, y: 50 },
+  { id: 'bottom-left', x: 0, y: 100 },
+  { id: 'bottom', x: 50, y: 100 },
+  { id: 'bottom-right', x: 100, y: 100 },
+]
+
+/** Persisted shape (legacy schema v1, read-only migration input). */
 export interface StoredWallpaper {
   readonly kind: 'builtin' | 'remote' | 'upload'
   readonly id?: string
@@ -139,6 +180,61 @@ export function clampEffects(input: unknown): WallpaperEffects {
     frost: clampEffect('frost', record.frost),
     atmosphere: clampEffect('atmosphere', record.atmosphere),
   }
+}
+
+/** Snap one untrusted coordinate to the nearest legal nine-grid stop. */
+function snapPositionValue(value: unknown): WallpaperPositionValue {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 50
+  let best: WallpaperPositionValue = 50
+  let bestDistance = Number.POSITIVE_INFINITY
+  for (const candidate of WALLPAPER_POSITION_VALUES) {
+    const distance = Math.abs(value - candidate)
+    if (distance < bestDistance) {
+      bestDistance = distance
+      best = candidate
+    }
+  }
+  return best
+}
+
+/**
+ * Normalize an untrusted focal position (storage/preset/UI) to the nine-grid stops.
+ * Missing or malformed axes fall back to `50` so a corrupt record never hides the
+ * wallpaper; values are snapped to the nearest of `0`, `50`, `100`.
+ * @param input - partial/unknown position.
+ * @returns a complete legal position.
+ */
+export function normalizeWallpaperPosition(input: unknown): WallpaperPosition {
+  const record = typeof input === 'object' && input !== null ? input as Record<string, unknown> : {}
+  return { x: snapPositionValue(record.x), y: snapPositionValue(record.y) }
+}
+
+/**
+ * Normalize an untrusted persisted revision to a non-negative integer.
+ * @param value - stored/received revision.
+ * @returns a safe monotonic counter value (0 when malformed).
+ */
+export function normalizeWallpaperRevision(value: unknown): number {
+  const numeric = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(numeric) || numeric < 0) return 0
+  return Math.floor(numeric)
+}
+
+/**
+ * CSS `background-position` value for one selection + focal position.
+ * Built-in designs and "no wallpaper" always stay centered; only remote and
+ * uploaded images honour the nine-grid position.
+ * @param selection - current wallpaper.
+ * @param position - persisted focal position (defaults to centered).
+ * @returns the CSS value, e.g. `'center'` or `'0% 100%'`.
+ */
+export function backgroundPositionValue(
+  selection: WallpaperSelection,
+  position: WallpaperPosition | undefined = DEFAULT_WALLPAPER_POSITION,
+): string {
+  if (selection === undefined || selection.kind === 'builtin') return 'center'
+  const point = normalizeWallpaperPosition(position)
+  return `${point.x}% ${point.y}%`
 }
 
 /** Reasons a custom wallpaper URL can be rejected (mapped to i18n copy). */
@@ -244,6 +340,8 @@ export interface WallpaperTokenContext {
 export interface WallpaperCssInput {
   readonly selection: WallpaperSelection
   readonly effects: WallpaperEffects
+  /** Focal position of remote/upload images; built-in designs stay centered. */
+  readonly position?: WallpaperPosition | undefined
   /** Present only when an active livery supplies background tokens. */
   readonly tokens?: WallpaperTokenContext | undefined
   /** Fresh object URL for an `upload` selection (validated local blob URL). */
@@ -293,9 +391,10 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   const image = backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
   if (image === undefined) return ''
   const { blur, dim, atmosphere } = input.effects
+  const position = backgroundPositionValue(input.selection, input.position)
   const rules: string[] = [
     `body[${WALLPAPER_ATTRIBUTE}]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;`
-    + `background-image:${image};background-position:center;background-size:cover;filter:blur(${blur}px)}`,
+    + `background-image:${image};background-position:${position};background-size:cover;filter:blur(${blur}px)}`,
     `body[${WALLPAPER_ATTRIBUTE}]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;`
     + `background:rgba(0,0,0,${(dim / 100).toFixed(2)})}`,
     // Let the under-content immersive layer show through the host's body canvas.
@@ -309,7 +408,7 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     // Tooltip and HoverCard use 100/101, Modal uses 1000 and Toast 1100. This
     // keeps floating surfaces readable and un-tinted by the wallpaper.
     rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:90;pointer-events:none;`
-      + `background-image:${image};background-size:cover;background-position:center;filter:blur(${blur}px);`
+      + `background-image:${image};background-size:cover;background-position:${position};filter:blur(${blur}px);`
       + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
   }
   // OS accessibility modes: never paint the wallpaper over the app. The glass
@@ -355,6 +454,64 @@ export function tokenContextOf(
   return { light: livery.light.tokens, dark: livery.dark.tokens, frost }
 }
 
+/** Persisted selection in schema v2: only the kind-relevant identifier. */
+export type StoredWallpaperSelection =
+  | { readonly kind: 'builtin'; readonly id: BuiltinWallpaperId }
+  | { readonly kind: 'remote'; readonly url: string }
+  | { readonly kind: 'upload'; readonly key: string }
+  /** Tombstone written by an intentional clear so other tabs can sync it. */
+  | { readonly kind: 'none' }
+
+/** Persisted shape (schema v2): revisioned selection + effects + focal position. */
+export interface StoredWallpaperState {
+  readonly schemaVersion: 2
+  readonly revision: number
+  readonly selection: StoredWallpaperSelection
+  readonly effects: WallpaperEffects
+  readonly position: WallpaperPosition
+}
+
+/** Hydrated controller state from storage (schema v2 or a migrated v1 record). */
+export interface HydratedWallpaperState {
+  readonly revision: number
+  readonly selection: WallpaperSelection
+  readonly effects: WallpaperEffects
+  readonly position: WallpaperPosition
+}
+
+/**
+ * Validate one stored selection object (shared by schema v1 migration and v2 reads).
+ * @param raw - unknown `selection`/flat v1 record fields.
+ * @returns the validated selection, or undefined.
+ */
+function parseStoredSelection(raw: unknown): WallpaperSelection {
+  if (typeof raw !== 'object' || raw === null) return undefined
+  const record = raw as Record<string, unknown>
+  if (record.kind === 'builtin') {
+    if (!isBuiltinWallpaperId(record.id)) return undefined
+    return { kind: 'builtin', id: record.id }
+  }
+  if (record.kind === 'remote') {
+    if (typeof record.url !== 'string') return undefined
+    const check = validateWallpaperUrl(record.url)
+    if (!check.ok) return undefined
+    return { kind: 'remote', url: check.url }
+  }
+  if (record.kind === 'upload') {
+    if (typeof record.key !== 'string' || !/^upload-[A-Za-z0-9-]{1,64}$/.test(record.key)) return undefined
+    return { kind: 'upload', key: record.key }
+  }
+  return undefined
+}
+
+/** Map one live selection to its persisted (schema v2) form. */
+function toStoredSelection(selection: WallpaperSelection): StoredWallpaperSelection | undefined {
+  if (selection === undefined) return undefined
+  if (selection.kind === 'builtin') return { kind: 'builtin', id: selection.id }
+  if (selection.kind === 'upload') return { kind: 'upload', key: selection.key }
+  return { kind: 'remote', url: selection.url }
+}
+
 /** Persistable record for one selection + effects, or undefined when cleared. */
 export function toStoredWallpaper(
   selection: WallpaperSelection,
@@ -371,40 +528,28 @@ export function toStoredWallpaper(
   return { kind: 'remote', url: selection.url, ...clamped }
 }
 
-/** Hydrated controller state from storage. */
+/** Hydrated controller state from a legacy v1 record. */
 export interface HydratedWallpaper {
   readonly selection: WallpaperSelection
   readonly effects: WallpaperEffects
 }
 
 /**
- * Parse one persisted wallpaper record (defensive: corrupt/foreign data ignored).
+ * Parse one persisted legacy (schema v1) wallpaper record.
+ * Kept for v1 migration and compatibility; new writes use
+ * {@link serializeWallpaperState} (schema v2).
  * @param raw - `JSON.parse`d value from localStorage.
  * @returns the hydrated selection/effects, or undefined when invalid.
  */
 export function parseStoredWallpaper(raw: unknown): HydratedWallpaper | undefined {
-  if (typeof raw !== 'object' || raw === null) return undefined
-  const record = raw as Record<string, unknown>
-  const effects = clampEffects(record)
-  if (record.kind === 'builtin') {
-    if (!isBuiltinWallpaperId(record.id)) return undefined
-    return { selection: { kind: 'builtin', id: record.id }, effects }
-  }
-  if (record.kind === 'remote') {
-    if (typeof record.url !== 'string') return undefined
-    const check = validateWallpaperUrl(record.url)
-    if (!check.ok) return undefined
-    return { selection: { kind: 'remote', url: check.url }, effects }
-  }
-  if (record.kind === 'upload') {
-    if (typeof record.key !== 'string' || !/^upload-[A-Za-z0-9-]{1,64}$/.test(record.key)) return undefined
-    return { selection: { kind: 'upload', key: record.key }, effects }
-  }
-  return undefined
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined
+  const selection = parseStoredSelection(raw)
+  if (selection === undefined) return undefined
+  return { selection, effects: clampEffects(raw as Record<string, unknown>) }
 }
 
 /**
- * Serialize one selection + effects, or undefined when nothing should persist.
+ * Serialize one selection + effects (legacy schema v1 shape).
  * @param selection - current wallpaper.
  * @param effects - current effect values.
  * @returns the JSON record to store.
@@ -414,6 +559,71 @@ export function serializeWallpaper(
   effects: WallpaperEffects,
 ): StoredWallpaper | undefined {
   return toStoredWallpaper(selection, effects)
+}
+
+/**
+ * Parse one persisted wallpaper record, accepting schema v2 and migrating the
+ * legacy v1 flat record losslessly (v1 had no position: 50/50, no revision: 0).
+ *
+ * Corrupt records and unknown schema versions are ignored (`undefined`); callers
+ * must never clear the live wallpaper because a stored record failed to parse.
+ * @param raw - `JSON.parse`d value from localStorage or a preset/sync payload.
+ * @returns the hydrated revision/selection/effects/position, or undefined.
+ */
+export function parseWallpaperState(raw: unknown): HydratedWallpaperState | undefined {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined
+  const record = raw as Record<string, unknown>
+  const version = record.schemaVersion
+  if (version === WALLPAPER_STATE_SCHEMA_VERSION) {
+    const storedSelection = record.selection
+    const isClear = storedSelection === null
+      || (typeof storedSelection === 'object' && storedSelection !== null
+        && (storedSelection as Record<string, unknown>).kind === 'none')
+    const selection = isClear ? undefined : parseStoredSelection(storedSelection)
+    if (!isClear && selection === undefined) return undefined
+    return {
+      revision: normalizeWallpaperRevision(record.revision),
+      selection,
+      effects: clampEffects(record.effects),
+      position: normalizeWallpaperPosition(record.position),
+    }
+  }
+  // Schema v1 persisted a flat record without a version field (accept an
+  // explicit `1` too, in case an early migration wrote one).
+  if (version === undefined || version === 1) {
+    const legacy = parseStoredWallpaper(record)
+    if (legacy === undefined) return undefined
+    return {
+      revision: 0,
+      selection: legacy.selection,
+      effects: legacy.effects,
+      position: { ...DEFAULT_WALLPAPER_POSITION },
+    }
+  }
+  return undefined
+}
+
+/**
+ * Serialize one wallpaper state as the persisted schema v2 record.
+ * @param selection - current wallpaper (undefined removes the stored record).
+ * @param effects - current effect values (clamped).
+ * @param position - current focal position (normalized to the nine-grid stops).
+ * @param revision - monotonic state revision (0 when omitted).
+ * @returns the JSON record to store; a cleared selection is a revisioned tombstone.
+ */
+export function serializeWallpaperState(
+  selection: WallpaperSelection,
+  effects: WallpaperEffects,
+  position: WallpaperPosition | undefined = DEFAULT_WALLPAPER_POSITION,
+  revision = 0,
+): StoredWallpaperState {
+  return {
+    schemaVersion: WALLPAPER_STATE_SCHEMA_VERSION,
+    revision: normalizeWallpaperRevision(revision),
+    selection: selection === undefined ? { kind: 'none' } : toStoredSelection(selection)!,
+    effects: clampEffects(effects),
+    position: normalizeWallpaperPosition(position),
+  }
 }
 
 /** One mapped remote wallpaper result. */

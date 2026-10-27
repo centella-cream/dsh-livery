@@ -101,6 +101,7 @@ function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
     retryLastWrite: async () => false,
     retryCatalog: async () => undefined,
     observeTheme: () => () => undefined,
+    applyStyle: async () => ({ ok: true }),
   }
 }
 
@@ -266,6 +267,86 @@ describe('recent wallpapers card', () => {
   })
 })
 
+describe('focal position nine-grid', () => {
+  const ALL_RADIOS = /data-testid="wallpaper-position-(?:top-left|top|top-right|left|center|right|bottom-left|bottom|bottom-right)"/g
+
+  it('renders a native radio group only for remote/upload selections', () => {
+    // No wallpaper: no position control.
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-position"')
+
+    // Built-in designs cannot be repositioned.
+    controller.setSelection({ kind: 'builtin', id: 'ember' })
+    let html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-hero-preview"')
+    expect(html).not.toContain('data-testid="wallpaper-position"')
+
+    // Remote: native radios in one group, centered by default.
+    controller.setSelection({ kind: 'remote', url: 'https://example.com/w.jpg' })
+    html = renderPanel()
+    expect(html).toContain('<fieldset class="wallpaper-position" data-testid="wallpaper-position">')
+    expect(html).toContain('<legend class="livery-ui-card__title">Focal point</legend>')
+    expect(html.match(ALL_RADIOS)).toHaveLength(9)
+    expect(html.match(/type="radio"/g)).toHaveLength(9)
+    expect(html.match(/name="wallpaper-position"/g)).toHaveLength(9)
+    expect(html).toMatch(/data-testid="wallpaper-position-center"[^>]*checked/)
+    expect(html).not.toMatch(/data-testid="wallpaper-position-top-left"[^>]*checked/)
+    for (const pair of ['0,0', '50,0', '100,0', '0,50', '50,50', '100,50', '0,100', '50,100', '100,100']) {
+      expect(html).toContain(`value="${pair}"`)
+    }
+
+    // Upload selections can be repositioned too.
+    controller.setSelection({ kind: 'upload', key: 'upload-1-abc' })
+    expect(renderPanel()).toContain('data-testid="wallpaper-position"')
+  })
+
+  it('localizes the group, labels and hint in both locales', () => {
+    controller.setSelection({ kind: 'remote', url: 'https://example.com/w.jpg' })
+    const zh = renderPanel(zhCN as unknown as Dict)
+    expect(zh).toContain('焦点位置')
+    expect(zh).toContain('左上')
+    expect(zh).toContain('居中')
+    expect(zh).toContain('右下')
+    expect(zh).toContain('内置壁纸始终居中')
+    const en = renderPanel()
+    expect(en).toContain('Top left')
+    expect(en).toContain('Center')
+    expect(en).toContain('Bottom right')
+    expect(en).toContain('built-in designs stay centered')
+  })
+
+  it('reflects a persisted position in the checked radio and the hero preview', () => {
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      schemaVersion: 2,
+      revision: 3,
+      selection: { kind: 'remote', url: 'https://example.com/p.jpg' },
+      effects: { blur: 8, dim: 25, frost: 35, atmosphere: 30 },
+      position: { x: 0, y: 100 },
+    }))
+    controller.start()
+    const html = renderPanel()
+    expect(html).toMatch(/data-testid="wallpaper-position-bottom-left"[^>]*checked/)
+    expect(html).toContain('background-position:0% 100%')
+    expect(html).not.toMatch(/data-testid="wallpaper-position-center"[^>]*checked/)
+  })
+
+  it('moves the checked state with controller.setPosition and keeps built-ins centered', () => {
+    controller.setSelection({ kind: 'remote', url: 'https://example.com/w.jpg' })
+    controller.setPosition({ x: 100, y: 0 })
+    const html = renderPanel()
+    expect(html).toMatch(/data-testid="wallpaper-position-top-right"[^>]*checked/)
+    expect(html).toContain('background-position:100% 0%')
+    // The saved state is a schema v2 position (batch transition covered in the
+    // controller suite; here we assert the controller snapshot contract).
+    expect(controller.getSnapshot().position).toEqual({ x: 100, y: 0 })
+
+    controller.setSelection({ kind: 'builtin', id: 'sea' })
+    expect(controller.getSnapshot().position).toEqual({ x: 100, y: 0 })
+    const builtin = renderPanel()
+    expect(builtin).not.toContain('data-testid="wallpaper-position"')
+    expect(builtin).toContain('background-position:center')
+  })
+})
+
 describe('wallpaper error accessibility', () => {
   it('associates upload and URL errors with their controls', () => {
     const source = readFileSync(new URL('../../src/client/ui/WallpaperPanel.tsx', import.meta.url), 'utf8')
@@ -279,6 +360,7 @@ describe('wallpaper error accessibility', () => {
 describe('wallpaper studio render', () => {
   it('renders the search-first online card, 24 built-in wallpapers, effects, upload and URL controls', () => {
     const html = renderPanel()
+    expect(html).toContain('data-testid="preset-card"')
     expect(html).toContain('data-testid="wallpaper-panel"')
     expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(24)
     for (const id of BUILTIN_WALLPAPER_IDS) {
@@ -321,6 +403,9 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-url"')
     expect(html).toContain('maxLength="2048"')
     expect(html).toContain('data-testid="wallpaper-url-apply"')
+    // Local-data cleanup card is mounted once by the panel (storage-v2 component).
+    expect(html).toContain('data-testid="wallpaper-clear-local-card"')
+    expect(html).toContain('data-testid="wallpaper-clear-local-data"')
     expect(html).toContain('data-testid="wallpaper-search"')
     expect(html).toContain('data-testid="wallpaper-search-go"')
     expect(html).toContain('data-testid="wallpaper-refresh"')

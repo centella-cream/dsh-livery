@@ -2,10 +2,14 @@
  * Wallpaper controller — owns the client-only wallpaper state and its lifecycle.
  *
  * Mounted once by the client plugin (not by the page), so a wallpaper survives
- * navigation and reloads via `localStorage`. It hydrates the persisted record,
- * rebuilds the owned stylesheet whenever selection/effects/tokens change, and
- * tears the layer down on plugin dispose. The UI talks to it through the module
- * singleton accessor below; no host config or boot payload is involved.
+ * navigation and reloads via `localStorage`. It hydrates the persisted schema v2
+ * record (migrating legacy v1 flat records), rebuilds the owned stylesheet
+ * whenever selection/effects/position/tokens change, and tears the layer down on
+ * plugin dispose. Every selection+effects+position change goes through the batch
+ * `setState` transition (one stylesheet write, one debounced save, one notify) so
+ * presets/import/sync never render intermediate states. The UI talks to it
+ * through the module singleton accessor below; no host config or boot payload is
+ * involved.
  */
 import type { TokenMap } from '../../core/types.js'
 import {
@@ -13,13 +17,24 @@ import {
   buildWallpaperCss,
   clampEffects,
   DEFAULT_WALLPAPER_EFFECTS,
-  parseStoredWallpaper,
+  DEFAULT_WALLPAPER_POSITION,
+  normalizeWallpaperPosition,
+  normalizeWallpaperRevision,
+  parseWallpaperState,
+  serializeWallpaperState,
   WALLPAPER_STORAGE_KEY,
 } from '../wallpaper.js'
-import type { WallpaperEffects, WallpaperSelection } from '../wallpaper.js'
+import type { WallpaperEffects, WallpaperPosition, WallpaperSelection } from '../wallpaper.js'
 import { createWallpaperLayer } from './apply.js'
 import { createIndexedDbImageStore } from './storage.js'
 import { loadCachedRemote } from './cache.js'
+import {
+  createTabSourceId,
+  createWallpaperStorageSync,
+  parseExternalWallpaperState,
+  shouldApplyExternalState,
+} from './sync.js'
+import type { StorageEventTarget } from './sync.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 
@@ -27,6 +42,39 @@ import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 export interface WallpaperState {
   readonly selection: WallpaperSelection
   readonly effects: WallpaperEffects
+  /** Focal point of remote/upload wallpapers; built-in designs stay centered. */
+  readonly position: WallpaperPosition
+  /** Monotonic local revision, bumped once per applied state transition. */
+  readonly revision: number
+}
+
+/** Partial state replacement applied atomically by {@link WallpaperControllerApi.setState}. */
+export interface WallpaperStatePatch {
+  /**
+   * New wallpaper; omit to keep the current one, pass `undefined` explicitly to
+   * clear it (an omitted key and an explicit `undefined` are different here).
+   */
+  readonly selection?: WallpaperSelection
+  /** Effect values merged over the current ones, then clamped. */
+  readonly effects?: Partial<WallpaperEffects>
+  /** Focal position, normalized to the nine-grid stops. */
+  readonly position?: WallpaperPosition
+}
+
+/** Options of one batch state transition. */
+export interface WallpaperStateOptions {
+  /**
+   * Fresh local image copy (upload blob / cached remote blob) for the new
+   * selection; rendered immediately with a local object URL.
+   */
+  readonly blob?: Blob | undefined
+  /**
+   * Adopt this exact revision instead of `current + 1` (external sync/preset
+   * application where the origin revision must be preserved).
+   */
+  readonly revision?: number | undefined
+  /** Persist immediately instead of waiting for the debounce window. */
+  readonly flush?: boolean | undefined
 }
 
 /** localStorage subset used for persistence (injectable in tests). */
@@ -49,6 +97,18 @@ export interface WallpaperControllerApi {
   setSelection(selection: WallpaperSelection, blob?: Blob): void
   /** Merge + clamp effects and apply them live. */
   setEffects(effects: Partial<WallpaperEffects>): void
+  /** Move the focal point of a remote/upload wallpaper (normalized). */
+  setPosition(position: WallpaperPosition): WallpaperState
+  /**
+   * Replace selection/effects/position in ONE transition: one stylesheet write,
+   * one debounced (or flushed) save and one subscriber notification. Omitted
+   * fields keep their current value; `{ selection: undefined }` clears the
+   * wallpaper. This is the batch API presets/import/sync must use.
+   * @returns the new snapshot (never throws).
+   */
+  setState(patch: WallpaperStatePatch, options?: WallpaperStateOptions): WallpaperState
+  /** Alias of {@link WallpaperControllerApi.setState}. */
+  applyState(patch: WallpaperStatePatch, options?: WallpaperStateOptions): WallpaperState
   /** Remove the wallpaper layer (effects keep their current values in the UI). */
   clear(): void
   /** Provide the active livery's background-token maps (undefined for stock). */
@@ -71,6 +131,10 @@ export interface WallpaperControllerOptions {
   readonly images?: WallpaperImageStore | undefined
   /** Object-URL adapter (injected in tests). */
   readonly objectUrls?: { create(blob: Blob): string; revoke(url: string): void } | undefined
+  /** Per-tab id used to ignore own storage echoes (defaults to a random id). */
+  readonly sourceId?: string
+  /** Injectable `storage` event target (defaults to `window` when available). */
+  readonly eventTarget?: StorageEventTarget | undefined
 }
 
 const DEFAULT_SAVE_DELAY_MS = 250
@@ -99,6 +163,16 @@ function defaultStorage(): WallpaperStorage | undefined {
   }
 }
 
+/** Structural equality for clamped effect records. */
+function sameEffects(a: WallpaperEffects, b: WallpaperEffects): boolean {
+  return a.blur === b.blur && a.dim === b.dim && a.frost === b.frost && a.atmosphere === b.atmosphere
+}
+
+/** Structural equality for normalized focal positions. */
+function samePosition(a: WallpaperPosition, b: WallpaperPosition): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
 /**
  * Create one wallpaper controller.
  * @param options - document/storage injection and save debounce.
@@ -110,11 +184,20 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const images = options.images ?? createIndexedDbImageStore()
   const objectUrls = options.objectUrls ?? defaultObjectUrls()
   const saveDelay = options.saveDelayMs ?? DEFAULT_SAVE_DELAY_MS
+  const sourceId = options.sourceId ?? createTabSourceId()
+  const publishSourceId = options.sourceId !== undefined
+  const eventTarget = options.eventTarget ?? (typeof window === 'undefined'
+    ? undefined
+    : window as unknown as StorageEventTarget)
+  let lastPublishedRaw: string | undefined
+  let syncUnsubscribe: (() => void) | undefined
   const listeners = new Set<() => void>()
   let selection: WallpaperSelection = undefined
   let effects: WallpaperEffects = { ...DEFAULT_WALLPAPER_EFFECTS }
+  let position: WallpaperPosition = { ...DEFAULT_WALLPAPER_POSITION }
+  let revision = 0
   let tokens: { light: TokenMap | undefined; dark: TokenMap | undefined } = { ...EMPTY_TOKENS }
-  let snapshot: WallpaperState = { selection, effects }
+  let snapshot: WallpaperState = { selection, effects, position, revision }
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
   let started = false
@@ -122,7 +205,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let localImageUrl: string | undefined
 
   const notify = (): void => {
-    snapshot = { selection, effects }
+    snapshot = { selection, effects, position, revision }
     for (const listener of [...listeners]) {
       try {
         listener()
@@ -140,7 +223,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
 
   const apply = (): void => {
     layer.apply(
-      buildWallpaperCss({ selection, effects, tokens: tokenContext(), imageOverride: localImageUrl }),
+      buildWallpaperCss({
+        selection,
+        effects,
+        position,
+        tokens: tokenContext(),
+        imageOverride: localImageUrl,
+      }),
       effects.atmosphere > 0,
     )
   }
@@ -165,19 +254,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const persist = (): void => {
     if (storage === undefined) return
     try {
-      if (selection === undefined) {
-        storage.removeItem(WALLPAPER_STORAGE_KEY)
-        return
-      }
-      storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
-        kind: selection.kind,
-        ...(selection.kind === 'builtin'
-          ? { id: selection.id }
-          : selection.kind === 'upload'
-            ? { key: selection.key }
-            : { url: selection.url }),
-        ...effects,
-      }))
+      // A clear is written as a revisioned tombstone (kind:'none') so other
+      // tabs can synchronize the clear through the same revision ordering.
+      const record = serializeWallpaperState(selection, effects, position, revision)
+      const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
+      lastPublishedRaw = raw
+      storage.setItem(WALLPAPER_STORAGE_KEY, raw)
     } catch {
       /* storage can be quota-blocked/disabled; the live layer still works */
     }
@@ -223,10 +305,14 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     } catch {
       return
     }
-    const stored = parseStoredWallpaper(raw)
+    // Corrupt or unknown-version records are ignored; the live wallpaper is
+    // never cleared just because a stored record failed to parse.
+    const stored = parseWallpaperState(raw)
     if (stored === undefined) return
     selection = stored.selection
     effects = stored.effects
+    position = stored.position
+    revision = stored.revision
   }
 
   // Uploaded blobs live in IndexedDB: restore the object URL asynchronously once
@@ -237,9 +323,10 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   // remembered remote background renders even when the network is down.
   const restoreRemote = async (): Promise<void> => {
     if (disposed || selection === undefined || selection.kind !== 'remote') return
+    const expectedRevision = revision
     const { url } = selection
     const record = await loadCachedRemote(url, images)
-    if (disposed || record === undefined) return
+    if (disposed || record === undefined || revision !== expectedRevision) return
     if (selection === undefined || selection.kind !== 'remote' || selection.url !== url) return
     replaceLocalImageUrl(record.blob)
     apply()
@@ -248,6 +335,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
 
   const restoreUpload = async (): Promise<void> => {
     if (disposed || selection === undefined || selection.kind !== 'upload') return
+    const expectedRevision = revision
     const { key } = selection
     if (images === undefined || objectUrls === undefined) return
     let record: StoredImageRecord | undefined
@@ -256,19 +344,81 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     } catch {
       record = undefined
     }
-    if (disposed) return
+    if (disposed || revision !== expectedRevision) return
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
     if (record === undefined) {
-      selection = undefined
-      replaceLocalImageUrl(undefined)
-      apply()
-      scheduleSave()
-      notify()
+      setState({ selection: undefined })
       return
     }
     replaceLocalImageUrl(record.blob)
     apply()
     notify()
+  }
+
+  const cancelPendingSave = (): void => {
+    if (saveTimer !== undefined) {
+      clearTimeout(saveTimer)
+      saveTimer = undefined
+    }
+    savePending = false
+  }
+
+  const adoptExternalState = (newValue: string | null): void => {
+    if (disposed) return
+    const external = parseExternalWallpaperState(newValue)
+    if (external === undefined) return
+    if (!shouldApplyExternalState({
+      currentRevision: revision,
+      incomingRevision: external.state.revision,
+      incomingSourceId: external.sourceId,
+      ownSourceId: sourceId,
+      lastPublishedRaw,
+      incomingRaw: external.raw,
+    })) return
+    // A newer tab wins: drop the pending local save so it cannot overwrite it.
+    cancelPendingSave()
+    selection = external.state.selection
+    effects = external.state.effects
+    position = external.state.position
+    revision = external.state.revision
+    replaceLocalImageUrl(undefined)
+    apply()
+    notify()
+    void restoreUpload()
+    void restoreRemote()
+  }
+
+  const setState = (patch: WallpaperStatePatch, stateOptions: WallpaperStateOptions = {}): WallpaperState => {
+    if (disposed) return snapshot
+    const hasSelection = Object.prototype.hasOwnProperty.call(patch, 'selection')
+    const nextSelection = hasSelection ? patch.selection : selection
+    const nextEffects = patch.effects === undefined ? effects : clampEffects({ ...effects, ...patch.effects })
+    const nextPosition = patch.position === undefined ? position : normalizeWallpaperPosition(patch.position)
+    const selectionChanged = !sameSelection(selection, nextSelection)
+    const effectsChanged = !sameEffects(effects, nextEffects)
+    const positionChanged = !samePosition(position, nextPosition)
+    if (!selectionChanged && !effectsChanged && !positionChanged) {
+      // Same selection, newly available local copy (e.g. cache finished after
+      // apply): switch the rendered image without touching persistence.
+      if (stateOptions.blob !== undefined && nextSelection !== undefined && nextSelection.kind !== 'builtin') {
+        replaceLocalImageUrl(stateOptions.blob)
+        apply()
+        notify()
+      }
+      return snapshot
+    }
+    selection = nextSelection
+    effects = nextEffects
+    position = nextPosition
+    revision = stateOptions.revision === undefined
+      ? revision + 1
+      : normalizeWallpaperRevision(stateOptions.revision)
+    if (selectionChanged || stateOptions.blob !== undefined) replaceLocalImageUrl(stateOptions.blob)
+    apply()
+    scheduleSave()
+    if (stateOptions.flush === true) flushSave()
+    notify()
+    return snapshot
   }
 
   return {
@@ -281,42 +431,18 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     },
     setSelection: (next: WallpaperSelection, blob?: Blob) => {
       if (disposed) return
-      if (sameSelection(selection, next)) {
-        // Same wallpaper, newly available local copy (e.g. cache finished after
-        // apply): switch the rendered image without touching persistence.
-        if (blob !== undefined && selection !== undefined && selection.kind !== 'builtin') {
-          replaceLocalImageUrl(blob)
-          apply()
-          notify()
-        }
-        return
-      }
-      selection = next
-      replaceLocalImageUrl(blob)
-      apply()
-      scheduleSave()
-      notify()
+      setState({ selection: next }, blob === undefined ? {} : { blob })
     },
     setEffects: (patch: Partial<WallpaperEffects>) => {
       if (disposed) return
-      const merged = clampEffects({ ...effects, ...patch })
-      if (
-        merged.blur === effects.blur && merged.dim === effects.dim
-        && merged.frost === effects.frost && merged.atmosphere === effects.atmosphere
-      ) return
-      effects = merged
-      apply()
-      scheduleSave()
-      notify()
+      setState({ effects: patch })
     },
+    setPosition: (next: WallpaperPosition) => setState({ position: next }),
+    setState,
+    applyState: setState,
     clear: () => {
       if (disposed) return
-      if (selection === undefined) return
-      selection = undefined
-      replaceLocalImageUrl(undefined)
-      apply()
-      scheduleSave()
-      notify()
+      setState({ selection: undefined })
     },
     setTokens: (light: TokenMap | undefined, dark: TokenMap | undefined) => {
       if (disposed) return
@@ -331,11 +457,18 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       hydrate()
       apply()
       notify()
+      syncUnsubscribe = createWallpaperStorageSync({
+        eventTarget,
+        key: WALLPAPER_STORAGE_KEY,
+        onExternal: adoptExternalState,
+      })
       void restoreUpload()
       void restoreRemote()
     },
     dispose: () => {
       disposed = true
+      syncUnsubscribe?.()
+      syncUnsubscribe = undefined
       flushSave()
       listeners.clear()
       replaceLocalImageUrl(undefined)

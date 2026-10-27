@@ -8,21 +8,30 @@ import {
   BUILTIN_WALLPAPERS,
   BUILTIN_WALLPAPER_IDS,
   DEFAULT_WALLPAPER_EFFECTS,
+  DEFAULT_WALLPAPER_POSITION,
   MAX_WALLPAPER_URL_LENGTH,
+  WALLPAPER_POSITION_OPTIONS,
+  WALLPAPER_POSITION_VALUES,
+  WALLPAPER_STATE_SCHEMA_VERSION,
   WALLPAPER_STORAGE_KEY,
   WALLPAPER_SURFACE_TOKENS,
   backgroundImageValue,
+  backgroundPositionValue,
   buildWallpaperCss,
   clampEffects,
   cssUrlValue,
   isBuiltinWallpaperId,
+  normalizeWallpaperPosition,
+  normalizeWallpaperRevision,
   openverseUrl,
   parseOpenverseResults,
   parsePicsumResults,
   parseStoredWallpaper,
+  parseWallpaperState,
   picsumListUrl,
   requestWallpaperResults,
   serializeWallpaper,
+  serializeWallpaperState,
   toStoredWallpaper,
   tokenContextOf,
   validateWallpaperUrl,
@@ -138,6 +147,88 @@ describe('wallpaper persistence schema', () => {
   })
 })
 
+describe('wallpaper state schema v2', () => {
+  it('serializes the documented v2 record and clamps/normalizes untrusted fields', () => {
+    const record = serializeWallpaperState(
+      { kind: 'remote', url: 'https://example.com/w.jpg' },
+      { blur: 30, dim: -2, frost: 44.5, atmosphere: 33 },
+      { x: 50, y: 100 },
+      4.9,
+    )
+    expect(record).toEqual({
+      schemaVersion: 2,
+      revision: 4,
+      selection: { kind: 'remote', url: 'https://example.com/w.jpg' },
+      effects: { blur: 24, dim: 0, frost: 45, atmosphere: 35 },
+      position: { x: 50, y: 100 },
+    })
+    expect(WALLPAPER_STATE_SCHEMA_VERSION).toBe(2)
+    expect(parseWallpaperState(record)).toEqual({
+      revision: 4,
+      selection: { kind: 'remote', url: 'https://example.com/w.jpg' },
+      effects: { blur: 24, dim: 0, frost: 45, atmosphere: 35 },
+      position: { x: 50, y: 100 },
+    })
+    expect(serializeWallpaperState(undefined, DEFAULT_WALLPAPER_EFFECTS)).toMatchObject({ schemaVersion: 2, selection: { kind: 'none' } })
+  })
+
+  it('roundtrips every selection kind including a recoverable upload key', () => {
+    for (const selection of [
+      { kind: 'builtin' as const, id: 'aurora' as const },
+      { kind: 'upload' as const, key: 'upload-123-abc' },
+    ]) {
+      const parsed = parseWallpaperState(serializeWallpaperState(selection, DEFAULT_WALLPAPER_EFFECTS))
+      expect(parsed?.selection).toEqual(selection)
+      expect(parsed?.position).toEqual(DEFAULT_WALLPAPER_POSITION)
+      expect(parsed?.revision).toBe(0)
+    }
+  })
+
+  it('migrates legacy v1 flat records losslessly with position 50/50', () => {
+    const v1 = { kind: 'remote', url: 'https://example.com/legacy.jpg', blur: 12, dim: 40, frost: 22, atmosphere: 55 }
+    expect(parseWallpaperState(v1)).toEqual({
+      revision: 0,
+      selection: { kind: 'remote', url: 'https://example.com/legacy.jpg' },
+      effects: { blur: 12, dim: 40, frost: 22, atmosphere: 55 },
+      position: { x: 50, y: 50 },
+    })
+    // v1 without atmosphere keeps the documented default.
+    expect(parseWallpaperState({ kind: 'builtin', id: 'mist', blur: 4, dim: 10, frost: 60 })?.effects.atmosphere).toBe(30)
+    // A record explicitly marked v1 migrates too.
+    expect(parseWallpaperState({ ...v1, schemaVersion: 1 })?.position).toEqual(DEFAULT_WALLPAPER_POSITION)
+  })
+
+  it('ignores corrupt records and unknown schema versions without inventing a selection', () => {
+    for (const raw of [
+      null,
+      'nope',
+      42,
+      [],
+      { schemaVersion: 3, selection: { kind: 'builtin', id: 'aurora' } },
+      { schemaVersion: 2 },
+      { schemaVersion: 2, selection: { kind: 'builtin', id: 'not-a-wallpaper' } },
+      { schemaVersion: 2, selection: { kind: 'remote', url: 'http://insecure.example/w.jpg' } },
+      { schemaVersion: 2, selection: { kind: 'upload', key: 'not-an-upload' } },
+      { schemaVersion: 2, selection: { kind: 'other' } },
+    ]) {
+      expect(parseWallpaperState(raw), JSON.stringify(raw)).toBeUndefined()
+    }
+  })
+
+  it('normalizes position/revision helpers to the documented ranges', () => {
+    expect(WALLPAPER_POSITION_VALUES).toEqual([0, 50, 100])
+    expect(WALLPAPER_POSITION_OPTIONS).toHaveLength(9)
+    expect(new Set(WALLPAPER_POSITION_OPTIONS.map(option => `${option.x},${option.y}`)).size).toBe(9)
+    expect(normalizeWallpaperPosition(undefined)).toEqual({ x: 50, y: 50 })
+    expect(normalizeWallpaperPosition({ x: 0, y: 100 })).toEqual({ x: 0, y: 100 })
+    expect(normalizeWallpaperPosition({ x: 31, y: 95 })).toEqual({ x: 50, y: 100 })
+    expect(normalizeWallpaperPosition({ x: '0', y: Number.NaN })).toEqual({ x: 50, y: 50 })
+    expect(normalizeWallpaperRevision(undefined)).toBe(0)
+    expect(normalizeWallpaperRevision(-4)).toBe(0)
+    expect(normalizeWallpaperRevision(3.9)).toBe(3)
+  })
+})
+
 describe('wallpaper stylesheet builder', () => {
   it('returns an empty stylesheet when no wallpaper is selected', () => {
     expect(buildWallpaperCss({ selection: undefined, effects: DEFAULT_WALLPAPER_EFFECTS })).toBe('')
@@ -202,6 +293,38 @@ describe('wallpaper stylesheet builder', () => {
     // Negative inset absorbs the blur bleed so resizes never show hard edges.
     expect(css).toContain('inset:-24px')
     expect(css).not.toMatch(/aspect-ratio|width:\s*\d+px|height:\s*\d+px/)
+  })
+
+  it('applies the focal position to remote/upload page and atmosphere layers but never built-ins', () => {
+    const remote = buildWallpaperCss({
+      selection: { kind: 'remote', url: 'https://example.com/w.jpg' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: { x: 0, y: 100 },
+    })
+    // Body layer + atmosphere overlay both honour the nine-grid position.
+    expect(remote.match(/background-position:0% 100%/g)).toHaveLength(2)
+    expect(remote).not.toContain('background-position:center')
+
+    const upload = buildWallpaperCss({
+      selection: { kind: 'upload', key: 'upload-1-abc' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, atmosphere: 40 },
+      uploadUrl: 'blob:wallpaper-1',
+      position: { x: 100, y: 0 },
+    })
+    expect(upload.match(/background-position:100% 0%/g)).toHaveLength(2)
+
+    const builtin = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'ocean' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: { x: 0, y: 0 },
+    })
+    expect(builtin.match(/background-position:center/g)).toHaveLength(2)
+    expect(builtin).not.toContain('background-position:0% 0%')
+
+    expect(backgroundPositionValue(undefined, { x: 0, y: 0 })).toBe('center')
+    expect(backgroundPositionValue({ kind: 'builtin', id: 'ocean' }, { x: 0, y: 0 })).toBe('center')
+    expect(backgroundPositionValue({ kind: 'remote', url: 'https://example.com/w.jpg' })).toBe('50% 50%')
+    expect(backgroundPositionValue({ kind: 'upload', key: 'upload-1-abc' }, { x: 0, y: 0 })).toBe('0% 0%')
   })
 
   it('escapes remote URLs inside single-quoted url()', () => {
@@ -401,7 +524,7 @@ describe('wallpaper DOM layer', () => {
 })
 
 describe('wallpaper controller', () => {
-  it('hydrates a stored selection and applies it to the layer', () => {
+  it('hydrates a legacy v1 stored selection (position 50/50, revision 0) and applies it', () => {
     const storage = new MemoryStorage()
     storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
       kind: 'builtin', id: 'mist', blur: 4, dim: 10, frost: 60,
@@ -412,6 +535,8 @@ describe('wallpaper controller', () => {
     expect(controller.getSnapshot()).toEqual({
       selection: { kind: 'builtin', id: 'mist' },
       effects: { blur: 4, dim: 10, frost: 60, atmosphere: 30 },
+      position: { x: 50, y: 50 },
+      revision: 0,
     })
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBe('')
     expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('blur(4px)')
@@ -422,19 +547,47 @@ describe('wallpaper controller', () => {
     expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
   })
 
-  it('ignores corrupt storage and leaves the layer off', () => {
+  it('hydrates a schema v2 record with its revision and focal position', () => {
     const storage = new MemoryStorage()
-    storage.setItem(WALLPAPER_STORAGE_KEY, '{not json')
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      schemaVersion: 2,
+      revision: 6,
+      selection: { kind: 'remote', url: 'https://example.com/v2.jpg' },
+      effects: { blur: 10, dim: 20, frost: 30, atmosphere: 45 },
+      position: { x: 0, y: 100 },
+    }))
     const doc = fakeDoc()
     const controller = createWallpaperController({ storage, document: doc as never })
     controller.start()
-    expect(controller.getSnapshot().selection).toBeUndefined()
-    expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
-    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
+    expect(controller.getSnapshot()).toEqual({
+      selection: { kind: 'remote', url: 'https://example.com/v2.jpg' },
+      effects: { blur: 10, dim: 20, frost: 30, atmosphere: 45 },
+      position: { x: 0, y: 100 },
+      revision: 6,
+    })
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('background-position:0% 100%')
     controller.dispose()
   })
 
-  it('persists changes debounced and clears the record when removed', () => {
+  it('ignores corrupt and unknown-version records and leaves the layer off', () => {
+    for (const corrupted of [
+      '{not json',
+      JSON.stringify({ schemaVersion: 9, selection: { kind: 'builtin', id: 'mist' } }),
+      JSON.stringify({ schemaVersion: 2, selection: { kind: 'builtin', id: 'nope' } }),
+    ]) {
+      const storage = new MemoryStorage()
+      storage.setItem(WALLPAPER_STORAGE_KEY, corrupted)
+      const doc = fakeDoc()
+      const controller = createWallpaperController({ storage, document: doc as never })
+      controller.start()
+      expect(controller.getSnapshot()).toMatchObject({ selection: undefined, position: { x: 50, y: 50 }, revision: 0 })
+      expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
+      expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
+      controller.dispose()
+    }
+  })
+
+  it('persists changes debounced as schema v2 with a revision and clears the record when removed', () => {
     vi.useFakeTimers()
     const storage = new MemoryStorage()
     const doc = fakeDoc()
@@ -446,19 +599,93 @@ describe('wallpaper controller', () => {
     controller.setSelection({ kind: 'builtin', id: 'ember' })
     expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
     vi.advanceTimersByTime(300)
-    const stored = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
-    expect(stored).toMatchObject({ kind: 'builtin', id: 'ember' })
+    const first = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
+    expect(first).toMatchObject({
+      schemaVersion: 2,
+      revision: 1,
+      selection: { kind: 'builtin', id: 'ember' },
+      position: { x: 50, y: 50 },
+    })
 
     controller.setEffects({ blur: 23, dim: 70, frost: 0 })
     vi.advanceTimersByTime(300)
-    expect(JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')).toMatchObject({ blur: 23, dim: 70, frost: 0 })
+    const second = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
+    expect(second).toMatchObject({ revision: 2, effects: { blur: 23, dim: 70, frost: 0, atmosphere: 30 } })
 
     controller.clear()
     vi.advanceTimersByTime(300)
-    expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
-    expect(controller.getSnapshot().selection).toBeUndefined()
+    const cleared = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
+    expect(cleared).toMatchObject({ schemaVersion: 2, revision: 3, selection: { kind: 'none' } })
+    expect(controller.getSnapshot()).toMatchObject({ selection: undefined, revision: 3 })
     expect(notifications.length).toBeGreaterThanOrEqual(3)
     unsubscribe()
+    controller.dispose()
+  })
+
+  it('applies a batch state replacement as one transition, one save and one notification', () => {
+    vi.useFakeTimers()
+    const storage = new MemoryStorage()
+    const doc = fakeDoc()
+    const controller = createWallpaperController({ storage, document: doc as never })
+    controller.start()
+    const snapshots: unknown[] = []
+    controller.subscribe(() => snapshots.push(controller.getSnapshot()))
+
+    const next = controller.setState({
+      selection: { kind: 'remote', url: 'https://example.com/batch.jpg' },
+      effects: { blur: 16, atmosphere: 55 },
+      position: { x: 100, y: 0 },
+    })
+    expect(next).toEqual({
+      selection: { kind: 'remote', url: 'https://example.com/batch.jpg' },
+      effects: { blur: 16, dim: 25, frost: 35, atmosphere: 55 },
+      position: { x: 100, y: 0 },
+      revision: 1,
+    })
+    // Exactly one subscriber notification for the whole batch.
+    expect(snapshots).toHaveLength(1)
+    const css = doc.getElementById(WALLPAPER_STYLE_ID)?.textContent ?? ''
+    expect(css).toContain("url('https://example.com/batch.jpg')")
+    expect(css).toContain('background-position:100% 0%')
+    expect(css).toContain('blur(16px)')
+    expect(css).toContain('opacity:0.55')
+    // Still one debounced write, containing the whole state.
+    expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
+    vi.advanceTimersByTime(300)
+    expect(JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')).toEqual({
+      schemaVersion: 2,
+      revision: 1,
+      selection: { kind: 'remote', url: 'https://example.com/batch.jpg' },
+      effects: { blur: 16, dim: 25, frost: 35, atmosphere: 55 },
+      position: { x: 100, y: 0 },
+    })
+    controller.dispose()
+  })
+
+  it('supports explicit revision adoption, immediate flush and position-only changes', () => {
+    const storage = new MemoryStorage()
+    const doc = fakeDoc()
+    const controller = createWallpaperController({ storage, document: doc as never })
+    controller.start()
+    controller.setState(
+      { selection: { kind: 'upload', key: 'upload-1-abc' }, position: { x: 0, y: 0 } },
+      { revision: 42, flush: true },
+    )
+    expect(controller.getSnapshot().revision).toBe(42)
+    // flush:true persists immediately, without waiting for the debounce.
+    expect(JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')).toMatchObject({
+      revision: 42,
+      position: { x: 0, y: 0 },
+      selection: { kind: 'upload', key: 'upload-1-abc' },
+    })
+    const moved = controller.setPosition({ x: 100, y: 100 })
+    expect(moved.position).toEqual({ x: 100, y: 100 })
+    expect(moved.revision).toBe(43)
+    // Built-in wallpapers ignore the focal position in the generated stylesheet.
+    controller.setSelection({ kind: 'builtin', id: 'aurora' })
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('background-position:center')
+    // A position-only change on a built-in still bumps/notifies the state.
+    expect(controller.setPosition({ x: 0, y: 100 }).position).toEqual({ x: 0, y: 100 })
     controller.dispose()
   })
 

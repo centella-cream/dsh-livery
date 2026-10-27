@@ -57,6 +57,7 @@ function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
     preview: () => false,
     cancelPreview: () => undefined,
     commitPreview: async () => false,
+    applyStyle: async () => ({ ok: true }),
     restoreStock: async () => false,
     retryLastWrite: async () => false,
     retryCatalog: async () => undefined,

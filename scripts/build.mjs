@@ -121,7 +121,8 @@ async function buildClient() {
 
 async function checkSizes() {
   // Performance budgets from docs/design/implementation-plan.md §18.8, per catalog profile.
-  const CLIENT_GZIP_BUDGET = 48 * 1024
+  const CLIENT_GZIP_BUDGET = 56 * 1024
+  const HOST_GZIP_BUDGET = 192 * 1024
   const PER_LIVERY_CSS_BUDGET = 12 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))
   const host = await readFile(join(root, 'lib', 'index.js'))
@@ -182,6 +183,7 @@ async function checkSizes() {
     problems.push(`cannot validate narrow engines allowlist: ${error.message}`)
   }
   if (clientGzip > CLIENT_GZIP_BUDGET) problems.push(`client gzip ${clientGzip}B exceeds ${CLIENT_GZIP_BUDGET}B budget`)
+  if (hostGzip > HOST_GZIP_BUDGET) problems.push(`host gzip ${hostGzip}B exceeds ${HOST_GZIP_BUDGET}B budget`)
   if (maxLiveryCss > PER_LIVERY_CSS_BUDGET) problems.push(`largest livery css ${maxLiveryCss}B exceeds ${PER_LIVERY_CSS_BUDGET}B budget`)
   // The formal support matrix decides the shipped adapter set; historical
   // snapshots are not compiled. Today the narrowed release line has one adapter
@@ -229,7 +231,7 @@ async function checkSizes() {
     clientGzip,
     hostBytes: host.byteLength,
     hostGzip,
-    budgets: { clientGzip: CLIENT_GZIP_BUDGET, bootCss: 12 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
+    budgets: { clientGzip: CLIENT_GZIP_BUDGET, hostGzip: HOST_GZIP_BUDGET, bootCss: 12 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
     profiles: profileIds,
     liveryCount,
     maxLiveryCss,

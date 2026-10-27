@@ -39,6 +39,7 @@ import type {
   LiveryRuntimeApi,
   LiveryRuntimeSnapshot,
   RuntimeIdentity,
+  StyleApplyOutcome,
   WriteFailure,
 } from './model.js'
 import type { Presenter, SkinCss } from './presenter.js'
@@ -354,6 +355,61 @@ export class LiveryRuntime implements LiveryRuntimeApi {
         : 'settings write transport failure'),
     })
     return false
+  }
+
+  /**
+   * Apply one livery directly with exactly one config write, without entering
+   * the transient preview phase.
+   *
+   * This is the internal flow-driver API used by native preset application: it
+   * is not a simulated card click, and it distinguishes every failure mode so
+   * the caller can abort before touching the wallpaper state or report a
+   * partial result.
+   * @param id - livery id, or `stock` to restore stock appearance.
+   * @returns `{ ok: true }` or `{ ok: false, failure }`.
+   */
+  async applyStyle(id: string): Promise<StyleApplyOutcome> {
+    if (this.disposed) return { ok: false, failure: 'busy' }
+    const phase = this.snapshot.phase
+    if (phase !== 'ready' && phase !== 'degraded' && phase !== 'previewing') {
+      return { ok: false, failure: 'busy' }
+    }
+    if (this.snapshot.writing) return { ok: false, failure: 'busy' }
+    if (this.snapshot.phase === 'previewing') this.cancelPreview()
+    if (isStock(id)) {
+      if (isStock(this.snapshot.confirmedId) && isStock(this.snapshot.effectiveId)) return { ok: true }
+      return this.styleOutcome(await this.restoreStock())
+    }
+    const catalog = this.snapshot.catalog
+    if (catalog === undefined) return { ok: false, failure: 'unavailable' }
+    if (this.skinFor(id) === undefined) {
+      return this.deps.core.findLivery(catalog, id) === undefined
+        ? { ok: false, failure: 'unknown' }
+        : { ok: false, failure: 'unavailable' }
+    }
+    if (this.snapshot.confirmedId === id && this.snapshot.effectiveId === id) return { ok: true }
+    if (!this.preview(id)) return { ok: false, failure: 'busy' }
+    const accepted = await this.commitPreview()
+    if (this.disposed) return { ok: false, failure: 'busy' }
+    if (!accepted) return this.styleOutcome(false)
+    // A newer host configuration can supersede the in-flight write; then the
+    // preset's livery is not what the host reports as confirmed.
+    if (this.snapshot.confirmedId !== id) return { ok: false, failure: 'refused' }
+    return { ok: true }
+  }
+
+  /**
+   * Map a write result to the structured direct-apply outcome.
+   * @param accepted - whether the config form accepted the write.
+   * @returns the public outcome.
+   */
+  private styleOutcome(accepted: boolean): StyleApplyOutcome {
+    if (accepted) return { ok: true }
+    if (this.form === undefined) return { ok: false, failure: 'unavailable' }
+    return {
+      ok: false,
+      failure: this.snapshot.writeFailure === 'transport' ? 'transport' : 'refused',
+    }
   }
 
   /**

@@ -1,10 +1,49 @@
 /**
- * Uploaded-wallpaper lifecycle helpers: only the active upload blob should stay
- * in IndexedDB. Cleanup is always best effort — a failed delete is reported as a
- * non-fatal diagnostic and must never break the visible wallpaper.
+ * Wallpaper lifecycle helpers: only the active upload blob should stay in
+ * IndexedDB, a clean-all operation removes disposable local wallpaper data
+ * without touching the current wallpaper, and every cleanup failure is reported
+ * as a non-fatal diagnostic instead of breaking the visible wallpaper.
  */
 import type { WallpaperSelection } from '../wallpaper.js'
-import type { WallpaperImageStore } from './storage.js'
+import { REMOTE_CACHE_INDEX_KEY } from './cache.js'
+import { RECENT_WALLPAPER_KEY } from './history.js'
+import { createIndexedDbImageStore } from './storage.js'
+import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
+
+/** localStorage subset needed for local wallpaper cleanup (injectable in tests). */
+export interface WallpaperLocalStorage {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+  removeItem(key: string): void
+}
+
+/** Best-effort non-fatal diagnostic (never throws, even without console). */
+function warnDiagnostic(message: string, error?: unknown): void {
+  try {
+    if (error === undefined) console.warn(`[dsh-livery] ${message}`)
+    else console.warn(`[dsh-livery] ${message}`, error)
+  } catch {
+    /* console unavailable */
+  }
+}
+
+/**
+ * Build the v2 IndexedDB record for one freshly uploaded image.
+ * @param key - stable `upload-…` key persisted with the selection.
+ * @param blob - image bytes (validated by the caller).
+ * @param now - timestamp (injectable for tests).
+ * @returns the complete upload record.
+ */
+export function createUploadRecord(key: string, blob: Blob, now: number = Date.now()): StoredImageRecord {
+  return {
+    key,
+    kind: 'upload',
+    size: blob.size,
+    createdAt: now,
+    lastUsedAt: now,
+    blob,
+  }
+}
 
 /**
  * Which stored upload key becomes orphaned when the selection changes.
@@ -38,13 +77,178 @@ export async function deleteStoredImage(
     await images.delete(key)
     return true
   } catch (error) {
-    try {
-      console.warn(`[dsh-livery] could not delete ${context} wallpaper image ${key}`, error)
-    } catch {
-      /* console unavailable */
-    }
+    warnDiagnostic(`could not delete ${context} wallpaper image ${key}`, error)
     return false
   }
+}
+
+/** Outcome of a stale-upload sweep. */
+export interface StaleUploadCleanupResult {
+  readonly removed: readonly string[]
+  readonly errors: readonly string[]
+}
+
+/**
+ * Delete every stored upload except the one backing the current selection.
+ * This repairs stores left behind by crashed closes or interrupted replaces
+ * ("only the current upload is retained"); failures are non-fatal.
+ * @param images - image store (undefined = nothing to do).
+ * @param currentUploadKey - upload key to keep, or undefined to remove all.
+ * @returns removed keys and failed keys.
+ */
+export async function pruneStaleUploads(
+  images: WallpaperImageStore | undefined,
+  currentUploadKey: string | undefined,
+): Promise<StaleUploadCleanupResult> {
+  if (images === undefined) return { removed: [], errors: [] }
+  let records: readonly StoredImageRecord[]
+  try {
+    records = await images.list()
+  } catch (error) {
+    warnDiagnostic('could not list wallpaper images for stale-upload cleanup', error)
+    return { removed: [], errors: ['list'] }
+  }
+  const removed: string[] = []
+  const errors: string[] = []
+  for (const record of records) {
+    if (record.kind !== 'upload') continue
+    if (currentUploadKey !== undefined && record.key === currentUploadKey) continue
+    try {
+      await images.delete(record.key)
+      removed.push(record.key)
+    } catch (error) {
+      errors.push(record.key)
+      warnDiagnostic(`could not delete stale upload wallpaper image ${record.key}`, error)
+    }
+  }
+  return { removed, errors }
+}
+
+/** Local keys owned by the wallpaper studio (the active wallpaper state is NOT cleared). */
+export const LOCAL_WALLPAPER_DATA_KEYS = [RECENT_WALLPAPER_KEY, REMOTE_CACHE_INDEX_KEY] as const
+
+/** Status of a clean-all-local-wallpaper-data run. */
+export type ClearLocalWallpaperDataStatus = 'cleared' | 'empty' | 'partial'
+
+/** Result of {@link clearAllLocalWallpaperData} (mapped to localized UI copy). */
+export interface ClearLocalWallpaperDataResult {
+  readonly status: ClearLocalWallpaperDataStatus
+  /** Non-current image records that were removed. */
+  readonly removedImages: number
+  /** Images kept because the current selection still needs them. */
+  readonly keptImages: number
+  /** Whether the recent-wallpaper history record existed and was removed. */
+  readonly clearedHistory: boolean
+  /** Whether the mirrored remote-cache index existed and was removed. */
+  readonly clearedIndex: boolean
+  /** Non-fatal failures (keys or operation ids). */
+  readonly errors: readonly string[]
+}
+
+/** Options of the clear-all-local-wallpaper-data operation. */
+export interface ClearLocalWallpaperDataOptions {
+  readonly images?: WallpaperImageStore | undefined
+  readonly storage?: WallpaperLocalStorage | undefined
+  /** Current selection: its upload blob/remote cache entry are preserved. */
+  readonly selection?: WallpaperSelection | undefined
+}
+
+/**
+ * Rebuild the mirrored remote-cache index for the remote records that survived a
+ * cleanup, so the diagnostic mirror never points at deleted blobs.
+ * @param storage - localStorage subset.
+ * @param records - remaining records.
+ */
+function rewriteRemoteCacheIndex(storage: WallpaperLocalStorage | undefined, records: readonly StoredImageRecord[]): void {
+  if (storage === undefined) return
+  try {
+    const entries = records
+      .filter(record => record.kind === 'remote' && record.sourceUrl !== undefined)
+      .sort((a, b) => b.lastUsedAt - a.lastUsedAt)
+      .map(record => ({
+        url: record.sourceUrl as string,
+        key: record.key,
+        size: record.size,
+        usedAt: record.lastUsedAt,
+      }))
+    storage.setItem(REMOTE_CACHE_INDEX_KEY, JSON.stringify(entries))
+  } catch {
+    /* the mirror is best effort */
+  }
+}
+
+/**
+ * Remove disposable local wallpaper data: every cached/upload image that the
+ * current wallpaper does not need, plus the recent-wallpaper history and the
+ * remote-cache mirror. The current wallpaper selection/effects record and its
+ * image blob are always preserved, so the visible wallpaper never breaks.
+ * Never throws; partial failures are returned for a non-fatal UI message.
+ * @param options - injected store/storage and the current selection.
+ * @returns counts + status for the UI result.
+ */
+export async function clearAllLocalWallpaperData(
+  options: ClearLocalWallpaperDataOptions = {},
+): Promise<ClearLocalWallpaperDataResult> {
+  const storage = options.storage
+  const images = options.images ?? createIndexedDbImageStore()
+  const selection = options.selection
+  const errors: string[] = []
+  let removedImages = 0
+  let keptImages = 0
+  let remaining: readonly StoredImageRecord[] = []
+  if (images !== undefined) {
+    let records: readonly StoredImageRecord[] = []
+    try {
+      records = await images.list()
+    } catch (error) {
+      errors.push('list')
+      warnDiagnostic('could not list local wallpaper images for cleanup', error)
+    }
+    const currentUploadKey = selection?.kind === 'upload' ? selection.key : undefined
+    const currentRemoteUrl = selection?.kind === 'remote' ? selection.url : undefined
+    const kept: StoredImageRecord[] = []
+    for (const record of records) {
+      const isCurrent = (record.kind === 'upload' && record.key === currentUploadKey)
+        || (record.kind === 'remote' && record.sourceUrl === currentRemoteUrl)
+      if (isCurrent) {
+        keptImages += 1
+        kept.push(record)
+        continue
+      }
+      try {
+        await images.delete(record.key)
+        removedImages += 1
+      } catch (error) {
+        errors.push(record.key)
+        warnDiagnostic(`could not delete local wallpaper image ${record.key}`, error)
+        kept.push(record)
+      }
+    }
+    remaining = kept
+  }
+  const clearKey = (key: string): boolean => {
+    if (storage === undefined) return false
+    try {
+      if (storage.getItem(key) === null) return false
+      storage.removeItem(key)
+      return true
+    } catch (error) {
+      errors.push(key)
+      warnDiagnostic(`could not clear local wallpaper data ${key}`, error)
+      return false
+    }
+  }
+  const clearedHistory = clearKey(RECENT_WALLPAPER_KEY)
+  const clearedIndex = clearKey(REMOTE_CACHE_INDEX_KEY)
+  // The mirror is disposable: if it survived the clear, rebuild it from the only
+  // records still on disk so it cannot reference deleted blobs.
+  if (clearedIndex) rewriteRemoteCacheIndex(storage, remaining)
+  const status: ClearLocalWallpaperDataStatus = errors.length > 0
+    ? 'partial'
+    : removedImages > 0 || clearedHistory || clearedIndex
+      ? 'cleared'
+      : 'empty'
+  return { status, removedImages, keptImages, clearedHistory, clearedIndex, errors }
 }
 
 /**

@@ -20,12 +20,26 @@ class FakeImages implements WallpaperImageStore {
   put = vi.fn(async (record: StoredImageRecord) => { this.records.set(record.key, record) })
   get = vi.fn(async (key: string) => this.records.get(key))
   delete = vi.fn(async (key: string) => { this.deleted.push(key); this.records.delete(key) })
+  list = vi.fn(async () => [...this.records.values()])
+  clear = vi.fn(async () => { this.records.clear() })
 }
 
 const png = (bytes = 4): Blob => new Blob([new Uint8Array(bytes)], { type: 'image/png' })
 const response = (body: Blob, headers: Record<string, string> = { 'content-type': 'image/png' }): Response =>
   new Response(body, { status: 200, headers })
 const imageFetch = (make: () => Response): typeof fetch => vi.fn(async () => make()) as unknown as typeof fetch
+
+/** One remote cache record as schema v2 stores it. */
+const remoteRecord = (url: string, overrides: Partial<StoredImageRecord> = {}): StoredImageRecord => ({
+  key: remoteCacheKey(url),
+  kind: 'remote',
+  size: 10,
+  createdAt: 1,
+  lastUsedAt: 1,
+  sourceUrl: url,
+  blob: png(10),
+  ...overrides,
+})
 
 describe('upload lifecycle helpers', () => {
   const upload = (key: string) => ({ kind: 'upload' as const, key })
@@ -45,6 +59,8 @@ describe('upload lifecycle helpers', () => {
       put: async () => undefined,
       get: async () => undefined,
       delete: async () => { throw new Error('quota') },
+      list: async () => [],
+      clear: async () => undefined,
     }
     await expect(deleteStoredImage(failing, 'upload-1-a', 'previous upload')).resolves.toBe(false)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('could not delete previous upload'), expect.any(Error))
@@ -164,54 +180,50 @@ describe('remote image streaming cap', () => {
 })
 
 describe('remote cache LRU', () => {
-  const seedIndex = (storage: MemoryStorage, entries: Array<{ url: string; size: number; usedAt: number }>): void => {
-    writeRemoteCacheIndex(storage, entries.map(entry => ({ ...entry, key: remoteCacheKey(entry.url) })))
-  }
-
   it('evicts the oldest entries past the count cap, protecting the current wallpaper', async () => {
     const images = new FakeImages()
-    const storage = new MemoryStorage()
     const entries = Array.from({ length: 5 }, (_v, index) => ({ url: `https://cdn.example/${index}.jpg`, size: 10, usedAt: index }))
-    seedIndex(storage, entries)
-    for (const entry of entries) images.records.set(remoteCacheKey(entry.url), { key: remoteCacheKey(entry.url), name: 'x', type: 'image/png', size: 10, blob: png() })
-    const evicted = await pruneRemoteCache({ images, storage, protectedUrl: entries[0]!.url, maxEntries: 2 })
+    for (const entry of entries) images.records.set(remoteCacheKey(entry.url), remoteRecord(entry.url, { size: entry.size, lastUsedAt: entry.usedAt }))
+    const evicted = await pruneRemoteCache({ images, protectedUrl: entries[0]!.url, maxEntries: 2 })
     // Entries 1,2,3 evicted; oldest (0) protected; newest (4) kept.
     expect([...evicted].sort()).toEqual([entries[1]!.url, entries[2]!.url, entries[3]!.url])
-    expect(readRemoteCacheIndex(storage).map(entry => entry.url)).toEqual([entries[0]!.url, entries[4]!.url].map(url => url))
     expect(images.deleted).toHaveLength(3)
   })
 
   it('keeps failed evictions tracked for a later retry', async () => {
-    const storage = new MemoryStorage()
-    const entries = [
-      { url: 'https://cdn.example/a.jpg', size: 10, usedAt: 1 },
-      { url: 'https://cdn.example/b.jpg', size: 10, usedAt: 2 },
-    ]
-    writeRemoteCacheIndex(storage, entries.map(entry => ({ ...entry, key: remoteCacheKey(entry.url) })))
     const images: WallpaperImageStore = {
       put: async () => undefined,
       get: async () => undefined,
       delete: async () => { throw new Error('locked') },
+      list: async () => [remoteRecord('https://cdn.example/a.jpg'), remoteRecord('https://cdn.example/b.jpg')],
+      clear: async () => undefined,
     }
-    const evicted = await pruneRemoteCache({ images, storage, maxEntries: 1 })
+    const evicted = await pruneRemoteCache({ images, maxEntries: 1 })
     expect(evicted).toEqual([])
-    expect(readRemoteCacheIndex(storage).map(entry => entry.url)).toContain('https://cdn.example/a.jpg')
   })
 
   it('evicts by total byte cap (128 MiB) with LRU order', async () => {
     const images = new FakeImages()
-    const storage = new MemoryStorage()
     const big = 60 * 1024 * 1024
     const entries = [
       { url: 'https://cdn.example/a.jpg', size: big, usedAt: 1 },
       { url: 'https://cdn.example/b.jpg', size: big, usedAt: 2 },
       { url: 'https://cdn.example/c.jpg', size: big, usedAt: 3 },
     ]
-    seedIndex(storage, entries)
-    for (const entry of entries) images.records.set(remoteCacheKey(entry.url), { key: remoteCacheKey(entry.url), name: 'x', type: 'image/png', size: big, blob: png() })
-    const evicted = await pruneRemoteCache({ images, storage, protectedUrl: entries[2]!.url })
+    for (const entry of entries) images.records.set(remoteCacheKey(entry.url), remoteRecord(entry.url, { size: entry.size, lastUsedAt: entry.usedAt }))
+    const evicted = await pruneRemoteCache({ images, protectedUrl: entries[2]!.url })
     expect(evicted).toEqual([entries[0]!.url])
-    expect(readRemoteCacheIndex(storage).map(entry => entry.url)).toEqual([entries[1]!.url, entries[2]!.url])
+  })
+
+  it('never evicts the current wallpaper even when it is the oldest entry', async () => {
+    const images = new FakeImages()
+    const current = remoteRecord('https://cdn.example/current.jpg', { lastUsedAt: 1 })
+    const others = [2, 3, 4].map(index => remoteRecord(`https://cdn.example/${index}.jpg`, { lastUsedAt: index }))
+    images.records.set(current.key, current)
+    for (const record of others) images.records.set(record.key, record)
+    const evicted = await pruneRemoteCache({ images, protectedUrl: current.sourceUrl, maxEntries: 2 })
+    expect(evicted).not.toContain(current.sourceUrl)
+    expect(images.records.has(current.key)).toBe(true)
   })
 })
 
@@ -226,5 +238,19 @@ describe('dropzone keyboard', () => {
 
   it('ships a visible focus ring for the dropzone', () => {
     expect(CLIENT_CSS).toContain('.wallpaper-dropzone:focus-visible{outline:2px solid var(--lw-brand);outline-offset:2px}')
+  })
+})
+
+describe('remote cache index mirror', () => {
+  it('rebuilds the mirror from the authoritative record list after pruning', async () => {
+    const images = new FakeImages()
+    const storage = new MemoryStorage()
+    writeRemoteCacheIndex(storage, [{ url: 'https://stale.example/old.jpg', key: 'remote-deadbeef', size: 1, usedAt: 1 }])
+    const a = remoteRecord('https://cdn.example/a.jpg', { lastUsedAt: 1 })
+    const b = remoteRecord('https://cdn.example/b.jpg', { lastUsedAt: 2 })
+    images.records.set(a.key, a)
+    images.records.set(b.key, b)
+    await pruneRemoteCache({ images, storage, maxEntries: 1 })
+    expect(readRemoteCacheIndex(storage).map(entry => entry.url)).toEqual([b.sourceUrl])
   })
 })

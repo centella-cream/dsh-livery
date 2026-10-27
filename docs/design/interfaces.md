@@ -136,6 +136,18 @@ opaque third-party pages may show no perceptible change and no visual coverage
 is claimed. The local `dsh-charter` example is only a rendering fixture for
 screenshots, not a dependency.
 
+Wallpaper state is schema v2 in the existing localStorage key:
+`{schemaVersion:2, revision, selection, effects, position}`. Flat v1 records
+migrate losslessly with position 50/50. Focal position is one of nine stops and
+applies only to remote/upload wallpapers; builtin gradients remain centered.
+Selection/effects/position changes go through one batch state transition, and
+the same state is synchronized between tabs via storage events with
+revision/source protection. Preset v1 carries an existing style id, builtin or
+HTTPS wallpaper, effects and position; it never carries upload blobs, CSS,
+tokens, fonts, local paths or history. Local image storage is IndexedDB v2 with
+explicit metadata, upload/remote kinds, LRU bounds and a clear-local-data
+operation.
+
 ## 7. Build artifacts
 
 - `src/generated/contract.ts` — shipped adapter registry.

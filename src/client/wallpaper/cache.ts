@@ -1,17 +1,27 @@
 /**
- * Best-effort local cache of online wallpaper images.
+ * Best-effort local cache of online wallpaper images (IndexedDB v2).
  *
- * Blobs live in the existing IndexedDB store under `remote-<hash(url)>`. The
- * download is streamed and capped before it can be materialized in memory; all
- * failures are non-fatal and never write to IndexedDB. A small localStorage
- * index drives LRU cleanup (24 entries / 128 MiB, current remote protected).
+ * Cached blobs live in the wallpaper image store under `remote-<hash(url)>`
+ * records that carry the original `sourceUrl`. Downloads are streamed and capped
+ * before the body can be materialized in memory; every failure is non-fatal and
+ * never writes to IndexedDB. The record list itself is the LRU source of truth
+ * (`lastUsedAt`), capped at 24 remote entries / 128 MiB with the currently
+ * applied wallpaper protected. A small localStorage index mirrors the same data
+ * for diagnostics/backward compatibility but is never required to render.
+ *
+ * Because the key hash is only 32 bits, a key is not proof of identity: a cached
+ * record is only adopted when its stored `sourceUrl` equals the requested URL,
+ * so two colliding URLs can never display each other's image.
  */
 import { validateWallpaperUrl } from '../wallpaper.js'
-import { createIndexedDbImageStore } from './storage.js'
+import {
+  createIndexedDbImageStore,
+  REMOTE_IMAGE_KEY_PREFIX,
+} from './storage.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 
-/** Key prefix used in the upload image store. */
-export const REMOTE_CACHE_PREFIX = 'remote-'
+/** Key prefix used for cached remote images in the image store. */
+export const REMOTE_CACHE_PREFIX = REMOTE_IMAGE_KEY_PREFIX
 /** Largest remote image accepted into the cache (15 MiB). */
 export const REMOTE_CACHE_MAX_BYTES = 15 * 1024 * 1024
 /** LRU entry cap for cached remote images. */
@@ -20,10 +30,10 @@ export const REMOTE_CACHE_MAX_ENTRIES = 24
 export const REMOTE_CACHE_MAX_TOTAL_BYTES = 128 * 1024 * 1024
 /** Fetch timeout for the cache attempt. */
 export const REMOTE_CACHE_TIMEOUT_MS = 8000
-/** localStorage key of the LRU metadata index. */
+/** localStorage key of the LRU metadata mirror. */
 export const REMOTE_CACHE_INDEX_KEY = 'dsh-livery.wallpaper.remote-cache.v1'
 
-/** One LRU index record. */
+/** One mirrored LRU index record (metadata only; never used to adopt a blob). */
 export interface RemoteCacheIndexEntry {
   readonly url: string
   readonly key: string
@@ -31,7 +41,7 @@ export interface RemoteCacheIndexEntry {
   readonly usedAt: number
 }
 
-/** localStorage subset used by the LRU index (injectable in tests). */
+/** localStorage subset used by the LRU mirror (injectable in tests). */
 export interface RemoteCacheStorage {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
@@ -39,7 +49,8 @@ export interface RemoteCacheStorage {
 }
 
 /**
- * Deterministic FNV-1a cache key for one URL.
+ * Deterministic FNV-1a cache key for one URL (32-bit; identity is verified via
+ * the stored `sourceUrl` on load).
  * @param url - validated https image URL.
  * @returns `remote-<8 hex chars>`.
  */
@@ -55,14 +66,80 @@ export function remoteCacheKey(url: string): string {
 /** Result of one cache attempt. */
 export type RemoteCacheResult =
   | { readonly ok: true; readonly key: string; readonly record: StoredImageRecord }
-  | { readonly ok: false; readonly reason: 'unsupported' | 'network' | 'invalid' }
+  | { readonly ok: false; readonly reason: 'unsupported' | 'network' | 'invalid' | 'cancelled' }
 
-function defaultFetch(): typeof fetch | undefined {
-  return typeof fetch === 'undefined' ? undefined : fetch
+/** Coordination handle for aborting an in-flight cache download on selection change. */
+export interface RemoteCacheCancellation {
+  /** Signal for the current download, or undefined when the platform lacks AbortController. */
+  readonly signal: AbortSignal | undefined
+  /** Abort the current download (if any) without starting another. */
+  cancel(): void
+  /** Abort any current download and arm a fresh signal for the next one. */
+  reset(): AbortSignal | undefined
+}
+
+function defaultAbortController(): (() => AbortController) | undefined {
+  try {
+    return typeof AbortController === 'undefined' ? undefined : () => new AbortController()
+  } catch {
+    return undefined
+  }
 }
 
 /**
- * Read the LRU index (corrupt data ignored).
+ * Create a reusable cancellation handle for remote cache downloads: the panel
+ * calls {@link RemoteCacheCancellation.reset} before a new download and
+ * {@link RemoteCacheCancellation.cancel} whenever the selection changes, so a
+ * stale 15 MiB download stops instead of wasting bandwidth.
+ * @param createController - AbortController factory (injectable in tests).
+ * @returns the cancellation handle.
+ */
+export function createRemoteCacheCancellation(
+  createController: (() => AbortController) | undefined = defaultAbortController(),
+): RemoteCacheCancellation {
+  let controller: AbortController | undefined
+  const fresh = (): AbortSignal | undefined => {
+    controller = createController?.()
+    return controller?.signal
+  }
+  return {
+    get signal() {
+      return controller?.signal
+    },
+    cancel() {
+      try {
+        controller?.abort()
+      } catch {
+        /* abort is best effort */
+      }
+      controller = undefined
+    },
+    reset() {
+      try {
+        controller?.abort()
+      } catch {
+        /* abort is best effort */
+      }
+      return fresh()
+    },
+  }
+}
+
+function defaultFetch(): typeof fetch | undefined {
+  try {
+    return typeof fetch === 'undefined' ? undefined : fetch
+  } catch {
+    return undefined
+  }
+}
+
+/** Whether a signal exists and has already been aborted. */
+function isAborted(signal: AbortSignal | undefined): boolean {
+  return signal !== undefined && signal.aborted
+}
+
+/**
+ * Read the mirrored LRU index (corrupt data ignored).
  * @param storage - localStorage subset.
  * @returns valid index entries.
  */
@@ -84,7 +161,7 @@ export function readRemoteCacheIndex(storage: RemoteCacheStorage | undefined): r
 }
 
 /**
- * Persist the LRU index, newest first.
+ * Persist the mirrored LRU index, newest first (best effort).
  * @param storage - localStorage subset.
  * @param entries - entries to store.
  */
@@ -93,12 +170,12 @@ export function writeRemoteCacheIndex(storage: RemoteCacheStorage | undefined, e
   try {
     storage.setItem(REMOTE_CACHE_INDEX_KEY, JSON.stringify(entries))
   } catch {
-    /* index is best effort */
+    /* index mirror is best effort */
   }
 }
 
 /**
- * Record one cached image in the LRU index (dedupe by URL, newest first).
+ * Record one cached image in the mirrored LRU index (dedupe by URL, newest first).
  * @param storage - localStorage subset.
  * @param entry - cached image metadata.
  * @returns the next index.
@@ -112,7 +189,7 @@ export function touchRemoteCacheIndex(
   return next
 }
 
-/** Drop one URL from the LRU index. */
+/** Drop one URL from the mirrored LRU index. */
 export function forgetRemoteCacheIndex(storage: RemoteCacheStorage | undefined, url: string): readonly RemoteCacheIndexEntry[] {
   const next = readRemoteCacheIndex(storage).filter(entry => entry.url !== url)
   writeRemoteCacheIndex(storage, next)
@@ -120,10 +197,11 @@ export function forgetRemoteCacheIndex(storage: RemoteCacheStorage | undefined, 
 }
 
 /**
- * Evict oldest cache entries until the entry/byte caps hold; the current
- * wallpaper is never evicted.
- * @param deps - store/index/protected URL.
- * @returns URLs whose blobs were evicted.
+ * Evict least-recently-used remote cache entries until the entry/byte caps hold.
+ * The currently applied wallpaper is never evicted. The image store's record list
+ * is the source of truth; the localStorage index is rebuilt from the survivors.
+ * @param deps - store/protected URL/caps.
+ * @returns URLs (or keys, for unverifiable legacy rows) whose blobs were evicted.
  */
 export async function pruneRemoteCache(deps: {
   readonly images?: WallpaperImageStore | undefined
@@ -136,37 +214,58 @@ export async function pruneRemoteCache(deps: {
   if (images === undefined) return []
   const maxEntries = deps.maxEntries ?? REMOTE_CACHE_MAX_ENTRIES
   const maxBytes = deps.maxBytes ?? REMOTE_CACHE_MAX_TOTAL_BYTES
-  const entries = [...readRemoteCacheIndex(deps.storage)].sort((a, b) => a.usedAt - b.usedAt)
-  let total = entries.reduce((sum, entry) => sum + entry.size, 0)
-  const evicted: string[] = []
-  const keep = new Set<string>()
-  for (const entry of entries) {
-    const overCount = entries.length - evicted.length > maxEntries
-    const overBytes = total > maxBytes
-    if ((overCount || overBytes) && entry.url !== deps.protectedUrl) {
-      try {
-        await images.delete(entry.key)
-        evicted.push(entry.url)
-        total -= entry.size
-      } catch {
-        // Keep the entry indexed so a later prune retries instead of leaking an
-        // untracked blob.
-        keep.add(entry.url)
-      }
-    } else {
-      keep.add(entry.url)
-    }
+  let records: readonly StoredImageRecord[]
+  try {
+    records = await images.list()
+  } catch {
+    return []
   }
-  writeRemoteCacheIndex(deps.storage, readRemoteCacheIndex(deps.storage).filter(entry => keep.has(entry.url)))
+  const candidates = records
+    .filter(record => record.kind === 'remote')
+    .sort((a, b) => a.lastUsedAt - b.lastUsedAt || a.createdAt - b.createdAt || a.key.localeCompare(b.key))
+  let total = candidates.reduce((sum, record) => sum + record.size, 0)
+  let count = candidates.length
+  const evicted: string[] = []
+  const kept: StoredImageRecord[] = []
+  for (const record of candidates) {
+    const overCount = count > maxEntries
+    const overBytes = total > maxBytes
+    const protectedRecord = deps.protectedUrl !== undefined && record.sourceUrl === deps.protectedUrl
+    if ((overCount || overBytes) && !protectedRecord) {
+      try {
+        await images.delete(record.key)
+        evicted.push(record.sourceUrl ?? record.key)
+        total -= record.size
+        count -= 1
+        continue
+      } catch {
+        // Keep the entry tracked so a later prune retries instead of leaking an
+        // untracked blob.
+      }
+    }
+    kept.push(record)
+  }
+  kept.sort((a, b) => b.lastUsedAt - a.lastUsedAt)
+  if (deps.storage !== undefined) {
+    writeRemoteCacheIndex(deps.storage, kept.flatMap(record => record.sourceUrl === undefined ? [] : [{
+      url: record.sourceUrl,
+      key: record.key,
+      size: record.size,
+      usedAt: record.lastUsedAt,
+    }]))
+  }
   return evicted
 }
 
 /**
  * Try to download + store one remote image blob. Never throws. The response is
  * streamed with a cumulative cap, so an absent/lying Content-Length cannot
- * allocate more than 15 MiB; nothing is written to IndexedDB on failure.
+ * allocate more than 15 MiB; nothing is written to IndexedDB on failure. The
+ * record stores the source URL so loads can reject 32-bit key collisions, and an
+ * optional external signal cancels a download whose selection is no longer
+ * current.
  * @param url - remote https URL.
- * @param deps - injected store/fetch/timeout/index (defaults: IndexedDB + fetch).
+ * @param deps - injected store/fetch/timeout/signal/index (defaults: IndexedDB + fetch).
  * @returns ok with the stored record, or a non-fatal failure reason.
  */
 export async function cacheRemoteImage(
@@ -178,14 +277,28 @@ export async function cacheRemoteImage(
     readonly key?: string | undefined
     readonly storage?: RemoteCacheStorage | undefined
     readonly protectedUrl?: string | undefined
+    readonly signal?: AbortSignal | undefined
   } = {},
 ): Promise<RemoteCacheResult> {
   const check = validateWallpaperUrl(url)
   if (!check.ok) return { ok: false, reason: 'invalid' }
+  if (isAborted(deps.signal)) return { ok: false, reason: 'cancelled' }
   const fetchImpl = deps.fetchImpl ?? defaultFetch()
   const images = deps.images ?? createIndexedDbImageStore()
   if (fetchImpl === undefined || images === undefined) return { ok: false, reason: 'unsupported' }
   const controller = typeof AbortController === 'undefined' ? undefined : new AbortController()
+  let cancelledExternally = false
+  const onExternalAbort = (): void => {
+    cancelledExternally = true
+    try {
+      controller?.abort()
+    } catch {
+      /* abort is best effort */
+    }
+  }
+  if (deps.signal !== undefined && controller !== undefined) {
+    deps.signal.addEventListener('abort', onExternalAbort, { once: true })
+  }
   const timer = controller === undefined
     ? undefined
     : setTimeout(() => { controller.abort() }, deps.timeoutMs ?? REMOTE_CACHE_TIMEOUT_MS)
@@ -206,17 +319,25 @@ export async function cacheRemoteImage(
       return { ok: false, reason: 'invalid' }
     }
     const blob = await readCappedBody(response)
-    if (blob === undefined || blob.size <= 0) return { ok: false, reason: 'invalid' }
+    if (blob === undefined || blob.size <= 0) {
+      return { ok: false, reason: cancelledExternally ? 'cancelled' : 'invalid' }
+    }
+    if (cancelledExternally || isAborted(deps.signal)) return { ok: false, reason: 'cancelled' }
     const key = deps.key ?? remoteCacheKey(check.url)
+    const now = Date.now()
     const record: StoredImageRecord = {
       key,
-      name: check.url.split('/').pop()?.slice(0, 80) ?? 'wallpaper',
-      type,
+      kind: 'remote',
       size: blob.size,
+      createdAt: now,
+      lastUsedAt: now,
+      sourceUrl: check.url,
       blob,
     }
     await images.put(record)
-    touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: Date.now() })
+    if (deps.storage !== undefined) {
+      touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: now })
+    }
     await pruneRemoteCache({
       images,
       storage: deps.storage,
@@ -224,9 +345,16 @@ export async function cacheRemoteImage(
     })
     return { ok: true, key, record }
   } catch {
-    return { ok: false, reason: 'network' }
+    return { ok: false, reason: cancelledExternally ? 'cancelled' : 'network' }
   } finally {
     if (timer !== undefined) clearTimeout(timer)
+    if (deps.signal !== undefined && controller !== undefined) {
+      try {
+        deps.signal.removeEventListener('abort', onExternalAbort)
+      } catch {
+        /* removing a listener is best effort */
+      }
+    }
   }
 }
 
@@ -263,10 +391,14 @@ async function readCappedBody(response: Response): Promise<Blob | undefined> {
 }
 
 /**
- * Load a previously cached remote image.
+ * Load a previously cached remote image, verifying its source URL.
+ *
+ * The key is a 32-bit hash, so the stored `sourceUrl` must match exactly; a
+ * mismatching record is a collision and is treated as a cache miss instead of
+ * showing the wrong image.
  * @param url - remote https URL.
  * @param images - image store (defaults to IndexedDB).
- * @returns the stored record if present.
+ * @returns the verified stored record if present.
  */
 export async function loadCachedRemote(
   url: string,
@@ -274,13 +406,35 @@ export async function loadCachedRemote(
 ): Promise<StoredImageRecord | undefined> {
   if (images === undefined) return undefined
   try {
-    return await images.get(remoteCacheKey(url))
+    const record = await images.get(remoteCacheKey(url))
+    if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
+    return record
   } catch {
     return undefined
   }
 }
 
-/** Whether the URL has a cached blob. */
+/**
+ * Load a cached remote image and refresh its LRU timestamp (best effort).
+ * @param url - remote https URL.
+ * @param images - image store.
+ * @returns the verified stored record if present.
+ */
+export async function touchCachedRemote(
+  url: string,
+  images: WallpaperImageStore | undefined = createIndexedDbImageStore(),
+): Promise<StoredImageRecord | undefined> {
+  const record = await loadCachedRemote(url, images)
+  if (record === undefined || images === undefined) return record
+  try {
+    await images.put({ ...record, lastUsedAt: Date.now() })
+  } catch {
+    /* LRU refresh is best effort */
+  }
+  return record
+}
+
+/** Whether the URL has a verified cached blob. */
 export async function isRemoteCached(
   url: string,
   images: WallpaperImageStore | undefined = createIndexedDbImageStore(),
@@ -289,10 +443,11 @@ export async function isRemoteCached(
 }
 
 /**
- * Delete the cached blob for one URL (best effort) and drop it from the index.
+ * Delete the cached blob for one URL (best effort) and drop it from the mirror.
+ * A colliding record that belongs to a different source URL is left untouched.
  * @param url - remote https URL.
  * @param images - image store.
- * @param storage - LRU index storage.
+ * @param storage - LRU mirror storage.
  */
 export async function deleteCachedRemote(
   url: string,
@@ -301,8 +456,13 @@ export async function deleteCachedRemote(
 ): Promise<void> {
   forgetRemoteCacheIndex(storage, url)
   if (images === undefined) return
+  const key = remoteCacheKey(url)
   try {
-    await images.delete(remoteCacheKey(url))
+    const record = await images.get(key)
+    if (record !== undefined && record.kind === 'remote' && record.sourceUrl !== undefined && record.sourceUrl !== url) {
+      return
+    }
+    await images.delete(key)
   } catch {
     /* cache deletion is best effort */
   }

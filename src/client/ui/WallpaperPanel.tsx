@@ -9,17 +9,22 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { LiveryKey } from '../../i18n/index.js'
-import type { LiveryRuntimeSnapshot } from '../model.js'
+import { STOCK_ID } from '../../core/types.js'
+import { localizedName } from '../model.js'
+import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../model.js'
 import type { LiveryTranslate } from '../platform.js'
 import {
   BUILTIN_WALLPAPERS,
   BUILTIN_WALLPAPER_IDS,
   DEFAULT_WALLPAPER_EFFECTS,
+  DEFAULT_WALLPAPER_POSITION,
   WALLPAPER_EFFECT_BOUNDS,
+  WALLPAPER_POSITION_OPTIONS,
+  backgroundPositionValue,
   requestWallpaperResults,
   validateWallpaperUrl,
 } from '../wallpaper.js'
-import type { BuiltinWallpaperId, WallpaperEffects, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperSelection, WallpaperUrlProblem } from '../wallpaper.js'
+import type { BuiltinWallpaperId, WallpaperEffects, WallpaperPositionId, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperSelection, WallpaperUrlProblem } from '../wallpaper.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
   clearRecentWallpapers,
@@ -27,14 +32,19 @@ import {
   rememberRecentWallpaper,
 } from '../wallpaper/history.js'
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
-import { cacheRemoteImage, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
+import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
+import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
+import type { LiveryPreset, PresetApplyResult, PresetAttribution, PresetWallpaperTarget } from '../wallpaper/preset.js'
+import { readRecentFromStorageEvent } from '../wallpaper/sync.js'
 import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
-import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUploadKey } from '../wallpaper/lifecycle.js'
+import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUploadKey, createUploadRecord, pruneStaleUploads } from '../wallpaper/lifecycle.js'
 import { handleDropzoneKeyDown } from '../wallpaper/upload-a11y.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
+import { PresetCard } from './PresetCard.js'
+import { WallpaperDataClear } from './WallpaperDataClear.js'
 import { createAutoRandomLoader } from './online-auto.js'
 
 const GRID = 'livery-grid'
@@ -76,7 +86,24 @@ const EFFECT_ROWS: readonly { id: keyof WallpaperEffects; label: LiveryKey; form
   { id: 'frost', label: 'wallpaper.frost', format: 'wallpaper.percent' },
   { id: 'atmosphere', label: 'wallpaper.atmosphere', format: 'wallpaper.percent' },
 ]
-const EMPTY: WallpaperState = { selection: undefined, effects: { ...DEFAULT_WALLPAPER_EFFECTS } }
+/** Localized label of each nine-grid focal-position option. */
+const POSITION_LABEL_KEYS: Record<WallpaperPositionId, LiveryKey> = {
+  'top-left': 'wallpaper.position.topLeft',
+  top: 'wallpaper.position.top',
+  'top-right': 'wallpaper.position.topRight',
+  left: 'wallpaper.position.left',
+  center: 'wallpaper.position.center',
+  right: 'wallpaper.position.right',
+  'bottom-left': 'wallpaper.position.bottomLeft',
+  bottom: 'wallpaper.position.bottom',
+  'bottom-right': 'wallpaper.position.bottomRight',
+}
+const EMPTY: WallpaperState = {
+  selection: undefined,
+  effects: { ...DEFAULT_WALLPAPER_EFFECTS },
+  position: { ...DEFAULT_WALLPAPER_POSITION },
+  revision: 0,
+}
 
 type OnlineStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'offline' | 'error'
 interface OnlineState {
@@ -100,6 +127,7 @@ interface Attribution {
 export interface WallpaperPanelProps {
   readonly t: LiveryTranslate
   readonly snapshot: LiveryRuntimeSnapshot
+  readonly runtime: LiveryRuntimeApi
 }
 
 /**
@@ -107,7 +135,7 @@ export interface WallpaperPanelProps {
  * @param props - locale `t` seat and the runtime snapshot (unused by layout).
  * @returns the wallpaper controls, online card and attribution.
  */
-export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
+export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): JSX.Element {
   const controller = getWallpaperController()
   const imageStore = useMemo(() => createIndexedDbImageStore(), [])
   const recentStorage = useMemo(() => {
@@ -136,10 +164,12 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
   const uploadTickets = useRef(createAsyncTicket())
   const fileInput = useRef<HTMLInputElement | null>(null)
+  const cacheCancellation = useRef(createRemoteCacheCancellation())
   // Every selection-changing action invalidates a pending local upload: a
   // late IndexedDB completion must never roll the visible/persisted selection
   // back to an older upload.
   const selectWallpaper = (selection: WallpaperSelection, blob?: Blob): void => {
+    cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.setSelection(selection, blob))
     // Only the active upload stays on disk: replace/switch/clear deletes the old one.
@@ -147,6 +177,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'previous upload')
   }
   const clearWallpaper = (): void => {
+    cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.clear())
     const obsolete = obsoleteUploadKey(previous, undefined)
@@ -155,7 +186,16 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
 
   useEffect(() => {
     mounted.current = true
-    return () => { mounted.current = false }
+    // Reclaim upload blobs left behind by an interrupted prior session. This is
+    // best effort and protects the currently selected upload key.
+    void pruneStaleUploads(imageStore, state.selection?.kind === 'upload' ? state.selection.key : undefined)
+    return () => {
+      mounted.current = false
+      cacheCancellation.current.cancel()
+    }
+  // The sweep is intentionally mount-only; selection changes are handled by the
+  // upload/replace lifecycle below.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const run = async (source: WallpaperRemoteSource, query: string, page: number): Promise<void> => {
@@ -221,7 +261,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       void deleteCachedRemote(evicted, imageStore, recentStorage)
     }
     void (async () => {
-      const result = await cacheRemoteImage(url, { images: imageStore, storage: recentStorage, protectedUrl })
+      const result = await cacheRemoteImage(url, { images: imageStore, storage: recentStorage, protectedUrl, signal: cacheCancellation.current.reset() })
       if (!result.ok) return
       // Keep the blob available for the recent-card thumbnail regardless of what
       // is selected now, but only re-adopt it when the user is still on this
@@ -251,7 +291,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
         }
         return
       }
-      void cacheRemoteImage(entry.url, { images: imageStore, storage: recentStorage, protectedUrl: entry.url }).then(result => {
+      void cacheRemoteImage(entry.url, { images: imageStore, storage: recentStorage, protectedUrl: entry.url, signal: cacheCancellation.current.reset() }).then(result => {
         if (!result.ok || !mounted.current) return
         rememberBlob(entry.url, result.record.blob)
         if (isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
@@ -277,6 +317,29 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       return {}
     })
   }
+
+  // Another tab changed the recent history: refresh entries/thumbnail state.
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
+    const listener = (event: StorageEvent): void => {
+      const next = readRecentFromStorageEvent(event as unknown as { key: string | null; newValue: string | null }, recentStorage)
+      if (next === undefined) return
+      const keep = new Set(next.map(entry => entry.url))
+      setRecent(next)
+      setCachedUrls(previous => {
+        const retained: Record<string, string> = {}
+        for (const [url, objectUrl] of Object.entries(previous)) {
+          if (keep.has(url)) retained[url] = objectUrl
+          else {
+            try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+          }
+        }
+        return retained
+      })
+    }
+    window.addEventListener('storage', listener)
+    return () => window.removeEventListener('storage', listener)
+  }, [recentStorage])
 
   // Hydrate cached thumbnails for the recent list.
   useEffect(() => {
@@ -304,7 +367,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recent.length])
+  }, [recent])
 
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
     selectWallpaper({ kind: 'builtin', id })
@@ -357,7 +420,7 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
     let sessionOnly = imageStore === undefined
     if (imageStore !== undefined) {
       try {
-        await imageStore.put({ key, name: file.name, type: file.type, size: file.size, blob: file })
+        await imageStore.put(createUploadRecord(key, file))
       } catch {
         sessionOnly = true
       }
@@ -381,6 +444,10 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
   const selection = state.selection
   const selectedBuiltin = selection?.kind === 'builtin' ? selection.id : undefined
   const selectedRemote = selection?.kind === 'remote' ? selection.url : undefined
+
+  // Focal position applies to remote/upload images only; built-ins stay centered.
+  const canReposition = selection !== undefined && selection.kind !== 'builtin'
+  const heroPosition = backgroundPositionValue(selection, state.position)
 
   const renderImage = controller?.getRenderImage()
   const heroName = selection === undefined
@@ -426,6 +493,39 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
       source: attribution.source,
     })
 
+  const presetWallpaperTarget = (target: PresetWallpaperTarget): boolean => {
+    const active = controller
+    if (active === undefined) return false
+    const previous = active.getSnapshot().selection
+    const next = active.setState(
+      { selection: target.selection, effects: target.effects, position: target.position },
+      { flush: true },
+    )
+    const ok = matchesPresetWallpaperState(next, target)
+    if (ok) {
+      const obsolete = obsoleteUploadKey(previous, target.selection)
+      if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'preset')
+    }
+    return ok
+  }
+  const presetAttribution: PresetAttribution | undefined = attribution === undefined
+    ? undefined
+    : { title: attribution.title, creator: attribution.creator, license: attribution.license, source: attribution.source }
+  const onPresetApplied = (result: PresetApplyResult, preset: LiveryPreset): void => {
+    if (result.status === 'style-failed') return
+    if (preset.attribution === undefined) {
+      setAttribution(undefined)
+      return
+    }
+    setAttribution({
+      title: preset.attribution.title ?? '',
+      creator: preset.attribution.creator ?? '',
+      license: preset.attribution.license ?? '',
+      source: preset.attribution.source ?? '',
+      context: preset.wallpaper?.kind === 'remote' ? 'online' : 'custom',
+    })
+  }
+
   return (
     <div data-testid="wallpaper-panel">
       <div className="wallpaper-layout" data-testid="wallpaper-layout">
@@ -456,13 +556,13 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   <div
                     className="wallpaper-hero__preview"
                     data-testid="wallpaper-hero-preview"
-                    style={{ backgroundImage: renderImage }}
+                    style={{ backgroundImage: renderImage, backgroundPosition: heroPosition }}
                     aria-hidden="true"
                   >
                     <div className="wallpaper-hero__dim" style={{ opacity: state.effects.dim / 100 }} />
                     <div
                       className="wallpaper-hero__atmo"
-                      style={{ backgroundImage: renderImage, opacity: state.effects.atmosphere / 100 }}
+                      style={{ backgroundImage: renderImage, backgroundPosition: heroPosition, opacity: state.effects.atmosphere / 100 }}
                     />
                   </div>
                   <div className="wallpaper-hero__meta">
@@ -474,6 +574,27 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
                   )}
                 </>
               )}
+            {canReposition && (
+              <fieldset className="wallpaper-position" data-testid="wallpaper-position">
+                <legend className="livery-ui-card__title">{t('wallpaper.positionTitle')}</legend>
+                <p className="livery-ui-card__hint">{t('wallpaper.positionHint')}</p>
+                <div className="wallpaper-position__grid">
+                  {WALLPAPER_POSITION_OPTIONS.map(option => (
+                    <label key={option.id} className="wallpaper-position__option">
+                      <input
+                        type="radio"
+                        name="wallpaper-position"
+                        value={`${option.x},${option.y}`}
+                        data-testid={`wallpaper-position-${option.id}`}
+                        checked={state.position.x === option.x && state.position.y === option.y}
+                        onChange={() => controller?.setPosition({ x: option.x, y: option.y })}
+                      />
+                      <span>{t(POSITION_LABEL_KEYS[option.id])}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
           </section>
 
           <section className="livery-ui-card" data-testid="wallpaper-online-card">
@@ -649,6 +770,19 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
               )}
             </div>
           </section>
+
+          <WallpaperDataClear
+            t={t}
+            onCleared={() => {
+              setRecent([])
+              setCachedUrls(previous => {
+                for (const objectUrl of Object.values(previous)) {
+                  try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+                }
+                return {}
+              })
+            }}
+          />
         </div>
 
         <aside className="wallpaper-rail">
@@ -690,6 +824,22 @@ export function WallpaperPanel({ t }: WallpaperPanelProps): JSX.Element {
             <p className="livery-ui-card__hint">{t('wallpaper.frostHint')}</p>
             <p className="livery-ui-card__hint">{t('wallpaper.atmosphereHint')}</p>
           </section>
+
+          <PresetCard
+            t={t}
+            currentStyleId={snapshot.effectiveId ?? snapshot.confirmedId ?? STOCK_ID}
+            currentWallpaper={{ selection: state.selection, effects: state.effects, position: state.position }}
+            catalogIds={(snapshot.catalog?.liveries ?? []).map(livery => livery.id)}
+            pluginVersion={snapshot.identity.pluginVersion}
+            applyStyle={id => runtime.applyStyle(id)}
+            applyWallpaper={presetWallpaperTarget}
+            currentAttribution={presetAttribution}
+            styleLabel={id => {
+              const livery = snapshot.catalog?.liveries.find(candidate => candidate.id === id)
+              return livery === undefined ? id : localizedName(livery, snapshot.locale)
+            }}
+            onApplyResult={onPresetApplied}
+          />
 
           <section className="livery-ui-card" data-testid="wallpaper-builtins-card">
             <div className="livery-ui-card__head">

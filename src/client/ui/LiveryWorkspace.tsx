@@ -177,7 +177,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
             aria-labelledby={`${tabIdBase}-tab-wallpaper`}
             data-testid="livery-tabpanel-wallpaper"
           >
-            <WallpaperPanel t={t} snapshot={snapshot} />
+            <WallpaperPanel t={t} snapshot={snapshot} runtime={runtime} />
           </div>
         )
         : (

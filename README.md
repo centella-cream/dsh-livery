@@ -56,6 +56,12 @@ page being styled; the rest show DSH Livery's own UI.
   layers are viewport-relative `cover`, so portrait, ultrawide and resized windows
   crop instead of distorting. Network requests start when you open the tab or take
   an explicit action; your choices stay local.
+- **Presets, focal position and window sync.** Export/import a lightweight
+  appearance preset containing an existing style, a builtin/https wallpaper, the
+  four effects and a nine-grid focal point; presets never contain uploaded image
+  blobs, CSS, tokens, fonts, local paths or history. Remote/upload wallpapers gain
+  a keyboard-operable focal position, wallpaper choices sync live between tabs in
+  the same Web Profile, and a local-data cleanup action reports what was removed.
 - **Card-based studio with one type scale.** Both pages use responsive cards. The
   style page pairs a current-style card with a gallery card and an Actions /
   Self-check rail; the wallpaper page has a preview, a search-first online card, a
@@ -185,9 +191,14 @@ Open the left sidebar and click **Visual Style** above the Workspaces section:
   tab.
 - **Wallpapers**: opening the tab loads a random online batch. Search Openverse,
   draw another batch, pick one of 24 built-in designs, upload a local image or paste
-  an https URL, then tune blur/dim/frost/atmosphere. Choices are stored in the
-  browser and survive restarts. The atmosphere layer stays below floating UI and
-  may not be visibly perceptible on opaque third-party plugin pages.
+  an https URL, then tune blur/dim/frost/atmosphere. For remote and uploaded
+  images, choose one of nine focal positions so the crop follows the subject.
+  Choices are stored in the browser, survive restarts, and sync to other tabs in
+  the same Web Profile. Presets export/import the style + wallpaper + effects +
+  focal point; **Clear local wallpaper data** removes uploads and remote caches
+  while preserving the currently displayed wallpaper. The atmosphere layer stays
+  below floating UI and may not be visibly perceptible on opaque third-party
+  plugin pages.
 
 Applying a style and applying a wallpaper are independent: switching styles does
 not remove the wallpaper.

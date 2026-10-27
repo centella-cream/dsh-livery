@@ -72,6 +72,12 @@ if (packageJson.engines?.dsh !== shippedAllowlist) {
   process.exit(1)
 }
 
+const TGZ_BUDGET_BYTES = 3 * 1024 * 1024
+const tgzBytes = readFileSync(tarball).length
+if (tgzBytes > TGZ_BUDGET_BYTES) {
+  console.error(`release-check: tarball ${tgzBytes}B exceeds ${TGZ_BUDGET_BYTES}B package budget`)
+  process.exit(1)
+}
 const required = [
   'lib/index.js',
   'lib/client.js',
@@ -122,7 +128,8 @@ const manifest = {
   file: tarball.split('/').at(-1),
   expectedTarball: tarballName(rootPackage),
   sha256: hash,
-  bytes: readFileSync(tarball).length,
+  bytes: tgzBytes,
+  budgetBytes: TGZ_BUDGET_BYTES,
   files: files.size,
   required: required.length,
   evidence: matrixEvidence(readMatrix()),

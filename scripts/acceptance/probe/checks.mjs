@@ -79,8 +79,19 @@ const THEME_TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw
 /** Round-5 style system: the catalog ships 24 designs per profile. */
 const MIN_LIVERIES = 24
 
-/** Per-livery rendered CSS hard budget (style-system.md §5). */
+/** Per-livery compiled CSS hard budget (style-system.md §5). */
 const CSS_BUDGET_BYTES = 12 * 1024
+
+/**
+ * Final 0.1.3 merged-client caps (Lead-owned decisions; acceptance reports the
+ * actual bytes). Host gzip/tgz caps are Lead-owned in build/release and are not
+ * asserted here.
+ */
+const CLIENT_GZIP_BUDGET_BYTES = 56 * 1024
+const CLIENT_GZIP_BUDGET_LABEL = '56 KiB'
+const RENDERED_CSS_BUDGET_BYTES = 20 * 1024
+const RENDERED_CSS_TARGET_BYTES = 16 * 1024
+const RENDERED_CSS_BUDGET_LABEL = '20 KiB'
 
 /** The UI locale the running page actually presents (host pin wins over flags). */
 async function detectUiLocale(page) {
@@ -491,18 +502,18 @@ export async function checkBootHandshake(ctx) {
       const raw = await rawRequest(bundle.bundle.entryUrl)
       const gzipBytes = zlib.gzipSync(raw.body).length
       ctx.state.bundleGzip = gzipBytes
-      const budget = 48 * 1024
+      const budget = CLIENT_GZIP_BUDGET_BYTES
       expect(
         runner,
         'bundle.gzip-budget',
-        'client bundle gzip stays within the 48KB performance budget (host peers excluded)',
+        `client bundle gzip stays within the final ${CLIENT_GZIP_BUDGET_LABEL} performance budget (host peers excluded)`,
         gzipBytes <= budget,
-        `${gzipBytes} bytes gzip / ${raw.body.length} bytes raw (budget ${budget})`,
-        { gzipBytes, rawBytes: raw.body.length },
+        `${gzipBytes} bytes gzip / ${raw.body.length} bytes raw (budget ${budget} B / ${CLIENT_GZIP_BUDGET_LABEL})`,
+        { gzipBytes, rawBytes: raw.body.length, budgetBytes: budget },
       )
     } catch (error) {
-      if (config.liveryMode) runner.warn('bundle.gzip-budget', 'client bundle gzip stays within the 25KB performance budget', String(error))
-      else runner.skip('bundle.gzip-budget', 'client bundle gzip stays within the 25KB performance budget', String(error))
+      if (config.liveryMode) runner.warn('bundle.gzip-budget', `client bundle gzip stays within the final ${CLIENT_GZIP_BUDGET_LABEL} performance budget`, String(error))
+      else runner.skip('bundle.gzip-budget', `client bundle gzip stays within the final ${CLIENT_GZIP_BUDGET_LABEL} performance budget`, String(error))
     }
   } else {
     runner.skip('bundle.serves-client-js', 'plugin client bundle is served as JavaScript', 'no graph row to fetch')
@@ -2232,19 +2243,26 @@ export async function checkFirstPaint(ctx) {
     typeof paintTimings.firstContentfulPaint === 'number',
     `first-paint=${paintTimings.firstPaint}ms fcp=${paintTimings.firstContentfulPaint}ms dcl=${paintTimings.domContentLoaded}ms load=${paintTimings.load}ms`,
   )
-  // CSS size budgets (docs/design/implementation-plan.md §18.8): active skin CSS target
-  // 4–8KB, hard cap 12KB; the same text is the first-frame boot CSS.
+  // Rendered client/livery CSS budget (docs/design/implementation-plan.md §18.8).
+  // Final 0.1.3 merged-client cap is 20 KiB with a 16 KiB soft target; the same
+  // text is the first-frame boot CSS. Report the actual bytes.
   const cssBytes = await page.evaluate(() => [...document.querySelectorAll('style[id^="dsh-livery"]')].reduce((total, style) => total + (style.textContent ?? '').length, 0))
   ctx.state.cssBytes = cssBytes
   expect(
     runner,
     'css.size-budget',
-    'rendered livery stylesheet stays within the 12KB hard budget (4–8KB target)',
-    cssBytes > 0 && cssBytes <= 12 * 1024,
-    `${cssBytes} bytes rendered CSS (target 4–8KB, hard cap 12KB)`,
-    { cssBytes },
+    `rendered livery/client stylesheet stays within the final ${RENDERED_CSS_BUDGET_LABEL} hard budget`,
+    cssBytes > 0 && cssBytes <= RENDERED_CSS_BUDGET_BYTES,
+    `${cssBytes} bytes rendered CSS (soft target ${RENDERED_CSS_TARGET_BYTES} B, hard cap ${RENDERED_CSS_BUDGET_BYTES} B / ${RENDERED_CSS_BUDGET_LABEL})`,
+    { cssBytes, targetBytes: RENDERED_CSS_TARGET_BYTES, budgetBytes: RENDERED_CSS_BUDGET_BYTES },
   )
-  if (cssBytes > 8 * 1024 && cssBytes <= 12 * 1024) runner.warn('css.size-target', 'rendered livery stylesheet is within the 4–8KB target range', `${cssBytes} bytes is above the 8KB target but under the 12KB hard cap`)
+  if (cssBytes > RENDERED_CSS_TARGET_BYTES && cssBytes <= RENDERED_CSS_BUDGET_BYTES) {
+    runner.warn(
+      'css.size-target',
+      'rendered livery/client stylesheet is within the final soft target range',
+      `${cssBytes} bytes is above the ${RENDERED_CSS_TARGET_BYTES} B soft target but under the ${RENDERED_CSS_BUDGET_LABEL} hard cap`,
+    )
+  }
 
   // Whole-document MutationObserver authorship: the shell installs its own
   // document-level observer, so count only observers whose creation stack names

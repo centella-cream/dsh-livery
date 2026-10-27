@@ -34,6 +34,7 @@ import type { RuntimeIdentity } from './model.js'
 import { PANEL_ID, PANEL_NAVIGATION_GRACE_MS, PANEL_ROW_ORDER } from './navigation.js'
 import { createPresenter } from './presenter.js'
 import { createWallpaperController, setWallpaperController } from './wallpaper/controller.js'
+import { createTabSourceId } from './wallpaper/sync.js'
 import { createLiveryRuntime } from './runtime.js'
 import type { ConfigFormLike, LocaleSource, ThemeSource } from './runtime.js'
 import { LiverySettingsPage } from './ui/LiverySettingsPage.js'
@@ -155,7 +156,7 @@ export function apply(ctx: Context): void {
   // A rejected handshake must keep the whole visual layer stock, including a
   // persisted wallpaper, so the controller only starts for a non-mismatched boot.
   if (boot.kind !== 'mismatch') ctx.effect(() => {
-    const wallpaper = createWallpaperController()
+    const wallpaper = createWallpaperController({ sourceId: createTabSourceId() })
     setWallpaperController(wallpaper)
     const syncLiveryTokens = (): void => {
       const snapshot = runtime.getSnapshot()

@@ -38,6 +38,8 @@ class FakeImages implements WallpaperImageStore {
   put = vi.fn(async (record: StoredImageRecord) => { this.records.set(record.key, record) })
   get = vi.fn(async (key: string) => this.records.get(key))
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
+  list = vi.fn(async () => [...this.records.values()])
+  clear = vi.fn(async () => { this.records.clear() })
 }
 
 const entry = (url: string, extra: Partial<RecentWallpaperEntry> = {}): RecentWallpaperEntry => ({
@@ -104,7 +106,8 @@ describe('remote image cache', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.key).toBe(remoteCacheKey('https://cdn.example/a.jpg'))
-      expect(images.records.get(result.key)?.type).toBe('image/png')
+      expect(images.records.get(result.key)?.kind).toBe('remote')
+      expect(images.records.get(result.key)?.sourceUrl).toBe('https://cdn.example/a.jpg')
     }
     expect(await isRemoteCached('https://cdn.example/a.jpg', images)).toBe(true)
     expect((await loadCachedRemote('https://cdn.example/a.jpg', images))?.blob).toBeInstanceOf(Blob)
@@ -133,7 +136,8 @@ describe('controller renders cached remote images', () => {
     }))
     const images = new FakeImages()
     images.records.set(remoteCacheKey('https://cdn.example/a.jpg'), {
-      key: remoteCacheKey('https://cdn.example/a.jpg'), name: 'a.jpg', type: 'image/png', size: 3, blob: blob(),
+      key: remoteCacheKey('https://cdn.example/a.jpg'), kind: 'remote', size: 3, createdAt: 1, lastUsedAt: 1,
+      sourceUrl: 'https://cdn.example/a.jpg', blob: blob(),
     })
     const urls = { create: () => 'blob:fake-1', revoke: vi.fn() }
     const doc = new FakeDocument()
@@ -192,13 +196,15 @@ describe('late cache results and dispose races', () => {
       put: vi.fn(async () => undefined),
       get: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveGet = resolve })),
       delete: vi.fn(async () => undefined),
+      list: vi.fn(async () => [] as readonly StoredImageRecord[]),
+      clear: vi.fn(async () => undefined),
     }
     const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
     const doc = new FakeDocument()
     const controller = createWallpaperController({ storage, document: doc as never, images, objectUrls: urls })
     controller.start()
     controller.dispose()
-    resolveGet?.({ key: 'remote-x', name: 'a.jpg', type: 'image/png', size: 3, blob: blob() })
+    resolveGet?.({ key: 'remote-x', kind: 'remote', size: 3, createdAt: 1, lastUsedAt: 1, sourceUrl: 'https://cdn.example/a.jpg', blob: blob() })
     await flush()
     expect(urls.create).not.toHaveBeenCalled()
     expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
@@ -216,13 +222,15 @@ describe('late cache results and dispose races', () => {
       put: vi.fn(async () => undefined),
       get: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveGet = resolve })),
       delete: vi.fn(async () => undefined),
+      list: vi.fn(async () => [] as readonly StoredImageRecord[]),
+      clear: vi.fn(async () => undefined),
     }
     const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
     const doc = new FakeDocument()
     const controller = createWallpaperController({ storage, document: doc as never, images, objectUrls: urls })
     controller.start()
     controller.dispose()
-    resolveGet?.({ key: 'upload-1-abc', name: 'a.png', type: 'image/png', size: 3, blob: blob() })
+    resolveGet?.({ key: 'upload-1-abc', kind: 'upload', size: 3, createdAt: 1, lastUsedAt: 1, blob: blob() })
     await flush()
     expect(urls.create).not.toHaveBeenCalled()
     expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()

@@ -12,7 +12,7 @@
  * documented `--dsw-*` tokens (through `.livery-section` local aliases) so the
  * page follows the active host theme automatically. Text containers never
  * hard-code a width, so 200% zoom reflows instead of clipping. The shipped
- * string is budgeted at 12 KiB.
+ * string is budgeted at 16 KiB (0.1.3 merged scope).
  *
  * @see docs/research/client-contract.md §7
  */
@@ -141,4 +141,14 @@ export const CLIENT_CSS = `
 .wallpaper-recent-title,.wallpaper-recent-source{display:block;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wallpaper-recent-source{padding-bottom:6px;color:var(--lw-2)}
 .wallpaper-dropzone:focus-visible{outline:2px solid var(--lw-brand);outline-offset:2px}
+.livery-preset-diff{display:flex;flex-direction:column;gap:6px;min-width:0}
+.livery-preset-diff__list{display:flex;flex-direction:column;gap:4px;margin:0;padding-inline-start:18px}
+/* Nine-grid focal point: native radio group, visible selected/focus state. */
+.wallpaper-position{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;border:0;min-width:0}
+.wallpaper-position__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:228px;margin:0;padding:0}
+.wallpaper-position__option{position:relative;display:flex;min-width:0}
+.wallpaper-position__option input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.wallpaper-position__option span{display:flex;flex:1 1 auto;align-items:center;justify-content:center;min-height:36px;padding:4px 6px;border:1px solid var(--lw-line);border-radius:8px;color:var(--lw-2);font-size:var(--lw-fs-caption);line-height:var(--lw-lh);text-align:center}
+.wallpaper-position__option input:checked+span{border-color:var(--lw-brand);color:var(--lw-brand);background:color-mix(in srgb,var(--lw-brand) 14%,transparent)}
+.wallpaper-position__option input:focus-visible+span{outline:2px solid var(--lw-brand);outline-offset:2px}
 `

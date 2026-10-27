@@ -28,6 +28,8 @@ class FakeImages implements WallpaperImageStore {
   put = vi.fn(async (record: StoredImageRecord) => { this.records.set(record.key, record) })
   get = vi.fn(async (key: string) => this.records.get(key))
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
+  list = vi.fn(async () => [...this.records.values()])
+  clear = vi.fn(async () => { this.records.clear() })
 }
 
 function fakeObjectUrls(): { create: (blob: Blob) => string; revoke: (url: string) => void } {
@@ -82,7 +84,7 @@ describe('upload controller lifecycle', () => {
       kind: 'upload', key: 'upload-1-abc', blur: 8, dim: 25, frost: 35, atmosphere: 30,
     }))
     const images = new FakeImages()
-    images.records.set('upload-1-abc', { key: 'upload-1-abc', name: 'a.png', type: 'image/png', size: 3, blob: blob() })
+    images.records.set('upload-1-abc', { key: 'upload-1-abc', kind: 'upload', size: 3, createdAt: 1, lastUsedAt: 1, blob: blob() })
     const urls = fakeObjectUrls()
     const doc = new FakeDocument()
     const controller = createWallpaperController({
@@ -113,9 +115,12 @@ describe('upload controller lifecycle', () => {
     await flush()
     expect(controller.getSnapshot().selection).toBeUndefined()
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBeNull()
-    // Let the debounced save persist the cleared selection.
+    // Let the debounced save persist the cleared selection as a revisioned tombstone.
     await new Promise(resolve => setTimeout(resolve, 20))
-    expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
+    expect(JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')).toMatchObject({
+      schemaVersion: 2,
+      selection: { kind: 'none' },
+    })
     controller.dispose()
   })
 

@@ -9,6 +9,18 @@ packaging; they are folded into the `0.1.0` entry.
 
 ## [0.1.3] — 2026-10-27
 
+### Added
+
+- Lightweight appearance presets export/import existing styles, builtin/https
+  wallpapers, effects and focal position; uploaded blobs, CSS, tokens, fonts,
+  local paths and history are explicitly excluded.
+- Nine-grid focal position for remote/upload wallpapers, applied to the page
+  layer, atmosphere layer, hero preview, reload, tabs and presets.
+- Live synchronization of wallpaper selection/effects/position/clear/recent
+  history across tabs in the same Web Profile.
+- Local wallpaper data cleanup with reported results and storage quota/GC
+  boundaries (uploads: current only; remote cache: 24 entries / 128 MiB LRU).
+
 ### Fixed
 
 - Web certification now records and enforces the exact Chrome version
@@ -32,6 +44,8 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Changed
 
+- Wallpaper persistence is now schema v2 (revision + selection + effects +
+  focal position) with lossless migration from 0.1.2 flat records.
 - Release tooling derives the version, candidate tarball name and evidence list
   from `package.json` and the formal support matrix; no release script or workflow
   path hardcodes a version or tarball name. `release:prepare` no longer lists

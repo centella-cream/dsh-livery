@@ -27,6 +27,21 @@ export type CatalogStatus = 'idle' | 'loading' | 'ready' | 'unavailable'
 /** Why a settings write did not land. */
 export type WriteFailure = 'refused' | 'transport'
 
+/**
+ * Why a direct style apply (no transient preview) did not land.
+ *
+ * - `refused` / `transport`: the host rejected / never received the config write
+ * - `unknown`: the id is not in the live catalog
+ * - `unavailable`: the livery exists but a required host capability is missing
+ * - `busy`: the runtime is disposed or another settings write is in flight
+ */
+export type StyleApplyFailure = WriteFailure | 'unknown' | 'unavailable' | 'busy'
+
+/** Outcome of {@link LiveryRuntimeApi.applyStyle}. */
+export type StyleApplyOutcome =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly failure: StyleApplyFailure }
+
 /** Color scheme currently resolved by the host theme service. */
 export type LiveryMode = 'light' | 'dark'
 
@@ -93,6 +108,15 @@ export interface LiveryRuntimeApi {
   cancelPreview(): void
   /** Persist the preview with exactly one config write. */
   commitPreview(): Promise<boolean>
+  /**
+   * Apply one livery directly with one config write, without entering preview.
+   *
+   * Used by internal flow drivers (e.g. native preset application) instead of a
+   * simulated gallery-card click. `stock` restores the stock appearance. The
+   * returned outcome distinguishes a refused/transport-failed write from an
+   * unknown/unavailable/busy target so callers can report partial state.
+   */
+  applyStyle(id: string): Promise<StyleApplyOutcome>
   /** Persist stock appearance (one config write). */
   restoreStock(): Promise<boolean>
   /** Retry the failed settings write (the last commit/restore attempt). */

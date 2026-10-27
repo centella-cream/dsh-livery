@@ -3,8 +3,11 @@ import { readFileSync } from 'node:fs'
 import { CLIENT_CSS } from '../../src/styles/client.js'
 
 describe('client stylesheet (plan §18.3 / §18.8)', () => {
-  it('stays inside the 14KB budget', () => {
-    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(14 * 1024)
+  it('stays inside the 16KB budget', () => {
+    // 0.1.3 merged scope (nine-grid focal position + storage/preset UI) grows
+    // the stylesheet past the old 14KB ceiling; 16KB is the approved working
+    // budget for this feature round (Lead owns the final accepted number).
+    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(16 * 1024)
   })
 
   it('contains no !important', () => {
@@ -87,6 +90,17 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain('--lw-fs-display:20px;--lw-fs-title:15px;--lw-fs-body:13px;--lw-fs-label:12px;--lw-fs-caption:11px')
     // Footer is a real two-line block: flex column with a gap, not inline spans.
     expect(CLIENT_CSS).toMatch(/\.livery-about\{display:flex;flex-direction:column;gap:4px\}/)
+  })
+
+  it('ships the nine-grid focal position control with visible selected and focus states', () => {
+    expect(CLIENT_CSS).toContain('.wallpaper-position{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;border:0')
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-position__grid\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/)
+    // The native radio covers the whole cell but stays visually hidden; the
+    // adjacent span is the visible target and shows the selected/focus state.
+    expect(CLIENT_CSS).toContain('.wallpaper-position__option input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}')
+    expect(CLIENT_CSS).toContain('.wallpaper-position__option input:checked+span{border-color:var(--lw-brand);color:var(--lw-brand)')
+    expect(CLIENT_CSS).toContain('.wallpaper-position__option input:focus-visible+span{outline:2px solid var(--lw-brand);outline-offset:2px}')
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-position__option span\{[^}]*font-size:var\(--lw-fs-caption\)/)
   })
 
   it('provides a visible focus ring and a reduced-motion fallback', () => {
