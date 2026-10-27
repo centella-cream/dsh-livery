@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "commit": "861494092a6cb38cb8d45e4ea8e66190eccd458d",
+  "commit": "12681fe81b27e19840403fb2df61c8450f0543f9",
   "packageVersion": "0.1.2",
-  "tarballSha256": "e62c859f3ca4842b42539418a7104b53cf52f76e15c5f318e669dfc992eaf779",
-  "tarballBytes": 2149566,
-  "generatedAt": "2026-10-27T09:02:39.191Z",
+  "tarballSha256": "0899b94bba55586cdbe2f4ba0d9ace88bf492ab866920aca72cbaea5b23db82c",
+  "tarballBytes": 2151426,
+  "generatedAt": "2026-10-27T09:49:37.182Z",
   "scope": {
     "hostVersion": "0.2.1-rc.3",
     "profile": "desktop",
@@ -15,7 +15,7 @@
       "id": "desktop-electron-macos",
       "hostVersion": "0.2.1-rc.3",
       "adapterId": "dsh-0.2.1-rc.3-r1",
-      "tarballSha256": "e62c859f3ca4842b42539418a7104b53cf52f76e15c5f318e669dfc992eaf779",
+      "tarballSha256": "0899b94bba55586cdbe2f4ba0d9ace88bf492ab866920aca72cbaea5b23db82c",
       "summary": {
         "pass": 27,
         "fail": 0,
@@ -23,7 +23,7 @@
         "warn": 0
       },
       "report": "contracts/dsh/evidence/reports/desktop-macos-electron.md",
-      "reportSha256": "b54398302997b6fa257febe317c213900b5aa4b5888f6f9142cce83018f5aac4"
+      "reportSha256": "107af1deff0e3e2c18fb74b576e8c1f7edf74badaac11b06192bd99b69809e97"
     }
   ]
 }
