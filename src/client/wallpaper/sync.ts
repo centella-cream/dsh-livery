@@ -79,7 +79,15 @@ export function shouldApplyExternalState(args: {
   if (args.lastPublishedRaw !== undefined && args.lastPublishedRaw === args.incomingRaw) return false
   if (args.incomingSourceId !== undefined && args.ownSourceId !== undefined
     && args.incomingSourceId === args.ownSourceId) return false
-  return Number.isInteger(args.incomingRevision) && args.incomingRevision > args.currentRevision
+  if (!Number.isInteger(args.incomingRevision)) return false
+  if (args.incomingRevision > args.currentRevision) return true
+  // Concurrent writes can produce the same local counter in two tabs. Break
+  // the tie deterministically by source id so both tabs converge on one state.
+  if (args.incomingRevision === args.currentRevision
+    && args.incomingSourceId !== undefined && args.ownSourceId !== undefined) {
+    return args.incomingSourceId > args.ownSourceId
+  }
+  return false
 }
 
 /**

@@ -119,6 +119,50 @@ if (evidence.scope !== undefined) {
   const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
   if (evidence.packageVersion !== pkg.version) fail(`evidence packageVersion ${String(evidence.packageVersion)} != package.json ${pkg.version}`)
 }
+// Critical checks that must be present AND pass. Counts alone cannot catch a
+// skipped safety path (preset partial failure, floating surfaces, migration).
+const REQUIRED_WEB_CHECKS = [
+  'env.browser-version',
+  'handshake.certified-adapter',
+  'catalog.certified-identity',
+  'merged.two-tab-sync',
+  'merged.two-tab-clear',
+  'merged.state-migration-v1',
+  'merged.preset-import-diff',
+  'merged.preset-apply-atomic',
+  'merged.preset-invalid-rejected',
+  'merged.position-remote',
+  'merged.clear-local-data',
+  'visual.floating-surfaces',
+]
+const REQUIRED_DESKTOP_CHECKS = [
+  'desktop.official-install',
+  'desktop.certified-runtime',
+  'desktop.renderer-launches',
+  'desktop.boot-graph-row',
+  'desktop.apply-persists',
+  'desktop.position-remote',
+  'desktop.reduced-transparency',
+  'desktop.floating-surfaces',
+  'desktop.restore-stock',
+  'desktop.matrix-consistency',
+]
+if (!Array.isArray(evidence.criticalChecks)) {
+  fail('evidence.criticalChecks is required (key safety checks must be recorded, not inferred from counts)')
+}
+const criticalById = new Map(evidence.criticalChecks.map((check) => [check.id, check]))
+const profile = evidence.scope?.profile
+const requiredChecks = profile === 'web'
+  ? REQUIRED_WEB_CHECKS
+  : profile === 'desktop'
+    ? REQUIRED_DESKTOP_CHECKS
+    : []
+for (const id of requiredChecks) {
+  const check = criticalById.get(id)
+  if (check === undefined) fail(`critical check missing from evidence: ${id}`)
+  if (check.status !== 'pass') fail(`critical check not passing: ${id} (${String(check.status)})`)
+}
+
 for (const run of evidence.runs) {
   if (typeof run.id !== 'string' || typeof run.hostVersion !== 'string' || typeof run.adapterId !== 'string') {
     fail('every evidence run needs id, hostVersion and adapterId')

@@ -181,22 +181,34 @@ describe('preset schema v1 — strict rejection', () => {
     expectProblem(parse({ ...makePreset(), wallpaper: [] }), 'wallpaper-kind')
   })
 
-  it('rejects CSS / scheme / path smuggling in any string', () => {
+  it('rejects CSS/scheme smuggling in URLs but treats attribution as plain text', () => {
     expectProblem(
       parse({ ...makePreset(), wallpaper: { kind: 'remote', url: 'https://example.com/url(x)' } }),
       'forbidden-content',
     )
-    expectProblem(
-      parse({
-        ...makePreset(),
-        attribution: { title: 'x', creator: 'data:text/html,<script>alert(1)</script>' },
-      }),
-      'forbidden-content',
-    )
-    expectProblem(
-      parse({ ...makePreset(), attribution: { title: 'C:\\Users\\me\\wallpaper.png' } }),
-      'forbidden-content',
-    )
+    const text = parse({ ...makePreset(), attribution: { title: '<No. 2>', creator: 'url(...) / {plain}' } })
+    expect(text.ok).toBe(true)
+    if (text.ok) expect(text.preset.attribution).toEqual({ title: '<No. 2>', creator: 'url(...) / {plain}' })
+  })
+
+  it('rejects loopback, private, link-local and IPv6-mapped local URLs', () => {
+    for (const url of [
+      'https://10.1.2.3/a.jpg',
+      'https://172.16.0.1/a.jpg',
+      'https://172.31.255.255/a.jpg',
+      'https://192.168.1.2/a.jpg',
+      'https://169.254.1.1/a.jpg',
+      'https://127.0.0.1/a.jpg',
+      'https://localhost./a.jpg',
+      'https://device.local./a.jpg',
+      'https://[fc00::1]/a.jpg',
+      'https://[fd12:3456::1]/a.jpg',
+      'https://[fe80::1]/a.jpg',
+      'https://[::ffff:10.0.0.1]/a.jpg',
+    ]) {
+      const result = parse({ ...makePreset(), wallpaper: { kind: 'remote', url } })
+      expect(result.ok, url).toBe(false)
+    }
   })
 
   it('rejects unknown or malformed effects', () => {
@@ -335,7 +347,7 @@ describe('preset export', () => {
     })
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.preset.attribution).toEqual({ creator: 'Fine Creator' })
+    expect(result.preset.attribution).toEqual({ title: 'C:\\local\\file.png', creator: 'Fine Creator' })
   })
 
   it('always emits a preset that strict import accepts (round-trip)', () => {

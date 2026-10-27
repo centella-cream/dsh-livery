@@ -151,6 +151,11 @@ export interface ClearLocalWallpaperDataOptions {
   readonly storage?: WallpaperLocalStorage | undefined
   /** Current selection: its upload blob/remote cache entry are preserved. */
   readonly selection?: WallpaperSelection | undefined
+  /**
+   * Live selection resolver. Cleanup is asynchronous; re-read this before each
+   * deletion so a wallpaper selected during cleanup is never removed.
+   */
+  readonly getSelection?: (() => WallpaperSelection) | undefined
 }
 
 /**
@@ -192,6 +197,7 @@ export async function clearAllLocalWallpaperData(
   const storage = options.storage
   const images = options.images ?? createIndexedDbImageStore()
   const selection = options.selection
+  const liveSelection = (): WallpaperSelection => options.getSelection?.() ?? selection
   const errors: string[] = []
   let removedImages = 0
   let keptImages = 0
@@ -204,10 +210,11 @@ export async function clearAllLocalWallpaperData(
       errors.push('list')
       warnDiagnostic('could not list local wallpaper images for cleanup', error)
     }
-    const currentUploadKey = selection?.kind === 'upload' ? selection.key : undefined
-    const currentRemoteUrl = selection?.kind === 'remote' ? selection.url : undefined
     const kept: StoredImageRecord[] = []
     for (const record of records) {
+      const current = liveSelection()
+      const currentUploadKey = current?.kind === 'upload' ? current.key : undefined
+      const currentRemoteUrl = current?.kind === 'remote' ? current.url : undefined
       const isCurrent = (record.kind === 'upload' && record.key === currentUploadKey)
         || (record.kind === 'remote' && record.sourceUrl === currentRemoteUrl)
       if (isCurrent) {

@@ -117,6 +117,13 @@ export interface WallpaperControllerApi {
   getRenderImage(): string | undefined
   /** Hydrate from localStorage and apply. */
   start(): void
+  /**
+   * Synchronously persist the CURRENT snapshot, cancelling a pending debounce.
+   * Callers that are about to delete an old upload blob MUST use this and only
+   * delete after it returns true; a false result means the localStorage write
+   * failed (quota/disabled) and the old blob is still the last recoverable state.
+   */
+  flushState(): boolean
   /** Remove the DOM layer and flush pending persistence. */
   dispose(): void
 }
@@ -251,17 +258,19 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     }
   }
 
-  const persist = (): void => {
-    if (storage === undefined) return
+  const persist = (): boolean => {
+    if (storage === undefined) return false
     try {
       // A clear is written as a revisioned tombstone (kind:'none') so other
       // tabs can synchronize the clear through the same revision ordering.
       const record = serializeWallpaperState(selection, effects, position, revision)
       const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
-      lastPublishedRaw = raw
       storage.setItem(WALLPAPER_STORAGE_KEY, raw)
+      lastPublishedRaw = raw
+      return true
     } catch {
       /* storage can be quota-blocked/disabled; the live layer still works */
+      return false
     }
   }
 
@@ -276,15 +285,24 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     }, saveDelay)
   }
 
-  const flushSave = (): void => {
+  const flushSave = (): boolean => {
     if (saveTimer !== undefined) {
       clearTimeout(saveTimer)
       saveTimer = undefined
     }
-    if (savePending) {
-      savePending = false
-      persist()
+    if (!savePending) return true
+    savePending = false
+    return persist()
+  }
+
+  const flushState = (): boolean => {
+    if (disposed || !started) return false
+    if (saveTimer !== undefined) {
+      clearTimeout(saveTimer)
+      saveTimer = undefined
     }
+    savePending = false
+    return persist()
   }
 
   const sameSelection = (a: WallpaperSelection, b: WallpaperSelection): boolean => {
@@ -342,7 +360,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     try {
       record = await images.get(key)
     } catch {
-      record = undefined
+      // A read failure is not proof that the upload is gone. Keep the selection
+      // (and its recoverable key) instead of permanently clearing the wallpaper.
+      return
     }
     if (disposed || revision !== expectedRevision) return
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
@@ -377,10 +397,21 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     })) return
     // A newer tab wins: drop the pending local save so it cannot overwrite it.
     cancelPendingSave()
+    const tie = external.state.revision === revision
     selection = external.state.selection
     effects = external.state.effects
     position = external.state.position
     revision = external.state.revision
+    if (tie && storage !== undefined) {
+      // Same counter from two tabs: persist the deterministic winner so a
+      // later reload cannot resurrect the losing branch.
+      try {
+        storage.setItem(WALLPAPER_STORAGE_KEY, external.raw)
+        lastPublishedRaw = external.raw
+      } catch {
+        /* convergence write is best effort */
+      }
+    }
     replaceLocalImageUrl(undefined)
     apply()
     notify()
@@ -444,6 +475,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       if (disposed) return
       setState({ selection: undefined })
     },
+    flushState,
     setTokens: (light: TokenMap | undefined, dark: TokenMap | undefined) => {
       if (disposed) return
       if (tokens.light === light && tokens.dark === dark) return

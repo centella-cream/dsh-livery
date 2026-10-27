@@ -335,6 +335,12 @@ export async function cacheRemoteImage(
       blob,
     }
     await images.put(record)
+    // Cancellation can arrive while the IDB transaction is in flight. Do not
+    // publish/prune after that: delete the just-written stale blob instead.
+    if (cancelledExternally || isAborted(deps.signal)) {
+      try { await images.delete(key) } catch { /* best effort */ }
+      return { ok: false, reason: 'cancelled' }
+    }
     if (deps.storage !== undefined) {
       touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: now })
     }
@@ -343,6 +349,10 @@ export async function cacheRemoteImage(
       storage: deps.storage,
       protectedUrl: deps.protectedUrl ?? check.url,
     })
+    if (cancelledExternally || isAborted(deps.signal)) {
+      try { await images.delete(key) } catch { /* best effort */ }
+      return { ok: false, reason: 'cancelled' }
+    }
     return { ok: true, key, record }
   } catch {
     return { ok: false, reason: cancelledExternally ? 'cancelled' : 'network' }
@@ -408,7 +418,15 @@ export async function loadCachedRemote(
   try {
     const record = await images.get(remoteCacheKey(url))
     if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
-    return record
+    // Every production load is a use: refresh the LRU timestamp so a re-shown
+    // old wallpaper is not evicted before genuinely stale entries.
+    const touched = { ...record, lastUsedAt: Date.now() }
+    try {
+      await images.put(touched)
+    } catch {
+      /* the LRU refresh is best effort; the record is still valid */
+    }
+    return touched
   } catch {
     return undefined
   }
@@ -424,14 +442,7 @@ export async function touchCachedRemote(
   url: string,
   images: WallpaperImageStore | undefined = createIndexedDbImageStore(),
 ): Promise<StoredImageRecord | undefined> {
-  const record = await loadCachedRemote(url, images)
-  if (record === undefined || images === undefined) return record
-  try {
-    await images.put({ ...record, lastUsedAt: Date.now() })
-  } catch {
-    /* LRU refresh is best effort */
-  }
-  return record
+  return loadCachedRemote(url, images)
 }
 
 /** Whether the URL has a verified cached blob. */

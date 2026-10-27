@@ -116,11 +116,21 @@ interface OnlineState {
 const IDLE_ONLINE: OnlineState = { status: 'idle', results: [], page: 1, source: 'picsum', query: '' }
 
 interface Attribution {
+  /** Identity of the wallpaper it describes; never used for a different one. */
+  readonly identity: string
   readonly title: string
   readonly creator: string
   readonly license: string
   readonly source: string
   readonly context: 'online' | 'custom'
+}
+
+/** Stable wallpaper identity used to bind attribution and cross-tab state. */
+function wallpaperIdentity(selection: WallpaperSelection): string {
+  if (selection === undefined) return 'none'
+  if (selection.kind === 'builtin') return `builtin:${selection.id}`
+  if (selection.kind === 'upload') return `upload:${selection.key}`
+  return `remote:${selection.url}`
 }
 
 /** Props of the wallpaper studio panel. */
@@ -150,6 +160,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     () => controller?.getSnapshot() ?? EMPTY,
     () => controller?.getSnapshot() ?? EMPTY,
   )
+  const liveIdentity = wallpaperIdentity(state.selection)
   const [urlText, setUrlText] = useState('')
   const [problem, setProblem] = useState<WallpaperUrlProblem | undefined>(undefined)
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
@@ -157,8 +168,39 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [dragOver, setDragOver] = useState(false)
   const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
   const [attribution, setAttribution] = useState<Attribution | undefined>(undefined)
+  const effectiveAttribution = attribution !== undefined && attribution.identity === liveIdentity
+    ? attribution
+    : undefined
   const [recent, setRecent] = useState<readonly RecentWallpaperEntry[]>(() => readRecentWallpapers(recentStorage))
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
+  const objectUrlsRef = useRef<Map<string, string>>(new Map())
+  const rememberObjectUrl = (url: string, objectUrl: string): void => {
+    const previous = objectUrlsRef.current.get(url)
+    if (previous !== undefined && previous !== objectUrl) {
+      try { URL.revokeObjectURL(previous) } catch { /* already gone */ }
+    }
+    objectUrlsRef.current.set(url, objectUrl)
+    setCachedUrls(previousMap => ({ ...previousMap, [url]: objectUrl }))
+  }
+  const releaseObjectUrl = (url: string): void => {
+    const objectUrl = objectUrlsRef.current.get(url)
+    if (objectUrl === undefined) return
+    objectUrlsRef.current.delete(url)
+    try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+    setCachedUrls(previous => {
+      if (previous[url] === undefined) return previous
+      const next = { ...previous }
+      delete next[url]
+      return next
+    })
+  }
+  const releaseAllObjectUrls = (): void => {
+    for (const objectUrl of objectUrlsRef.current.values()) {
+      try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+    }
+    objectUrlsRef.current.clear()
+    setCachedUrls({})
+  }
   const mounted = useRef(true)
   const seq = useRef(0)
   const autoLoader = useRef(createAutoRandomLoader(page => { void run('picsum', '', page) }))
@@ -172,15 +214,18 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.setSelection(selection, blob))
-    // Only the active upload stays on disk: replace/switch/clear deletes the old one.
-    const obsolete = obsoleteUploadKey(previous, selection)
+    // Only delete the old upload after the NEW state is confirmed written to
+    // localStorage. A failed write must leave the old blob recoverable.
+    const persisted = controller?.flushState() === true
+    const obsolete = persisted ? obsoleteUploadKey(previous, selection) : undefined
     if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'previous upload')
   }
   const clearWallpaper = (): void => {
     cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.clear())
-    const obsolete = obsoleteUploadKey(previous, undefined)
+    const persisted = controller?.flushState() === true
+    const obsolete = persisted ? obsoleteUploadKey(previous, undefined) : undefined
     if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'cleared')
   }
 
@@ -237,12 +282,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const rememberBlob = (url: string, blob: Blob): void => {
     try {
       if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return
-      const objectUrl = URL.createObjectURL(blob)
-      setCachedUrls(previous => {
-        const old = previous[url]
-        if (old !== undefined && old !== objectUrl) URL.revokeObjectURL(old)
-        return { ...previous, [url]: objectUrl }
-      })
+      rememberObjectUrl(url, URL.createObjectURL(blob))
     } catch {
       /* display cache is best effort */
     }
@@ -275,6 +315,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
     selectWallpaper({ kind: 'remote', url: entry.url })
     setAttribution({
+      identity: `remote:${entry.url}`,
       title: entry.title ?? t('wallpaper.customSelected'),
       creator: entry.creator ?? '',
       license: entry.license ?? '',
@@ -310,12 +351,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     for (const url of clearableRecentUrls(entries, protectedUrl)) {
       void deleteCachedRemote(url, imageStore, recentStorage)
     }
-    setCachedUrls(previous => {
-      for (const objectUrl of Object.values(previous)) {
-        try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
-      }
-      return {}
-    })
+    releaseAllObjectUrls()
   }
 
   // Another tab changed the recent history: refresh entries/thumbnail state.
@@ -326,48 +362,47 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       if (next === undefined) return
       const keep = new Set(next.map(entry => entry.url))
       setRecent(next)
-      setCachedUrls(previous => {
-        const retained: Record<string, string> = {}
-        for (const [url, objectUrl] of Object.entries(previous)) {
-          if (keep.has(url)) retained[url] = objectUrl
-          else {
-            try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
-          }
-        }
-        return retained
-      })
+      for (const url of [...objectUrlsRef.current.keys()]) {
+        if (!keep.has(url)) releaseObjectUrl(url)
+      }
     }
     window.addEventListener('storage', listener)
     return () => window.removeEventListener('storage', listener)
   }, [recentStorage])
 
-  // Hydrate cached thumbnails for the recent list.
+  // Hydrate cached thumbnails for the recent list. Object URLs are owned by the
+  // ref map and live until their history entry disappears or the panel unmounts;
+  // an effect re-run must NOT revoke URLs that remain visible.
   useEffect(() => {
     if (recent.length === 0) return
     let cancelled = false
-    const created: string[] = []
     void (async () => {
       for (const entry of recent) {
-        if (cachedUrls[entry.url] !== undefined) continue
+        if (objectUrlsRef.current.has(entry.url)) continue
         const record = await loadCachedRemote(entry.url, imageStore)
         if (cancelled || record === undefined) continue
         try {
           const objectUrl = URL.createObjectURL(record.blob)
-          created.push(objectUrl)
-          setCachedUrls(previous => previous[entry.url] === undefined ? { ...previous, [entry.url]: objectUrl } : previous)
+          if (cancelled) {
+            try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+            continue
+          }
+          rememberObjectUrl(entry.url, objectUrl)
         } catch {
           /* thumbnails fall back to remote URLs */
         }
       }
     })()
-    return () => {
-      cancelled = true
-      for (const objectUrl of created) {
-        try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
-      }
-    }
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recent])
+
+  useEffect(() => () => {
+    for (const objectUrl of objectUrlsRef.current.values()) {
+      try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
+    }
+    objectUrlsRef.current.clear()
+  }, [])
 
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
     selectWallpaper({ kind: 'builtin', id })
@@ -378,6 +413,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const selectResult = (result: WallpaperRemoteResult): void => {
     selectWallpaper({ kind: 'remote', url: result.url })
     setAttribution({
+      identity: `remote:${result.url}`,
       title: result.title,
       creator: result.creator,
       license: result.license,
@@ -404,6 +440,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     selectWallpaper({ kind: 'remote', url: check.url })
     const source = new URL(check.url).hostname
     setAttribution({
+      identity: `remote:${check.url}`,
       title: t('wallpaper.customSelected'), creator: '', license: '',
       source, context: 'custom',
     })
@@ -468,7 +505,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     : selection?.kind === 'upload'
       ? t('wallpaper.uploadTitle')
       : selection?.kind === 'remote'
-        ? (attribution?.source ?? heroName)
+        ? (effectiveAttribution?.source ?? heroName)
         : undefined
 
   const statusKey = online.status === 'loading'
@@ -480,17 +517,17 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
         : online.status === 'error'
           ? 'wallpaper.error'
           : undefined
-  const attributionLine = attribution === undefined
+  const attributionLine = effectiveAttribution === undefined
     ? undefined
     : t('wallpaper.attribution', {
-      title: attribution.title,
-      creator: attribution.context === 'custom'
-        ? attribution.source
-        : attribution.creator.length > 0 ? attribution.creator : t('wallpaper.attributionUnknown'),
-      license: attribution.context === 'custom' || attribution.license.length === 0
+      title: effectiveAttribution.title,
+      creator: effectiveAttribution.context === 'custom'
+        ? effectiveAttribution.source
+        : effectiveAttribution.creator.length > 0 ? effectiveAttribution.creator : t('wallpaper.attributionUnknown'),
+      license: effectiveAttribution.context === 'custom' || effectiveAttribution.license.length === 0
         ? t('wallpaper.licenseUnknown')
-        : attribution.license,
-      source: attribution.source,
+        : effectiveAttribution.license,
+      source: effectiveAttribution.source,
     })
 
   const presetWallpaperTarget = (target: PresetWallpaperTarget): boolean => {
@@ -501,23 +538,30 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       { selection: target.selection, effects: target.effects, position: target.position },
       { flush: true },
     )
-    const ok = matchesPresetWallpaperState(next, target)
+    const persisted = active.flushState()
+    const ok = persisted && matchesPresetWallpaperState(next, target)
     if (ok) {
       const obsolete = obsoleteUploadKey(previous, target.selection)
       if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'preset')
     }
     return ok
   }
-  const presetAttribution: PresetAttribution | undefined = attribution === undefined
+  const presetAttribution: PresetAttribution | undefined = effectiveAttribution === undefined
     ? undefined
-    : { title: attribution.title, creator: attribution.creator, license: attribution.license, source: attribution.source }
+    : { title: effectiveAttribution.title, creator: effectiveAttribution.creator, license: effectiveAttribution.license, source: effectiveAttribution.source }
   const onPresetApplied = (result: PresetApplyResult, preset: LiveryPreset): void => {
-    if (result.status === 'style-failed') return
+    if (result.status !== 'applied') return
     if (preset.attribution === undefined) {
       setAttribution(undefined)
       return
     }
+    const identity = preset.wallpaper === null
+      ? 'none'
+      : preset.wallpaper.kind === 'builtin'
+        ? `builtin:${preset.wallpaper.id}`
+        : `remote:${preset.wallpaper.url}`
     setAttribution({
+      identity,
       title: preset.attribution.title ?? '',
       creator: preset.attribution.creator ?? '',
       license: preset.attribution.license ?? '',
@@ -651,7 +695,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                 ))}
               </div>
             )}
-            {attribution !== undefined && attribution.context === 'online' && attributionLine !== undefined && (
+            {effectiveAttribution !== undefined && effectiveAttribution.context === 'online' && attributionLine !== undefined && (
               <p className="livery-ui-card__hint" data-testid="wallpaper-attribution">{attributionLine}</p>
             )}
           </section>
@@ -699,6 +743,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                   accept="image/jpeg,image/png,image/webp,image/avif"
                   className="wallpaper-file-input"
                   tabIndex={-1}
+                  aria-hidden="true"
                   data-testid="wallpaper-upload"
                   aria-label={t('wallpaper.uploadTitle')}
                   onChange={event => { pickFiles(event.target.files); event.target.value = '' }}
@@ -759,7 +804,15 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                   placeholder={t('wallpaper.customPlaceholder')}
                   onChange={event => { setUrlText(event.target.value); if (problem !== undefined) setProblem(undefined) }}
                 />
-                <Button variant="outline" size="sm" data-testid="wallpaper-url-apply" onClick={applyUrl}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="wallpaper-url-apply"
+                  aria-invalid={problem !== undefined}
+                  aria-describedby={problem === undefined ? undefined : 'wallpaper-url-error'}
+                  aria-errormessage={problem === undefined ? undefined : 'wallpaper-url-error'}
+                  onClick={applyUrl}
+                >
                   {t('wallpaper.customApply')}
                 </Button>
               </div>
@@ -775,12 +828,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
             t={t}
             onCleared={() => {
               setRecent([])
-              setCachedUrls(previous => {
-                for (const objectUrl of Object.values(previous)) {
-                  try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
-                }
-                return {}
-              })
+              releaseAllObjectUrls()
             }}
           />
         </div>

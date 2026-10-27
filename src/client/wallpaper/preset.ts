@@ -318,15 +318,64 @@ const FORBIDDEN_CONTENT: readonly RegExp[] = [
   /^\.{1,2}[\\/]/, // relative path traversal
 ]
 
-/** IPv4/IPv6 loopback or mDNS names: local-only, not portable with a preset. */
+/** Named local-only zones; these are not portable with a preset. */
 const LOCAL_HOSTS: readonly RegExp[] = [
-  /^localhost$/i,
-  /\.localhost$/i,
-  /\.local$/i,
-  /^127(?:\.\d{1,3}){3}$/,
-  /^0\.0\.0\.0$/,
-  /^\[::1\]$/,
+  /^localhost\.?$/i,
+  /\.localhost\.?$/i,
+  /\.local\.?$/i,
+  /\.internal\.?$/i,
+  /\.home\.arpa\.?$/i,
 ]
+
+/** IPv4 ranges that must never be fetched from an imported preset. */
+function isPrivateIpv4(hostname: string): boolean {
+  const match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/u.exec(hostname)
+  if (match === null) return false
+  const octets = match.slice(1).map(Number)
+  if (octets.some(value => !Number.isInteger(value) || value < 0 || value > 255)) return true
+  const [a, b] = octets as [number, number, number, number]
+  return a === 0
+    || a === 10
+    || a === 127
+    || (a === 100 && b >= 64 && b <= 127)
+    || (a === 169 && b === 254)
+    || (a === 172 && b >= 16 && b <= 31)
+    || (a === 192 && b === 0)
+    || (a === 192 && b === 168)
+    || (a === 198 && (b === 18 || b === 19))
+    || (a === 198 && b === 51)
+    || (a === 203 && b === 0)
+    || a >= 224
+}
+
+/** IPv6 loopback/ULA/link-local/mapped-private ranges. */
+function isPrivateIpv6(hostname: string): boolean {
+  const address = hostname.replace(/^\[|\]$/gu, '').toLowerCase()
+  if (address === '::' || address === '::1') return true
+  if (address.startsWith('fc') || address.startsWith('fd')) return true
+  if (/^fe[89ab]/u.test(address)) return true
+  const mapped = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/u.exec(address)
+  if (mapped !== null) return isPrivateIpv4(mapped[1] as string)
+  // URL canonicalizes IPv4-mapped IPv6 to hexadecimal groups.
+  const hexMapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/u.exec(address)
+  if (hexMapped !== null) {
+    const high = Number.parseInt(hexMapped[1] as string, 16)
+    const low = Number.parseInt(hexMapped[2] as string, 16)
+    const ipv4 = `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
+    return isPrivateIpv4(ipv4)
+  }
+  // Other IPv4-compatible forms are not portable either.
+  if (address.startsWith('::') && address !== '::' && address !== '::1') return true
+  return false
+}
+
+/** Whether one URL hostname is loopback, private, link-local or local-only. */
+function isLocalOrPrivateHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/\.$/u, '')
+  if (LOCAL_HOSTS.some(pattern => pattern.test(normalized))) return true
+  if (isPrivateIpv4(normalized)) return true
+  return isPrivateIpv6(normalized)
+}
 
 /** UTF-8 byte length of a string (pure fallback for exotic runtimes). */
 function utf8Bytes(text: string): number {
@@ -377,7 +426,9 @@ function checkString(
   if (value.length > maxLength) return failed('forbidden-content', field)
   const trimmed = value.trim()
   if (trimmed.length === 0) return { value: '' }
-  if (hasForbiddenContent(trimmed)) return failed('forbidden-content', field)
+  // Attribution is plain display text: only control characters are unsafe.
+  // Titles such as "<No. 2>" or "url(...)" are legitimate credits.
+  if (CONTROL_CHARACTERS.test(trimmed)) return failed('forbidden-content', field)
   return { value: trimmed }
 }
 
@@ -452,7 +503,7 @@ function portableWallpaperUrl(raw: unknown): PortableUrlResult {
   } catch {
     return { ok: false, detail: 'invalid' }
   }
-  if (LOCAL_HOSTS.some(pattern => pattern.test(hostname))) return { ok: false, detail: 'local' }
+  if (isLocalOrPrivateHost(hostname)) return { ok: false, detail: 'local' }
   return { ok: true, url: check.url }
 }
 
@@ -629,7 +680,7 @@ function sanitizeAttribution(input: PresetAttribution | undefined): PresetAttrib
     const trimmed = candidate.trim()
     if (trimmed.length === 0) continue
     if (trimmed.length > ATTRIBUTION_LIMITS[key]) continue
-    if (hasForbiddenContent(trimmed)) continue
+    if (CONTROL_CHARACTERS.test(trimmed)) continue
     output[key] = trimmed
   }
   return Object.keys(output).length === 0 ? undefined : output as PresetAttribution

@@ -192,6 +192,14 @@ interface IdbRequestLike<T> {
   result?: T
 }
 
+interface IdbCursorLike {
+  readonly value: unknown
+  readonly key?: unknown
+  update(value: unknown): IdbRequestLike<unknown>
+  delete(): IdbRequestLike<unknown>
+  continue(): void
+}
+
 interface IdbStoreLike {
   put(value: unknown, key: string): IdbRequestLike<unknown>
   get(key: string): IdbRequestLike<unknown>
@@ -199,6 +207,7 @@ interface IdbStoreLike {
   getAll(): IdbRequestLike<unknown[]>
   getAllKeys(): IdbRequestLike<unknown[]>
   clear(): IdbRequestLike<unknown>
+  openCursor?(): IdbRequestLike<IdbCursorLike | null>
 }
 
 interface IdbTransactionLike {
@@ -210,6 +219,8 @@ interface IdbTransactionLike {
 
 interface IdbDatabaseLike {
   transaction(store: string, mode: 'readonly' | 'readwrite'): IdbTransactionLike
+  close?(): void
+  onversionchange?: ((event: unknown) => void) | null
 }
 
 /** Minimal `IDBVersionChangeEvent` shape used during the v1 → v2 upgrade. */
@@ -221,6 +232,8 @@ interface IdbOpenRequestLike {
   onupgradeneeded: ((event: IdbUpgradeEventLike) => void) | null
   onsuccess: ((event: unknown) => void) | null
   onerror: ((event: unknown) => void) | null
+  onblocked?: ((event: unknown) => void) | null
+  readonly transaction?: IdbTransactionLike | null
   readonly result: IdbDatabaseLike & { createObjectStore(name: string): unknown }
 }
 
@@ -234,6 +247,15 @@ function requestResult<T>(request: IdbRequestLike<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result as T)
     request.onerror = () => reject(new Error('wallpaper database request failed'))
+  })
+}
+
+/** Resolve after an IndexedDB transaction commits (rejects on abort/error). */
+function transactionDone(transaction: IdbTransactionLike): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(new Error('wallpaper database transaction failed'))
+    transaction.onabort = () => reject(new Error('wallpaper database transaction aborted'))
   })
 }
 
@@ -330,6 +352,8 @@ export function createIndexedDbImageStore(
     if (dbPromise !== undefined) return dbPromise
     dbPromise = new Promise((resolve, reject) => {
       let previousVersion: number | undefined
+      let migratedInUpgrade = false
+      let migratedCount = 0
       try {
         const request = factory.open(WALLPAPER_DB_NAME, WALLPAPER_DB_VERSION)
         request.onupgradeneeded = event => {
@@ -339,12 +363,40 @@ export function createIndexedDbImageStore(
           } catch {
             /* store already exists (partial upgrade/foreign writer) */
           }
+          // Migrate legacy rows INSIDE the versionchange transaction. A later
+          // read/write would race another tab and let it update a row between
+          // our snapshot and rewrite.
+          const transaction = request.transaction ?? null
+          const openCursor = transaction?.objectStore(WALLPAPER_DB_STORE).openCursor
+          if (transaction === null || typeof openCursor !== 'function') return
+          migratedInUpgrade = true
+          const cursorRequest = openCursor.call(transaction.objectStore(WALLPAPER_DB_STORE))
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result
+            if (cursor === null || cursor === undefined) return
+            const primaryKey = cursor.key
+            if (typeof primaryKey !== 'string') { cursor.continue(); return }
+            const migrated = migrateLegacyImageRecord(primaryKey, cursor.value)
+            if (migrated === undefined) cursor.delete()
+            else {
+              cursor.update(storedValue(migrated))
+              migratedCount += 1
+            }
+            cursor.continue()
+          }
+          cursorRequest.onerror = () => warnDiagnostic('legacy wallpaper migration cursor failed')
         }
+        request.onblocked = () => reject(new Error('wallpaper database upgrade blocked by another tab'))
         request.onsuccess = () => {
           const db = request.result
-          // Only an existing pre-v2 database needs the row rewrite; a brand-new
-          // store (oldVersion 0/undefined) is already v2-shaped.
-          if (previousVersion === undefined || previousVersion <= 0) {
+          db.onversionchange = () => {
+            try { db.close?.() } catch { /* closing is best effort */ }
+          }
+          // Real IndexedDB provides the upgrade transaction, so migration is
+          // atomic there. Fall back only for minimal injected fakes that lack
+          // `request.transaction`; production never takes this path.
+          if (previousVersion === undefined || previousVersion <= 0 || migratedInUpgrade) {
+            if (migratedCount > 0) warnDiagnostic(`migrated ${migratedCount} wallpaper image record(s) to schema v2`)
             resolve(db)
             return
           }
@@ -378,8 +430,11 @@ export function createIndexedDbImageStore(
       if (typeof Blob === 'undefined' || !(record.blob instanceof Blob)) {
         throw new Error('wallpaper image blob is invalid')
       }
-      const objectStore = await store('readwrite')
+      const db = await open()
+      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
+      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.put(storedValue(record), record.key))
+      await transactionDone(transaction)
     },
     get: async (key) => {
       const objectStore = await store('readonly')
@@ -387,8 +442,11 @@ export function createIndexedDbImageStore(
       return normalizeStoredImageRecord(key, raw)
     },
     delete: async (key) => {
-      const objectStore = await store('readwrite')
+      const db = await open()
+      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
+      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.delete(key))
+      await transactionDone(transaction)
     },
     list: async () => {
       const objectStore = await store('readonly')
@@ -406,8 +464,11 @@ export function createIndexedDbImageStore(
       return records.sort((a, b) => b.lastUsedAt - a.lastUsedAt || a.key.localeCompare(b.key))
     },
     clear: async () => {
-      const objectStore = await store('readwrite')
+      const db = await open()
+      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
+      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.clear())
+      await transactionDone(transaction)
     },
   }
 }

@@ -18,6 +18,7 @@ jobs:
       # a shallow clone makes `git merge-base --is-ancestor` fail.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
@@ -59,7 +60,7 @@ jobs:
       # evidence live on the default branch (promotion happens after acceptance).
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
@@ -104,7 +105,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
@@ -152,7 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:

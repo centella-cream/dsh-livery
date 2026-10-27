@@ -23,6 +23,33 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Fixed
 
+- Uploaded blobs are deleted only after the replacement state is confirmed
+  persisted; a failed localStorage write leaves the old upload recoverable.
+  IndexedDB read failures no longer count as a missing upload.
+- IndexedDB v2 upgrade handles blocked/versionchange connections, migrates v1
+  rows inside the versionchange transaction, and waits for transaction commit
+  before reporting put/delete/clear success.
+- Concurrent same-revision writes from two tabs converge deterministically by
+  source id and persist the winning state, preventing split histories.
+- Local-data cleanup re-reads the live selection before each async delete, and
+  remote cache cancellation is checked after the put await so a stale download
+  cannot update the LRU index or prune the new current wallpaper.
+- Preset import/apply operations carry generation tickets: consecutive imports
+  cannot overwrite each other, apply captures its own preset, and stale results
+  cannot clear a newer import.
+- Attribution is bound to the wallpaper identity; cross-tab selection changes
+  cannot show/export another wallpaper's credit. Partial preset failures no
+  longer commit attribution.
+- Preset URLs reject loopback/private/link-local IPv4, IPv6 ULA/link-local and
+  IPv4-mapped private addresses; attribution text is validated as plain text
+  (length/control chars) rather than CSS/path payload rules.
+- Thumbnail object URLs are owned by one ref map and released without leaving
+  cached state behind; cache loads refresh the LRU timestamp; URL/upload ARIA
+  associations and clipboard rejection handling are complete.
+- Release workflow pins every job to the triggering SHA; acceptance evidence
+  must include explicit passing critical checks, and the acceptance selftest is
+  part of `pnpm verify`.
+
 - Web certification now records and enforces the exact Chrome version
   (`156.0.8078.48`); the acceptance harness fails on any other system browser
   version instead of silently accepting `minVersion`.

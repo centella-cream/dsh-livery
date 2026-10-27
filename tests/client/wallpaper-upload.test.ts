@@ -157,3 +157,40 @@ describe('upload controller lifecycle', () => {
     controller.dispose()
   })
 })
+
+describe('persistence safety', () => {
+  it('reports a failed localStorage write instead of pretending it was saved', () => {
+    const storage = new MemoryStorage()
+    const failing = Object.assign(storage, {
+      setItem: (): void => { throw new Error('quota') },
+    })
+    const controller = createWallpaperController({
+      storage: failing, document: new FakeDocument() as never, images: new FakeImages(), saveDelayMs: 0,
+    })
+    controller.start()
+    controller.setSelection({ kind: 'remote', url: 'https://cdn.example/a.jpg' })
+    expect(controller.flushState()).toBe(false)
+    expect(controller.getSnapshot().selection).toEqual({ kind: 'remote', url: 'https://cdn.example/a.jpg' })
+    controller.dispose()
+  })
+
+  it('keeps an upload selection when IndexedDB read fails (read error is not proof of deletion)', async () => {
+    const storage = new MemoryStorage()
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      schemaVersion: 2,
+      revision: 1,
+      selection: { kind: 'upload', key: 'upload-1-abc' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: { x: 50, y: 50 },
+    }))
+    const images = new FakeImages()
+    images.get = vi.fn(async () => { throw new Error('db read failed') })
+    const controller = createWallpaperController({
+      storage, document: new FakeDocument() as never, images, objectUrls: fakeObjectUrls(),
+    })
+    controller.start()
+    await flush()
+    expect(controller.getSnapshot().selection).toEqual({ kind: 'upload', key: 'upload-1-abc' })
+    controller.dispose()
+  })
+})

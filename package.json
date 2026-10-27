@@ -107,7 +107,7 @@
     "gate:support-matrix": "node scripts/cli.mjs gate:support-matrix",
     "gate:release": "node scripts/cli.mjs gate:release",
     "acceptance:web": "node scripts/acceptance/web.mjs",
-    "verify": "pnpm typecheck && pnpm build && pnpm test && pnpm liveries:check && pnpm audit:css && pnpm audit:contrast && pnpm pack:check",
+    "verify": "pnpm typecheck && pnpm build && pnpm test && pnpm liveries:check && pnpm audit:css && pnpm audit:contrast && pnpm pack:check && node scripts/acceptance/selftest.mjs",
     "test:client": "vitest run tests/client",
     "test:host": "vitest run tests/host",
     "contract:regenerate": "node scripts/cli.mjs contract:regenerate",

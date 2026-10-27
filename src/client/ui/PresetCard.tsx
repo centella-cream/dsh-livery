@@ -308,6 +308,9 @@ export function PresetCard({
   const [applying, setApplying] = useState(false)
   const fileInput = useRef<HTMLInputElement | null>(null)
   const mounted = useRef(true)
+  const operationId = useRef(0)
+  const presetRef = useRef<LiveryPreset | undefined>(preset)
+  presetRef.current = preset
 
   useEffect(() => {
     mounted.current = true
@@ -344,12 +347,13 @@ export function PresetCard({
   }
 
   const onFilePicked = async (file: File | undefined): Promise<void> => {
-    if (file === undefined) return
+    if (file === undefined || applying) return
+    const ticket = ++operationId.current
     setError(undefined)
     setExported(undefined)
     setCopyState('idle')
     const result = await importPresetFile(file, { catalogIds })
-    if (!mounted.current) return
+    if (!mounted.current || ticket !== operationId.current) return
     if (!result.ok) {
       clearImportState()
       setError({ kind: 'import', code: result.problem, detail: result.detail })
@@ -380,7 +384,12 @@ export function PresetCard({
 
   const onCopy = async (): Promise<void> => {
     if (exported === undefined) return
-    const ok = await clipboardWriter(exported.json)
+    let ok = false
+    try {
+      ok = await clipboardWriter(exported.json)
+    } catch {
+      ok = false
+    }
     if (!mounted.current) return
     setCopyState(ok ? 'copied' : 'failed')
     if (!ok) setError({ kind: 'copy', code: 'clipboard' })
@@ -411,11 +420,18 @@ export function PresetCard({
   }
 
   const onApply = async (): Promise<void> => {
-    if (preset === undefined || applying) return
+    const targetPreset = preset
+    if (targetPreset === undefined || applying) return
+    const ticket = ++operationId.current
     setApplying(true)
     setError(undefined)
-    const result = await applyPreset(preset, { applyStyle, applyWallpaper })
-    if (!mounted.current) return
+    const result = await applyPreset(targetPreset, { applyStyle, applyWallpaper })
+    // A newer operation or a different imported preset must not receive this
+    // operation's result, and this operation must not clear/overwrite it.
+    if (!mounted.current || ticket !== operationId.current || presetRef.current !== targetPreset) {
+      if (mounted.current) setApplying(false)
+      return
+    }
     setApplying(false)
     setApplyResult(result)
     reportError(result)
@@ -423,7 +439,7 @@ export function PresetCard({
       clearImportState()
       setApplyResult({ status: 'applied' })
     }
-    onApplyResult?.(result, preset)
+    onApplyResult?.(result, targetPreset)
   }
 
   const onRetryWallpaper = (): void => {
@@ -446,6 +462,7 @@ export function PresetCard({
 
   const onCancel = (): void => {
     if (applying) return
+    operationId.current += 1
     clearImportState()
     setError(undefined)
   }
@@ -466,6 +483,7 @@ export function PresetCard({
           variant="outline"
           size="sm"
           data-testid="preset-export"
+          disabled={applying}
           aria-invalid={exportInvalid}
           aria-describedby={exportInvalid === true ? PRESET_ERROR_ID : undefined}
           aria-errormessage={exportInvalid === true ? PRESET_ERROR_ID : undefined}
@@ -492,6 +510,7 @@ export function PresetCard({
           variant="outline"
           size="sm"
           data-testid="preset-import"
+          disabled={applying}
           aria-invalid={importInvalid}
           aria-describedby={importInvalid === true ? PRESET_ERROR_ID : undefined}
           aria-errormessage={importInvalid === true ? PRESET_ERROR_ID : undefined}

@@ -25,6 +25,12 @@ describe('0.1.3 release parameterization', () => {
     expect(workflow).toContain('verify-published.mjs')
     expect(workflow).toContain('SHA256SUMS')
     expect(workflow).toContain('gh release upload')
+    // Every job must run on the exact triggering SHA, never a moving branch.
+    expect([...workflow.matchAll(/ref: \$\{\{ github\.sha \}\}/g)]).toHaveLength(4)
+    expect(pkg.scripts.verify).toContain('scripts/acceptance/selftest.mjs')
+    const evidenceGate = read('scripts/release-evidence.mjs')
+    expect(evidenceGate).toContain('REQUIRED_WEB_CHECKS')
+    expect(evidenceGate).toContain('REQUIRED_DESKTOP_CHECKS')
   })
 
   it('uses the formal matrix for evidence and exact certification claims', () => {

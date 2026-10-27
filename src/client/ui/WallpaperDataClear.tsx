@@ -60,6 +60,7 @@ export async function runWallpaperDataClear(
       images: options.images ?? createIndexedDbImageStore(),
       storage: options.storage ?? browserStorage(),
       selection,
+      getSelection: () => getWallpaperController()?.getSnapshot().selection ?? selection,
     })
   } catch {
     // The operation itself is defensive; this is the last-resort guard so a

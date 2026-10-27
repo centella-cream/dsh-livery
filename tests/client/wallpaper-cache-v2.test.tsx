@@ -106,7 +106,9 @@ describe('remote cache sourceUrl verification', () => {
     expect(stored?.createdAt).toBeGreaterThan(0)
     expect(stored?.lastUsedAt).toBe(stored?.createdAt)
     expect(readRemoteCacheIndex(storage)[0]).toMatchObject({ url: 'https://cdn.example/a.jpg' })
-    expect(await loadCachedRemote('https://cdn.example/a.jpg', images)).toBe(stored)
+    const loaded = await loadCachedRemote('https://cdn.example/a.jpg', images)
+    expect(loaded).toMatchObject({ key: stored?.key, kind: 'remote', sourceUrl: 'https://cdn.example/a.jpg' })
+    expect(loaded?.lastUsedAt).toBeGreaterThanOrEqual(stored?.lastUsedAt ?? 0)
     // Touching refreshes the LRU timestamp without dropping the record.
     const touched = await touchCachedRemote('https://cdn.example/a.jpg', images)
     expect(touched?.sourceUrl).toBe('https://cdn.example/a.jpg')
@@ -171,6 +173,29 @@ describe('remote cache cancellation', () => {
     expect(result).toEqual({ ok: false, reason: 'cancelled' })
     expect(fetchImpl).not.toHaveBeenCalled()
     expect(images.put).not.toHaveBeenCalled()
+  })
+
+  it('cancels after the put await and removes the just-written stale blob', async () => {
+    const images = new FakeImages()
+    let release: (() => void) | undefined
+    const originalPut = images.put
+    images.put = vi.fn(async (record: StoredImageRecord) => {
+      await new Promise<void>(resolve => { release = resolve })
+      return originalPut(record)
+    })
+    const controller = new AbortController()
+    const pending = cacheRemoteImage('https://cdn.example/after-put.jpg', {
+      images,
+      fetchImpl: vi.fn(async () => pngResponse(blob())) as unknown as typeof fetch,
+      signal: controller.signal,
+    })
+    await new Promise(resolve => setTimeout(resolve, 0))
+    controller.abort()
+    release?.()
+    const result = await pending
+    expect(result).toEqual({ ok: false, reason: 'cancelled' })
+    expect(images.records.has(remoteCacheKey('https://cdn.example/after-put.jpg'))).toBe(false)
+    expect(images.delete).toHaveBeenCalled()
   })
 
   it('aborts an in-flight download when the selection changes (no IndexedDB write)', async () => {
@@ -244,6 +269,27 @@ describe('upload lifecycle v2', () => {
 })
 
 describe('clear all local wallpaper data', () => {
+  it('re-reads the live selection before each delete during clear-all', async () => {
+    const images = new FakeImages()
+    const oldRemote = 'https://cdn.example/old.jpg'
+    const currentRemote = 'https://cdn.example/current.jpg'
+    images.records.set(remoteCacheKey(oldRemote), remoteRecord(oldRemote))
+    images.records.set(remoteCacheKey(currentRemote), remoteRecord(currentRemote))
+    let reads = 0
+    const result = await clearAllLocalWallpaperData({
+      images,
+      storage: new MemoryStorage(),
+      getSelection: () => {
+        reads += 1
+        return { kind: 'remote', url: currentRemote }
+      },
+    })
+    expect(reads).toBeGreaterThan(0)
+    expect(result.keptImages).toBe(1)
+    expect(images.records.has(remoteCacheKey(currentRemote))).toBe(true)
+    expect(images.records.has(remoteCacheKey(oldRemote))).toBe(false)
+  })
+
   it('removes non-current images and history but keeps the current wallpaper image/state', async () => {
     const images = new FakeImages()
     const storage = new MemoryStorage()

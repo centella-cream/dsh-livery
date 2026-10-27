@@ -60,7 +60,9 @@ describe('sync helpers', () => {
   it('adopts only strictly newer revisions from another tab, ignoring own echoes', () => {
     const base = { incomingSourceId: 'tab-b', ownSourceId: 'tab-a', lastPublishedRaw: undefined, incomingRaw: 'x' }
     expect(shouldApplyExternalState({ ...base, currentRevision: 1, incomingRevision: 2 })).toBe(true)
-    expect(shouldApplyExternalState({ ...base, currentRevision: 2, incomingRevision: 2 })).toBe(false)
+    expect(shouldApplyExternalState({ ...base, currentRevision: 2, incomingRevision: 2 })).toBe(true)
+    expect(shouldApplyExternalState({ ...base, currentRevision: 2, incomingRevision: 2, incomingSourceId: 'tab-a' })).toBe(false)
+    expect(shouldApplyExternalState({ ...base, currentRevision: 2, incomingRevision: 2, incomingSourceId: 'tab-b', ownSourceId: 'tab-z' })).toBe(false)
     expect(shouldApplyExternalState({ ...base, currentRevision: 2, incomingRevision: 1 })).toBe(false)
     expect(shouldApplyExternalState({ ...base, currentRevision: 1, incomingRevision: 2, incomingSourceId: 'tab-a' })).toBe(false)
     expect(shouldApplyExternalState({ ...base, currentRevision: 1, incomingRevision: 2, lastPublishedRaw: 'x' })).toBe(false)
@@ -110,6 +112,19 @@ describe('controller multi-tab sync', () => {
     events.emit({ key: WALLPAPER_STORAGE_KEY, newValue: clearRecord })
     expect(controller.getSnapshot().selection).toBeUndefined()
     expect(controller.getSnapshot().revision).toBe(7)
+  })
+
+  it('breaks equal-revision concurrent writes deterministically by source id', async () => {
+    const { storage, events, controller } = setup()
+    const contender = JSON.stringify({
+      ...serializeWallpaperState({ kind: 'remote', url: 'https://cdn.example/winner.jpg' }, DEFAULT_WALLPAPER_EFFECTS, DEFAULT_WALLPAPER_POSITION, 6),
+      sourceId: 'tab-z',
+    })
+    storage.map.set(WALLPAPER_STORAGE_KEY, contender)
+    events.emit({ key: WALLPAPER_STORAGE_KEY, newValue: contender })
+    expect(controller.getSnapshot().revision).toBe(6)
+    expect(controller.getSnapshot().selection).toEqual({ kind: 'remote', url: 'https://cdn.example/winner.jpg' })
+    expect(JSON.parse(storage.map.get(WALLPAPER_STORAGE_KEY) ?? '{}').sourceId).toBe('tab-z')
   })
 
   it('ignores older revisions and own-source echoes', async () => {
