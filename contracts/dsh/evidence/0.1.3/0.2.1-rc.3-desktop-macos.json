@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "commit": "0437153e917830b39a0bb776a9f494cc5bec4b61",
+  "packageVersion": "0.1.3",
+  "tarballSha256": "ed7360d8765b47c8b9348b894bfa40e21f6ae01da24a59b796fa24e0903aa47e",
+  "tarballBytes": 2078973,
+  "generatedAt": "2026-10-27T12:06:26.653Z",
+  "scope": {
+    "hostVersion": "0.2.1-rc.3",
+    "profile": "desktop",
+    "platform": "macos",
+    "browser": "chrome",
+    "browserVersion": "152.0.7977.130"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.1-rc.3",
+      "profile": "desktop",
+      "platform": "macos",
+      "browser": "chrome",
+      "browserVersion": "152.0.7977.130"
+    },
+    "certification": {
+      "claimTier": "stable",
+      "distributionChannel": "desktop-app",
+      "certifiedBrowserVersions": [
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.1-rc.3",
+        "npmVersion": "0.2.1-rc.3"
+      }
+    }
+  },
+  "runs": [
+    {
+      "id": "desktop-electron-macos",
+      "hostVersion": "0.2.1-rc.3",
+      "adapterId": "dsh-0.2.1-rc.3-r1",
+      "tarballSha256": "ed7360d8765b47c8b9348b894bfa40e21f6ae01da24a59b796fa24e0903aa47e",
+      "summary": {
+        "pass": 28,
+        "fail": 0,
+        "skip": 1,
+        "warn": 0
+      },
+      "report": "contracts/dsh/evidence/0.1.3/reports/desktop-macos-electron.md",
+      "reportSha256": "6eb80a5c2ed3240d2fd0f26fb61bd518bbc450743db7d95d8b33e5b9aa7c6239"
+    }
+  ]
+}
