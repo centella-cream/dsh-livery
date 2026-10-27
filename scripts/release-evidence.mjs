@@ -53,12 +53,12 @@ if (evidence.commit !== head) {
 if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.runs must be non-empty')
 if (evidence.scope !== undefined) {
   const scope = evidence.scope
-  if (typeof scope.hostVersion !== 'string' || !['0.2.1-rc.2', '0.2.1-rc.3'].includes(scope.hostVersion)) {
-    fail('evidence scope must name a certified host version (0.2.1-rc.2 or 0.2.1-rc.3)')
+  if (typeof scope.hostVersion !== 'string' || !['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4'].includes(scope.hostVersion)) {
+    fail('evidence scope must name a certified host version (0.2.1-rc.2, 0.2.1-rc.3 or 0.2.1-rc.4)')
   }
   if (scope.profile === 'web') {
-    if (scope.hostVersion !== '0.2.1-rc.2' || scope.browser !== 'chrome') {
-      fail('web evidence scope must be 0.2.1-rc.2 + web + chrome')
+    if (!['0.2.1-rc.2', '0.2.1-rc.4'].includes(scope.hostVersion) || scope.browser !== 'chrome') {
+      fail('web evidence scope must be 0.2.1-rc.2 or 0.2.1-rc.4 + web + chrome')
     }
   } else if (scope.profile === 'desktop') {
     if (scope.hostVersion !== '0.2.1-rc.3' || scope.platform !== 'macos') {

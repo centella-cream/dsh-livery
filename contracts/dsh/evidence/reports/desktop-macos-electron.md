@@ -1,20 +1,20 @@
 # Desktop-profile acceptance evidence — DSH Livery on DSH 0.2.1-rc.3 (Electron app runtime)
 
-Run `2026-10-27T08-03-12-404Z-desktop` · **27 passed / 0 failed / 1 skipped / 0 warnings** · RESULT: PASS
+Run `2026-10-27T08-21-16-787Z-desktop` · **27 passed / 0 failed / 1 skipped / 0 warnings** · RESULT: PASS
 
-**Scope (explicit):** this run covers DSH 0.2.1-rc.3 + Desktop Profile + macOS + the real Electron renderer. Web Profile/Chrome on DSH 0.2.1-rc.2 is covered by separate Web evidence; Windows and Web Edge are not-supported. The native macOS window shell (traffic lights/leading, vibrancy, Dock/rightbar, OS DPI) is host-owned and outside plugin certification scope.
+**Scope (explicit):** this run covers DSH 0.2.1-rc.3 + Desktop Profile + macOS + the real Electron renderer. Web Profile/Chrome on DSH 0.2.1-rc.2 and 0.2.1-rc.4 is covered by separate Web evidence; Windows and Web Edge are not-supported. The native macOS window shell (traffic lights/leading, vibrancy, Dock/rightbar, OS DPI) is host-owned and outside plugin certification scope.
 
 ## Environment
 
 | item | value |
 |---|---|
-| date | 2026-10-27T08:03:12.403Z |
+| date | 2026-10-27T08:21:16.786Z |
 | Desktop app runtime | 0.2.1-rc.3 (Electron 44.7.0, Node 24.21.0, Chrome 152.0.7977.130) |
 | app CLI | `<system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh` |
 | renderer URL | dsh-app://app/ (window 1280×820, DPR 2) |
-| package | dsh-livery@0.1.2 · tarball sha256 `e5d1b842d55166b31519acdeea9bc120e0e1087db63a519b3e3a520b3d67b435` |
-| commit | e323df9c7cc8ee6c29b5c3e27be832b0911dcd47 |
-| tarball bytes | 2148319 |
+| package | dsh-livery@0.1.2 · tarball sha256 `6b1f7d1071070f31b2caccfea9a64f2901278dc344b04437d674b99e276a55fd` |
+| commit | 37c0f8937c9bde954b52209bb23d3c5362e0303f |
+| tarball bytes | 2149076 |
 | certified adapter | 0.2.1-rc.3 / dsh-0.2.1-rc.3-r1 / sha256:d246181d2613… / 11-module table / packaged-app |
 | isolated home | `<tmp>` (outside the repository; deleted after the run unless --keep) |
 
@@ -22,8 +22,8 @@ Run `2026-10-27T08-03-12-404Z-desktop` · **27 passed / 0 failed / 1 skipped / 0
 
 ```text
 <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:dsh-livery-0.1.2.tgz
-exit 0 in 1166 ms
-[WARN] The store at <local> is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <tmp> Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.1.2 Done in 333ms using pnpm v11.2
+exit 0 in 1368 ms
+[WARN] The store at <local> is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <tmp> Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.1.2 Done in 288ms using pnpm v11.2
 ```
 
 - profile dependencies: `{"dsh-livery":"file:dsh-livery-0.1.2.tgz"}`
@@ -37,12 +37,12 @@ exit 0 in 1166 ms
 | check | title | result | detail |
 |---|---|---|---|
 | `desktop.certified-runtime` | app-bundled CLI reports a certified host version | ✅ pass | 0.2.1-rc.3 / dsh-0.2.1-rc.3-r1 / sha256:d246181d2613… / 11-module table / packaged-app |
-| `desktop.official-install` | official rc.3 plugin-manager install accepts the package with no version exemption | ✅ pass | <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:dsh-livery-0.1.2.tgz → exit 0 in 1166ms; dependency=file:dsh-livery-0.1.2.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-agent-team-profile","d |
+| `desktop.official-install` | official rc.3 plugin-manager install accepts the package with no version exemption | ✅ pass | <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:dsh-livery-0.1.2.tgz → exit 0 in 1368ms; dependency=file:dsh-livery-0.1.2.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-experimental-agent-team-profile","d |
 | `desktop.preview-profiles-installed` | the shared compiled catalog profile ships (both certified adapters share it) | ✅ pass | 1 preview profile dir(s): sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478 |
 | `desktop.engines-enforced` | rc.3 runtime rejects a plugin whose engines.dsh allowlist excludes it (no exemption) | ✅ pass | synthetic 0.2.0-only plugin install → exit 1: [WARN] The store at <local> is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. ? Verifying lockfile against supply-chain policies (1 entry)... ✓ Lockfile passes supply-ch |
 | `desktop.cli-refuses-boot` | CLI boot of the desktop composition is refused (Electron-managed profile) | ✅ pass | dsh --profile desktop --no-open → exit 1: error: profile "desktop" is managed exclusively by the Electron application |
 | `desktop.renderer-launches` | real Electron renderer launches under the isolated app runtime | ✅ pass | url=dsh-app://app/ title="DeepSeek Harness" Electron=44.7.0 Node=24.21.0 Chrome=152.0.7977.130 dpr=2 window=1280x820 |
-| `desktop.boot-graph-row` | boot graph lists the dsh-livery client module | ✅ pass | rev=5a1a2c0f6f6d; entries=74; dsh-livery=true |
+| `desktop.boot-graph-row` | boot graph lists the dsh-livery client module | ✅ pass | rev=0fdeb1240dc7; entries=74; dsh-livery=true |
 | `desktop.catalog-identity` | desktop catalog route reports the certified rc.3 identity and shared 0.2.1 catalog profile | ✅ pass | 0.2.1-rc.3 / dsh-0.2.1-rc.3-r1 / sha256:d246181d2613… / 11-module table / packaged-app; 24 liveries; previewsBase=/livery/assets/previews/sha256:1962031f313b85ed9068e9cf5989fa8bf9af920b83b0cba4c056f92da661c478/ |
 | `desktop.stock-start` | stock default boots with no livery attributes or skin styles | ✅ pass | data-dsh-livery=null; skinStyles=0; themeSource=system; lang=zh-CN |
 | `desktop.sidebar-entry` | Livery is registered as a left-sidebar plugin navigation row in the desktop shell | ✅ pass | row #2 label "视觉风格" panellistSlot=true icon=true |
@@ -56,7 +56,7 @@ exit 0 in 1166 ms
 | `desktop.preview` | previewing a different livery updates desktop body attributes and tokens transiently | ✅ pass | body attr null → plum; bg=#f7f2f5 (expected sample rgb(247, 242, 245)) |
 | `desktop.preview-cancel` | cancel restores the confirmed desktop state | ✅ pass | body attr=null |
 | `desktop.apply-persists` | apply writes exactly one livery config mutation into the isolated desktop profile patch | ✅ pass | patch skinId=fjord (before (none)); rows=1 |
-| `desktop.boot-injection` | fresh desktop application launch delivers the certified rc.3 first-frame boot payload for the persisted skin | ✅ pass | boot payload available 1278 ms after launch: accepted hostVersion=0.2.1-rc.3 adapterId=dsh-0.2.1-rc.3-r1 profileKind=desktop skinId=fjord cssHash=sha256:cc8551943e49cb054… |
+| `desktop.boot-injection` | fresh desktop application launch delivers the certified rc.3 first-frame boot payload for the persisted skin | ✅ pass | boot payload available 1091 ms after launch: accepted hostVersion=0.2.1-rc.3 adapterId=dsh-0.2.1-rc.3-r1 profileKind=desktop skinId=fjord cssHash=sha256:cc8551943e49cb054… |
 | `desktop.hash-equality` | desktop body hash equals the handshake cssHash and the compiled catalog cssHash | ✅ pass | body=sha256:cc8551943e49cb054… handshake=sha256:cc8551943e49cb054… catalog=sha256:cc8551943e49cb054… |
 | `desktop.theme-light` | desktop light tokens match the compiled catalog values | ✅ pass | actual=["rgb(240, 243, 246)","rgb(27, 39, 51)","rgba(0, 0, 0, 0.04)"] expected=["rgb(240, 243, 246)","rgb(27, 39, 51)","rgba(0, 0, 0, 0.04)"] |
 | `desktop.theme-dark` | desktop follows host dark mode with the livery dark tokens without changing the host preference | ✅ pass | darkAttr="" themeSource=system actual=["rgb(24, 28, 33)","rgb(238, 242, 246)","rgba(255, 255, 255, 0.06)"] expected=["rgb(24, 28, 33)","rgb(238, 242, 246)","rgba(255, 255, 255, 0.06)"] |
@@ -67,17 +67,17 @@ exit 0 in 1166 ms
 
 ## Screenshots (renderer web contents only)
 
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-stock-desktop.png` (stock)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-panel-gallery-desktop.png` (panel-gallery)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-gallery-preview-en-desktop.png` (gallery-preview-en)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-gallery-preview-zh-desktop.png` (gallery-preview-zh)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-wallpaper-desktop.png` (wallpaper-builtin)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-preview-desktop.png` (previewing)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-applied-desktop.png` (applied)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-applied-dark-desktop.png` (applied-dark)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-applied-desktop-reload.png` (applied-after-relaunch)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-selfcheck-desktop.png` (selfcheck)
-- `artifacts/acceptance/pkg-0.1.2-r1/desktop-0.2.1-rc.3/screens/zh-stock-restored-desktop.png` (stock-restored)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-stock-desktop.png` (stock)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-panel-gallery-desktop.png` (panel-gallery)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-gallery-preview-en-desktop.png` (gallery-preview-en)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-gallery-preview-zh-desktop.png` (gallery-preview-zh)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-wallpaper-desktop.png` (wallpaper-builtin)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-preview-desktop.png` (previewing)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-applied-desktop.png` (applied)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-applied-dark-desktop.png` (applied-dark)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-applied-desktop-reload.png` (applied-after-relaunch)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-selfcheck-desktop.png` (selfcheck)
+- `artifacts/acceptance/pkg-0.1.2-final/desktop-0.2.1-rc.3/screens/zh-stock-restored-desktop.png` (stock-restored)
 
 ## Honest scope statement — what this proves and what it does not
 
