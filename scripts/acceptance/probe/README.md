@@ -1,12 +1,11 @@
 # `scripts/acceptance/probe/` — acceptance-harness building blocks
 
-**Scope (round 15, narrowed release):** the shipped/certified target is
-**DSH 0.2.1-rc.2 + Web Profile + Chrome only** (formal matrix `g6-approved`,
-one adapter `dsh-0.2.1-rc.2-r1`, one catalog profile). Desktop macOS/Windows and
-Web Edge are **not-supported** and are not claimed. `desktop-probe.mjs` is
-historical tooling for older rounds and now refuses to run without
-`--allow-out-of-scope`; earlier lines in this README that mention 0.2.0-rc.2 /
-0.2.1-rc.3 are development-history notes, not current scope.
+**Scope (0.1.2):** the shipped/certified Web targets are **DSH 0.2.1-rc.2 and
+the latest 0.2.1-rc.4 + Web Profile + Chrome 155**, plus **DSH 0.2.1-rc.3
+Desktop/macOS** via the real Electron probe. All three adapters share one catalog
+profile. Desktop Windows and Web Edge are **not-supported** and are not claimed;
+DSH 0.2.1-rc.4 Desktop is not certified because no rc.4 Desktop app is available.
+Earlier 0.2.0-rc.2 history notes are development history, not current scope.
 
 These modules are the implementation of the black-box Web-profile acceptance
 harness (`scripts/acceptance/web.mjs`). They are plain ESM with **no runtime

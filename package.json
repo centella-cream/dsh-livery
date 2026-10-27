@@ -115,7 +115,7 @@
     "verify:artifact": "node scripts/release-check.mjs",
     "verify:evidence": "node scripts/release-evidence.mjs",
     "promote:release": "node scripts/promote-release.mjs",
-    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json",
+    "release:prepare": "pnpm release:check && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json && node scripts/release-evidence.mjs --tgz .tmp/release-check/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json",
     "build:cli": "node scripts/build.mjs --cli-only"
   },
   "devDependencies": {

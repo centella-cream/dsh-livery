@@ -12,11 +12,12 @@ online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
 > **Release status: 0.1.2 limited release.** Supported exactly for:
-> DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1, and DSH
-> `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime. Desktop Windows,
-> Web Edge and other DSH builds are outside the supported scope. Other DSH versions
-> are rejected at install/runtime and fail closed. The publishable artifact is bound
-> to committed acceptance evidence; `prepublish-check` refuses mismatched bytes.
+> DSH `0.2.1-rc.2` and the latest `0.2.1-rc.4` + Web Profile + Chrome 155 + Node
+> 22.23.1, and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24
+> runtime. Desktop Windows, Web Edge and other DSH builds are outside the supported
+> scope. Other DSH versions are rejected at install/runtime and fail closed. The
+> publishable artifact is bound to committed acceptance evidence;
+> `prepublish-check` refuses mismatched bytes.
 
 English · [中文](README.zh-CN.md)
 
@@ -90,12 +91,13 @@ example of another plugin's surface staying covered.
 
 ## Host support and version policy
 
-`engines.dsh` is the exact allowlist **`0.2.1-rc.2 || 0.2.1-rc.3`**. The
-supported scope is deliberately narrow:
+`engines.dsh` is the exact allowlist **`0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4`**.
+The supported scope is deliberately narrow:
 
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Certified |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Certified (latest DSH) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node 24.21.0 | Certified renderer surface |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
@@ -192,12 +194,14 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.2.tgz      # thin wrapper
 ## Verification
 
 For the 0.1.2 limited release: Web `0.2.1-rc.2` isolated full run and real-profile
-clone pass with **0 failures** (Chrome 155, Node 22.23.1); Desktop `0.2.1-rc.3`
-passes the real Electron install/renderer acceptance (Node 24.21.0). Exact counts
-and report hashes are in the committed evidence files. Repo gates include `tsc`,
+clone pass with **0 failures**, and the latest Web `0.2.1-rc.4` isolated run also
+passes with **0 failures** (Chrome 155, Node 22.23.1); Desktop `0.2.1-rc.3` passes
+the real Electron install/renderer acceptance (Node 24.21.0). Exact counts and
+report hashes are in the committed evidence files. Repo gates include `tsc`,
 **718 tests (1 optional skip)**, contrast / token / CSS audits, loader ABI and
 package checks. The exact artifact is bound to
-`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json` and
+`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`,
+`contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json` and
 `contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`. Details and known
 limitations: [docs/verification.md](docs/verification.md).
 

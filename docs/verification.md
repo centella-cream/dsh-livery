@@ -5,6 +5,7 @@
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Certified |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome 155 | Node 22.23.1 | Certified (latest DSH) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron / Node 24.21.0 | Certified renderer surface |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
@@ -21,6 +22,7 @@ The published artifact is the exact tarball named in the committed evidence file
 Evidence:
 
 - `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`
+- `contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json`
 - `contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`
 
 Each file records the exact sha256, byte size, commit, scope and per-run results.
@@ -31,6 +33,7 @@ Each file records the exact sha256, byte size, commit, scope and per-run results
 |---|---|---|
 | Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node 22.23.1, Chrome 155.0.8059.85 | 231 pass / 0 fail / 4 skip / 2 warn |
 | Web real-profile clone | same | 232 pass / 0 fail / 4 skip / 4 warn (clone-only dependency-repair warning) |
+| Latest Web isolated | DSH `0.2.1-rc.4`, macOS arm64, Node 22.23.1, Chrome 155 | 231 pass / 0 fail / 4 skip / 2 warn |
 | Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node 24.21.0 | recorded in the committed Desktop evidence/report |
 
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
@@ -41,8 +44,8 @@ Electron app, the official rc.3 plugin manager and an isolated app
 ## What is verified
 
 - Official install, activation and uninstall lifecycle; boot gate and handshake.
-- Two adapters (`dsh-0.2.1-rc.2-r1`, `dsh-0.2.1-rc.3-r1`) sharing one catalog
-  profile: 24 styles.
+- Three adapters (`dsh-0.2.1-rc.2-r1`, `dsh-0.2.1-rc.4-r1`, `dsh-0.2.1-rc.3-r1`)
+  sharing one catalog profile: 24 styles.
 - Style page: preview, single-mutation Apply, restore, persistence, self-check.
 - Style gallery, preview language switching, family filters and keyboard tabs.
 - Wallpaper studio: built-in designs, online search/random, uploads (IndexedDB),
@@ -63,7 +66,8 @@ Electron app, the official rc.3 plugin manager and an isolated app
   Dock/rightbar window states, OS-level DPI and the packaged GPU/sandbox path.
   These are host-owned and outside this plugin's certification.
 - Desktop Windows, Web Edge, any browser other than Chrome 155, any Node other than
-  the two certified runtimes, and any other DSH version.
+  the two certified runtimes, DSH Desktop rc.4 (not released/available), and any
+  other DSH version.
 - A second catalog profile or any second theme registry. The build intentionally
   ships one adapter per certified host and one shared catalog profile.
 - Live Openverse availability: search is exercised with mocked responses; the
@@ -87,6 +91,7 @@ pnpm gate:support-matrix -- --all
 pnpm gate:release -- --all
 pnpm pack:candidate
 pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
+pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json
 pnpm verify:evidence -- --tgz dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
 ```
 

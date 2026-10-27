@@ -62,7 +62,7 @@ jobs:
         run: pnpm verify:artifact -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz
       - name: Bind candidate to acceptance evidence
         env:
-          RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
+          RELEASE_EVIDENCE: contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
         run: |
           if [ ! -f .tmp/candidate/release-manifest.json ]; then
             echo "release-manifest.json missing from candidate artifact" >&2
@@ -109,6 +109,7 @@ jobs:
       - name: Verify the downloaded candidate against committed evidence
         run: |
           pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json
+          pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json
           pnpm verify:evidence -- --tgz .tmp/candidate/dsh-livery-0.1.2.tgz --evidence contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json
           pnpm gate:support-matrix -- --all
           pnpm gate:release -- --all

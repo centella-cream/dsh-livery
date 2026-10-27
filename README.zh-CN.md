@@ -10,10 +10,11 @@
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.2 有限发布。** 仅支持：DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1，
-> 以及 DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。Desktop Windows、
-> Web Edge 和其他 DSH 版本不在支持范围内；其他 DSH 版本会在安装/运行时被拒绝并回退 stock。
-> 发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝不匹配的字节。
+> **发布状态：0.1.2 有限发布。** 仅支持：DSH `0.2.1-rc.2` 与最新版 `0.2.1-rc.4` +
+> Web Profile + Chrome 155 + Node 22.23.1，以及 DSH `0.2.1-rc.3` + macOS Desktop 应用及其
+> Electron/Node 24 运行时。Desktop Windows、Web Edge 和其他 DSH 版本不在支持范围内；其他
+> DSH 版本会在安装/运行时被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；
+> `prepublish-check` 会拒绝不匹配的字节。
 
 [English](README.md) · 中文
 
@@ -73,11 +74,13 @@
 
 ## 宿主支持与版本策略
 
-`engines.dsh` 是精确允许列表 **`0.2.1-rc.2 || 0.2.1-rc.3`**。支持范围刻意收窄：
+`engines.dsh` 是精确允许列表 **`0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4`**。
+支持范围刻意收窄：
 
 | 宿主 | Profile / 平台 | 运行时 | 状态 |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile，Chrome 155 | Node 22.23.1 | 已认证 |
+| DSH `0.2.1-rc.4` | Web Profile，Chrome 155 | Node 22.23.1 | 已认证（最新 DSH） |
 | DSH `0.2.1-rc.3` | Desktop 应用，macOS | Electron/Node 24.21.0 | 已认证渲染器表面 |
 | Desktop Windows、Web Edge、其他 DSH 版本 | — | — | 不支持、不保证 |
 
@@ -161,11 +164,13 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.2.tgz      # 薄封装
 
 ## 验收
 
-0.1.2 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**
-（Chrome 155，Node 22.23.1）；Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收
-（Node 24.21.0）。精确计数和报告哈希见已提交的 evidence。仓库门禁包括 `tsc`、
+0.1.2 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**，
+最新 Web `0.2.1-rc.4` 隔离运行也通过、**0 失败**（Chrome 155，Node 22.23.1）；
+Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收（Node 24.21.0）。精确计数和报告
+哈希见已提交的 evidence。仓库门禁包括 `tsc`、
 **718 个测试（1 个可选跳过）**、对比度 / token / CSS 审计、loader ABI 和打包检查。精确产物绑定到
-`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json` 与
+`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`、
+`contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json` 与
 `contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`。详细说明和已知限制见
 [docs/verification.md](docs/verification.md)。
 

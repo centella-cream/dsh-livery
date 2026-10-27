@@ -45,7 +45,7 @@ import {
   resolveDshBin,
   summarizeOperation,
 } from './probe/dsh-home.mjs'
-import { ACCEPTANCE_SCOPE, SUPPORTED_HOST_VERSIONS, adapterForTriple, adapterForVersion, describeAdapter } from './probe/certified-adapters.mjs'
+import { SUPPORTED_HOST_VERSIONS, adapterForTriple, adapterForVersion, describeAdapter } from './probe/certified-adapters.mjs'
 import { bootWeb, stopWeb } from './probe/boot.mjs'
 import { launchChrome } from './probe/playwright.mjs'
 import { bootstrapPage, newSession } from './probe/browser.mjs'
@@ -684,7 +684,7 @@ function printSummary(ctx, report) {
   console.log(`mode:        ${ctx.config.mode}${ctx.config.mode === 'isolated' ? ` (isolated DSH_HOME: ${ctx.config.dshHome})` : ' (read-only reuse)'}`)
   console.log(`target:      ${ctx.config.packageName}@${ctx.environment.packageVersion ?? '?'}  plugin id: ${ctx.config.pluginId}`)
   console.log(`environment: dsh ${ctx.environment.dshVersion ?? '?'} · Chrome ${ctx.environment.chromeVersion ?? '?'} · playwright-core ${ctx.environment.playwrightVersion ?? '?'}`)
-  console.log(`scope:       DSH ${ACCEPTANCE_SCOPE.hostVersion} + ${ACCEPTANCE_SCOPE.profile} profile + ${ACCEPTANCE_SCOPE.browser} (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`)
+  console.log(`scope:       DSH ${ctx.config.expectedVersion ?? ctx.environment.dshVersion ?? '?'} + Web profile + Chrome (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`)
   console.log(`result:      ${passed.length} passed, ${failures.length} failed, ${skips.length} skipped, ${warnings.length} warnings`)
   console.log(`evidence:    ${path.relative(WORKSPACE_ROOT, ctx.config.jsonPath)}`)
   if (ctx.config.reportPath) console.log(`report:      ${path.relative(WORKSPACE_ROOT, ctx.config.reportPath)}`)

@@ -6,7 +6,7 @@
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { oneLine, redact, writeJson, writeText } from './util.mjs'
-import { ACCEPTANCE_SCOPE, SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
+import { SUPPORTED_HOST_VERSIONS, adapterForTriple } from './certified-adapters.mjs'
 
 const CHECK_AREA_TITLES = {
   env: 'Environment',
@@ -110,9 +110,9 @@ export function buildProbeReport(ctx) {
     catalogProfile: expectedAdapter?.catalogProfile ?? observedCatalog?.catalogProfile ?? null,
     sourceKind: expectedAdapter?.sourceKind ?? null,
     scope: {
-      hostVersion: ACCEPTANCE_SCOPE.hostVersion,
-      profile: ACCEPTANCE_SCOPE.profile,
-      browser: ACCEPTANCE_SCOPE.browser,
+      hostVersion: ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? null,
+      profile: 'web',
+      browser: 'chrome',
     },
   }
   const matrix = {
@@ -395,7 +395,7 @@ export const PLAN20_ROWS = [
   {
     criterion: 'Desktop / Windows / Edge / native chrome',
     checks: [],
-    note: 'Not-supported for this release line (explicitly not claimed): the narrowed release ships DSH 0.2.1-rc.2 + Web Profile + Chrome only; desktop macOS/Windows and Web Edge are outside the formal matrix scope.',
+    note: 'Not-supported for this release line (explicitly not claimed): Web Profile/Chrome is certified on DSH 0.2.1-rc.2 and 0.2.1-rc.4; DSH 0.2.1-rc.3 Desktop/macOS is covered by separate Electron evidence; Desktop Windows and Web Edge are outside the formal matrix scope.',
   },
 ]
 
@@ -424,7 +424,7 @@ export function renderMarkdown(report, { title } = {}) {
   )
   lines.push('')
   lines.push(
-    `**Scope (explicit):** this run covers DSH ${ACCEPTANCE_SCOPE.hostVersion} + Web Profile + Chrome only. ` +
+    `**Scope (explicit):** this run covers DSH ${report.target?.scope?.hostVersion ?? report.target?.hostVersion ?? report.environment?.dshVersion ?? 'unknown'} + Web Profile + Chrome only. ` +
       'The DSH 0.2.1-rc.3 Desktop/macOS target is covered by separate real-Electron desktop evidence; Windows and Web Edge are not-supported and not claimed.',
   )
   lines.push('')

@@ -805,7 +805,7 @@ async function main() {
   lines.push('')
   lines.push(
     '**Scope (explicit):** this run covers DSH 0.2.1-rc.3 + Desktop Profile + macOS + the real Electron renderer. ' +
-      'Web Profile/Chrome on DSH 0.2.1-rc.2 is covered by separate Web evidence; Windows and Web Edge are not-supported. ' +
+      'Web Profile/Chrome on DSH 0.2.1-rc.2 and 0.2.1-rc.4 is covered by separate Web evidence; Windows and Web Edge are not-supported. ' +
       'The native macOS window shell (traffic lights/leading, vibrancy, Dock/rightbar, OS DPI) is host-owned and outside plugin certification scope.',
   )
   lines.push('')

@@ -8,6 +8,13 @@ into the `0.1.0` entry.
 
 ## [0.1.2] — 2026-10-27
 
+### Added
+
+- Latest DSH `0.2.1-rc.4` Web/Chrome 155 support alongside the already-declared
+  `0.2.1-rc.2` Web and `0.2.1-rc.3` Desktop/macOS adapters. `engines.dsh` now
+  admits the exact allowlist `0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4`; rc.4
+  Desktop is not claimed because no rc.4 Desktop app was available.
+
 ### Fixed
 
 - The global wallpaper atmosphere now sits below host floating surfaces
