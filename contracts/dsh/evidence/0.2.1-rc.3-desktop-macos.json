@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "commit": "898938d765c408a09f820c46596cdb2d5c66a4ae",
+  "tarballSha256": "8af4da38a66aeb75b8e9b30f89614cf95e856d71dcd3c77e9716d10aabfe3489",
+  "tarballBytes": 2147289,
+  "generatedAt": "2026-10-27T03:39:23.627Z",
+  "scope": {
+    "hostVersion": "0.2.1-rc.3",
+    "profile": "desktop",
+    "platform": "macos"
+  },
+  "runs": [
+    {
+      "id": "desktop-electron-macos",
+      "hostVersion": "0.2.1-rc.3",
+      "adapterId": "dsh-0.2.1-rc.3-r1",
+      "tarballSha256": "8af4da38a66aeb75b8e9b30f89614cf95e856d71dcd3c77e9716d10aabfe3489",
+      "summary": {
+        "pass": 27,
+        "fail": 0,
+        "skip": 1,
+        "warn": 0
+      },
+      "report": "contracts/dsh/evidence/reports/desktop-macos-electron.md",
+      "reportSha256": "0e966193ec6890c9ff893d0dc635e1811d65549cd20e0f0ab7677701c8c824ce"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
  *
  * One command proves the shipped plugin works in the real Web profile:
  *
- *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.0.tgz
+ *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.1.tgz
  *   node scripts/acceptance/web.mjs --reuse "http://127.0.0.1:3080/?token=…"   # read-only
  *
  * The isolated path creates its own DSH_HOME under `.tmp/acceptance/`, installs
@@ -132,7 +132,7 @@ function buildKnownLimitations(ctx, adapter) {
   const version = adapter?.hostVersion ?? ctx.config.expectedVersion ?? 'this host'
   const sourceKind = adapter?.sourceKind ?? 'unknown-source'
   const limitations = [
-    `SCOPE — this acceptance covers exactly DSH ${version} + Web Profile + Chrome (the formal-matrix g6-approved entry for this release line). Desktop macOS/Windows and Web Edge are not-supported and are not claimed by this report.`,
+    `SCOPE — this run covers DSH ${version} + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by the separate real-Electron desktop evidence; Windows and Web Edge are not-supported and are not claimed.`,
     `HONEST GAP — docs/design/implementation-plan.md §20 "at least one safe layout capability actually effective" cannot be met on DSH ${version}: the certified adapter (${sourceKind}) exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.`,
     'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → panel config apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).',
     '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
@@ -684,7 +684,7 @@ function printSummary(ctx, report) {
   console.log(`mode:        ${ctx.config.mode}${ctx.config.mode === 'isolated' ? ` (isolated DSH_HOME: ${ctx.config.dshHome})` : ' (read-only reuse)'}`)
   console.log(`target:      ${ctx.config.packageName}@${ctx.environment.packageVersion ?? '?'}  plugin id: ${ctx.config.pluginId}`)
   console.log(`environment: dsh ${ctx.environment.dshVersion ?? '?'} · Chrome ${ctx.environment.chromeVersion ?? '?'} · playwright-core ${ctx.environment.playwrightVersion ?? '?'}`)
-  console.log(`scope:       DSH ${ACCEPTANCE_SCOPE.hostVersion} + ${ACCEPTANCE_SCOPE.profile} profile + ${ACCEPTANCE_SCOPE.browser} (desktop / edge explicitly not-supported)`)
+  console.log(`scope:       DSH ${ACCEPTANCE_SCOPE.hostVersion} + ${ACCEPTANCE_SCOPE.profile} profile + ${ACCEPTANCE_SCOPE.browser} (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`)
   console.log(`result:      ${passed.length} passed, ${failures.length} failed, ${skips.length} skipped, ${warnings.length} warnings`)
   console.log(`evidence:    ${path.relative(WORKSPACE_ROOT, ctx.config.jsonPath)}`)
   if (ctx.config.reportPath) console.log(`report:      ${path.relative(WORKSPACE_ROOT, ctx.config.reportPath)}`)

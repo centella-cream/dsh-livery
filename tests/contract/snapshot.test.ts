@@ -103,7 +103,7 @@ describe('frozen historical contracts', () => {
 })
 
 describe('formal support matrix (0.1.1: Web rc.2 + Desktop rc.3)', () => {
-  it('is the release authority: rc.2 Web/Chrome released + rc.3 Desktop/macOS approved candidate', async () => {
+  it('is the release authority: rc.2 Web/Chrome and rc.3 Desktop/macOS released', async () => {
     const matrix = await readFormalMatrix(workspace)
     expect(validateMatrix(matrix)).toEqual([])
     expect(shippedVersionsFromMatrix(matrix)).toEqual(SHIPPED_VERSIONS)
@@ -122,47 +122,44 @@ describe('formal support matrix (0.1.1: Web rc.2 + Desktop rc.3)', () => {
     const desktop = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.3')!
     expect(desktop.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(desktop.contractHash).toBe((await readContract('0.2.1-rc.3')).contractHash)
-    // g6-approved candidate: generated for the Electron acceptance, not yet a claim.
-    expect(desktop.status).toBe('g6-approved')
-    expect(desktop.evidence).toEqual([])
+    // Promoted after the real Electron acceptance.
+    expect(desktop.status).toBe('released')
+    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json'])
     expect(desktop.browserSupport).toEqual([])
     expect(supportedProfiles(desktop)).toEqual(['desktop.macos'])
     expect(notSupportedProfiles(desktop)).toEqual(['desktop.win32', 'web.chrome', 'web.edge'])
-    expect(desktop.profiles.desktop.macos).toBe('pending')
+    expect(desktop.profiles.desktop.macos).toBe('passed')
     expect(desktop.profiles.desktop.win32).toBe('not-supported')
   })
 
-  it('gates in-scope profiles only: released rc.2 passes, pending rc.3 blocks support/release', async () => {
+  it('gates in-scope profiles only: both released entries pass and pending blocks', async () => {
     const matrix = await readFormalMatrix(workspace)
-    // rc.2: released Web/Chrome claim.
     expect(gateSupportMatrix(matrix, '0.2.1-rc.2').ok).toBe(true)
     expect(gateRelease(matrix, '0.2.1-rc.2').ok).toBe(true)
-    // rc.3: g6-approved candidate with desktop.macos pending → support and release
-    // are blocked until the real Electron acceptance promotes the profile.
-    const support = gateSupportMatrix(matrix, '0.2.1-rc.3')
-    expect(support.ok).toBe(false)
-    expect(support.problems.some((problem) => problem.includes('desktop.macos: certification pending'))).toBe(true)
-    expect(gateRelease(matrix, '0.2.1-rc.3').ok).toBe(false)
+    expect(gateSupportMatrix(matrix, '0.2.1-rc.3').ok).toBe(true)
+    expect(gateRelease(matrix, '0.2.1-rc.3').ok).toBe(true)
     // Historical snapshot is not in the formal matrix and cannot ship.
     expect(gateSupportMatrix(matrix, '0.2.0-rc.2').ok).toBe(false)
     expect(gateRelease(matrix, '0.2.0-rc.2').ok).toBe(false)
 
-    // After acceptance: macos passed + evidence + released → gates pass.
-    const promoted: SupportMatrix = {
+    // Pre-acceptance: pending desktop.macos + no evidence blocks both gates.
+    const pending: SupportMatrix = {
       ...matrix,
       entries: matrix.entries.map((entry) =>
         entry.hostVersion === '0.2.1-rc.3'
           ? {
               ...entry,
-              status: 'released',
-              profiles: { ...entry.profiles, desktop: { macos: 'passed', win32: 'not-supported' } },
-              evidence: ['contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json'],
+              status: 'g6-approved',
+              profiles: { ...entry.profiles, desktop: { macos: 'pending', win32: 'not-supported' } },
+              evidence: [],
             }
           : entry,
       ),
     }
-    expect(gateSupportMatrix(promoted, '0.2.1-rc.3').ok).toBe(true)
-    expect(gateRelease(promoted, '0.2.1-rc.3').ok).toBe(true)
+    const support = gateSupportMatrix(pending, '0.2.1-rc.3')
+    expect(support.ok).toBe(false)
+    expect(support.problems.some((problem) => problem.includes('desktop.macos: certification pending'))).toBe(true)
+    expect(gateRelease(pending, '0.2.1-rc.3').ok).toBe(false)
   })
 
   it('keeps the full historical candidate matrix for the certification trail', async () => {
@@ -179,7 +176,7 @@ describe('formal support matrix (0.1.1: Web rc.2 + Desktop rc.3)', () => {
     const matrix = await readFormalMatrix(workspace)
     const expectedClaims: Record<string, { profiles: string[]; platforms: string[]; browsers: { family: string; minVersion: number }[] }> = {
       '0.2.1-rc.2': { profiles: ['web'], platforms: ['web'], browsers: [{ family: 'chrome', minVersion: 155 }] },
-      '0.2.1-rc.3': { profiles: [], platforms: [], browsers: [] },
+      '0.2.1-rc.3': { profiles: ['desktop'], platforms: ['darwin'], browsers: [] },
     }
     for (const version of SHIPPED_VERSIONS) {
       const contract = await readContract(version)

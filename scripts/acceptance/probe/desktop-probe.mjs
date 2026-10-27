@@ -57,7 +57,7 @@ import {
   readProfileState,
   runDsh,
 } from './dsh-home.mjs'
-import { adapterForVersion, describeAdapter } from './certified-adapters.mjs'
+import { DESKTOP_SCOPE, SUPPORTED_HOST_VERSIONS, adapterForVersion, describeAdapter } from './certified-adapters.mjs'
 import {
   captureScreenshot,
   dismissFirstRunDialogs,
@@ -170,17 +170,6 @@ async function buildEngineNegativeControl(dir) {
 }
 
 async function main() {
-  // Round-15 narrowed release: only DSH 0.2.1-rc.2 + Web Profile + Chrome is
-  // certified/claimed. The desktop probe is historical tooling and must not be
-  // used to claim desktop support for this release line.
-  if (!process.argv.includes('--allow-out-of-scope')) {
-    console.error(
-      'desktop-probe: OUT OF SCOPE — this release line ships DSH 0.2.1-rc.2 + Web Profile + Chrome only; ' +
-        'desktop macOS/Windows and native chrome are not-supported and not claimed. ' +
-        'Pass --allow-out-of-scope only for historical investigation.',
-    )
-    process.exit(2)
-  }
   const options = parseArgs(process.argv.slice(2), {
     booleans: ['keep', 'help'],
     strings: ['tgz', 'out', 'report', 'dsh-home', 'app-bin', 'app-cli', 'profile-mode', 'clone-from', 'user-data-dir'],
@@ -189,7 +178,7 @@ async function main() {
     console.log('usage: node scripts/acceptance/probe/desktop-probe.mjs [--tgz path] [--out dir] [--report md] [--dsh-home /tmp/dsh-livery-desktop-runtime] [--profile-mode minimal|clone] [--clone-from dir]')
     return 0
   }
-  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.0.tgz'))
+  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.1.tgz'))
   const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
   const home = assertIsolatedHome(options['dsh-home'] ?? '/tmp/dsh-livery-desktop-runtime')
@@ -249,7 +238,7 @@ async function main() {
     environment.appCli = appCli
     environment.appVersion = appVersionInfo.stdout.trim() || appVersionInfo.stderr.trim()
     const adapter = adapterForVersion(environment.appVersion)
-    if (!adapter) throw new Error(`desktop runtime version "${environment.appVersion}" is not a certified adapter (certified: 0.2.0-rc.2, 0.2.1-rc.2, 0.2.1-rc.3)`)
+    if (!adapter) throw new Error(`desktop runtime version "${environment.appVersion}" is not a certified adapter (certified: ${SUPPORTED_HOST_VERSIONS.join(', ')})`)
     ctx.config.expectedAdapter = adapter
     ctx.config.expectedVersion = adapter.hostVersion
     environment.expectedAdapter = describeAdapter(adapter)
@@ -290,7 +279,13 @@ async function main() {
       `${install.command} → exit ${install.exitCode} in ${install.durationMs}ms; dependency=${state.dependencies?.['dsh-livery'] ?? '(none)'}; bundles=${JSON.stringify(state.bundles)}; installed@${installedManifest?.version ?? '?'}`,
       { stdout: oneLine(install.stdout, 800), stderr: oneLine(install.stderr, 800) },
     )
-    expect(runner, 'desktop.preview-profiles-installed', 'both compiled catalog profiles ship into the installed package', previewDirs.length >= 2, `${previewDirs.length} preview profile dirs: ${previewDirs.join(', ')}`)
+    expect(
+      runner,
+      'desktop.preview-profiles-installed',
+      'the shared compiled catalog profile ships (both certified adapters share it)',
+      previewDirs.length === 1,
+      `${previewDirs.length} preview profile dir(s): ${previewDirs.join(', ')}`,
+    )
 
     // rc.3 runtime enforces engines.dsh: negative control must be rejected.
     const negativeTgz = await buildEngineNegativeControl('/tmp/dsh-livery-engine-negative')
@@ -783,6 +778,11 @@ async function main() {
       contractHash: ctx.config.expectedAdapter?.contractHash ?? null,
       catalogProfile: ctx.config.expectedAdapter?.catalogProfile ?? null,
       sourceKind: 'packaged-app',
+      scope: {
+        hostVersion: DESKTOP_SCOPE.hostVersion,
+        profile: DESKTOP_SCOPE.profile,
+        platform: DESKTOP_SCOPE.platform,
+      },
     },
     checks: runner.checks,
     artifacts: {
@@ -802,6 +802,12 @@ async function main() {
   lines.push('# Desktop-profile acceptance evidence — DSH Livery on DSH 0.2.1-rc.3 (Electron app runtime)')
   lines.push('')
   lines.push(`Run \`${runId}\` · **${summary.pass} passed / ${summary.fail} failed / ${summary.skip} skipped / ${summary.warn} warnings** · ${report.ok ? 'RESULT: PASS' : 'RESULT: FAIL'}`)
+  lines.push('')
+  lines.push(
+    '**Scope (explicit):** this run covers DSH 0.2.1-rc.3 + Desktop Profile + macOS + the real Electron renderer. ' +
+      'Web Profile/Chrome on DSH 0.2.1-rc.2 is covered by separate Web evidence; Windows and Web Edge are not-supported. ' +
+      'The native macOS window shell (traffic lights/leading, vibrancy, Dock/rightbar, OS DPI) is host-owned and outside plugin certification scope.',
+  )
   lines.push('')
   lines.push('## Environment')
   lines.push('')

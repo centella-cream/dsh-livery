@@ -25,10 +25,12 @@ for (const entry of matrix.entries) {
   if (!Array.isArray(entry.evidence) || entry.evidence.length === 0) fail(`formal matrix entry ${entry.hostVersion} has no evidence`)
 }
 const candidates = matrix.entries.flatMap((entry) => entry.evidence ?? [])
-if (candidates.length !== 1) fail(`expected exactly one evidence file, got ${candidates.length}`)
-try {
-  execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.1.tgz', '--evidence', candidates[0]], { cwd: root, stdio: 'inherit' })
-} catch {
-  fail('candidate artifact / evidence verification failed')
+if (candidates.length === 0) fail('no evidence files in the formal matrix')
+for (const evidence of candidates) {
+  try {
+    execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.1.tgz', '--evidence', evidence], { cwd: root, stdio: 'inherit' })
+  } catch {
+    fail(`candidate artifact / evidence verification failed for ${evidence}`)
+  }
 }
 console.log('prepublish-check: OK stable candidate bytes match committed evidence')

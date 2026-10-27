@@ -1,23 +1,23 @@
 # Acceptance evidence — DSH Livery on DSH 0.2.1-rc.2 (installed-package)
 
-Run `2026-10-27T03-03-43-766Z-isolated` · isolated DSH_HOME · **227 passed / 0 failed / 4 skipped / 5 warnings** · RESULT: PASS
+Run `2026-10-27T03-36-47-430Z-isolated` · isolated DSH_HOME · **228 passed / 0 failed / 4 skipped / 4 warnings** · RESULT: PASS
 
-**Scope (explicit):** DSH 0.2.1-rc.2 + Web Profile + Chrome only. Desktop macOS/Windows and Web Edge are not-supported for this release line and are not claimed by this evidence.
+**Scope (explicit):** this run covers DSH 0.2.1-rc.2 + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by separate real-Electron desktop evidence; Windows and Web Edge are not-supported and not claimed.
 
 ## Environment
 
 | item | value |
 |---|---|
-| date | 2026-10-27T03:05:20.048Z |
+| date | 2026-10-27T03:38:22.753Z |
 | DSH | 0.2.1-rc.2 |
 | Node | v22.23.1 |
 | OS | darwin 27.0.0 (arm64) |
 | Chrome | 155.0.8059.85 (system Chrome via playwright-core, `channel: 'chrome'`) |
 | playwright-core | 1.63.0 |
-| target package | dsh-livery@0.1.0 (`file:dsh-livery-0.1.0.tgz`) |
-| tarball sha256 | bb4265c8c4672514e442a5a3b3383384795a0c729b3650120d912c86715e191a |
-| commit | 51e912532a192cf154c0aa0b4990239626f5ec70 |
-| tarball bytes | 2145755 |
+| target package | dsh-livery@0.1.1 (`file:dsh-livery-0.1.1.tgz`) |
+| tarball sha256 | 8af4da38a66aeb75b8e9b30f89614cf95e856d71dcd3c77e9716d10aabfe3489 |
+| commit | 898938d765c408a09f820c46596cdb2d5c66a4ae |
+| tarball bytes | 2147289 |
 | browser | headless Chrome, viewport 1440×900 |
 
 ## Host identity & certification
@@ -27,23 +27,23 @@ Run `2026-10-27T03-03-43-766Z-isolated` · isolated DSH_HOME · **227 passed / 0
 | host version | 0.2.1-rc.2 | 0.2.1-rc.2 |
 | adapter id | dsh-0.2.1-rc.2-r1 | dsh-0.2.1-rc.2-r1 |
 | contract hash | sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d | sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d |
-| catalog profile | sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50 | sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50 |
+| catalog profile | sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0 | sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0 |
 | platform module table | 11 modules | — (resolved at boot) |
 | package source kind | installed-package | — |
 | BootPayload.profileKind | web | web |
-| previews base | — | /livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/ |
+| previews base | — | /livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/ |
 
-Certified-adapter match: ✅ yes · catalog profile sha256:060e80efd4f5…
+Certified-adapter match: ✅ yes · catalog profile sha256:d369c1f14a8c…
 
 Profile source: byte-clone of `<local>` (isolated copy; source read-only).
 
 ## Boot
 
 ```text
-dsh web: http://127.0.0.1:57393/?token=<redacted>
+dsh web: http://127.0.0.1:59328/?token=<redacted>
 ```
 
-- boot ready: 1.6 s; install via official profile package manager: 982 ms
+- boot ready: 1.3 s; install via official profile package manager: 1.2 s
 
 ## docs/design/implementation-plan.md §20 coverage (Web profile)
 
@@ -90,31 +90,31 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | check | title | result | detail |
 |---|---|---|---|
 | `lifecycle.clone-stock-normalized` | cloned profile start state normalized to stock for a comparable stock→apply matrix | ⚠️ warn | removed the clone's own - id: livery row (previous skinId=sakura); source profile untouched |
-| `lifecycle.profile-cloned` | existing profile byte-cloned into the isolated home (source read-only) | ✅ pass | <local> → .tmp/acceptance/dsh-home/profiles/web (714 ms); deps=dsh-charter, dsh-context, dsh-livery; bundles=@deepseek-ai/dsh-base, @deepseek-ai/dsh-web-app, dsh-context, dsh-charter, dsh-livery |
-| `lifecycle.clone-repaired` | cloned profile needed local dependency-spec repair before install | ⚠️ warn | dsh-charter: file-replaced (file:<local> → file:<local>) |
-| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | dsh plugin --profile web add file:dsh-livery-0.1.0.tgz → exit 0 in 982ms; dependency=file:dsh-livery-0.1.0.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-context","dsh-charter","dsh-livery"] |
-| `lifecycle.install-on-clone` | official install path works against the cloned profile | ✅ pass | profile=.tmp/acceptance/dsh-home/profiles/web; initialized=false; sha256=bb4265c8c4672514e442a5a3b3383384795a0c729b3650120d912c86715e191a |
-| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 1616ms on port 57393; log=.tmp/acceptance/logs/web.log |
+| `lifecycle.profile-cloned` | existing profile byte-cloned into the isolated home (source read-only) | ✅ pass | <local> → .tmp/acceptance/dsh-home/profiles/web (650 ms); deps=dsh-charter, dsh-context, dsh-livery; bundles=@deepseek-ai/dsh-base, @deepseek-ai/dsh-web-app, dsh-context, dsh-charter, dsh-livery |
+| `lifecycle.clone-repaired` | cloned profile manifest needs no local dependency repair | ✅ pass | all local file:/link: specs resolve |
+| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | dsh plugin --profile web add file:dsh-livery-0.1.1.tgz → exit 0 in 1199ms; dependency=file:dsh-livery-0.1.1.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-context","dsh-charter","dsh-livery"] |
+| `lifecycle.install-on-clone` | official install path works against the cloned profile | ✅ pass | profile=.tmp/acceptance/dsh-home/profiles/web; initialized=false; sha256=8af4da38a66aeb75b8e9b30f89614cf95e856d71dcd3c77e9716d10aabfe3489 |
+| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 1316ms on port 59328; log=.tmp/acceptance/logs/web.log |
 | `lifecycle.boot-warnings` | boot log has no skipped-bundle or compatibility warnings | ⚠️ warn | [stderr] dsh: warning: 1 entry did not activate |
-| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=120ms portClosed=true forced=false |
-| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=2062ms |
+| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=104ms portClosed=true forced=false |
+| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=1128ms |
 | `lifecycle.final-stop` | final SIGTERM stops the restarted service and closes the port | ✅ pass | exit=0 portClosed=true forced=false |
 
 ### Boot graph & handshake
 
 | check | title | result | detail |
 |---|---|---|---|
-| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:57393/; navigation 206ms |
-| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=5cc658b2a190 |
+| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:59328/; navigation 134ms |
+| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=a0fd6ed56fcd |
 
 ### Client bundle route
 
 | check | title | result | detail |
 |---|---|---|---|
-| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=5cc658b2a190 → 200 text/javascript; charset=utf-8 (133163 bytes) |
+| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=a0fd6ed56fcd → 200 text/javascript; charset=utf-8 (136777 bytes) |
 | `bundle.requires-rev` | plugin client bundle requires its graph rev | ✅ pass | GET graph URL without rev → 404 |
 | `bundle.canonical-route` | bare /plugins/<pkg>/client.js?rev= route (doc-comment form) | ⚠️ warn | GET /plugins/dsh-livery/client.js?rev=<graph rev> → 404; this DSH build serves only the graph-encoded URL (verified deviation from the doc comment) |
-| `bundle.gzip-budget` | client bundle gzip stays within the 48KB performance budget (host peers excluded) | ✅ pass | 36176 bytes gzip / 133163 bytes raw (budget 49152) |
+| `bundle.gzip-budget` | client bundle gzip stays within the 48KB performance budget (host peers excluded) | ✅ pass | 36391 bytes gzip / 136777 bytes raw (budget 49152) |
 
 ### First-frame handshake
 
@@ -124,10 +124,10 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | `handshake.boot-global` | first-frame handshake is asserted once a livery is configured | ⏭️ skip | initial boot is stock (no rows expected); asserted after the settings apply step |
 | `handshake.echo` | first-frame handshake is asserted once a livery is configured | ⏭️ skip | initial boot is stock (no rows expected); asserted after the settings apply step |
 | `handshake.catalog-url` | first-frame handshake is asserted once a livery is configured | ⏭️ skip | initial boot is stock (no rows expected); asserted after the settings apply step |
-| `handshake.applied-boot` | configured skin boot handshake is accepted with a certified host identity | ✅ pass | post-apply reload: accepted=true hostVersion=0.2.1-rc.2 adapterId=dsh-0.2.1-rc.2-r1 contractHash=sha256:fc5ccff8885ec… catalogProfile=sha256:060e80efd4f55… profileKind=web skinId=fjord cssHash=sha256:cc8551943e49cb054… |
+| `handshake.applied-boot` | configured skin boot handshake is accepted with a certified host identity | ✅ pass | post-apply reload: accepted=true hostVersion=0.2.1-rc.2 adapterId=dsh-0.2.1-rc.2-r1 contractHash=sha256:fc5ccff8885ec… catalogProfile=sha256:d369c1f14a8c0… profileKind=web skinId=fjord cssHash=sha256:cc8551943e49cb054… |
 | `handshake.certified-adapter` | live host matches a certified adapter record (exact version + adapter + contract + catalog profile) | ✅ pass | 0.2.1-rc.2 / dsh-0.2.1-rc.2-r1 / sha256:fc5ccff8885e… / 11-module table / installed-package |
 | `handshake.applied-skin` | configured skin is echoed by the boot handshake | ✅ pass | handshake.skinId=fjord (expected fjord) |
-| `handshake.catalog-identity` | served catalog repeats the exact certified identity of the boot handshake | ✅ pass | 0.2.1-rc.2 / dsh-0.2.1-rc.2-r1 / sha256:fc5ccff8885ec… / sha256:060e80efd4f55… |
+| `handshake.catalog-identity` | served catalog repeats the exact certified identity of the boot handshake | ✅ pass | 0.2.1-rc.2 / dsh-0.2.1-rc.2-r1 / sha256:fc5ccff8885ec… / sha256:d369c1f14a8c0… |
 | `handshake.body-hash-catalog` | body[data-dsh-livery-hash] equals the compiled cssHash from the served catalog | ✅ pass | body hash=sha256:cc8551943e49cb05426880b catalog livery.cssHash=sha256:cc8551943e49cb05426880b |
 | `handshake.hash-equality` | body[data-dsh-livery-hash] equals __DSH_LIVERY_BOOT__.cssHash | ✅ pass | body hash=sha256:cc8551943e49cb05426880b handshake cssHash=sha256:cc8551943e49cb05426880b |
 | `handshake.hash-style-text` | style element text hashes to the advertised css hash | ✅ pass | sha256(style text)=cc8551943e49cb05… body=sha256:cc8551943e49cb054 handshake=sha256:cc8551943e49cb054 |
@@ -140,7 +140,7 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | `trust.no-cookie-401` | browser trust: no cookie 401 | ✅ pass | GET / without cookie → 401 |
 | `trust.wrong-token-rejected` | browser trust: wrong token rejected | ✅ pass | GET /?token=<wrong> → 401 |
 | `trust.token-exchange-303` | browser trust: token exchange 303 | ✅ pass | GET /?token=<launch token> → 303 |
-| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Thu, 26 Nov 2026 03:03:48 GMT; HttpOnly; SameSite=Strict |
+| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Thu, 26 Nov 2026 03:36:51 GMT; HttpOnly; SameSite=Strict |
 | `trust.cookie-200` | browser trust: cookie 200 | ✅ pass | GET / with cookie → 200 |
 | `trust.bad-host-index-refused` | browser trust: bad host index refused | ✅ pass | GET / Host: evil.example (cookie from 127.0.0.1) → 401 (refused; cookie authority mismatch) |
 | `trust.bad-host-api-403` | browser trust: bad host api 403 | ✅ pass | GET /api/__dsh_acceptance_probe__ Host: evil.example → 403 |
@@ -177,7 +177,7 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | check | title | result | detail |
 |---|---|---|---|
 | `catalog.serves-json` | Host serves GET /livery/api/catalog | ✅ pass | status 200, content-type application/json, cache-control no-store |
-| `catalog.schema` | catalog shape carries the certified host identity and catalog profile | ✅ pass | schemaVersion=1 hostVersion=0.2.1-rc.2 adapterId=dsh-0.2.1-rc.2-r1 contractHash=sha256:fc5ccff8885ec… catalogProfile=sha256:060e80efd4f55… previewsBase=/livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/ |
+| `catalog.schema` | catalog shape carries the certified host identity and catalog profile | ✅ pass | schemaVersion=1 hostVersion=0.2.1-rc.2 adapterId=dsh-0.2.1-rc.2-r1 contractHash=sha256:fc5ccff8885ec… catalogProfile=sha256:d369c1f14a8c0… previewsBase=/livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/ |
 | `catalog.certified-identity` | catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple | ✅ pass | 0.2.1-rc.2 / dsh-0.2.1-rc.2-r1 / sha256:fc5ccff8885e… / 11-module table / installed-package |
 | `catalog.cache-control-no-store` | catalog is not cached | ✅ pass | cache-control: no-store |
 | `catalog.gallery-size` | catalog carries at least 24 liveries (style system v2) | ✅ pass | 24 liveries: fjord, plum, amber-dusk, moss, graphite, rice-paper, deep-sea, sakura, midnight, linen, nord, dracula, gruvbox, solarized, catppuccin, tokyo-night, rose-pine, everforest, kanagawa, one-dark, ayu, flexoki, celadon, cinnabar |
@@ -194,20 +194,20 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `previews.assets-served` | all preview SVGs are served as image/svg+xml under the declared catalog-profile base | ✅ pass | 96/96 preview assets HTTP 200 image/svg+xml under /livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/ (24 liveries × zh/en × light/dark) |
+| `previews.assets-served` | all preview SVGs are served as image/svg+xml under the declared catalog-profile base | ✅ pass | 96/96 preview assets HTTP 200 image/svg+xml under /livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/ (24 liveries × zh/en × light/dark) |
 | `previews.unknown-404` | unknown preview asset returns 404 | ✅ pass | unknown file → 404 |
-| `previews.profile-isolation` | previews are served per catalog profile; another profile directory is not exposed | ⏭️ skip | narrowed release ships exactly one certified catalog profile — cross-profile isolation is not applicable |
+| `previews.profile-isolation` | previews are served per catalog profile; another profile directory is not exposed | ⏭️ skip | both certified adapters share exactly one catalog profile — cross-profile isolation is not applicable |
 | `previews.no-404` | no 404 responses for /livery/assets/previews/* | ✅ pass | 0 404 preview response(s) |
 
 ### copy
 
 | check | title | result | detail |
 |---|---|---|---|
-| `copy.selfcheck-labels-zh` | zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.2-r1 协议校验码: fc5ccff8885e 插件版本: 0.1.0 宿主版本: 0.2.1-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50 配置中的视觉风格: stock 实际应用的视觉 |
+| `copy.selfcheck-labels-zh` | zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.2-r1 协议校验码: fc5ccff8885e 插件版本: 0.1.1 宿主版本: 0.2.1-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0 配置中的视觉风格: stock 实际应用的视觉 |
 | `copy.state-strings` | acceptance label constants match the round-12 rewritten copy for the non-happy-path states (unit-covered) | ✅ pass | zh.catalogUnavailable="视觉风格暂时无法加载"; zh.writeRefused="宿主没有保存这套视觉风格。"; en.catalogUnavailable="Visual styles are unavailable right now"; en.writeRefused="The host did not save this visual style." |
-| `copy.selfcheck-labels-zh-active` | zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.2-r1 协议校验码: fc5ccff8885e 插件版本: 0.1.0 宿主版本: 0.2.1-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 宿主能力 10 项中 |
-| `copy.selfcheck-labels` | self-check uses the round-12 plain-language labels | ✅ pass | locale=en; missing=[]; panel=Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.1-rc.2-r1 Contract hash: fc5ccff8885e Plugin: 0.1.0 Host: 0.2.1-rc.2 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b08 |
-| `copy.product-name` | visible product name is DSH Livery (no “Visual Studio” anywhere in the UI) | ✅ pass | footer line1="DSH Livery 0.1.0 · 已适配 DeepSeek Harness 0.2.1-rc.2"; bodyHasDSHLivery=true; bodyHasVisualStudio=false |
+| `copy.selfcheck-labels-zh-active` | zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.2-r1 协议校验码: fc5ccff8885e 插件版本: 0.1.1 宿主版本: 0.2.1-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 宿主能力 10 项中 |
+| `copy.selfcheck-labels` | self-check uses the round-12 plain-language labels | ✅ pass | locale=en; missing=[]; panel=Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.1-rc.2-r1 Contract hash: fc5ccff8885e Plugin: 0.1.1 Host: 0.2.1-rc.2 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719 |
+| `copy.product-name` | visible product name is DSH Livery (no “Visual Studio” anywhere in the UI) | ✅ pass | footer line1="DSH Livery 0.1.1 · 已适配 DeepSeek Harness 0.2.1-rc.2"; bodyHasDSHLivery=true; bodyHasVisualStudio=false |
 | `copy.wallpaper-online-hint` | online card uses the round-12 human hint copy | ✅ pass | online card text=在线壁纸 打开这个标签页会自动加载一批随机壁纸。点“搜索”“随机”或“换一批”才会联网获取新图片。 搜索 随机 换一批 Picsum #10 Picsum #11 |
 | `copy.frost-label` | effect slider keeps the plain 磨砂 (Frost) label | ✅ pass | effects card labels=效果 重置效果 模糊 8 px 变暗 25% 磨砂 35% 全局氛围 30% 让界面表面像磨砂玻璃一样透出壁纸。 0 时壁纸只从透明处透出；调高后，所有页面都会罩上一层壁纸。 |
 
@@ -341,20 +341,20 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | `selfcheck.capabilities` | self-check lists capability availability from the certified adapter contract (incl. host-font-role-hooks on 0.2.1) | ✅ pass | 10 capability row(s): forced-colors=true, host-density-tokens=false, host-font-family=true, host-font-role-hooks=true, host-message-flow=false, host-transcript-width=false, reduced-motion=true, reduced-transparency=true, surface-material=true, theme-css=true |
 | `selfcheck.style-coverage` | self-check reports token coverage with no missing tokens, and the applied style exposes style-token families | ✅ pass | applied=fjord styleFamilies={"shape":6,"elevation":7,"material":0,"border":0} selfCheckMissingTokens=0 |
 | `selfcheck.identity` | self-check shows the live host version, adapter id and contract hash | ✅ pass | panel shows 0.2.1-rc.2 / dsh-0.2.1-rc.2-r1 / fc5ccff8… |
-| `selfcheck.catalog-profile` | self-check shows the catalog profile id | ✅ pass | panel shows 060e80ef… (sha256:060e80efd4f553754718f62…) |
-| `selfcheck.contrast` | self-check reports 0 contrast failures | ✅ pass | contrast failures=0 (panel: Self-check \| Hide self-check \| Startup check \| Loaded \| Adapter: dsh-0.2.1-rc.2-r1 \| Contract hash: fc5ccff8885e \| Plugin: 0.1.0 \| Host: 0.2.1-rc.2 \| Color mode: Light \| Locale: en \| Catalog: Loaded \|) |
+| `selfcheck.catalog-profile` | self-check shows the catalog profile id | ✅ pass | panel shows d369c1f1… (sha256:d369c1f14a8c04e31b44ce3…) |
+| `selfcheck.contrast` | self-check reports 0 contrast failures | ✅ pass | contrast failures=0 (panel: Self-check \| Hide self-check \| Startup check \| Loaded \| Adapter: dsh-0.2.1-rc.2-r1 \| Contract hash: fc5ccff8885e \| Plugin: 0.1.1 \| Host: 0.2.1-rc.2 \| Color mode: Light \| Locale: en \| Catalog: Loaded \|) |
 | `selfcheck.css-safety` | self-check reports 0 !important / 0 hash selectors | ✅ pass | !important=0 hashSelectors=0 (panel: !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0) |
 | `selfcheck.optional-info` | self-check discloses optional capability fallbacks (optional-info line, or a degraded notice on older builds) | ✅ pass | 1 livery-optional-info line(s) |
-| `selfcheck.copy-diagnostics` | copy diagnostics produces diagnostics text | ✅ pass | clipboard 982 byte(s), starts: DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.1.0 适配器：dsh-0.2.1-rc.2-r1 协议校验码：fc5ccff8885e 宿主版本：0.2.1-rc.2 目录分组：sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50 语言：zh 颜色模式：浅色 ## 启动信息 |
+| `selfcheck.copy-diagnostics` | copy diagnostics produces diagnostics text | ✅ pass | clipboard 1423 byte(s), starts: DSH Livery (dsh-livery) diagnostics ## Environment Plugin: 0.1.1 Adapter: dsh-0.2.1-rc.2-r1 Contract hash: fc5ccff8885e Host: 0.2.1-rc.2 Catalog profile: sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88 |
 | `selfcheck.copy-diagnostics-content` | copied diagnostics carry the DSH Livery header + adapter id + contract prefix (engineering ids live in diagnostics, not the About footer) | ✅ pass | adapterId="dsh-0.2.1-rc.2-r1" present=true; contractPrefix="fc5ccff8" present=true; headerDSHLivery=true; noVisualStudio=true |
 
 ### First paint
 
 | check | title | result | detail |
 |---|---|---|---|
-| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 47 rAF sample(s); 0 without attribute/boot style; first sample: {"t":8,"htmlLang":"en","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
+| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 44 rAF sample(s); 0 without attribute/boot style; first sample: {"t":8,"htmlLang":"en","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
 | `firstpaint.first-colour` | the first painted frame already uses the livery background token | ✅ pass | first sample --dsw-alias-bg-base=#f0f3f6 (canonical rgb(240, 243, 246)) vs livery light rgb(240, 243, 246) |
-| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=28ms fcp=44ms dcl=29.19999999552965ms load=133.19999999552965ms |
+| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=28ms fcp=116ms dcl=25.899999998509884ms load=123.20000000298023ms |
 
 ### Presentation layout & card structure
 
@@ -362,7 +362,7 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 |---|---|---|---|
 | `layout.style-2col` | style page uses a two-column card layout (main + rail) at 1440×900 | ✅ pass | tracks=2 [728px 364px]; main={"left":304,"top":162,"width":728,"height":5063}; rail={"left":1052,"top":162,"width":364,"height":232} |
 | `layout.style-cards` | style page renders current-style hero, gallery card, actions rail and self-check card | ✅ pass | cards=livery-current-card:visible(728px), livery-gallery-card:visible(728px), livery-actions-card:visible(364px), livery-selfcheck:visible(364px) |
-| `layout.style-hero-thumb` | current-style hero shows a loaded preview thumbnail | ✅ pass | thumb={"present":true,"visible":true,"tag":"img","src":"/livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/fjord-zh-light.svg","naturalWidth":640,"backgroundImage":"none","width":98,"height":62} |
+| `layout.style-hero-thumb` | current-style hero shows a loaded preview thumbnail | ✅ pass | thumb={"present":true,"visible":true,"tag":"img","src":"/livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/fjord-zh-light.svg","naturalWidth":640,"backgroundImage":"none","width":98,"height":62} |
 | `layout.style-card-surfaces` | style page cards have a visible border and a non-flat surface (background/backdrop/shadow) | ✅ pass | livery-current-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08) \| livery-gallery-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08) \| livery-actions-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899 |
 | `layout.style-no-overflow-1440` | style page has no horizontal overflow at 1440×900 | ✅ pass | scrollWidth=1440 clientWidth=1440 |
 | `layout.style-stacked-1024` | style page stacks to a single column at 1024×800 (rail below main) | ✅ pass | tracks=1 [696px]; main={"left":304,"top":162,"width":696,"height":5010}; rail={"left":304,"top":5191,"width":696,"height":214} |
@@ -379,9 +379,9 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `footer.about-copy` | About footer shows the human two-line copy (product + certified host, then the preview note) | ✅ pass | lines=["DSH Livery 0.1.0 · 已适配 DeepSeek Harness 0.2.1-rc.2", "画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。"] |
+| `footer.about-copy` | About footer shows the human two-line copy (product + certified host, then the preview note) | ✅ pass | lines=["DSH Livery 0.1.1 · 已适配 DeepSeek Harness 0.2.1-rc.2", "画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。"] |
 | `footer.about-lines` | About footer renders its two lines separately (no run-on concatenation) | ✅ pass | display=flex/column gap=4px; tops=333-353 / 357-393 |
-| `footer.about-no-jargon` | About footer carries no contract hash / adapter id / jargon (ids live in diagnostics only) | ✅ pass | footer text="DSH Livery 0.1.0 · 已适配 DeepSeek Harness 0.2.1-rc.2画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。" |
+| `footer.about-no-jargon` | About footer carries no contract hash / adapter id / jargon (ids live in diagnostics only) | ✅ pass | footer text="DSH Livery 0.1.1 · 已适配 DeepSeek Harness 0.2.1-rc.2画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。" |
 
 ### Unified five-step type scale
 
@@ -431,10 +431,10 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | `wallpaper.persistence` | selected wallpaper and effects persist across a hard reload | ✅ pass | global layer attr=true; builtin=aurora; sliders={"blur":12,"dim":40,"frost":55,"atmosphere":60}; stored={"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":55,"atmosphere":60} |
 | `wallpaper.tab-reload` | the wallpaper tab survives a hard reload (sessionStorage mirror) | ✅ pass | reopened=true; wallpaper tab auto-selected after reload=true; overlay=true |
 | `wallpaper.upload-accept` | upload input accepts the documented image MIME set | ✅ pass | accept="image/jpeg,image/png,image/webp,image/avif" |
-| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"kind":"upload","key":"upload-1793070285787-02x4pksb35","blur":12,"dim":40,"frost":55,"atmosphere":60}; error="" |
+| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"kind":"upload","key":"upload-1793072269089-0o7pvdyzyn","blur":12,"dim":40,"frost":55,"atmosphere":60}; error="" |
 | `wallpaper.upload-invalid-type` | a non-image upload is rejected with a validation message | ✅ pass | error="不支持的图片格式。" |
 | `wallpaper.upload-invalid-size` | an upload above the 10 MiB cap is rejected with a validation message | ✅ pass | error="图片超过 10 MiB。" |
-| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"kind":"upload","key":"upload-1793070285787-02x4pksb35","blur":12,"dim":40,"frost":55,"atmosphere":60} |
+| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"kind":"upload","key":"upload-1793072269089-0o7pvdyzyn","blur":12,"dim":40,"frost":55,"atmosphere":60} |
 | `wallpaper.url-validation` | non-https / javascript / data URLs are rejected with a validation message | ✅ pass | http://insecure.test/a.j rejected=true; javascript:alert(1) rejected=true; data:image/svg+xml,<svg/ rejected=true |
 | `wallpaper.url-accepted` | https custom image URLs are accepted and applied through the owned layer | ✅ pass | styleHasUrl=true; attr=; error="" (custom URLs surface no attribution line by design) |
 | `wallpaper.adaptive-cover` | both wallpaper layers stay background-size:cover across 1024×768 / 1920×1080 / 900×1300 | ✅ pass | 1024x768: pseudo=cover, overlay=cover, coverRules=2; 1920x1080: pseudo=cover, overlay=cover, coverRules=2; 900x1300: pseudo=cover, overlay=cover, coverRules=2 |
@@ -479,91 +479,91 @@ dsh web: http://127.0.0.1:57393/?token=<redacted>
 | `residue.stock-tokens` | after uninstall + restart computed tokens equal the stock baseline | ✅ pass | actual=["rgb(255, 255, 255)","rgb(15, 17, 21)","rgba(0, 0, 0, 0.04)"] stock=["rgb(255, 255, 255)","rgb(15, 17, 21)","rgba(0, 0, 0, 0.04)"] |
 | `residue.no-boot-payload` | after uninstall the first-frame handshake global is absent | ✅ pass | window.__DSH_LIVERY_BOOT__=false |
 | `residue.catalog-route` | after uninstall /livery/api/catalog returns 404 | ✅ pass | GET /livery/api/catalog → 404 |
-| `residue.preview-route` | after uninstall /livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/fjord-zh-light.svg returns 404 | ✅ pass | GET /livery/assets/previews/sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50/fjord-zh-light.svg → 404 |
+| `residue.preview-route` | after uninstall /livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/fjord-zh-light.svg returns 404 | ✅ pass | GET /livery/assets/previews/sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0/fjord-zh-light.svg → 404 |
 | `residue.plugin-route` | after uninstall /plugins/dsh-livery/client.js returns 404 | ✅ pass | GET /plugins/dsh-livery/client.js → 404 |
-| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=5cc658b2a190 → 404 |
+| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=a0fd6ed56fcd → 404 |
 | `residue.profile-manifest` | uninstall removes dependency/bundle selection; any stale settings row is documented (not silently ignored) | ✅ pass | profile dependency removed; patch liveryRows=1 skinId=stock |
 
 ## Screenshots
 
 | file | locale | mode | state |
 |---|---|---|---|
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel.png` | zh | light | panel |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery.png` | zh | light | panel-gallery |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-preview-en.png` | zh | light | panel-gallery-preview-en |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-preview-zh.png` | zh | light | panel-gallery-preview-zh |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-search-tag.png` | zh | light | panel-gallery-search-tag |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-search-empty.png` | zh | light | panel-gallery-search-empty |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-previewing.png` | zh | light | panel-previewing |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied.png` | zh | light | panel-applied |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied-preview-en.png` | zh | light | panel-applied-preview-en |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied-after-reload.png` | zh | light | panel-applied-after-reload |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-dark-applied.png` | zh | dark | applied |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-forced-colors.png` | zh | light | forced-colors |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/en-light-panel-applied.png` | en | light | panel-applied |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/en-light-panel-gallery.png` | en | light | panel-gallery |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-selfcheck.png` | zh | light | selfcheck |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-diagnostics-copied.png` | zh | light | panel-diagnostics-copied |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-after-ready.png` | zh | light | applied-after-ready |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-1023.png` | zh | light | applied-1023 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-767.png` | zh | light | applied-767 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-style-1440.png` | zh | light | layout-style-1440 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-style-1024.png` | zh | light | layout-style-1024 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-wallpaper-1440.png` | zh | light | layout-wallpaper-1440 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-wallpaper-1024.png` | zh | light | layout-wallpaper-1024 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-graphite.png` | zh | light | style-graphite |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-graphite-conversation.png` | zh | light | style-graphite-conversation |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-catppuccin.png` | zh | light | style-catppuccin |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-catppuccin-conversation.png` | zh | light | style-catppuccin-conversation |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-rice-paper.png` | zh | light | style-rice-paper |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-rice-paper-conversation.png` | zh | light | style-rice-paper-conversation |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-tokyo-night.png` | zh | light | style-tokyo-night |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-tokyo-night-conversation.png` | zh | light | style-tokyo-night-conversation |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-auto.png` | zh | light | wallpaper-online-auto |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-search.png` | zh | light | wallpaper-online-search |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-retry.png` | zh | light | wallpaper-online-retry |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-applied.png` | zh | light | wallpaper-online-applied |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-builtin.png` | zh | light | wallpaper-builtin |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-atmosphere.png` | zh | light | wallpaper-atmosphere |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-blurred.png` | zh | light | wallpaper-blurred |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-frost.png` | zh | light | wallpaper-frost |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-persisted.png` | zh | light | wallpaper-persisted |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-upload.png` | zh | light | wallpaper-upload |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-upload-persisted.png` | zh | light | wallpaper-upload-persisted |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-custom-url.png` | zh | light | wallpaper-custom-url |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-1024x768.png` | zh | light | wallpaper-resize-1024x768 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-1920x1080.png` | zh | light | wallpaper-resize-1920x1080 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-900x1300.png` | zh | light | wallpaper-resize-900x1300 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-atmosphere-conversation.png` | zh | light | wallpaper-atmosphere-conversation |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png` | zh | light | wallpaper-plugin-atmosphere-0 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png` | zh | light | wallpaper-plugin-atmosphere-60 |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-stock.png` | zh | light | panel-stock |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-stock-after-reload.png` | zh | light | stock-after-reload |
-| `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-stock-post-uninstall.png` | zh | light | stock-post-uninstall |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel.png` | zh | light | panel |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery.png` | zh | light | panel-gallery |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-preview-en.png` | zh | light | panel-gallery-preview-en |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-preview-zh.png` | zh | light | panel-gallery-preview-zh |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-search-tag.png` | zh | light | panel-gallery-search-tag |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-gallery-search-empty.png` | zh | light | panel-gallery-search-empty |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-previewing.png` | zh | light | panel-previewing |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied.png` | zh | light | panel-applied |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied-preview-en.png` | zh | light | panel-applied-preview-en |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-applied-after-reload.png` | zh | light | panel-applied-after-reload |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-dark-applied.png` | zh | dark | applied |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-forced-colors.png` | zh | light | forced-colors |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/en-light-panel-applied.png` | en | light | panel-applied |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/en-light-panel-gallery.png` | en | light | panel-gallery |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-selfcheck.png` | zh | light | selfcheck |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-diagnostics-copied.png` | zh | light | panel-diagnostics-copied |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-after-ready.png` | zh | light | applied-after-ready |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-1023.png` | zh | light | applied-1023 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-applied-767.png` | zh | light | applied-767 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-style-1440.png` | zh | light | layout-style-1440 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-style-1024.png` | zh | light | layout-style-1024 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-wallpaper-1440.png` | zh | light | layout-wallpaper-1440 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-layout-wallpaper-1024.png` | zh | light | layout-wallpaper-1024 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-graphite.png` | zh | light | style-graphite |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-graphite-conversation.png` | zh | light | style-graphite-conversation |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-catppuccin.png` | zh | light | style-catppuccin |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-catppuccin-conversation.png` | zh | light | style-catppuccin-conversation |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-rice-paper.png` | zh | light | style-rice-paper |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-rice-paper-conversation.png` | zh | light | style-rice-paper-conversation |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-tokyo-night.png` | zh | light | style-tokyo-night |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-style-tokyo-night-conversation.png` | zh | light | style-tokyo-night-conversation |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-auto.png` | zh | light | wallpaper-online-auto |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-search.png` | zh | light | wallpaper-online-search |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-retry.png` | zh | light | wallpaper-online-retry |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-online-applied.png` | zh | light | wallpaper-online-applied |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-builtin.png` | zh | light | wallpaper-builtin |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-atmosphere.png` | zh | light | wallpaper-atmosphere |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-blurred.png` | zh | light | wallpaper-blurred |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-frost.png` | zh | light | wallpaper-frost |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-persisted.png` | zh | light | wallpaper-persisted |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-upload.png` | zh | light | wallpaper-upload |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-upload-persisted.png` | zh | light | wallpaper-upload-persisted |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-custom-url.png` | zh | light | wallpaper-custom-url |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-1024x768.png` | zh | light | wallpaper-resize-1024x768 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-1920x1080.png` | zh | light | wallpaper-resize-1920x1080 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-resize-900x1300.png` | zh | light | wallpaper-resize-900x1300 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-atmosphere-conversation.png` | zh | light | wallpaper-atmosphere-conversation |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png` | zh | light | wallpaper-plugin-atmosphere-0 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png` | zh | light | wallpaper-plugin-atmosphere-60 |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-panel-stock.png` | zh | light | panel-stock |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-stock-after-reload.png` | zh | light | stock-after-reload |
+| `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/screens/0.2.1-rc.2-web-chrome/zh-light-stock-post-uninstall.png` | zh | light | stock-post-uninstall |
 
 ## Artifacts
 
-- probe: `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/probe.json`
-- console/network: `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/console.json`
-- timings: `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/timings.json`
-- filmstrip frames: `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/filmstrip` (17 frames)
-- HTML snapshots: `artifacts/acceptance/pkg-0.1.0-r29/web-real-profile-clone/html`
+- probe: `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/probe.json`
+- console/network: `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/console.json`
+- timings: `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/timings.json`
+- filmstrip frames: `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/filmstrip` (10 frames)
+- HTML snapshots: `artifacts/acceptance/pkg-0.1.1-r1/web-real-profile-clone/html`
 
 ## Lifecycle
 
 | step | result |
 |---|---|
-| SIGTERM stop before uninstall | exit 0, port closed: true, 120 ms |
-| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 2.1 s |
-| fresh boot after uninstall | ready in 1.8 s, port 57532 |
+| SIGTERM stop before uninstall | exit 0, port closed: true, 104 ms |
+| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 1.1 s |
+| fresh boot after uninstall | ready in 2.1 s, port 59453 |
 | residue sweep (boot graph / DOM / routes / tokens) | see residue checks above |
 | final SIGTERM | exit 0, port closed: true |
 
 ## Deviations / known limitations
 
-- SCOPE — this acceptance covers exactly DSH 0.2.1-rc.2 + Web Profile + Chrome (the formal-matrix g6-approved entry for this release line). Desktop macOS/Windows and Web Edge are not-supported and are not claimed by this report.
+- SCOPE — this run covers DSH 0.2.1-rc.2 + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by the separate real-Electron desktop evidence; Windows and Web Edge are not-supported and are not claimed.
 - HONEST GAP — docs/design/implementation-plan.md §20 "at least one safe layout capability actually effective" cannot be met on DSH 0.2.1-rc.2: the certified adapter (installed-package) exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.
 - Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → panel config apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).
 - §18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.
@@ -610,13 +610,13 @@ First paint timings:
 
 ```json
 {
-  "timeOrigin": 1793070252322.9,
-  "responseStart": 2.7999999970197678,
-  "domContentLoaded": 29.19999999552965,
-  "load": 133.19999999552965,
+  "timeOrigin": 1793072236072.2,
+  "responseStart": 2.5,
+  "domContentLoaded": 25.899999998509884,
+  "load": 123.20000000298023,
   "firstPaint": 28,
-  "firstContentfulPaint": 44,
-  "duration": 133.19999999552965
+  "firstContentfulPaint": 116,
+  "duration": 123.20000000298023
 }
 ```
 
@@ -628,44 +628,44 @@ Lifecycle:
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 120,
+    "shutdownMs": 104,
     "forceKilled": false,
-    "port": 57393,
+    "port": 59328,
     "portClosed": true,
-    "portClosedWaitedMs": 0,
+    "portClosedWaitedMs": 1,
     "logPath": ".tmp/acceptance/logs/web.log",
-    "logTail": "[stderr] dsh: warning: 1 entry did not activate\ndsh-vscode-bridge (dsh-vscode-bridge): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dsh-vscode-bridge' imported from .tmp/acceptance/dsh-home/profiles/web/\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)\n    at packageResolve (node:internal/modules/esm/resolve:768:81)\n    at moduleResolve (node:internal/modules/esm/resolve:855:18)\n    at defaultResolve (node:internal/modules/esm/resolve:985:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at file://<local>    at adapted (file://<local>)\n    at file://<local>    at ModuleLoader.wrapped [as resolve] (file://<local>)\ndsh web: http://127.0.0.1:57393/?token=<redacted>\n"
+    "logTail": "[stderr] dsh: warning: 1 entry did not activate\ndsh-vscode-bridge (dsh-vscode-bridge): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dsh-vscode-bridge' imported from .tmp/acceptance/dsh-home/profiles/web/\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)\n    at packageResolve (node:internal/modules/esm/resolve:768:81)\n    at moduleResolve (node:internal/modules/esm/resolve:855:18)\n    at defaultResolve (node:internal/modules/esm/resolve:985:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at file://<local>    at adapted (file://<local>)\n    at file://<local>    at ModuleLoader.wrapped [as resolve] (file://<local>)\ndsh web: http://127.0.0.1:59328/?token=<redacted>\n"
   },
   "uninstall": {
     "phase": "uninstall",
     "command": "dsh plugin --profile web remove dsh-livery",
-    "startedAt": "2026-10-27T03:05:16.751Z",
+    "startedAt": "2026-10-27T03:38:19.196Z",
     "exitCode": 0,
     "signal": null,
     "timedOut": false,
-    "durationMs": 2062,
-    "stdout": "? Verifying lockfile against supply-chain policies (7 entries)...\n✓ Lockfile passes supply-chain policies (7 entries in 1.7s)\nLockfile is up to date, resolution step is skipped\nPackages: +7 -1\n+++++++-\nProgress: resolved 7, reused 7, downloaded 0, added 7, done\n\ndependencies:\n- dsh-livery file:dsh-livery-0.1.0.tgz\n\nDone in 1.9s using pnpm v12.3.4\n",
+    "durationMs": 1128,
+    "stdout": "? Verifying lockfile against supply-chain policies (7 entries)...\n✓ Lockfile passes supply-chain policies (7 entries in 737ms)\nLockfile is up to date, resolution step is skipped\nPackages: +7 -1\n+++++++-\nProgress: resolved 7, reused 7, downloaded 0, added 7, done\n\ndependencies:\n- dsh-livery file:dsh-livery-0.1.1.tgz\n\nDone in 995ms using pnpm v12.3.4\n",
     "stderr": "",
     "dependencyPresent": false,
     "bundleSelected": false
   },
   "postUninstallBoot": {
-    "url": "http://127.0.0.1:57532/?token=0ejYFEqMT3UZ1Kh-zKQnjaLKy8s4nsqUY_vo6TCBvPk",
-    "baseUrl": "http://127.0.0.1:57532",
-    "port": 57532,
-    "readyMs": 1819
+    "url": "http://127.0.0.1:59453/?token=A36XgWfnsIwTLlGoG-Of5PRwmZ2mpGWg0_ayHJZ9QfM",
+    "baseUrl": "http://127.0.0.1:59453",
+    "port": 59453,
+    "readyMs": 2121
   },
   "stopAfterResidue": {
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 144,
+    "shutdownMs": 95,
     "forceKilled": false,
-    "port": 57532,
+    "port": 59453,
     "portClosed": true,
-    "portClosedWaitedMs": 0,
+    "portClosedWaitedMs": 1,
     "logPath": ".tmp/acceptance/logs/web-post-uninstall.log",
-    "logTail": "[stderr] dsh: warning: 1 entry did not activate\ndsh-vscode-bridge (dsh-vscode-bridge): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dsh-vscode-bridge' imported from .tmp/acceptance/dsh-home/profiles/web/\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)\n    at packageResolve (node:internal/modules/esm/resolve:768:81)\n    at moduleResolve (node:internal/modules/esm/resolve:855:18)\n    at defaultResolve (node:internal/modules/esm/resolve:985:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at file://<local>    at adapted (file://<local>)\n    at file://<local>    at ModuleLoader.wrapped [as resolve] (file://<local>)\ndsh web: http://127.0.0.1:57532/?token=<redacted>\n"
+    "logTail": "[stderr] dsh: warning: 1 entry did not activate\ndsh-vscode-bridge (dsh-vscode-bridge): failed to import: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dsh-vscode-bridge' imported from .tmp/acceptance/dsh-home/profiles/web/\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)\n    at packageResolve (node:internal/modules/esm/resolve:768:81)\n    at moduleResolve (node:internal/modules/esm/resolve:855:18)\n    at defaultResolve (node:internal/modules/esm/resolve:985:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:747:20)\n    at ModuleLoader.resolve (node:internal/modules/esm/loader:724:38)\n    at file://<local>    at adapted (file://<local>)\n    at file://<local>    at ModuleLoader.wrapped [as resolve] (file://<local>)\ndsh web: http://127.0.0.1:59453/?token=<redacted>\n"
   }
 }
 ```

@@ -13,15 +13,22 @@
  */
 
 /**
- * The single shipped/certified host build for this release line:
- * DSH 0.2.1-rc.2 + Web Profile + Chrome (formal matrix g6-approved).
- * Desktop macOS/Windows and Web Edge are explicitly not-supported and are not
- * claimed by this harness.
+ * Dual-scope release: DSH 0.2.1-rc.2 on the Web Profile/Chrome, and
+ * DSH 0.2.1-rc.3 on the Desktop Profile/macOS (real Electron renderer).
+ * Both certified adapters share the same 0.1.1 catalog profile.
+ * Windows and Web Edge are not-supported and are not claimed.
  */
 export const ACCEPTANCE_SCOPE = Object.freeze({
   hostVersion: '0.2.1-rc.2',
   profile: 'web',
   browser: 'chrome',
+})
+
+/** Desktop-profile evidence scope (rc.3 Electron renderer on macOS). */
+export const DESKTOP_SCOPE = Object.freeze({
+  hostVersion: '0.2.1-rc.3',
+  profile: 'desktop',
+  platform: 'macos',
 })
 
 const CAPABILITIES_021 = Object.freeze({
@@ -37,16 +44,26 @@ const CAPABILITIES_021 = Object.freeze({
   'host-font-role-hooks': true,
 })
 
-/** Every certified host build for the narrowed release (exactly one). */
+/** Every certified host build for this release (both share one catalog profile). */
 export const CERTIFIED_ADAPTERS = Object.freeze([
   Object.freeze({
     hostVersion: '0.2.1-rc.2',
     adapterId: 'dsh-0.2.1-rc.2-r1',
     contractHash: 'sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d',
-    catalogProfile: 'sha256:060e80efd4f553754718f622d840af24bf2ccd8e60f679e35eba93b084c2cc50',
+    catalogProfile: 'sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',
+    capabilities: CAPABILITIES_021,
+  }),
+  Object.freeze({
+    hostVersion: '0.2.1-rc.3',
+    adapterId: 'dsh-0.2.1-rc.3-r1',
+    contractHash: 'sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60',
+    catalogProfile: 'sha256:d369c1f14a8c04e31b44ce3922b09d4583e7e88164a0bbae342dec719201b8a0',
+    nodeRange: '^24.21.0',
+    platformModules: 11,
+    sourceKind: 'packaged-app',
     capabilities: CAPABILITIES_021,
   }),
 ])
@@ -67,7 +84,7 @@ export function adapterForContractHash(contractHash) {
   return CERTIFIED_ADAPTERS.find((adapter) => adapter.contractHash === contractHash)
 }
 
-/** Catalog profiles other than this one (empty in the narrowed single-profile release). */
+/** Catalog profiles other than this one (empty: both adapters share one profile). */
 export function otherCatalogProfiles(catalogProfile) {
   return [...new Set(CERTIFIED_ADAPTERS.map((adapter) => adapter.catalogProfile))].filter((profile) => profile !== catalogProfile)
 }
