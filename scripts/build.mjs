@@ -82,7 +82,7 @@ async function buildHost() {
     logLevel: 'warning',
     external: ['@deepseek-ai/dsh-app-boot'],
     banner: {
-      js: `// dsh-livery host plugin — ESM, Node ${process.version}. Built ${new Date(0).toISOString()} from a clean tree.`,
+      js: '// dsh-livery host plugin — ESM, built deterministically from a clean tree.',
     },
   })
   console.log('build: lib/index.js')
