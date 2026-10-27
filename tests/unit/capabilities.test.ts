@@ -43,8 +43,8 @@ describe('adapter capability maps', () => {
   })
 
   it('ships exactly the formal-matrix approved host build while keeping historical fixtures', () => {
-    // Generated ADAPTERS is the shipped set only (0.1.2: Web rc.2 + Desktop rc.3).
-    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2', '0.2.1-rc.3'])
+    // Generated ADAPTERS is the shipped set only (0.1.2: Web rc.2/rc.4 + Desktop rc.3).
+    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4'])
     // The historical fixtures stay version-explicit for derivation/render tests.
     expect(ADAPTER_020.hostVersion).toBe('0.2.0-rc.2')
     expect(ADAPTER_021_RC2.hostVersion).toBe('0.2.1-rc.2')

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-25T03:55:00.000Z",
+  "updatedAt": "2026-10-27T08:06:30.352Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
@@ -119,6 +119,28 @@
         "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning \u2014 boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
         "NOT verified / not claimed: actual Electron window rendering, native caption/traffic lights, frame clearance, DPI and vibrancy. desktop.macos stays pending; no G6/release claim.",
         "G6 not claimed."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.4",
+      "adapterId": "dsh-0.2.1-rc.4-r1",
+      "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
+      "status": "draft",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "pending"
+        }
+      },
+      "browserSupport": [],
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "Contract snapshot frozen; waiting for certification evidence."
       ]
     }
   ]

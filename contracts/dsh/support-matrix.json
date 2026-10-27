@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-27T03:42:00.000Z",
+  "updatedAt": "2026-10-27T08:20:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -57,6 +57,38 @@
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
         "Desktop Windows, Web Edge and other DSH builds are not-supported."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.4",
+      "adapterId": "dsh-0.2.1-rc.4-r1",
+      "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
+      "status": "released",
+      "profiles": {
+        "desktop": {
+          "macos": "not-supported",
+          "win32": "not-supported"
+        },
+        "web": {
+          "chrome": "passed",
+          "edge": "not-supported"
+        }
+      },
+      "browserSupport": [
+        {
+          "family": "chrome",
+          "minVersion": 155
+        }
+      ],
+      "clientTarget": "chrome120",
+      "evidence": [
+        "contracts/dsh/evidence/0.2.1-rc.4-web-chrome.json"
+      ],
+      "notes": [
+        "DSH 0.2.1-rc.4 + Web Profile + Chrome 155 only; latest DSH next-channel host.",
+        "Desktop macOS/Windows and Web Edge are not-supported support boundaries for this host build; no Desktop rc.4 app was available for certification.",
+        "Only unsupported DSH builds are rejected at install/runtime and fail closed to stock.",
+        "clientTarget chrome120 records the build target, not a browser certification claim."
       ]
     }
   ]
