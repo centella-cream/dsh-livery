@@ -1,3 +1,8 @@
+> **Historical archive.** This document is preserved for engineering history and
+> is not authoritative. Current documentation starts at
+> [`docs/README.md`](../README.md); current support is defined by
+> [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+
 # DSH host-side plugin contract: 0.2.0-rc.2
 
 A detailed contract for a third-party DSH plugin ("livery"). Every claim cites `path:line`; unverified claims

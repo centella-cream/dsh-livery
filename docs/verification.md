@@ -1,5 +1,17 @@
 # Verification
 
+**Release `0.1.2` — published 2026-10-27.** Exact artifact:
+
+```text
+dsh-livery-0.1.2.tgz
+sha256 0899b94bba55586cdbe2f4ba0d9ace88bf492ab866920aca72cbaea5b23db82c
+2,151,426 bytes · 165 files
+```
+
+- npm: `dsh-livery@0.1.2` (`latest`)
+- GitHub release: https://github.com/centella-cream/dsh-livery/releases/tag/v0.1.2
+- release commit/tag: `d6bb34c1373ad68047e0812d7797c46b76f10b05` / `v0.1.2`
+
 **Release scope for 0.1.2 (limited release):**
 
 | Host | Profile / platform | Runtime | Status |

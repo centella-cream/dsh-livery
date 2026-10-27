@@ -255,8 +255,8 @@ Commits are one concise line (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
 ## Documentation
 
 - [Docs index](docs/README.md)
-- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version](docs/design/multi-version.md) · [visual system v2](docs/design/visual-system-v2.md) · [implementation plan](docs/design/implementation-plan.md)
-- Research: [host contract](docs/research/host-contract.md) · [client contract](docs/research/client-contract.md) · [design references](docs/research/design-references.md)
+- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [multi-version policy](docs/design/multi-version.md)
+- Research: [design references](docs/research/design-references.md)
 - [Verification summary](docs/verification.md)
 
 ## License

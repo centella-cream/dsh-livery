@@ -1,3 +1,8 @@
+> **Historical archive.** This document is preserved for engineering history and
+> is not authoritative. Current documentation starts at
+> [`docs/README.md`](../README.md); current support is defined by
+> [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+
 # DSH Livery visual system (unreleased 0.1.0) — compatibility, wallpaper, gallery UX (rounds 7-13)
 
 Frozen design for the user-feedback round. Three product changes plus a README

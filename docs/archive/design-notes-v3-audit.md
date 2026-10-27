@@ -1,3 +1,8 @@
+> **Historical archive.** This document is preserved for engineering history and
+> is not authoritative. Current documentation starts at
+> [`docs/README.md`](../README.md); current support is defined by
+> [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+
 # 皮肤引擎 v3 设计笔记
 
 本文记录对旧皮肤插件的审计结论和 v3 设计方案。审计覆盖三个方面：插件本体、宿主契约和第三方生态。文中的代码名、字段和路径都是当时的设计草案，不代表当前实现。

@@ -216,8 +216,8 @@ Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收（Node 24.21.0
 ## 文档
 
 - [文档索引](docs/README.md)
-- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本](docs/design/multi-version.md) · [视觉系统 v2](docs/design/visual-system-v2.md) · [实现计划](docs/design/implementation-plan.md)
-- 研究：[宿主契约](docs/research/host-contract.md) · [客户端契约](docs/research/client-contract.md) · [设计参考](docs/research/design-references.md)
+- 设计：[接口](docs/design/interfaces.md) · [风格系统](docs/design/style-system.md) · [多版本策略](docs/design/multi-version.md)
+- 研究：[设计参考](docs/research/design-references.md)
 - [验收摘要](docs/verification.md)
 
 ## 许可

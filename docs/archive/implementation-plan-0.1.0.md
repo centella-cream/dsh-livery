@@ -1,3 +1,8 @@
+> **Historical archive.** This document is preserved for engineering history and
+> is not authoritative. Current documentation starts at
+> [`docs/README.md`](../README.md); current support is defined by
+> [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+
 > **Status note (2026-10-27):** this document is the original implementation plan.
 > The shipped 0.1.0 limited release supports only DSH `0.2.1-rc.2` + Web Profile +
 > Chrome 155 + Node 22.23.1. Desktop macOS/Windows and Web Edge are
@@ -47,9 +52,9 @@ DSH Livery 的目标是一套受宿主契约约束的样式渲染系统，覆盖
 
 ## 2. 参考内容分析
 
-### 2.1 `design-notes.md`
+### 2.1 `design-notes-v3-audit.md`
 
-[设计审计](design-notes.md) 对旧实现的问题判断是正确的，后续实现应保留这些结论：
+[设计审计](design-notes-v3-audit.md) 对旧实现的问题判断是正确的，后续实现应保留这些结论：
 
 - 每个皮肤必须同时提供 light/dark 两种形态。
 - 激活时只加载一份皮肤 CSS，不能让全部皮肤常驻。

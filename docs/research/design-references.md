@@ -1,6 +1,8 @@
-# Design references: the 24-style set (round 5)
+# Design references: the 24-style set
 
-The round-5 set keeps the 10 original ids (retuned for the new style system) and
+> **Status (0.1.2):** current attribution record for the 24 shipped styles.
+
+The set keeps the 10 original ids (retuned for the new style system) and
 adds 14: 12 palettes inspired by open-source themes plus 2 original
 Chinese-aesthetic designs (青瓷/朱砂). The open-source palettes are used as *colour
 inspiration* under their permissive licences. No source code, images, fonts or

@@ -1,3 +1,8 @@
+> **Historical archive.** This document is preserved for engineering history and
+> is not authoritative. Current documentation starts at
+> [`docs/README.md`](../README.md); current support is defined by
+> [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+
 # DSH 0.2.0-rc.2 theme tokens & public hooks
 
 Authoritative inventory for the `dsh-livery` theme work: 403 tokens and 601 declarations. All values were extracted from the installed `@deepseek-ai/dsh-client-ui-theme` 0.2.0-rc.2 bundle and checked declaration by declaration against it (807 checks, 0 failures). The raw extraction caches (`tokens.json`, `public-hooks.json`, pretty-printed sheets and extraction scripts) are local research artifacts and are intentionally not committed; the numbers below are the reviewed result.
