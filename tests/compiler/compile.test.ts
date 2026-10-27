@@ -65,12 +65,12 @@ describe('compileCatalog — shipped adapters only', () => {
   it('compiles one catalog per distinct catalogProfile for the shipped adapter set', () => {
     expect(first.problems, JSON.stringify(first.problems, null, 2)).toEqual([])
     expect(first.ok).toBe(true)
-    // Generated adapters are filtered by the formal support matrix: only the
-    // approved 0.2.1-rc.2 adapter is shipped (historical snapshots stay on disk).
+    // Generated adapters are filtered by the formal support matrix: the 0.1.1
+    // release line ships Web rc.2 + Desktop rc.3 (historical 0.2.0 stays on disk).
     const groups = groupAdaptersByProfile(ADAPTERS)
     expect(first.profileCount).toBe(groups.length)
     expect(first.adapterCount).toBe(ADAPTERS.length)
-    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2'])
+    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2', '0.2.1-rc.3'])
     expect(first.profiles.map((profile) => profile.profile.profileId)).toEqual(groups.map((group) => group.profileId))
     for (const group of groups) {
       const compiled = profileById(group.profileId)
@@ -84,12 +84,17 @@ describe('compileCatalog — shipped adapters only', () => {
 
   it('ships only formal-matrix approved adapters (historical versions are not generated)', () => {
     expect(adapterForVersion('0.2.1-rc.2')?.adapterId).toBe('dsh-0.2.1-rc.2-r1')
+    expect(adapterForVersion('0.2.1-rc.3')?.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(adapterForVersion('0.2.0-rc.2')).toBeUndefined()
-    expect(adapterForVersion('0.2.1-rc.3')).toBeUndefined()
-    expect(ADAPTERS).toHaveLength(1)
-    expect(DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.2')
-    // The shipped adapter still points at a committed contract snapshot.
-    expect(DEFAULT_ADAPTER.contractHash).toMatch(/^sha256:[0-9a-f]{64}$/u)
+    expect(ADAPTERS).toHaveLength(2)
+    expect(DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.3')
+    // Both shipped adapters point at committed contract snapshots.
+    for (const adapter of ADAPTERS) expect(adapter.contractHash).toMatch(/^sha256:[0-9a-f]{64}$/u)
+    // 0.2.1-rc.2 and rc.3 share the render-affecting token contract → one profile.
+    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.3')?.catalogProfile)
+    expect(first.profileCount).toBe(1)
+    expect(first.profiles[0]?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3'])
+    expect(first.profiles[0]?.report.gates.adapterRenderIdentity).toBe(true)
   })
 
   it('pins the shipped profile to its exact host token contract', () => {

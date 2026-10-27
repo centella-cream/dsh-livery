@@ -34,7 +34,7 @@ import { makeCatalog, TEST_ADAPTER } from './fixtures.js'
 const IDENTITY = {
   adapterId: TEST_ADAPTER.adapterId,
   contractHash: TEST_ADAPTER.contractHash,
-  pluginVersion: '0.1.0',
+  pluginVersion: '0.1.1',
   hostVersion: TEST_ADAPTER.hostVersion,
 }
 

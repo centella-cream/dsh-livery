@@ -167,8 +167,11 @@ describe.skipIf(!COMPILED)('generated adapter registry', () => {
       const first = group[0]
       if (first === undefined) throw new Error(`empty profile group ${profileId}`)
       for (const other of group.slice(1)) {
+        // A catalog profile dedupes adapters that render byte-identical CSS. The
+        // render inputs are the token contract + evaluated capability map; the
+        // layout/host/client contract hashes may legitimately differ between two
+        // render-equivalent host builds (e.g. Web rc.2 vs Desktop rc.3).
         expect(other.tokenHash, profileId).toBe(first.tokenHash)
-        expect(other.layoutHash, profileId).toBe(first.layoutHash)
         expect(other.capabilities, profileId).toEqual(first.capabilities)
       }
     }

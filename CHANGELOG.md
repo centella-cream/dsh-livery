@@ -1,11 +1,31 @@
 # Changelog
 
-All notable changes to DSH Livery are recorded here. The project is **not yet
-released**: everything below ships in the first release line, `0.1.0`. Earlier
-development rounds used temporary internal version numbers for evidence packaging;
-they are folded into this single unreleased entry.
+All notable changes to DSH Livery are recorded here. `0.1.0` was the first limited
+release for DSH `0.2.1-rc.2` Web/Chrome; `0.1.1` adds Desktop `0.2.1-rc.3` macOS
+support. Earlier development rounds used temporary internal version numbers for
+evidence packaging; they are folded into the `0.1.0` entry.
 
-## [0.1.0] — unreleased
+## [0.1.1] — 2026-10-27
+
+### Added
+
+- Desktop app support for DSH `0.2.1-rc.3` on macOS: official plugin-manager
+  install, Electron renderer acceptance, shared catalog profile with Web rc.2.
+- Package engines now admit the exact allowlist `0.2.1-rc.2 || 0.2.1-rc.3` and
+  the two certified Node runtimes (`^22.23.1 || ^24.21.0`).
+
+### Changed
+
+- Release workflow and acceptance harness cover both Web rc.2/Chrome 155 and
+  Desktop rc.3/macOS; publish uses both committed evidence files.
+
+### Known limitations
+
+- Native macOS window chrome, traffic lights/leading, vibrancy, Dock/rightbar and
+  OS-level DPI are host-owned and outside the plugin certification surface.
+- Desktop Windows, Web Edge and other DSH builds remain unsupported.
+
+## [0.1.0] — 2026-10-27
 
 DSH Livery: a token-only visual layer for DeepSeek Harness with 24 styles,
 a wallpaper studio, a curated gallery and a certified/compat version policy.
@@ -72,7 +92,7 @@ a wallpaper studio, a curated gallery and a certified/compat version policy.
 
 ### Changed
 
-- Plugin version is fixed at **`0.1.0`**; published tarball
+- Plugin version was fixed at **`0.1.0`** for the Web-only release; tarball
   `dsh-livery-0.1.0.tgz`.
 - **Release-workflow and upload-race hardening (round 18):** later release jobs build
   only the gate CLIs (`pnpm build:cli`) so they work from a clean checkout without

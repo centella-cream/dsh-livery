@@ -2,18 +2,18 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
-[![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#宿主支持与版本策略)
+[![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#宿主支持与版本策略)
 
 > **让你的 DSH 更赏心悦目，让每次使用都焕发生机。**
 
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.0 有限发布。** 仅支持 DSH `0.2.1-rc.2` + Web Profile + Chrome 155。
-> Desktop macOS/Windows 与 Web Edge 不在支持范围内，不提供保证；其他 DSH 版本会在安装/运行时
-> 被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝
-> 不匹配的字节。
+> **发布状态：0.1.1 有限发布。** 仅支持：DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1，
+> 以及 DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。Desktop Windows、
+> Web Edge 和其他 DSH 版本不在支持范围内；其他 DSH 版本会在安装/运行时被拒绝并回退 stock。
+> 发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝不匹配的字节。
 
 [English](README.md) · 中文
 
@@ -73,38 +73,36 @@
 
 ## 宿主支持与版本策略
 
-`engines.dsh` 是精确版本 **`0.2.1-rc.2`**。这一发布线的支持范围刻意收窄：
+`engines.dsh` 是精确允许列表 **`0.2.1-rc.2 || 0.2.1-rc.3`**。支持范围刻意收窄：
 
-| 范围 | 取值 |
-|---|---|
-| DSH 版本 | 仅 `0.2.1-rc.2` |
-| Profile | Web Profile |
-| 浏览器 | Chrome 155（唯一认证版本；其他 Chrome 版本不保证） |
-| Desktop macOS/Windows、Web Edge | 不支持、不保证；同版本 Desktop/Edge 可能加载，但不在认证范围内 |
-| 其他 DSH 版本 | 不支持；安装/运行时会被拒绝并回退 stock |
+| 宿主 | Profile / 平台 | 运行时 | 状态 |
+|---|---|---|---|
+| DSH `0.2.1-rc.2` | Web Profile，Chrome 155 | Node 22.23.1 | 已认证 |
+| DSH `0.2.1-rc.3` | Desktop 应用，macOS | Electron/Node 24.21.0 | 已认证渲染器表面 |
+| Desktop Windows、Web Edge、其他 DSH 版本 | — | — | 不支持、不保证 |
 
-没有兼容模式。其他宿主版本会在安装时被拒绝，运行时不匹配的 payload / preview 也会被拒绝。
-Profile 和浏览器是支持边界，不是运行时门禁：同一 DSH 版本下的 Desktop/Edge 可能加载，但不在认证
-范围内，不提供保证。可被机器检查的正式范围在仓库的 `contracts/dsh/support-matrix.json`；验收证据见
-[docs/verification.md](docs/verification.md)。
+没有兼容模式。其他 DSH 版本会在安装时被拒绝，运行时 fail closed。Desktop 认证覆盖插件安装、启动、
+渲染器、设置/画廊、持久化和首帧握手；macOS 原生窗口装饰、红绿灯/leading、vibrancy、Dock/rightbar
+和系统级 DPI 属于宿主所有，不在插件认证范围内。可被机器检查的正式范围在
+`contracts/dsh/support-matrix.json`；验收证据见 [docs/verification.md](docs/verification.md)。
 
 ## 安装
 
-已发布包：[`dsh-livery@0.1.0`](https://www.npmjs.com/package/dsh-livery)。
+已发布包：[`dsh-livery@0.1.1`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile（CLI）
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.0
+dsh plugin --profile web add dsh-livery@0.1.1
 dsh web                                 # 打开命令输出的地址
 ```
 
 ### Desktop 应用
 
 Desktop 应用通过插件管理器安装：**Settings → Plugins → Install by package name**，
-输入 `dsh-livery@0.1.0`。本版本只认证 Web/Chrome；当前 Desktop 运行时
-（`0.2.1-rc.3`）不满足本包的 `engines.dsh`（`0.2.1-rc.2`），官方安装器会拒绝，
-因此 0.1.0 不支持 Desktop 安装目标。
+输入 `dsh-livery@0.1.1`。0.2.1-rc.3 Desktop 运行时会被本版本接受，插件可安装并在
+Electron 渲染器中运行。macOS 原生窗口装饰、红绿灯/leading、vibrancy、Dock/rightbar 和
+系统级 DPI 属于宿主所有，不在插件认证范围内。
 
 ## 卸载
 
@@ -156,17 +154,20 @@ pnpm adapter:check
 浏览器验收（需要本地 DSH 安装、系统 Chrome 和打包后的 tgz）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.1.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.1.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.1.tgz      # 薄封装
 ```
 
 ## 验收
 
-0.1.0 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**
-（Chrome 155，macOS arm64）；克隆运行包含一项仅限克隆环境的依赖修复警告。精确计数和报告哈希见
-已提交的 evidence。仓库门禁包括 `tsc`、**716 个测试（1 个可选跳过）**、对比度 / token / CSS 审计、
-loader ABI 和打包检查。精确产物绑定到 `contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`。
-详细说明和已知限制见 [docs/verification.md](docs/verification.md)。
+0.1.1 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**
+（Chrome 155，Node 22.23.1）；Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收
+（Node 24.21.0）。精确计数和报告哈希见已提交的 evidence。仓库门禁包括 `tsc`、
+**716 个测试（1 个可选跳过）**、对比度 / token / CSS 审计、loader ABI 和打包检查。精确产物绑定到
+`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json` 与
+`contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`。详细说明和已知限制见
+[docs/verification.md](docs/verification.md)。
 
 ## 参与
 

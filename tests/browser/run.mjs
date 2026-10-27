@@ -7,7 +7,7 @@
  * plugin install lifecycle, the boot, the Playwright checks and the evidence
  * report.
  *
- *   node tests/browser/run.mjs --tgz dist/dsh-livery-0.1.0.tgz
+ *   node tests/browser/run.mjs --tgz dist/dsh-livery-0.1.1.tgz
  *   node tests/browser/run.mjs --reuse "http://127.0.0.1:3080/?token=…"
  *   node tests/browser/run.mjs --smoke          # charter fixture smoke (mechanics only)
  *   node tests/browser/run.mjs --desktop        # real Electron desktop renderer probe

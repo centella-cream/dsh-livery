@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
-[![Node](https://img.shields.io/badge/node-%5E22.23.1-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%20Chrome%20155-6d6df6.svg)](#host-support-and-version-policy)
+[![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#host-support-and-version-policy)
 
 > **Make your DSH beautiful to look at — and alive to use.**
 
@@ -11,11 +11,12 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.0 limited release.** Supported exactly for DSH
-> `0.2.1-rc.2` + Web Profile + Chrome 155. Desktop macOS/Windows and Web Edge are
-> outside the supported scope (no support or guarantee). Other DSH builds are
-> rejected at install/runtime and fail closed. The publishable artifact is bound to
-> committed acceptance evidence; `prepublish-check` refuses mismatched bytes.
+> **Release status: 0.1.1 limited release.** Supported exactly for:
+> DSH `0.2.1-rc.2` + Web Profile + Chrome 155 + Node 22.23.1, and DSH
+> `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime. Desktop Windows,
+> Web Edge and other DSH builds are outside the supported scope. Other DSH versions
+> are rejected at install/runtime and fail closed. The publishable artifact is bound
+> to committed acceptance evidence; `prepublish-check` refuses mismatched bytes.
 
 English · [中文](README.zh-CN.md)
 
@@ -89,32 +90,31 @@ example of another plugin's surface staying covered.
 
 ## Host support and version policy
 
-`engines.dsh` is the exact version **`0.2.1-rc.2`**. The supported scope is
-deliberately narrow:
+`engines.dsh` is the exact allowlist **`0.2.1-rc.2 || 0.2.1-rc.3`**. The
+supported scope is deliberately narrow:
 
-| Scope | Value |
-|---|---|
-| DSH build | `0.2.1-rc.2` only |
-| Profile | Web Profile |
-| Browser | Chrome 155 (the only certified browser version; other Chrome versions are not guaranteed) |
-| Desktop macOS/Windows, Web Edge | Not supported, no guarantee; same-version Desktop/Edge may load but are outside certification |
-| Older/newer DSH builds | Not supported; rejected at install/runtime and fail closed to stock |
+| Host | Profile / platform | Runtime | Status |
+|---|---|---|---|
+| DSH `0.2.1-rc.2` | Web Profile, Chrome 155 | Node 22.23.1 | Certified |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node 24.21.0 | Certified renderer surface |
+| Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
-There is no compatibility mode. A different host version is rejected at install
-time; a mismatched runtime payload or preview is rejected at runtime. Profile and
-browser are support boundaries, not runtime gates: a Desktop/Edge session on the
-same DSH build is outside certification and receives no guarantee. The formal
-machine-checked scope lives in the repository at `contracts/dsh/support-matrix.json`;
-see [docs/verification.md](docs/verification.md) for the accepted evidence.
+There is no compatibility mode. A different DSH version is rejected at install time
+and fails closed at runtime. The Desktop certification covers plugin install, boot,
+renderer, settings/gallery, persistence and the first-frame handshake; native macOS
+window chrome, traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are
+host-owned and outside the plugin's certification surface. The formal matrix lives
+at `contracts/dsh/support-matrix.json`; see
+[docs/verification.md](docs/verification.md) for both evidence files.
 
 ## Install
 
-Published package: [`dsh-livery@0.1.0`](https://www.npmjs.com/package/dsh-livery).
+Published package: [`dsh-livery@0.1.1`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile (CLI)
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.0
+dsh plugin --profile web add dsh-livery@0.1.1
 dsh web                                 # open the URL printed by dsh
 ```
 
@@ -122,10 +122,10 @@ dsh web                                 # open the URL printed by dsh
 
 The Desktop app installs plugins from its plugin manager:
 **Settings → Plugins → Install by package name**, then enter
-`dsh-livery@0.1.0`. This release is certified for Web/Chrome only; the current
-Desktop runtime (`0.2.1-rc.3`) does not satisfy this package's
-`engines.dsh` (`0.2.1-rc.2`), so the official installer rejects it. Desktop is not a
-supported installation target for 0.1.0.
+`dsh-livery@0.1.1`. The `0.2.1-rc.3` Desktop runtime is accepted by this release;
+the plugin installs and runs in the Electron renderer. Native macOS window chrome,
+traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are host-owned and
+outside the plugin's certification surface.
 
 ## Uninstall
 
@@ -168,7 +168,7 @@ not remove the wallpaper.
 
 ## Development
 
-Requirements: Node `^22.23.1`, pnpm 12.
+Requirements: Node `^22.23.1 || ^24.21.0`, pnpm 12.
 
 ```bash
 pnpm install
@@ -184,20 +184,22 @@ Generated contracts, stock snapshots and compiled catalogs are committed, so
 Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.0.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.0.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.1.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.1.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.1.tgz      # thin wrapper
 ```
 
 ## Verification
 
-For the 0.1.0 limited release: Web `0.2.1-rc.2` isolated full run and
-real-profile clone both pass with **0 failures** (Chrome 155, macOS arm64); the
-clone pass includes a documented clone-only dependency-repair warning. Exact
-counts and report hashes are in the committed evidence. Repo gates include `tsc`,
+For the 0.1.1 limited release: Web `0.2.1-rc.2` isolated full run and real-profile
+clone pass with **0 failures** (Chrome 155, Node 22.23.1); Desktop `0.2.1-rc.3`
+passes the real Electron install/renderer acceptance (Node 24.21.0). Exact counts
+and report hashes are in the committed evidence files. Repo gates include `tsc`,
 **716 tests (1 optional skip)**, contrast / token / CSS audits, loader ABI and
 package checks. The exact artifact is bound to
-`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json`. Details and known limitations:
-[docs/verification.md](docs/verification.md).
+`contracts/dsh/evidence/0.2.1-rc.2-web-chrome.json` and
+`contracts/dsh/evidence/0.2.1-rc.3-desktop-macos.json`. Details and known
+limitations: [docs/verification.md](docs/verification.md).
 
 ## Contributing
 

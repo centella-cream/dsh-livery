@@ -8,6 +8,7 @@
  * font-role hooks, and compare the deterministic output.
  */
 
+import { LIVERY_VERSION } from '../../src/core/types.js'
 import type {
   CapabilityMap,
   CompiledLivery,
@@ -183,7 +184,7 @@ export function catalogOf(
   const adapter = options.adapter ?? ADAPTER_020
   return {
     schemaVersion: 1,
-    compilerVersion: '0.1.0',
+    compilerVersion: LIVERY_VERSION,
     adapterId: adapter.adapterId,
     hostVersion: adapter.hostVersion,
     contractHash: adapter.contractHash,

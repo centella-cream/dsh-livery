@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-27T00:20:00.000Z",
+  "updatedAt": "2026-10-27T03:28:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -32,6 +32,30 @@
         "Desktop macOS/Windows and Web Edge are not-supported support boundaries, not active runtime gates: no support or guarantee is provided for those surfaces.",
         "Only unsupported DSH builds are rejected at install/runtime and fail closed to stock.",
         "clientTarget chrome120 records the build target, not a browser certification claim."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.3",
+      "adapterId": "dsh-0.2.1-rc.3-r1",
+      "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
+      "status": "g6-approved",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "not-supported"
+        },
+        "web": {
+          "chrome": "not-supported",
+          "edge": "not-supported"
+        }
+      },
+      "browserSupport": [],
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "0.1.1 release line: Desktop DSH 0.2.1-rc.3 (macOS Electron) is a g6-approved candidate while the real Electron acceptance runs.",
+        "desktop.macos is pending until the verifier records Electron evidence; promotion to released happens in the release transaction after that evidence exists.",
+        "desktop.win32, web.chrome and web.edge are not-supported for this entry; Web support stays with the 0.2.1-rc.2 entry."
       ]
     }
   ]

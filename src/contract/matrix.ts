@@ -112,11 +112,7 @@ export function profileGateProblems(entry: SupportMatrixEntry): string[] {
     if (profile.status === 'pending') problems.push(`profile ${profile.profile}: certification pending`)
     if (profile.status === 'failed') problems.push(`profile ${profile.profile}: certification failed`)
   }
-  if (problems.length === 0) {
-    const scoped = notSupportedProfiles(entry)
-    if (scoped.length > 0) problems.push(`ok, out of scope: ${scoped.join(', ')}`)
-  }
-  return problems.filter((problem) => !problem.startsWith('ok, out of scope'))
+  return problems
 }
 
 export function validateMatrix(matrix: SupportMatrix): string[] {
@@ -140,10 +136,21 @@ export function validateMatrix(matrix: SupportMatrix): string[] {
         problems.push(`${entry.hostVersion}: unknown profile status "${String(profile.status)}" for ${profile.profile}`)
       }
     }
-    if (isShippedStatus(entry.status)) {
+    if (entry.status === 'released') {
+      // A released entry is a support claim: every in-scope profile must be
+      // resolved (passed) and the evidence list must be non-empty.
       problems.push(...profileGateProblems(entry).map((problem) => `${entry.hostVersion}: ${problem}`))
-      if (entry.status === 'released' && entry.evidence.length === 0) {
+      if (entry.evidence.length === 0) {
         problems.push(`${entry.hostVersion}: released entries require evidence`)
+      }
+    } else if (isShippedStatus(entry.status)) {
+      // g6-approved entries may still carry pending acceptance evidence so the
+      // candidate adapter can be generated for acceptance; the support/release
+      // gates block claiming support until the pending profile passes and the
+      // entry is promoted.
+      const inScope = profileEntries(entry).filter((profile) => profile.status !== 'not-supported')
+      if (inScope.length === 0) {
+        problems.push(`${entry.hostVersion}: no supported profile: at least one of desktop/web profiles must be in scope`)
       }
     }
   }

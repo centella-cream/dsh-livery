@@ -44,8 +44,8 @@ if (!files.has('package.json')) {
   process.exit(1)
 }
 const packageJson = JSON.parse(execFileSync('tar', ['-xOzf', tarball, 'package/package.json'], { encoding: 'utf8' }))
-if (packageJson.version !== '0.1.0') {
-  console.error(`release-check: candidate version must be the unreleased 0.1.0, got ${String(packageJson.version)}`)
+if (packageJson.version !== '0.1.1') {
+  console.error(`release-check: candidate version must be the unreleased 0.1.1, got ${String(packageJson.version)}`)
   process.exit(1)
 }
 // Narrow compatibility: engines.dsh must be the exact formal-matrix shipped set.

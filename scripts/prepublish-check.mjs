@@ -27,7 +27,7 @@ for (const entry of matrix.entries) {
 const candidates = matrix.entries.flatMap((entry) => entry.evidence ?? [])
 if (candidates.length !== 1) fail(`expected exactly one evidence file, got ${candidates.length}`)
 try {
-  execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.0.tgz', '--evidence', candidates[0]], { cwd: root, stdio: 'inherit' })
+  execFileSync('node', ['scripts/release-evidence.mjs', '--tgz', 'dsh-livery-0.1.1.tgz', '--evidence', candidates[0]], { cwd: root, stdio: 'inherit' })
 } catch {
   fail('candidate artifact / evidence verification failed')
 }
