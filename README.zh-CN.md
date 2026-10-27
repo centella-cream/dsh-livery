@@ -174,7 +174,7 @@ registry 的 release-age 门禁，所以必须先核对 sha256，不要安装来
 
 ## 开发
 
-要求：Node `^22.23.1`，pnpm 12。
+要求：Node `^22.23.1 || ^24.21.0`，pnpm 12。
 
 ```bash
 pnpm install
