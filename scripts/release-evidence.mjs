@@ -131,6 +131,7 @@ const REQUIRED_WEB_CHECKS = [
   'merged.preset-import-diff',
   'merged.preset-apply-atomic',
   'merged.preset-invalid-rejected',
+  'merged.preset-partial-failure',
   'merged.position-remote',
   'merged.clear-local-data',
   'visual.floating-surfaces',

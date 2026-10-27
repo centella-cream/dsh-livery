@@ -4926,36 +4926,72 @@ export async function checkMergedFeatures(ctx) {
       JSON.stringify(invalidResults.map((result) => ({ name: result.name, error: result.error }))),
     )
 
-    // ---------- partial failure: style applies, wallpaper failure surfaces retry ----------
-    const partialPreset = { ...validPreset, styleId: targetStyle, wallpaper: { kind: 'remote', url: 'https://images.example.test/broken.jpg' } }
-    await importPreset(partialPreset)
-    await page.waitForSelector('[data-testid="preset-diff"]', { timeout: 10_000 }).catch(() => {})
-    await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
-    await page.waitForSelector('[data-testid="preset-error"]', { timeout: 20_000 }).catch(() => {})
-    await sleep(500)
-    const partial = await readMergedWallpaper(page)
-    if (partial.preset.error === null) {
-      // URL-level wallpaper application is accepted even when the image fetch
-      // fails; the product treats cache failure as non-fatal. There is no
-      // non-destructive way to force a style-vs-wallpaper partial failure in
-      // this shell, so record the boundary explicitly instead of a fake pass.
-      runner.skip(
-        'merged.preset-partial-failure',
-        'partial preset failure keeps the style change and surfaces a wallpaper retry action',
-        'wallpaper application is URL-level and cache failures are non-fatal by design; no non-destructive apply failure could be induced in this shell (unit tests cover the retry UI)',
-      )
-    } else {
+    // ---------- deterministic partial failure: style applies, wallpaper persistence fails ----------
+    const partialStyle = catalogIds.find((id) => id !== targetStyle && id !== state.appliedSkin && id !== 'stock') ?? targetStyle
+    const partialPreset = {
+      ...validPreset,
+      styleId: partialStyle,
+      wallpaper: { kind: 'remote', url: 'https://images.example.test/partial.jpg' },
+      attribution: { title: 'Partial Preset', creator: 'Tester', license: 'CC0', source: 'https://images.example.test' },
+    }
+    await page.evaluate(() => {
+      window.__dshOriginalSetItem = Storage.prototype.setItem
+      Storage.prototype.setItem = function setItem(key, value) {
+        if (key === 'dsh-livery.wallpaper.v1') {
+          throw new DOMException('dsh-livery acceptance injected preset persistence failure', 'QuotaExceededError')
+        }
+        return window.__dshOriginalSetItem.call(this, key, value)
+      }
+    })
+    try {
+      await importPreset(partialPreset)
+      await page.waitForSelector('[data-testid="preset-diff"]', { timeout: 10_000 }).catch(() => {})
+      await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
+      await page.waitForSelector('[data-testid="preset-error"]', { timeout: 20_000 }).catch(() => {})
+      await sleep(600)
+      const partial = await readMergedWallpaper(page)
+      const styleApplied = partial.preset.error !== null && (await page.evaluate((styleId) => document.body.getAttribute('data-dsh-livery') === styleId, partialStyle).catch(() => false))
+      const noFalseSuccess = (await page.locator('[data-testid="preset-apply-status"]').count().catch(() => 0)) === 0
+      await capture(page, ctx, { state: 'merged-preset-partial-fault', mode: 'light' })
+      // Restore the real storage primitive before exercising the retry action.
+      await page.evaluate(() => {
+        if (typeof window.__dshOriginalSetItem === 'function') Storage.prototype.setItem = window.__dshOriginalSetItem
+        delete window.__dshOriginalSetItem
+      })
+      const retryButton = page.locator('[data-testid="preset-retry-wallpaper"]')
+      const hasRetry = (await retryButton.count()) > 0
+      if (hasRetry) await retryButton.click({ timeout: 8_000 })
+      await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/partial.jpg'), undefined, { timeout: 20_000 }).catch(() => {})
+      await sleep(700)
+      const recovered = await readMergedWallpaper(page)
+      const heroAttribution = (await page.locator('[data-testid="wallpaper-hero-attribution"]').innerText().catch(() => '')) || ''
+      const attributionCoherent = /Partial Preset/u.test(heroAttribution)
+      await capture(page, ctx, { state: 'merged-preset-partial-recovered', mode: 'light' })
       expect(
         runner,
         'merged.preset-partial-failure',
-        'partial preset failure keeps the style change and surfaces a wallpaper retry action',
-        partial.preset.error.kind === 'apply' &&
+        'injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution',
+        styleApplied &&
+          partial.preset.error !== null &&
+          partial.preset.error.kind === 'apply' &&
           partial.preset.error.code === 'wallpaper' &&
-          partial.preset.error.retryWallpaper === true,
-        JSON.stringify(partial.preset.error),
+          partial.preset.error.retryWallpaper === true &&
+          noFalseSuccess &&
+          hasRetry &&
+          recovered.preset.error === null &&
+          recovered.selection?.kind === 'remote' &&
+          recovered.selection?.url === 'https://images.example.test/partial.jpg' &&
+          attributionCoherent,
+        `styleApplied=${styleApplied}; error=${JSON.stringify(partial.preset.error)}; noFalseSuccess=${noFalseSuccess}; hasRetry=${hasRetry}; recoveredSelection=${JSON.stringify(recovered.selection)}; attrib="${oneLine(heroAttribution, 140)}"`,
+        { partialError: partial.preset.error, recoveredSelection: recovered.selection, heroAttribution },
       )
+    } finally {
+      await page.evaluate(() => {
+        if (typeof window.__dshOriginalSetItem === 'function') Storage.prototype.setItem = window.__dshOriginalSetItem
+        delete window.__dshOriginalSetItem
+      }).catch(() => {})
+      await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 4_000 }).catch(() => {})
     }
-    await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 6_000 }).catch(() => {})
 
     // ---------- state-v2 migration from a real v1 flat record ----------
     await page.evaluate(() => {
