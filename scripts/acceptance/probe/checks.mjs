@@ -3765,6 +3765,14 @@ export async function checkWallpaperStudio(ctx) {
       `card=${clearedRecent.recentCard.present}; stored=${oneLine(String(storedRecent), 80)}; remote cache keys ${remoteKeysBefore}→${remoteKeysAfter}`,
     )
 
+    // Restore a valid wallpaper layer after the cache-failure/recent-clear flow:
+    // a failed-cache selection intentionally has no raw-URL fallback, so the
+    // adaptive-cover/atmosphere checks below need a real rendered layer again.
+    await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 6_000 })
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 }).catch(() => {})
+    await setRangeValue(page, 'wallpaper-atmosphere', 60)
+    await sleep(450)
+
     // ---- adaptive cover layers at several viewport sizes ----
     const resizeSizes = [[1024, 768], [1920, 1080], [900, 1300]]
     const resizeEvidence = []
