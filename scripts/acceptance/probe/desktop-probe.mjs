@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execFileSync } from 'node:child_process'
 /**
  * Desktop-profile (Electron app runtime) acceptance probe for DSH Livery.
  *
@@ -534,8 +535,8 @@ async function main() {
     await page.route('https://api.openverse.org/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
-    await page.route('https://images.example.test/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG }),
+    await page.context().route('https://images.example.test/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG, headers: { 'access-control-allow-origin': '*' } }),
     )
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
@@ -578,6 +579,8 @@ async function main() {
         overlayPosition: overlay ? getComputedStyle(overlay).backgroundPosition : null,
         heroPosition: hero ? getComputedStyle(hero).backgroundPosition : null,
         group: document.querySelector('[data-testid="wallpaper-position"]') !== null,
+        layerBlob: /blob:/u.test(style),
+        layerRaw: style.includes('https://images.example.test/desktop.jpg'),
       }
     })
     await captureScreenshot(page, path.join(screensDir, 'zh-position-desktop.png'), { label: 'desktop focal position top-left' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'position-top-left' }))
@@ -586,6 +589,7 @@ async function main() {
       'desktop.position-remote',
       'desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position',
       desktopPosition.group === true &&
+        desktopPosition.layerBlob === true && desktopPosition.layerRaw === false &&
         desktopPosition.stored?.schemaVersion === 2 &&
         desktopPosition.stored?.position?.x === 0 && desktopPosition.stored?.position?.y === 0 &&
         (desktopPosition.styleHasTopLeft || /0%\s+0%/u.test(String(desktopPosition.overlayPosition ?? '')) || /0%\s+0%/u.test(String(desktopPosition.heroPosition ?? ''))),
@@ -819,6 +823,11 @@ async function main() {
     await captureScreenshot(page, path.join(screensDir, 'zh-selfcheck-desktop.png'), { label: 'desktop self-check' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'selfcheck' }))
 
     // ---------- merged new paths: presets, v1→v2 migration, clear-local ----------
+    // The fresh-launch step above may have replaced the Electron session, so
+    // re-register the image fixture routes for this renderer/context.
+    const imageFixture = (route) => route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG, headers: { 'access-control-allow-origin': '*' } })
+    await page.context().route('https://images.example.test/**', imageFixture).catch(() => {})
+    await page.route('https://images.example.test/**', imageFixture).catch(() => {})
     await dismissFirstRunDialogs(page)
     await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
@@ -840,14 +849,30 @@ async function main() {
     await page.waitForSelector('[data-testid="preset-apply"]', { timeout: 8_000 }).catch(() => {})
     await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="preset-apply-status"]', { timeout: 20_000 }).catch(() => {})
+    // Applying the style can remount the Livery surface; reopen the wallpaper
+    // tab so the panel effect can cache the preset's remote image into a blob.
+    if (!(await page.locator('[data-testid="wallpaper-panel"]').count())) {
+      await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 }).catch(() => {})
+    }
     await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 20_000 }).catch(() => {})
     await page.waitForTimeout(400)
     const desktopPresetState = await page.evaluate(() => {
       let stored = null
       try { stored = JSON.parse(localStorage.getItem('dsh-livery.wallpaper.v1') ?? 'null') } catch {}
       const style = document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? ''
-      return { stored, styleHasBlob: style.includes('blob:'), styleHasRaw: style.includes('https://images.example.test/desktop-preset.jpg'), bodyAttribute: document.body.getAttribute('data-dsh-livery'), applyStatus: document.querySelector('[data-testid="preset-apply-status"]') !== null }
+      return { stored, styleText: style.slice(0, 800), styleHasBlob: style.includes('blob:'), styleHasRaw: style.includes('https://images.example.test/desktop-preset.jpg'), bodyAttribute: document.body.getAttribute('data-dsh-livery'), applyStatus: document.querySelector('[data-testid="preset-apply-status"]') !== null }
     })
+    let desktopPresetDiag = null
+    try {
+      desktopPresetDiag = await page.evaluate(async (url) => {
+        let fetchStatus = 'unavailable'
+        try { const response = await fetch(url); fetchStatus = response.status } catch (error) { fetchStatus = `ERR:${error instanceof Error ? error.message : String(error)}` }
+        return { fetchStatus, panel: document.querySelector('[data-testid="wallpaper-panel"]') !== null }
+      }, desktopPreset.wallpaper.url)
+    } catch (error) {
+      desktopPresetDiag = { error: error instanceof Error ? error.message : String(error) }
+    }
     await captureScreenshot(page, path.join(screensDir, 'zh-preset-applied-desktop.png'), { label: 'desktop preset applied' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'preset-applied' }))
     expect(
       runner,
@@ -862,7 +887,7 @@ async function main() {
         desktopPresetState.stored?.selection?.url === desktopPreset.wallpaper.url &&
         desktopPresetState.stored?.position?.x === 0 && desktopPresetState.stored?.position?.y === 0 &&
         desktopPresetState.styleHasBlob && !desktopPresetState.styleHasRaw,
-      `export=${desktopExportVisible}; diffRows=${desktopDiffRows}; state=${JSON.stringify(desktopPresetState)}`,
+      `export=${desktopExportVisible}; diffRows=${desktopDiffRows}; state=${JSON.stringify({ ...desktopPresetState, styleText: undefined })}; diag=${JSON.stringify(desktopPresetDiag)}`,
     )
     // v1 flat record migration in the real Electron renderer.
     await page.evaluate(() => {
@@ -925,6 +950,14 @@ async function main() {
       'two-window cross-tab wallpaper sync in the Desktop renderer',
       'the packaged Electron app exposes a single BrowserWindow in this probe; cross-window storage-event sync is covered by the Web two-tab checks and is reported as a single-window limitation here',
     )
+
+    // Clear the (independent) wallpaper layer, then return to the style/actions
+    // surface before restoring stock; restore-stock itself only owns the livery.
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 8_000 }).catch(() => {})
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 10_000 }).catch(() => {})
+    await page.waitForSelector('[data-testid="livery-tabpanel-style"]', { timeout: 10_000 }).catch(() => {})
 
     // Restore stock in the real desktop renderer.
     const restore = await findControl(page, { testId: 'livery-restore', names: [PAGE_LABELS.restoreStock], exact: false })
