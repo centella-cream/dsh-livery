@@ -299,6 +299,7 @@ describe('wallpaper stylesheet builder', () => {
     const remote = buildWallpaperCss({
       selection: { kind: 'remote', url: 'https://example.com/w.jpg' },
       effects: DEFAULT_WALLPAPER_EFFECTS,
+      imageOverride: 'blob:cached-remote',
       position: { x: 0, y: 100 },
     })
     // Body layer + atmosphere overlay both honour the nine-grid position.
@@ -333,6 +334,7 @@ describe('wallpaper stylesheet builder', () => {
     const css = buildWallpaperCss({
       selection: { kind: 'remote', url: "https://example.com/a'b.jpg" },
       effects: DEFAULT_WALLPAPER_EFFECTS,
+      imageOverride: "https://example.com/a'b.jpg",
     })
     expect(css).toContain("background-image:url('https://example.com/a\\'b.jpg')")
     expect(css.match(/'/g)?.length).toBeGreaterThanOrEqual(2)
@@ -565,7 +567,8 @@ describe('wallpaper controller', () => {
       position: { x: 0, y: 100 },
       revision: 6,
     })
-    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain('background-position:0% 100%')
+    // No cached blob yet: remote URLs never enter CSS directly.
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
     controller.dispose()
   })
 
@@ -644,11 +647,8 @@ describe('wallpaper controller', () => {
     })
     // Exactly one subscriber notification for the whole batch.
     expect(snapshots).toHaveLength(1)
-    const css = doc.getElementById(WALLPAPER_STYLE_ID)?.textContent ?? ''
-    expect(css).toContain("url('https://example.com/batch.jpg')")
-    expect(css).toContain('background-position:100% 0%')
-    expect(css).toContain('blur(16px)')
-    expect(css).toContain('opacity:0.55')
+    // Remote CSS is emitted only once the verified cache supplies a blob URL.
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
     // Still one debounced write, containing the whole state.
     expect(storage.getItem(WALLPAPER_STORAGE_KEY)).toBeNull()
     vi.advanceTimersByTime(300)

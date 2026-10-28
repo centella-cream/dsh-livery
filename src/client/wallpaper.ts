@@ -301,9 +301,11 @@ export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?
   if (selection === undefined) return undefined
   if (selection.kind === 'builtin') return BUILTIN_WALLPAPERS[selection.id]
   if (selection.kind === 'upload') return overrideUrl === undefined ? undefined : cssUrlValue(overrideUrl)
-  // A locally cached (object URL) copy wins for online wallpapers; otherwise use
-  // the persisted remote URL.
-  return overrideUrl === undefined ? cssUrlValue(selection.url) : cssUrlValue(overrideUrl)
+  // Remote wallpapers are rendered ONLY from the verified local cache object URL.
+  // Never put the raw remote URL in CSS: that would bypass the download's
+  // credentials:omit/timeout/15 MiB/content-type checks and could issue a
+  // same-origin credentialed image request.
+  return overrideUrl === undefined ? undefined : cssUrlValue(overrideUrl)
 }
 
 /**

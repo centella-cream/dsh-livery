@@ -302,6 +302,16 @@ const ATTRIBUTION_LIMITS: Readonly<Record<keyof PresetAttribution, number>> = {
   source: 200,
 }
 
+/** Hard cap on JSON nesting accepted by preset validation (the schema needs 3). */
+export const PRESET_MAX_JSON_DEPTH = 8
+
+/**
+ * Hard cap on object/array nodes inspected before a preset is rejected as
+ * `too-large`. A valid preset has fewer than 32 nodes; the cap only bounds the
+ * work done on a hostile deep/wide graph passed to the public API.
+ */
+const PRESET_MAX_JSON_NODES = 50_000
+
 /** Escaped/control characters that never belong in preset strings. */
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/
 
@@ -327,52 +337,104 @@ const LOCAL_HOSTS: readonly RegExp[] = [
   /\.home\.arpa\.?$/i,
 ]
 
-/** IPv4 ranges that must never be fetched from an imported preset. */
+/**
+ * IPv4 ranges that must never be fetched from an imported preset.
+ *
+ * Only the standard non-portable ranges are rejected (RFC 6890 private,
+ * loopback, link-local, CGNAT, benchmarking, documentation and multicast/
+ * reserved). Broader guesses are avoided so legitimate public hosts keep
+ * working: e.g. TEST-NET-2/3 are matched as /24s, not their whole /16s.
+ */
 function isPrivateIpv4(hostname: string): boolean {
   const match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/u.exec(hostname)
   if (match === null) return false
   const octets = match.slice(1).map(Number)
   if (octets.some(value => !Number.isInteger(value) || value < 0 || value > 255)) return true
-  const [a, b] = octets as [number, number, number, number]
-  return a === 0
-    || a === 10
-    || a === 127
-    || (a === 100 && b >= 64 && b <= 127)
-    || (a === 169 && b === 254)
-    || (a === 172 && b >= 16 && b <= 31)
-    || (a === 192 && b === 0)
-    || (a === 192 && b === 168)
-    || (a === 198 && (b === 18 || b === 19))
-    || (a === 198 && b === 51)
-    || (a === 203 && b === 0)
-    || a >= 224
+  const [a, b, c] = octets as [number, number, number, number]
+  return a === 0 // "this network"
+    || a === 10 // RFC 1918
+    || a === 127 // loopback
+    || (a === 100 && b >= 64 && b <= 127) // 100.64/10 CGNAT
+    || (a === 169 && b === 254) // 169.254/16 link-local
+    || (a === 172 && b >= 16 && b <= 31) // 172.16/12
+    || (a === 192 && b === 0 && (c === 0 || c === 2)) // 192.0.0/24 + TEST-NET-1
+    || (a === 192 && b === 168) // RFC 1918
+    || (a === 198 && (b === 18 || b === 19)) // 198.18/15 benchmarking
+    || (a === 198 && b === 51 && c === 100) // TEST-NET-2 /24
+    || (a === 203 && b === 0 && c === 113) // TEST-NET-3 /24
+    || a >= 224 // multicast + reserved
 }
 
-/** IPv6 loopback/ULA/link-local/mapped-private ranges. */
+/** Expand one IPv6 host into eight 16-bit groups (`undefined` when malformed). */
+function expandIpv6(address: string): readonly number[] | undefined {
+  const halves = address.split('::')
+  if (halves.length > 2) return undefined
+  const parseGroups = (text: string): number[] | undefined => {
+    if (text.length === 0) return []
+    const groups: number[] = []
+    for (const group of text.split(':')) {
+      if (!/^[0-9a-f]{1,4}$/u.test(group)) return undefined
+      groups.push(Number.parseInt(group, 16))
+    }
+    return groups
+  }
+  const head = parseGroups(halves[0] ?? '')
+  if (head === undefined) return undefined
+  if (halves.length === 1) return head.length === 8 ? head : undefined
+  const tail = parseGroups(halves[1] ?? '')
+  if (tail === undefined) return undefined
+  const missing = 8 - head.length - tail.length
+  if (missing < 1) return undefined
+  return [...head, ...Array.from({ length: missing }, () => 0), ...tail]
+}
+
+/** IPv4 text of an IPv4-mapped (`::ffff:a.b.c.d`) or IPv4-translated address. */
+function mappedIpv4Of(address: string): string | undefined {
+  const groups = expandIpv6(address)
+  if (groups === undefined) return undefined
+  const high = groups[6] ?? 0
+  const low = groups[7] ?? 0
+  const ipv4 = `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
+  // ::ffff:a.b.c.d (IPv4-mapped)
+  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
+    && groups[4] === 0 && groups[5] === 0xffff) return ipv4
+  // ::ffff:0:a.b.c.d (IPv4-translated)
+  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
+    && groups[4] === 0xffff && groups[5] === 0) return ipv4
+  return undefined
+}
+
+/** IPv6 loopback/ULA/link-local/site-local/multicast/mapped-private ranges. */
 function isPrivateIpv6(hostname: string): boolean {
   const address = hostname.replace(/^\[|\]$/gu, '').toLowerCase()
+  // A plain DNS hostname is never an IPv6 literal (only bracketed literals or
+  // colon-containing addresses reach the IPv6 rules).
+  if (!address.includes(':')) return false
   if (address === '::' || address === '::1') return true
-  if (address.startsWith('fc') || address.startsWith('fd')) return true
-  if (/^fe[89ab]/u.test(address)) return true
-  const mapped = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/u.exec(address)
-  if (mapped !== null) return isPrivateIpv4(mapped[1] as string)
-  // URL canonicalizes IPv4-mapped IPv6 to hexadecimal groups.
-  const hexMapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/u.exec(address)
-  if (hexMapped !== null) {
-    const high = Number.parseInt(hexMapped[1] as string, 16)
-    const low = Number.parseInt(hexMapped[2] as string, 16)
-    const ipv4 = `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
-    return isPrivateIpv4(ipv4)
-  }
-  // Other IPv4-compatible forms are not portable either.
-  if (address.startsWith('::') && address !== '::' && address !== '::1') return true
+  // Mapped/translated addresses are private exactly when the embedded IPv4 is;
+  // a mapped public address stays a legitimate public destination.
+  const mapped = mappedIpv4Of(address)
+  if (mapped !== undefined) return isPrivateIpv4(mapped)
+  // Any other embedded dotted-quad form (deprecated IPv4-compatible literals).
+  if (address.includes('.')) return true
+  const first = address.split(':')[0] ?? ''
+  if (first.startsWith('ff')) return true // ff00::/8 multicast
+  if (/^fe[c-f]/u.test(first)) return true // fec0::/10 site-local
+  if (/^fe[89ab]/u.test(first)) return true // fe80::/10 link-local
+  if (first.startsWith('fc') || first.startsWith('fd')) return true // fc00::/7 ULA
+  // Deprecated IPv4-compatible `::x:y` and other ::-prefixed forms.
+  if (address.startsWith('::')) return true
   return false
 }
 
-/** Whether one URL hostname is loopback, private, link-local or local-only. */
-function isLocalOrPrivateHost(hostname: string): boolean {
+/** Whether one URL hostname is local-only, private, or otherwise non-portable. */
+export function isLocalOrPrivateHost(hostname: string): boolean {
   const normalized = hostname.toLowerCase().replace(/\.$/u, '')
+  if (normalized.startsWith('[')) return isPrivateIpv6(normalized)
   if (LOCAL_HOSTS.some(pattern => pattern.test(normalized))) return true
+  // A hostname without any dot is a single-label intranet/mDNS name: it cannot
+  // resolve from another device's network, so a shared preset must not carry it.
+  if (!normalized.includes('.')) return true
   if (isPrivateIpv4(normalized)) return true
   return isPrivateIpv6(normalized)
 }
@@ -385,6 +447,75 @@ function utf8Bytes(text: string): number {
     /* fall through to the character count */
   }
   return text.length
+}
+
+/** Stable outcome of inspecting/serializing one untrusted JSON value. */
+type JsonMeasurement =
+  | { readonly ok: true; readonly bytes: number }
+  | { readonly ok: false; readonly problem: 'invalid-json' | 'too-large'; readonly detail: string }
+
+/**
+ * Measure one untrusted value as JSON without ever throwing.
+ *
+ * `JSON.stringify` recurses, so a deeply nested input can raise a `RangeError`
+ * ("Maximum call stack size exceeded") and a cyclic/BigInt/toJSON-throwing input
+ * can raise a `TypeError`. Before serializing, this helper walks the graph
+ * iteratively with an explicit stack (no recursion of our own), reject
+ * cycles/unsafe types/over-deep nesting, and aborts early on the byte/node
+ * budget. Only a bounded, acyclic, JSON-safe graph reaches `JSON.stringify`,
+ * which is still wrapped for defence in depth. Deep input therefore maps to a
+ * stable `invalid-json` failure (detail `depth`) instead of an exception, and
+ * oversized input to `too-large`.
+ * @param value - untrusted JSON-like value.
+ * @param maxBytes - byte budget of the serialized preset.
+ * @returns measured UTF-8 bytes, or a stable failure code + detail.
+ */
+function measureJsonValue(value: unknown, maxBytes: number): JsonMeasurement {
+  try {
+    const stack: Array<{ readonly value: unknown; readonly depth: number }> = [{ value, depth: 0 }]
+    const seen = new WeakSet<object>()
+    let nodes = 0
+    let stringBytes = 0
+    while (stack.length > 0) {
+      const entry = stack.pop() as { readonly value: unknown; readonly depth: number }
+      nodes += 1
+      if (nodes > PRESET_MAX_JSON_NODES) return { ok: false, problem: 'too-large', detail: 'nodes' }
+      const current = entry.value
+      if (current === null || typeof current === 'boolean') continue
+      if (typeof current === 'number') {
+        if (!Number.isFinite(current)) return { ok: false, problem: 'invalid-json', detail: 'number' }
+        continue
+      }
+      if (typeof current === 'string') {
+        stringBytes += utf8Bytes(current)
+        if (stringBytes > maxBytes) return { ok: false, problem: 'too-large', detail: 'bytes' }
+        continue
+      }
+      if (typeof current !== 'object') {
+        // undefined/function/symbol/bigint are not JSON values.
+        return { ok: false, problem: 'invalid-json', detail: 'type' }
+      }
+      if (entry.depth >= PRESET_MAX_JSON_DEPTH) {
+        return { ok: false, problem: 'invalid-json', detail: 'depth' }
+      }
+      if (seen.has(current)) return { ok: false, problem: 'invalid-json', detail: 'cyclic' }
+      seen.add(current)
+      for (const key of Object.keys(current)) {
+        stack.push({ value: (current as Record<string, unknown>)[key], depth: entry.depth + 1 })
+      }
+    }
+    const text: unknown = JSON.stringify(value)
+    if (typeof text !== 'string') return { ok: false, problem: 'invalid-json', detail: 'stringify' }
+    // Fast pre-check before encoding: UTF-8 bytes are never shorter than the
+    // number of UTF-16 code units in a JSON string.
+    if (text.length > maxBytes) return { ok: false, problem: 'too-large', detail: 'bytes' }
+    const bytes = utf8Bytes(text)
+    if (bytes > maxBytes) return { ok: false, problem: 'too-large', detail: 'bytes' }
+    return { ok: true, bytes }
+  } catch {
+    // Proxies/getters can still throw between passes; never leak that to callers.
+    return { ok: false, problem: 'invalid-json', detail: 'measure' }
+  }
 }
 
 /** Build a failure result, keeping `detail` only when present. */
@@ -580,10 +711,11 @@ function parseAttribution(value: unknown): { readonly attribution: PresetAttribu
 }
 
 /** Validate an already-parsed JSON value (`JSON.parse` output) as preset v1. */
-export function validatePreset(value: unknown, options: PresetImportOptions): PresetImportResult {
-  const bytes = utf8Bytes(JSON.stringify(value) ?? '')
+function validatePresetValue(value: unknown, options: PresetImportOptions): PresetImportResult {
   const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
-  if (bytes > maxBytes) return failed('too-large', 'bytes')
+  const measured = measureJsonValue(value, maxBytes)
+  if (!measured.ok) return failed(measured.problem, measured.detail)
+  const bytes = measured.bytes
   const record = asRecord(value)
   if (record === undefined) return failed('not-object')
   const unknownRoot = firstUnknownKey(record, ROOT_KEYS)
@@ -628,22 +760,49 @@ export function validatePreset(value: unknown, options: PresetImportOptions): Pr
 }
 
 /**
+ * Validate an already-parsed JSON value as preset v1.
+ *
+ * Never throws: deep/cyclic/unserializable input and oversized payloads become
+ * stable `invalid-json` / `too-large` results (the caller-visible contract of
+ * the import path).
+ * @param value - untrusted value, typically `JSON.parse` output.
+ * @param options - catalog ids + optional byte cap.
+ * @returns ok with the normalized preset, or a stable problem code.
+ */
+export function validatePreset(value: unknown, options: PresetImportOptions): PresetImportResult {
+  try {
+    return validatePresetValue(value, options)
+  } catch {
+    return failed('invalid-json', 'validation')
+  }
+}
+
+/**
  * Validate one preset JSON text (strict schema v1).
- * @param text - raw JSON text (a leading UTF-8 BOM is tolerated).
+ *
+ * Never throws: malformed JSON, deeply nested JSON and oversized input all map
+ * to stable problem codes. A leading UTF-8 BOM is tolerated.
+ * @param text - raw JSON text.
  * @param options - catalog ids + optional byte cap.
  * @returns ok with the normalized preset, or a stable problem code.
  */
 export function parsePresetText(text: string, options: PresetImportOptions): PresetImportResult {
-  const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
-  if (utf8Bytes(text) > maxBytes) return failed('too-large', 'bytes')
-  let raw: unknown
   try {
-    raw = JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text)
+    const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
+    // UTF-8 bytes are never fewer than UTF-16 code units: reject cheaply first.
+    if (text.length > maxBytes) return failed('too-large', 'bytes')
+    if (utf8Bytes(text) > maxBytes) return failed('too-large', 'bytes')
+    let raw: unknown
+    try {
+      raw = JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text)
+    } catch {
+      return failed('invalid-json')
+    }
+    const result = validatePreset(raw, options)
+    return result.ok ? { ...result, bytes: utf8Bytes(text) } : result
   } catch {
-    return failed('invalid-json')
+    return failed('invalid-json', 'text')
   }
-  const result = validatePreset(raw, options)
-  return result.ok ? { ...result, bytes: utf8Bytes(text) } : result
 }
 
 /**
@@ -654,20 +813,31 @@ export function parsePresetText(text: string, options: PresetImportOptions): Pre
  * @returns ok with the normalized preset, or a stable problem code.
  */
 export async function importPresetFile(file: PresetFileLike, options: PresetImportOptions): Promise<PresetImportResult> {
-  const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
-  if (typeof file.size !== 'number' || !Number.isFinite(file.size) || file.size < 0) {
-    return failed('unreadable', 'size')
-  }
-  if (file.size > maxBytes) return failed('too-large', 'size')
-  let text: string
   try {
-    text = await file.text()
+    const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
+    let size: unknown
+    try {
+      size = file.size
+    } catch {
+      return failed('unreadable', 'size')
+    }
+    if (typeof size !== 'number' || !Number.isFinite(size) || size < 0) {
+      return failed('unreadable', 'size')
+    }
+    if (size > maxBytes) return failed('too-large', 'size')
+    let text: string
+    try {
+      text = await file.text()
+    } catch {
+      return failed('unreadable', 'text')
+    }
+    const result = parsePresetText(text, options)
+    if (!result.ok) return result
+    return { ...result, bytes: size }
   } catch {
-    return failed('unreadable', 'text')
+    // The import path must surface a stable error, never an unhandled rejection.
+    return failed('unreadable', 'file')
   }
-  const result = parsePresetText(text, options)
-  if (!result.ok) return result
-  return { ...result, bytes: file.size }
 }
 
 /** Keep only attribution strings that would pass import validation. */

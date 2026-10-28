@@ -244,10 +244,9 @@ node tests/browser/run.mjs --tgz ./dsh-livery-0.1.3.tgz      # thin wrapper
 
 ## Verification
 
-For 0.1.3: Web `0.2.1-rc.2` isolated full run and real-profile clone, latest Web
-`0.2.1-rc.4` isolated run, and Desktop `0.2.1-rc.3` real Electron
-install/renderer acceptance all pass with **0 failures** on the exact certified
-runtime matrix (Chrome 156.0.8078.48 / Node 22.23.1 for Web; Electron/Node
+For 0.1.3: Web `0.2.1-rc.2` isolated full run, latest Web `0.2.1-rc.4` isolated
+run, and Desktop `0.2.1-rc.3` real Electron install/renderer acceptance all pass
+with **0 failures** on the exact certified runtime matrix (Chrome 156.0.8078.48 / Node 22.23.1 for Web; Electron/Node
 24.21.0 for Desktop). Exact counts and report hashes are in the committed evidence
 files. Repo gates include `tsc`, the full test suite, contrast / token / CSS
 audits, loader ABI and package checks. The exact artifact is bound to

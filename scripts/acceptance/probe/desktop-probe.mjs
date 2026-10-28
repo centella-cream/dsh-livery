@@ -32,7 +32,7 @@
  *     [--profile-mode minimal|clone] [--clone-from <dir>] [--keep]
  */
 
-import { access, readFile, readdir, writeFile } from 'node:fs/promises'
+import { access, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import {
@@ -185,13 +185,17 @@ async function main() {
   const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.3.tgz'))
   const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
-  const home = assertIsolatedHome(options['dsh-home'] ?? '/tmp/dsh-livery-desktop-runtime')
+  const uniqueRun = `${process.pid}-${Date.now()}`
+  const home = assertIsolatedHome(options['dsh-home'] ?? `/tmp/dsh-livery-desktop-runtime-${uniqueRun}`)
   const appResources = options['app-bin'] ? path.dirname(path.dirname(options['app-bin'])) : DEFAULT_APP
   const appBin = options['app-bin'] ?? path.join(appResources, '..', 'MacOS', 'DeepSeek Harness')
   const appCli = options['app-cli'] ?? path.join(DEFAULT_APP, 'runtime/cli/bin/dsh')
-  const userDataDir = options['user-data-dir'] ?? '/tmp/dsh-livery-desktop-userdata'
+  const userDataDir = options['user-data-dir'] ?? `/tmp/dsh-livery-desktop-userdata-${uniqueRun}`
   const profileMode = options['profile-mode'] === 'clone' ? 'clone' : 'minimal'
   const keep = Boolean(options.keep)
+  // Electron persists localStorage/IndexedDB/permissions per user-data dir;
+  // never reuse a previous run's profile for acceptance evidence.
+  await rm(userDataDir, { recursive: true, force: true })
 
   const screensDir = path.join(outDir, 'screens')
   await ensureDir(screensDir)

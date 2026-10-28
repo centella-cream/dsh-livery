@@ -28,13 +28,16 @@ import type { BuiltinWallpaperId, WallpaperEffects, WallpaperPositionId, Wallpap
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
   clearRecentWallpapers,
+  mergeRecentEntries,
   readRecentWallpapers,
   rememberRecentWallpaper,
+  writeRecentWallpapers,
 } from '../wallpaper/history.js'
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
+import { isLocalOrPrivateHost } from '../wallpaper/host-safety.js'
 import type { LiveryPreset, PresetApplyResult, PresetAttribution, PresetWallpaperTarget } from '../wallpaper/preset.js'
 import { readRecentFromStorageEvent } from '../wallpaper/sync.js'
 import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
@@ -42,6 +45,7 @@ import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUplo
 import { handleDropzoneKeyDown } from '../wallpaper/upload-a11y.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
+import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
 import { PresetCard } from './PresetCard.js'
 import { WallpaperDataClear } from './WallpaperDataClear.js'
@@ -168,12 +172,33 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [dragOver, setDragOver] = useState(false)
   const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
   const [attribution, setAttribution] = useState<Attribution | undefined>(undefined)
-  const effectiveAttribution = attribution !== undefined && attribution.identity === liveIdentity
+  const localAttribution = attribution !== undefined && attribution.identity === liveIdentity
     ? attribution
     : undefined
   const [recent, setRecent] = useState<readonly RecentWallpaperEntry[]>(() => readRecentWallpapers(recentStorage))
+  const recentRef = useRef(recent)
+  recentRef.current = recent
+  // Attribution also derives from the persisted recent list, so it survives a
+  // style-tab remount (and cross-tab selection) even though it is display-only.
+  const recentAttribution: Attribution | undefined = (() => {
+    if (localAttribution !== undefined) return localAttribution
+    if (state.selection?.kind !== 'remote') return undefined
+    const remoteUrl = state.selection.url
+    const entry = recent.find(candidate => candidate.url === remoteUrl)
+    if (entry === undefined) return undefined
+    return {
+      identity: `remote:${entry.url}`,
+      title: entry.title ?? t('wallpaper.customSelected'),
+      creator: entry.creator ?? '',
+      license: entry.license ?? '',
+      source: entry.source ?? (() => { try { return new URL(entry.url).hostname } catch { return entry.url } })(),
+      context: entry.source === new URL(entry.url).hostname ? 'custom' : 'online',
+    }
+  })()
+  const effectiveAttribution = recentAttribution
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
   const objectUrlsRef = useRef<Map<string, string>>(new Map())
+  const pendingUploadDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const rememberObjectUrl = (url: string, objectUrl: string): void => {
     const previous = objectUrlsRef.current.get(url)
     if (previous !== undefined && previous !== objectUrl) {
@@ -210,6 +235,35 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   // Every selection-changing action invalidates a pending local upload: a
   // late IndexedDB completion must never roll the visible/persisted selection
   // back to an older upload.
+  /**
+   * Delete an obsolete upload only after a short cross-tab convergence window and
+   * only when the live, durable and currently persisted states all agree that no
+   * state still references it. This prevents a losing local write from deleting
+   * the blob that another tab's winning state still points at.
+   */
+  const scheduleUploadDelete = (key: string | undefined, label: string): void => {
+    if (key === undefined || imageStore === undefined) return
+    const previous = pendingUploadDeletes.current.get(key)
+    if (previous !== undefined) clearTimeout(previous)
+    const timer = setTimeout(() => {
+      pendingUploadDeletes.current.delete(key)
+      if (!mounted.current) return
+      void withWallpaperGcLock(async () => {
+        const active = getWallpaperController()
+        if (active !== undefined) {
+          const live = active.getSnapshot().selection
+          const durable = active.getDurableSelection()
+          const persisted = active.getPersistedSelection()
+          for (const candidate of [live, durable, persisted]) {
+            if (candidate?.kind === 'upload' && candidate.key === key) return
+          }
+        }
+        await deleteStoredImage(imageStore, key, label)
+      })
+    }, 5000)
+    pendingUploadDeletes.current.set(key, timer)
+  }
+
   const selectWallpaper = (selection: WallpaperSelection, blob?: Blob): void => {
     cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
@@ -218,7 +272,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     // localStorage. A failed write must leave the old blob recoverable.
     const persisted = controller?.flushState() === true
     const obsolete = persisted ? obsoleteUploadKey(previous, selection) : undefined
-    if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'previous upload')
+    scheduleUploadDelete(obsolete, 'previous upload')
   }
   const clearWallpaper = (): void => {
     cacheCancellation.current.cancel()
@@ -226,14 +280,23 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     commitSelection(uploadTickets.current, () => controller?.clear())
     const persisted = controller?.flushState() === true
     const obsolete = persisted ? obsoleteUploadKey(previous, undefined) : undefined
-    if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'cleared')
+    scheduleUploadDelete(obsolete, 'cleared')
   }
 
   useEffect(() => {
     mounted.current = true
     // Reclaim upload blobs left behind by an interrupted prior session. This is
     // best effort and protects the currently selected upload key.
-    void pruneStaleUploads(imageStore, state.selection?.kind === 'upload' ? state.selection.key : undefined)
+    const active = getWallpaperController()
+    const current = active?.getSnapshot().selection
+    const durable = active?.getDurableSelection()
+    const persisted = active?.getPersistedSelection()
+    const uploadKeys = new Set<string>()
+    for (const candidate of [current, durable, persisted]) {
+      if (candidate?.kind === 'upload') uploadKeys.add(candidate.key)
+    }
+    const [liveKey, durableKey, persistedKey] = [...uploadKeys]
+    void withWallpaperGcLock(() => pruneStaleUploads(imageStore, liveKey, durableKey, persistedKey))
     return () => {
       mounted.current = false
       cacheCancellation.current.cancel()
@@ -360,8 +423,14 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     const listener = (event: StorageEvent): void => {
       const next = readRecentFromStorageEvent(event as unknown as { key: string | null; newValue: string | null }, recentStorage)
       if (next === undefined) return
-      const keep = new Set(next.map(entry => entry.url))
-      setRecent(next)
+      const merged = mergeRecentEntries(recentRef.current, next)
+      const keep = new Set(merged.map(entry => entry.url))
+      setRecent(merged)
+      if (merged.length !== next.length || merged.some((entry, index) => entry.url !== next[index]?.url)) {
+        // Preserve a concurrently added local entry instead of losing it to the
+        // other tab's last write; both tabs eventually converge on the union.
+        writeRecentWallpapers(recentStorage, merged)
+      }
       for (const url of [...objectUrlsRef.current.keys()]) {
         if (!keep.has(url)) releaseObjectUrl(url)
       }
@@ -398,11 +467,40 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   }, [recent])
 
   useEffect(() => () => {
+    for (const timer of pendingUploadDeletes.current.values()) clearTimeout(timer)
+    pendingUploadDeletes.current.clear()
     for (const objectUrl of objectUrlsRef.current.values()) {
       try { URL.revokeObjectURL(objectUrl) } catch { /* already gone */ }
     }
     objectUrlsRef.current.clear()
   }, [])
+
+  // Remote selections (including cross-tab/preset/hydrated ones) are fetched
+  // through the guarded cache before any CSS can reference them. No raw URL is
+  // ever handed to the browser's image loader.
+  useEffect(() => {
+    if (state.selection?.kind !== 'remote') return
+    if (controller?.getRenderImage() !== undefined) return
+    const url = state.selection.url
+    const abort = typeof AbortController === 'undefined' ? undefined : new AbortController()
+    let cancelled = false
+    void cacheRemoteImage(url, {
+      images: imageStore,
+      storage: recentStorage,
+      protectedUrl: url,
+      signal: abort?.signal,
+    }).then(result => {
+      if (cancelled || !result.ok || !mounted.current) return
+      if (!isCurrentRemoteSelection(controller?.getSnapshot().selection, url)) return
+      rememberBlob(url, result.record.blob)
+      selectWallpaper({ kind: 'remote', url }, result.record.blob)
+    })
+    return () => {
+      cancelled = true
+      abort?.abort()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.selection?.kind === 'remote' ? state.selection.url : undefined])
 
   const selectBuiltin = (id: BuiltinWallpaperId): void => {
     selectWallpaper({ kind: 'builtin', id })
@@ -436,9 +534,12 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       setProblem(check.problem)
       return
     }
+    let host = ''
+    try { host = new URL(check.url).hostname } catch { setProblem('invalid'); return }
+    if (isLocalOrPrivateHost(host)) { setProblem('invalid'); return }
     setProblem(undefined)
     selectWallpaper({ kind: 'remote', url: check.url })
-    const source = new URL(check.url).hostname
+    const source = host
     setAttribution({
       identity: `remote:${check.url}`,
       title: t('wallpaper.customSelected'), creator: '', license: '',
@@ -447,12 +548,15 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     rememberRemote({ url: check.url, title: t('wallpaper.customSelected'), source })
   }
   const applyUpload = async (file: File): Promise<void> => {
+    // Invalidate any slow upload before validating the new pick: an invalid file
+    // must still cancel the previous pending upload.
+    const ticket = uploadTickets.current.next()
     const check = validateUploadFile(file)
     if (!check.ok) {
       setUploadProblem(check.problem)
       return
     }
-    const ticket = uploadTickets.current.next()
+    const startSelectionVersion = controller?.getSelectionVersion()
     const key = `upload-${Date.now()}-${Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 10)}`
     let sessionOnly = imageStore === undefined
     if (imageStore !== undefined) {
@@ -464,14 +568,19 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     }
     // A newer upload (or teardown) owns the result now: late completions must
     // not change errors/attribution/selection, and their orphan blob is removed.
-    if (!mounted.current || !uploadTickets.current.isCurrent(ticket)) {
-      if (imageStore !== undefined) void deleteStoredImage(imageStore, key, 'obsolete upload')
-      return
-    }
-    setUploadProblem(undefined)
-    setUploadSessionOnly(sessionOnly)
-    setAttribution(undefined)
-    selectWallpaper({ kind: 'upload', key }, file)
+    await withWallpaperGcLock(async () => {
+      const stateChanged = controller !== undefined
+        && startSelectionVersion !== undefined
+        && controller.getSelectionVersion() !== startSelectionVersion
+      if (!mounted.current || !uploadTickets.current.isCurrent(ticket) || stateChanged) {
+        if (imageStore !== undefined) void deleteStoredImage(imageStore, key, 'obsolete upload')
+        return
+      }
+      setUploadProblem(undefined)
+      setUploadSessionOnly(sessionOnly)
+      setAttribution(undefined)
+      selectWallpaper({ kind: 'upload', key }, file)
+    })
   }
   const pickFiles = (files: FileList | null | undefined): void => {
     const file = files?.item(0)
@@ -542,7 +651,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     const ok = persisted && matchesPresetWallpaperState(next, target)
     if (ok) {
       const obsolete = obsoleteUploadKey(previous, target.selection)
-      if (obsolete !== undefined) void deleteStoredImage(imageStore, obsolete, 'preset')
+      scheduleUploadDelete(obsolete, 'preset')
     }
     return ok
   }
@@ -568,6 +677,15 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       source: preset.attribution.source ?? '',
       context: preset.wallpaper?.kind === 'remote' ? 'online' : 'custom',
     })
+    if (preset.wallpaper?.kind === 'remote') {
+      rememberRemote({
+        url: preset.wallpaper.url,
+        title: preset.attribution.title,
+        creator: preset.attribution.creator,
+        license: preset.attribution.license,
+        source: preset.attribution.source,
+      })
+    }
   }
 
   return (

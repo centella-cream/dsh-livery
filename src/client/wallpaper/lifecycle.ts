@@ -99,6 +99,8 @@ export interface StaleUploadCleanupResult {
 export async function pruneStaleUploads(
   images: WallpaperImageStore | undefined,
   currentUploadKey: string | undefined,
+  durableUploadKey?: string | undefined,
+  persistedUploadKey?: string | undefined,
 ): Promise<StaleUploadCleanupResult> {
   if (images === undefined) return { removed: [], errors: [] }
   let records: readonly StoredImageRecord[]
@@ -113,6 +115,8 @@ export async function pruneStaleUploads(
   for (const record of records) {
     if (record.kind !== 'upload') continue
     if (currentUploadKey !== undefined && record.key === currentUploadKey) continue
+    if (durableUploadKey !== undefined && record.key === durableUploadKey) continue
+    if (persistedUploadKey !== undefined && record.key === persistedUploadKey) continue
     try {
       await images.delete(record.key)
       removed.push(record.key)
@@ -152,10 +156,17 @@ export interface ClearLocalWallpaperDataOptions {
   /** Current selection: its upload blob/remote cache entry are preserved. */
   readonly selection?: WallpaperSelection | undefined
   /**
+   * Last successfully persisted selection. A failed localStorage write leaves
+   * the in-memory selection ahead of the recoverable state; both must survive GC.
+   */
+  readonly durableSelection?: WallpaperSelection | undefined
+  /**
    * Live selection resolver. Cleanup is asynchronous; re-read this before each
    * deletion so a wallpaper selected during cleanup is never removed.
    */
   readonly getSelection?: (() => WallpaperSelection) | undefined
+  /** Live durable-selection resolver. */
+  readonly getDurableSelection?: (() => WallpaperSelection) | undefined
 }
 
 /**
@@ -198,6 +209,7 @@ export async function clearAllLocalWallpaperData(
   const images = options.images ?? createIndexedDbImageStore()
   const selection = options.selection
   const liveSelection = (): WallpaperSelection => options.getSelection?.() ?? selection
+  const liveDurable = (): WallpaperSelection => options.getDurableSelection?.() ?? options.durableSelection ?? selection
   const errors: string[] = []
   let removedImages = 0
   let keptImages = 0
@@ -213,10 +225,15 @@ export async function clearAllLocalWallpaperData(
     const kept: StoredImageRecord[] = []
     for (const record of records) {
       const current = liveSelection()
-      const currentUploadKey = current?.kind === 'upload' ? current.key : undefined
-      const currentRemoteUrl = current?.kind === 'remote' ? current.url : undefined
-      const isCurrent = (record.kind === 'upload' && record.key === currentUploadKey)
-        || (record.kind === 'remote' && record.sourceUrl === currentRemoteUrl)
+      const durable = liveDurable()
+      const protectedUploadKeys = new Set<string>()
+      const protectedRemoteUrls = new Set<string>()
+      for (const candidate of [current, durable]) {
+        if (candidate?.kind === 'upload') protectedUploadKeys.add(candidate.key)
+        if (candidate?.kind === 'remote') protectedRemoteUrls.add(candidate.url)
+      }
+      const isCurrent = (record.kind === 'upload' && protectedUploadKeys.has(record.key))
+        || (record.kind === 'remote' && record.sourceUrl !== undefined && protectedRemoteUrls.has(record.sourceUrl))
       if (isCurrent) {
         keptImages += 1
         kept.push(record)

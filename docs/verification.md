@@ -38,17 +38,21 @@ Evidence:
 - `contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json`
 
 Each file records the exact sha256, byte size, commit, exact browser/runtime
-versions, scope and per-run results. The `0.1.2` evidence files are never rewritten.
+versions, scope and per-run results. Evidence schema v2 also binds a sanitized
+raw probe path+sha256, run summary, host/adapter identity, report hash and run
+commit; critical checks are re-derived from probe statuses rather than trusted
+from a self-reported list. The `0.1.2` evidence files are never rewritten.
 
 ## Acceptance runs (accepted artifact)
 
 | Run | Environment | Result |
 |---|---|---|
 | Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | recorded in the committed rc.2 evidence/report |
-| Web real-profile clone | same | recorded in the committed rc.2 evidence/report |
 | Latest Web isolated | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | recorded in the committed rc.4 evidence/report |
 | Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node `24.21.0` | recorded in the committed Desktop evidence/report |
 
+A real-profile clone run remains a supplementary diagnostic and is intentionally
+not part of formal release evidence: only isolated-home runs are authoritative.
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
 22.23.1 and Playwright with system Chrome 156.0.8078.48. The Desktop run uses the real
 Electron app, the official rc.3 plugin manager and an isolated app

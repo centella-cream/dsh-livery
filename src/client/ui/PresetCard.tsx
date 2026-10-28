@@ -309,6 +309,7 @@ export function PresetCard({
   const fileInput = useRef<HTMLInputElement | null>(null)
   const mounted = useRef(true)
   const operationId = useRef(0)
+  const copyTicket = useRef(0)
   const presetRef = useRef<LiveryPreset | undefined>(preset)
   presetRef.current = preset
 
@@ -352,7 +353,16 @@ export function PresetCard({
     setError(undefined)
     setExported(undefined)
     setCopyState('idle')
-    const result = await importPresetFile(file, { catalogIds })
+    copyTicket.current += 1
+    let result
+    try {
+      result = await importPresetFile(file, { catalogIds })
+    } catch {
+      if (mounted.current && ticket === operationId.current) {
+        setError({ kind: 'import', code: 'unreadable' })
+      }
+      return
+    }
     if (!mounted.current || ticket !== operationId.current) return
     if (!result.ok) {
       clearImportState()
@@ -364,6 +374,7 @@ export function PresetCard({
   }
 
   const onExport = (): void => {
+    copyTicket.current += 1
     setError(undefined)
     setCopyState('idle')
     const result = exportPreset({
@@ -384,13 +395,15 @@ export function PresetCard({
 
   const onCopy = async (): Promise<void> => {
     if (exported === undefined) return
+    const targetJson = exported.json
+    const ticket = copyTicket.current
     let ok = false
     try {
-      ok = await clipboardWriter(exported.json)
+      ok = await clipboardWriter(targetJson)
     } catch {
       ok = false
     }
-    if (!mounted.current) return
+    if (!mounted.current || ticket !== copyTicket.current || exported.json !== targetJson) return
     setCopyState(ok ? 'copied' : 'failed')
     if (!ok) setError({ kind: 'copy', code: 'clipboard' })
     else setError(undefined)

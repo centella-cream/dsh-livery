@@ -23,6 +23,37 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Fixed
 
+- Uploaded blobs are deleted only after the replacement state is persisted, with
+  a delayed cross-tab convergence window; mount/clear GC protects the live, last
+  durable and currently persisted selections, and upload commits are serialized
+  with GC through a shared lock.
+- A pending upload captures the selection version before its IndexedDB write and
+  aborts if a local or cross-tab selection changed; picking an invalid file also
+  cancels an earlier slow upload.
+- Same-revision multi-tab writes converge to the deterministic maximum
+  `(revision, sourceId)`, not merely against the local tab id, so three or more
+  tabs converge regardless of event order.
+- IndexedDB blocked/error/versionchange recovery reopens on the next operation;
+  cache operation tokens prevent a cancelled same-URL download from deleting a
+  newer record; LRU touch is a single transaction and cannot resurrect cleared
+  rows.
+- Recent history merges concurrent additions and preserves metadata when the
+  same URL is selected again; attribution derives from the persisted recent
+  metadata so it survives style-tab remounts.
+- Preset import/export rejects deep/cyclic/non-JSON structures with stable
+  `invalid-json` errors (no stack overflow), and portable URLs reject
+  single-label, site-local, multicast and mapped-private hosts.
+- Boot-less/unknown hosts wait for catalog certification before wallpaper starts;
+  the direct style apply API enforces `configStatus==='ready' && writable`; the
+  theme service is declared as an injection dependency.
+- Wallpaper DOM layers carry an ownership lease, so an older plugin/HMR instance
+  cannot clear the newer instance's stylesheet/overlay; clipboard results are
+  operation-ticketed.
+- Acceptance evidence is bound to sanitized raw probes, summaries, host/adapter
+  identities, report hashes and the run commit; critical checks are re-derived
+  from probe check statuses. Desktop user-data directories are unique and cleared
+  per run; Web defaults are unique per process.
+
 - Uploaded blobs are deleted only after the replacement state is confirmed
   persisted; a failed localStorage write leaves the old upload recoverable.
   IndexedDB read failures no longer count as a missing upload.
@@ -62,9 +93,10 @@ packaging; they are folded into the `0.1.0` entry.
   are evicted with their blobs, and the cache is bounded by 24 entries / 128 MiB
   LRU with the current wallpaper protected.
 - Remote wallpaper downloads check `Content-Length` and stream body chunks with a
-  15 MiB cap and timeout, so oversized responses never fully enter memory; failed,
-  timed-out or non-image downloads fall back to the original URL without an
-  IndexedDB write.
+  15 MiB cap and timeout, so oversized responses never fully enter memory. Remote
+  URLs are rendered only from the verified cached blob; the raw URL never enters
+  CSS (no bypass of credentials/timeout/size/content-type checks). Failed
+  downloads keep the history entry but show no unsafe fallback image.
 - The visually hidden native file input is removed from the Tab order, the
   dropzone has a visible focus ring and a single Enter/Space activation, and
   upload/URL errors stay linked to both visible controls through ARIA.

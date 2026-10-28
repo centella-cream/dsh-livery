@@ -2,8 +2,11 @@
  * Multi-tab synchronization helpers for wallpaper state and recent history.
  *
  * A persisted v2 record carries a monotonic `revision` and a per-tab `sourceId`.
- * External storage events are adopted only when their revision is newer; own
- * echoes / older revisions are ignored, which prevents write loops.
+ * Revisions are the primary ordering; concurrent equal-revision writes are broken
+ * deterministically by the source id of the CURRENT WINNING state, so three or
+ * more tabs converge to the maximum `(revision, sourceId)` no matter in which
+ * order events arrive. Own echoes / older revisions are ignored, which prevents
+ * write loops.
  */
 import { parseWallpaperState } from '../wallpaper.js'
 import type { HydratedWallpaperState } from '../wallpaper.js'
@@ -65,11 +68,19 @@ export function parseExternalWallpaperState(newValue: string | null): ExternalWa
 
 /**
  * Whether an external record may replace the local state.
- * @param args - revisions, source ids and last published raw value.
- * @returns true only for a strictly newer, non-own record.
+ *
+ * Ordering is by `(revision, sourceId)`: a strictly newer revision always wins;
+ * an equal revision is a concurrent write, broken deterministically by comparing
+ * the incoming source id against the source id of the current winning state (not
+ * the tab's own id). Every tab therefore converges on the maximum pair, even in
+ * chains of three or more tabs and regardless of event delivery order.
+ * @param args - revisions, winner/own source ids and last published raw value.
+ * @returns true only for a strictly better, non-own record.
  */
 export function shouldApplyExternalState(args: {
   readonly currentRevision: number
+  /** Source id of the state that currently wins this tab's ordering. */
+  readonly winnerSourceId: string | undefined
   readonly incomingRevision: number
   readonly incomingSourceId: string | undefined
   readonly ownSourceId: string | undefined
@@ -81,13 +92,11 @@ export function shouldApplyExternalState(args: {
     && args.incomingSourceId === args.ownSourceId) return false
   if (!Number.isInteger(args.incomingRevision)) return false
   if (args.incomingRevision > args.currentRevision) return true
-  // Concurrent writes can produce the same local counter in two tabs. Break
-  // the tie deterministically by source id so both tabs converge on one state.
-  if (args.incomingRevision === args.currentRevision
-    && args.incomingSourceId !== undefined && args.ownSourceId !== undefined) {
-    return args.incomingSourceId > args.ownSourceId
-  }
-  return false
+  if (args.incomingRevision < args.currentRevision) return false
+  // Equal revision: deterministic tie-break against the current winner. An
+  // incoming record without a source id can never beat a known winner.
+  if (args.incomingSourceId === undefined) return false
+  return args.incomingSourceId > (args.winnerSourceId ?? '')
 }
 
 /**

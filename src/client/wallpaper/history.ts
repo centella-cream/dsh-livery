@@ -96,8 +96,60 @@ export function addRecentEntry(
 ): readonly RecentWallpaperEntry[] {
   const sanitized = parseRecentEntry(entry)
   if (sanitized === undefined) return entries
-  return [sanitized, ...entries.filter(candidate => candidate.url !== sanitized.url)]
+  const previous = entries.find(candidate => candidate.url === sanitized.url)
+  // Same URL with sparse new metadata (e.g. pasted again in the custom field)
+  // must not erase an earlier Openverse title/creator/license/thumbnail.
+  const merged: RecentWallpaperEntry = {
+    url: sanitized.url,
+    addedAt: Math.max(previous?.addedAt ?? 0, sanitized.addedAt),
+    ...(sanitized.thumbnail ?? previous?.thumbnail) === undefined ? {} : { thumbnail: sanitized.thumbnail ?? previous?.thumbnail },
+    ...(sanitized.title ?? previous?.title) === undefined ? {} : { title: sanitized.title ?? previous?.title },
+    ...(sanitized.creator ?? previous?.creator) === undefined ? {} : { creator: sanitized.creator ?? previous?.creator },
+    ...(sanitized.license ?? previous?.license) === undefined ? {} : { license: sanitized.license ?? previous?.license },
+    ...(sanitized.source ?? previous?.source) === undefined ? {} : { source: sanitized.source ?? previous?.source },
+  }
+  return [merged, ...entries.filter(candidate => candidate.url !== sanitized.url)]
     .slice(0, MAX_RECENT_WALLPAPERS)
+}
+
+/**
+ * Merge two history lists by URL (used when a storage event races a local add).
+ * Existing metadata is retained field-by-field; callback order is not trusted.
+ * @param left - local entries.
+ * @param right - external entries.
+ * @returns a deduped, newest-first list capped at 24.
+ */
+export function mergeRecentEntries(
+  left: readonly RecentWallpaperEntry[],
+  right: readonly RecentWallpaperEntry[],
+): readonly RecentWallpaperEntry[] {
+  const byUrl = new Map<string, RecentWallpaperEntry>()
+  for (const entry of [...left, ...right]) {
+    const parsed = parseRecentEntry(entry)
+    if (parsed === undefined) continue
+    const previous = byUrl.get(parsed.url)
+    byUrl.set(parsed.url, previous === undefined
+      ? parsed
+      : parseRecentEntry({
+        ...previous,
+        ...parsed,
+        addedAt: Math.max(previous.addedAt, parsed.addedAt),
+      }) as RecentWallpaperEntry)
+  }
+  return [...byUrl.values()].sort((a, b) => b.addedAt - a.addedAt).slice(0, MAX_RECENT_WALLPAPERS)
+}
+
+/** Write one complete recent list (used by cross-tab merge). */
+export function writeRecentWallpapers(
+  storage: RecentWallpaperStorage | undefined,
+  entries: readonly RecentWallpaperEntry[],
+): void {
+  if (storage === undefined) return
+  try {
+    storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify(entries.slice(0, MAX_RECENT_WALLPAPERS)))
+  } catch {
+    /* quota/disabled storage: keep the in-memory result */
+  }
 }
 
 /** Persist one added entry and return the next history. */

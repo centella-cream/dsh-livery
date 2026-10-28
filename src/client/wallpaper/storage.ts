@@ -184,6 +184,15 @@ export interface WallpaperImageStore {
   list(): Promise<readonly StoredImageRecord[]>
   /** Remove every stored image (local wallpapers/cache only; not localStorage). */
   clear(): Promise<void>
+  /**
+   * Atomically read + refresh one record's `lastUsedAt` in ONE readwrite
+   * transaction. Returns undefined when the record is absent/corrupt (never
+   * resurrects a row that a concurrent `clear()` deleted).
+   * @param key - primary key to touch.
+   * @param now - epoch milliseconds for the new `lastUsedAt`.
+   * @returns the updated record, or undefined.
+   */
+  touch(key: string, now: number): Promise<StoredImageRecord | undefined>
 }
 
 interface IdbRequestLike<T> {
@@ -338,8 +347,10 @@ async function migrateLegacyImageRecords(
 /**
  * Create the IndexedDB-backed image store, or undefined when IndexedDB is not
  * available (private mode / tests). The database opens at schema v2; an existing
- * v1 database is migrated defensively during the upgrade. Operations reject if
- * the DB cannot open.
+ * v1 database is migrated atomically inside the versionchange transaction.
+ * A blocked/failed open and a connection closed by another tab's upgrade both
+ * invalidate the cached connection, so the next operation retries instead of
+ * reusing a dead database forever.
  * @param factory - injected IndexedDB factory (defaults to global indexedDB).
  * @returns the image store or undefined.
  */
@@ -348,12 +359,25 @@ export function createIndexedDbImageStore(
 ): WallpaperImageStore | undefined {
   if (factory === undefined) return undefined
   let dbPromise: Promise<IdbDatabaseLike> | undefined
+  let currentDb: IdbDatabaseLike | undefined
+
+  /** Drop the cached connection; a later operation reopens the database. */
+  const invalidate = (db?: IdbDatabaseLike): void => {
+    if (db !== undefined && currentDb !== db) return
+    currentDb = undefined
+    dbPromise = undefined
+  }
+
   const open = (): Promise<IdbDatabaseLike> => {
     if (dbPromise !== undefined) return dbPromise
-    dbPromise = new Promise((resolve, reject) => {
+    const attempt = new Promise<IdbDatabaseLike>((resolve, reject) => {
       let previousVersion: number | undefined
       let migratedInUpgrade = false
       let migratedCount = 0
+      // A blocked open can still succeed later (another tab closed its old
+      // connection). The attempt is already rejected by then: close that late
+      // connection instead of leaking one the next retry would duplicate.
+      let settled = false
       try {
         const request = factory.open(WALLPAPER_DB_NAME, WALLPAPER_DB_VERSION)
         request.onupgradeneeded = event => {
@@ -367,10 +391,11 @@ export function createIndexedDbImageStore(
           // read/write would race another tab and let it update a row between
           // our snapshot and rewrite.
           const transaction = request.transaction ?? null
-          const openCursor = transaction?.objectStore(WALLPAPER_DB_STORE).openCursor
-          if (transaction === null || typeof openCursor !== 'function') return
+          const objectStore = transaction?.objectStore(WALLPAPER_DB_STORE)
+          const openCursor = objectStore?.openCursor
+          if (transaction === null || objectStore === undefined || typeof openCursor !== 'function') return
           migratedInUpgrade = true
-          const cursorRequest = openCursor.call(transaction.objectStore(WALLPAPER_DB_STORE))
+          const cursorRequest = openCursor.call(objectStore)
           cursorRequest.onsuccess = () => {
             const cursor = cursorRequest.result
             if (cursor === null || cursor === undefined) return
@@ -386,11 +411,27 @@ export function createIndexedDbImageStore(
           }
           cursorRequest.onerror = () => warnDiagnostic('legacy wallpaper migration cursor failed')
         }
-        request.onblocked = () => reject(new Error('wallpaper database upgrade blocked by another tab'))
+        request.onblocked = () => {
+          settled = true
+          reject(new Error('wallpaper database upgrade blocked by another tab'))
+        }
         request.onsuccess = () => {
           const db = request.result
+          if (settled) {
+            try { db.close?.() } catch { /* closing is best effort */ }
+            return
+          }
+          settled = true
+          currentDb = db
+          // Another tab upgrading the database must not leave us holding a
+          // connection that blocks its versionchange transaction: close and drop
+          // the cached promise so the next operation reopens.
           db.onversionchange = () => {
             try { db.close?.() } catch { /* closing is best effort */ }
+            if (currentDb === db) {
+              currentDb = undefined
+              dbPromise = undefined
+            }
           }
           // Real IndexedDB provides the upgrade transaction, so migration is
           // atomic there. Fall back only for minimal injected fakes that lack
@@ -411,16 +452,39 @@ export function createIndexedDbImageStore(
             },
           )
         }
-        request.onerror = () => reject(new Error('wallpaper database failed to open'))
+        request.onerror = () => {
+          settled = true
+          reject(new Error('wallpaper database failed to open'))
+        }
       } catch (error) {
         reject(error instanceof Error ? error : new Error('wallpaper database failed to open'))
       }
     })
-    return dbPromise
+    dbPromise = attempt
+    // A rejected/blocked open must not poison the store forever: clear the
+    // cache so the next operation performs a fresh open attempt.
+    void attempt.then(undefined, () => {
+      if (dbPromise === attempt) dbPromise = undefined
+    })
+    return attempt
+  }
+
+  /**
+   * Open one transaction. A connection closed behind our back (another tab's
+   * versionchange) is invalidated so the next operation retries with a fresh
+   * connection instead of reusing the closed database.
+   */
+  const transaction = async (mode: 'readonly' | 'readwrite'): Promise<IdbTransactionLike> => {
+    const db = await open()
+    try {
+      return db.transaction(WALLPAPER_DB_STORE, mode)
+    } catch (error) {
+      invalidate(db)
+      throw error
+    }
   }
   const store = async (mode: 'readonly' | 'readwrite'): Promise<IdbStoreLike> => {
-    const db = await open()
-    return db.transaction(WALLPAPER_DB_STORE, mode).objectStore(WALLPAPER_DB_STORE)
+    return (await transaction(mode)).objectStore(WALLPAPER_DB_STORE)
   }
   return {
     put: async (record) => {
@@ -430,11 +494,10 @@ export function createIndexedDbImageStore(
       if (typeof Blob === 'undefined' || !(record.blob instanceof Blob)) {
         throw new Error('wallpaper image blob is invalid')
       }
-      const db = await open()
-      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
-      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
+      const dbTransaction = await transaction('readwrite')
+      const objectStore = dbTransaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.put(storedValue(record), record.key))
-      await transactionDone(transaction)
+      await transactionDone(dbTransaction)
     },
     get: async (key) => {
       const objectStore = await store('readonly')
@@ -442,11 +505,10 @@ export function createIndexedDbImageStore(
       return normalizeStoredImageRecord(key, raw)
     },
     delete: async (key) => {
-      const db = await open()
-      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
-      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
+      const dbTransaction = await transaction('readwrite')
+      const objectStore = dbTransaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.delete(key))
-      await transactionDone(transaction)
+      await transactionDone(dbTransaction)
     },
     list: async () => {
       const objectStore = await store('readonly')
@@ -464,11 +526,40 @@ export function createIndexedDbImageStore(
       return records.sort((a, b) => b.lastUsedAt - a.lastUsedAt || a.key.localeCompare(b.key))
     },
     clear: async () => {
-      const db = await open()
-      const transaction = db.transaction(WALLPAPER_DB_STORE, 'readwrite')
-      const objectStore = transaction.objectStore(WALLPAPER_DB_STORE)
+      const dbTransaction = await transaction('readwrite')
+      const objectStore = dbTransaction.objectStore(WALLPAPER_DB_STORE)
       await requestResult(objectStore.clear())
-      await transactionDone(transaction)
+      await transactionDone(dbTransaction)
+    },
+    touch: async (key, now) => {
+      if (typeof key !== 'string' || key.length === 0) return undefined
+      const dbTransaction = await transaction('readwrite')
+      const objectStore = dbTransaction.objectStore(WALLPAPER_DB_STORE)
+      const completion = transactionDone(dbTransaction)
+      try {
+        // get + put share one transaction: a concurrent clear() either runs
+        // before (row absent -> no resurrection) or after (touch row removed).
+        const raw = await requestResult<unknown>(objectStore.get(key))
+        const record = normalizeStoredImageRecord(key, raw)
+        if (record === undefined) {
+          // Absent or corrupt: drop a corrupt row but never recreate a cleared one.
+          if (raw !== undefined) objectStore.delete(key)
+          await completion
+          return undefined
+        }
+        const stamp = typeof now === 'number' && Number.isFinite(now) ? Math.max(0, now) : Date.now()
+        const touched: StoredImageRecord = {
+          ...record,
+          lastUsedAt: Math.max(stamp, record.lastUsedAt),
+        }
+        objectStore.put(storedValue(touched), key)
+        await completion
+        return touched
+      } catch (error) {
+        // Let the aborted transaction settle so its rejection is observed.
+        await completion.catch(() => undefined)
+        throw error
+      }
     },
   }
 }

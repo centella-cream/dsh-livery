@@ -60,6 +60,13 @@ class FakeImages implements WallpaperImageStore {
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
   list = vi.fn(async () => [...this.records.values()])
   clear = vi.fn(async () => { this.records.clear() })
+  touch = vi.fn(async (key: string, now: number) => {
+    const record = this.records.get(key)
+    if (record === undefined) return undefined
+    const touched = { ...record, lastUsedAt: Math.max(now, record.lastUsedAt) }
+    this.records.set(key, touched)
+    return touched
+  })
 }
 
 const blob = (bytes = 8, type = 'image/png'): Blob => new Blob([new Uint8Array(bytes)], { type })
@@ -128,6 +135,15 @@ describe('remote cache sourceUrl verification', () => {
     // A real B record under B's own key still loads and verifies.
     images.records.set(remoteCacheKey(urlB), remoteRecord(urlB))
     expect((await loadCachedRemote(urlB, images))?.sourceUrl).toBe(urlB)
+  })
+
+  it('still loads the verified record when the LRU touch cannot write', async () => {
+    const images = new FakeImages()
+    const url = 'https://cdn.example/readonly.jpg'
+    images.records.set(remoteCacheKey(url), remoteRecord(url, { lastUsedAt: 9 }))
+    images.touch = vi.fn(async () => { throw new Error('quota') })
+    const loaded = await loadCachedRemote(url, images)
+    expect(loaded).toMatchObject({ sourceUrl: url, lastUsedAt: 9 })
   })
 
   it('deletes cached blobs on history eviction/clear but keeps the current wallpaper', async () => {
@@ -225,6 +241,84 @@ describe('remote cache cancellation', () => {
   })
 })
 
+describe('same-URL operation tokens', () => {
+  it('does not let an older cancelled download delete the newer download’s record', async () => {
+    const images = new FakeImages()
+    const url = 'https://cdn.example/race.jpg'
+    const key = remoteCacheKey(url)
+    const fetchImpl = vi.fn(async () => pngResponse(blob())) as unknown as typeof fetch
+    let releaseFirstPut: (() => void) | undefined
+    let putCalls = 0
+    images.put = vi.fn(async (record: StoredImageRecord) => {
+      putCalls += 1
+      if (putCalls === 1) {
+        await new Promise<void>(resolve => { releaseFirstPut = resolve })
+      }
+      images.records.set(record.key, record)
+    })
+
+    // A starts, blocks inside put; B starts afterwards and supersedes A.
+    const controllerA = new AbortController()
+    const pendingA = cacheRemoteImage(url, { images, fetchImpl, signal: controllerA.signal })
+    await vi.waitFor(() => { expect(putCalls).toBe(1) })
+    const resultB = await cacheRemoteImage(url, { images, fetchImpl })
+    expect(resultB.ok).toBe(true)
+    expect(images.records.has(key)).toBe(true)
+
+    // A is cancelled while its put is still in flight, then its write lands.
+    controllerA.abort()
+    releaseFirstPut?.()
+    expect(await pendingA).toEqual({ ok: false, reason: 'cancelled' })
+    // The newer task's record must survive: an old cancelled task may only
+    // delete a record it still owns.
+    expect(images.records.has(key)).toBe(true)
+    expect(images.delete).not.toHaveBeenCalledWith(key)
+  })
+
+  it('still lets the newest cancelled task clean up its own just-written record', async () => {
+    const images = new FakeImages()
+    const url = 'https://cdn.example/own-record.jpg'
+    const key = remoteCacheKey(url)
+    const fetchImpl = vi.fn(async () => pngResponse(blob())) as unknown as typeof fetch
+    let releasePut: (() => void) | undefined
+    images.put = vi.fn(async (record: StoredImageRecord) => {
+      await new Promise<void>(resolve => { releasePut = resolve })
+      images.records.set(record.key, record)
+    })
+    const controller = new AbortController()
+    const pending = cacheRemoteImage(url, { images, fetchImpl, signal: controller.signal })
+    await vi.waitFor(() => { expect(releasePut).toBeDefined() })
+    controller.abort()
+    releasePut?.()
+    expect(await pending).toEqual({ ok: false, reason: 'cancelled' })
+    expect(images.delete).toHaveBeenCalledWith(key)
+    expect(images.records.has(key)).toBe(false)
+  })
+
+  it('keeps a newer record when the older operation completes after being superseded', async () => {
+    const images = new FakeImages()
+    const url = 'https://cdn.example/superseded.jpg'
+    const key = remoteCacheKey(url)
+    const fetchImpl = vi.fn(async () => pngResponse(blob())) as unknown as typeof fetch
+    let releaseFirstPut: (() => void) | undefined
+    let putCalls = 0
+    images.put = vi.fn(async (record: StoredImageRecord) => {
+      putCalls += 1
+      if (putCalls === 1) await new Promise<void>(resolve => { releaseFirstPut = resolve })
+      images.records.set(record.key, record)
+    })
+    const controllerA = new AbortController()
+    const pendingA = cacheRemoteImage(url, { images, fetchImpl, signal: controllerA.signal })
+    await vi.waitFor(() => { expect(putCalls).toBe(1) })
+    const resultB = await cacheRemoteImage(url, { images, fetchImpl })
+    expect(resultB.ok).toBe(true)
+    // A completes (not cancelled) after B: its cleanup must not remove B's row.
+    releaseFirstPut?.()
+    expect(await pendingA).toEqual({ ok: true, key, record: expect.any(Object) })
+    expect(images.records.has(key)).toBe(true)
+  })
+})
+
 describe('upload lifecycle v2', () => {
   it('creates a v2 upload record from the validated file/blob', () => {
     const record = createUploadRecord('upload-1700000000000-abc', blob(12), 77)
@@ -258,6 +352,7 @@ describe('upload lifecycle v2', () => {
       delete: async () => { throw new Error('locked') },
       list: async () => [uploadRecord('upload-a'), uploadRecord('upload-b')],
       clear: async () => undefined,
+      touch: async () => undefined,
     }
     const result = await pruneStaleUploads(images, 'upload-b')
     expect(result.removed).toEqual([])
@@ -348,6 +443,7 @@ describe('clear all local wallpaper data', () => {
       },
       list: async () => [uploadRecord('upload-locked'), uploadRecord('upload-ok')],
       clear: async () => undefined,
+      touch: async () => undefined,
     }
     const result = await clearAllLocalWallpaperData({ images: failing, storage: new MemoryStorage(), selection: undefined })
     expect(result.status).toBe('partial')

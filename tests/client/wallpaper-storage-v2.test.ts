@@ -24,6 +24,8 @@ interface FakeRequest<T = unknown> {
 
 interface FakeUpgradeRequest<T> extends FakeRequest<T> {
   onupgradeneeded: ((event: { oldVersion?: number }) => void) | null
+  onblocked?: ((event: unknown) => void) | null
+  transaction?: null
 }
 
 const blob = (bytes = 8): Blob => new Blob([new Uint8Array(bytes)], { type: 'image/png' })
@@ -73,15 +75,19 @@ class FakeTransaction {
   onabort: ((event: unknown) => void) | null = null
   readonly store: FakeObjectStore
   private pending = 0
-  private settled = false
+  private completionScheduled = false
 
   constructor(
     readonly factory: FakeFactory,
     rows: Map<string, unknown>,
     readonly mode: 'readonly' | 'readwrite' = 'readwrite',
+    private readonly waitFor: Promise<void> = Promise.resolve(),
+    private readonly release: () => void = () => undefined,
   ) {
     this.store = new FakeObjectStore(this, rows)
-    queueMicrotask(() => queueMicrotask(() => this.settleIfIdle()))
+    // IndexedDB serializes transactions on the same store: do not start this
+    // transaction's requests until the previous one completed.
+    void this.waitFor.then(() => queueMicrotask(() => this.settleIfIdle()))
   }
 
   objectStore(_name: string): FakeObjectStore {
@@ -91,7 +97,7 @@ class FakeTransaction {
   enqueue(task: (request: FakeRequest) => void): FakeRequest {
     const request: FakeRequest = { onsuccess: null, onerror: null }
     this.pending += 1
-    queueMicrotask(() => {
+    void this.waitFor.then(() => queueMicrotask(() => {
       try {
         task(request)
         request.onsuccess?.({})
@@ -101,25 +107,50 @@ class FakeTransaction {
         this.pending -= 1
         this.settleIfIdle()
       }
-    })
+    }))
     return request
   }
 
   private settleIfIdle(): void {
-    if (this.settled || this.pending > 0) return
-    this.settled = true
-    queueMicrotask(() => this.oncomplete?.({}))
+    if (this.pending > 0 || this.completionScheduled) return
+    this.completionScheduled = true
+    queueMicrotask(() => {
+      this.completionScheduled = false
+      // A request handler may have queued another request (atomic get+put in
+      // one transaction): only commit once no request is outstanding.
+      if (this.pending > 0) {
+        this.settleIfIdle()
+        return
+      }
+      this.oncomplete?.({})
+      this.release()
+    })
   }
 }
 
 /** Minimal database whose stores persist in the factory. */
 class FakeDatabase {
+  onversionchange: ((event: unknown) => void) | null = null
+  closed = false
+  private tail: Promise<void> = Promise.resolve()
+
   constructor(private readonly factory: FakeFactory) {}
 
+  close(): void {
+    this.closed = true
+    this.factory.openDatabases.delete(this)
+  }
+
   transaction(name: string, mode: 'readonly' | 'readwrite' = 'readonly'): FakeTransaction {
+    if (this.closed) throw new Error('database connection is closed')
     const rows = this.factory.stores.get(name)
     if (rows === undefined) throw new Error(`missing object store: ${name}`)
-    return new FakeTransaction(this.factory, rows, mode)
+    this.factory.transactionCount += 1
+    let release: () => void = () => undefined
+    const hold = new Promise<void>(resolve => { release = resolve })
+    const previous = this.tail
+    this.tail = previous.then(() => hold)
+    return new FakeTransaction(this.factory, rows, mode, previous, release)
   }
 
   createObjectStore(name: string): unknown {
@@ -135,7 +166,11 @@ class FakeFactory {
   readonly stores = new Map<string, Map<string, unknown>>()
   readonly requestedVersions: Array<number | undefined> = []
   readonly requestedNames: string[] = []
+  readonly openDatabases = new Set<FakeDatabase>()
+  transactionCount = 0
   failOpen = false
+  blockNextOpen = false
+  blockThenSucceed = false
   failNextGetAllKeys = false
 
   constructor(initial?: { version: number; rows?: Record<string, unknown> }) {
@@ -158,17 +193,44 @@ class FakeFactory {
     const target = version ?? 1
     queueMicrotask(() => {
       try {
-        if (this.failOpen) throw new Error('open blocked')
+        if (this.failOpen) throw new Error('open failed')
+        if (this.blockNextOpen) {
+          this.blockNextOpen = false
+          request.onblocked?.({})
+          throw new Error('open blocked by another tab')
+        }
+        if (this.blockThenSucceed) {
+          // Real IDB: blocked first, then success once the other tab closes.
+          this.blockThenSucceed = false
+          request.onblocked?.({})
+          queueMicrotask(() => {
+            if (target > previous) {
+              this.version = target
+              request.onupgradeneeded?.({ oldVersion: previous })
+            }
+            if (request.result !== undefined) this.openDatabases.add(request.result)
+            request.onsuccess?.({})
+          })
+          return
+        }
         if (target > previous) {
           this.version = target
           request.onupgradeneeded?.({ oldVersion: previous })
         }
-        queueMicrotask(() => request.onsuccess?.({}))
+        queueMicrotask(() => {
+          if (request.result !== undefined) this.openDatabases.add(request.result)
+          request.onsuccess?.({})
+        })
       } catch {
         request.onerror?.({})
       }
     })
     return request
+  }
+
+  /** Simulate another tab upgrading the database (fires onversionchange). */
+  simulateVersionChange(): void {
+    for (const db of [...this.openDatabases]) db.onversionchange?.({})
   }
 }
 
@@ -318,5 +380,94 @@ describe('record normalization helpers', () => {
     expect(isUploadImageKey('upload-')).toBe(false)
     expect(isUploadImageKey('remote-1234abcd')).toBe(false)
     expect(isUploadImageKey('upload-bad key')).toBe(false)
+  })
+})
+
+describe('connection recovery', () => {
+  it('retries after a failed open instead of caching the rejection forever', async () => {
+    const factory = new FakeFactory()
+    factory.failOpen = true
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await expect(store.list()).rejects.toThrow(/failed to open/)
+    factory.failOpen = false
+    await expect(store.list()).resolves.toEqual([])
+    expect(factory.requestedNames).toHaveLength(2)
+  })
+
+  it('retries after a blocked upgrade', async () => {
+    const factory = new FakeFactory()
+    factory.blockNextOpen = true
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await expect(store.get('upload-missing')).rejects.toThrow(/blocked by another tab/)
+    await expect(store.get('upload-missing')).resolves.toBeUndefined()
+    expect(factory.requestedNames).toHaveLength(2)
+  })
+
+  it('closes a late connection when a blocked open succeeds after rejection', async () => {
+    const factory = new FakeFactory()
+    factory.blockThenSucceed = true
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await expect(store.get('upload-missing')).rejects.toThrow(/blocked by another tab/)
+    // The late onsuccess connection must be closed, not cached next to a retry.
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(factory.openDatabases.size).toBe(0)
+    await expect(store.get('upload-missing')).resolves.toBeUndefined()
+    expect(factory.requestedNames).toHaveLength(2)
+  })
+
+  it('closes and reopens after another tab upgrades (versionchange)', async () => {
+    const factory = new FakeFactory()
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await store.put({ key: uploadKey, kind: 'upload', size: 8, createdAt: 1, lastUsedAt: 1, blob: blob() })
+    expect(factory.openDatabases.size).toBe(1)
+    factory.simulateVersionChange()
+    expect(factory.openDatabases.size).toBe(0)
+    const listed = await store.list()
+    expect(listed.map(record => record.key)).toEqual([uploadKey])
+    expect(factory.requestedNames).toHaveLength(2)
+  })
+})
+
+describe('atomic LRU touch', () => {
+  it('refreshes lastUsedAt in one readwrite transaction and never moves it backwards', async () => {
+    const factory = new FakeFactory()
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await store.put({ key: uploadKey, kind: 'upload', size: 8, createdAt: 10, lastUsedAt: 10, blob: blob() })
+    const before = factory.transactionCount
+    const touched = await store.touch(uploadKey, 55)
+    expect(touched).toMatchObject({ key: uploadKey, lastUsedAt: 55, createdAt: 10 })
+    expect(factory.transactionCount - before).toBe(1)
+    expect((await store.get(uploadKey))?.lastUsedAt).toBe(55)
+    // Clock skew / older touch must not make an entry look colder than it is.
+    expect((await store.touch(uploadKey, 5))?.lastUsedAt).toBe(55)
+  })
+
+  it('returns undefined for absent/corrupt rows and never resurrects a cleared record', async () => {
+    const factory = new FakeFactory()
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await store.list()
+    const rows = factory.stores.get(WALLPAPER_DB_STORE)!
+    expect(await store.touch('upload-missing', 55)).toBeUndefined()
+    expect(rows.has('upload-missing')).toBe(false)
+
+    rows.set('upload-corrupt', { name: 'broken.png' })
+    expect(await store.touch('upload-corrupt', 55)).toBeUndefined()
+    expect(rows.has('upload-corrupt')).toBe(false)
+
+    await store.put({ key: uploadKey, kind: 'upload', size: 8, createdAt: 1, lastUsedAt: 1, blob: blob() })
+    await store.clear()
+    expect(await store.touch(uploadKey, 55)).toBeUndefined()
+    expect(rows.has(uploadKey)).toBe(false)
+  })
+
+  it('does not recreate a row when clear() wins the transaction race', async () => {
+    const factory = new FakeFactory()
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))!
+    await store.put({ key: uploadKey, kind: 'upload', size: 8, createdAt: 1, lastUsedAt: 1, blob: blob() })
+    const rows = factory.stores.get(WALLPAPER_DB_STORE)!
+    const pendingTouch = store.touch(uploadKey, 55)
+    await store.clear()
+    await pendingTouch
+    expect(rows.has(uploadKey)).toBe(false)
   })
 })

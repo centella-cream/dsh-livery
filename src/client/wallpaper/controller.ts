@@ -7,9 +7,12 @@
  * whenever selection/effects/position/tokens change, and tears the layer down on
  * plugin dispose. Every selection+effects+position change goes through the batch
  * `setState` transition (one stylesheet write, one debounced save, one notify) so
- * presets/import/sync never render intermediate states. The UI talks to it
- * through the module singleton accessor below; no host config or boot payload is
- * involved.
+ * presets/import/sync never render intermediate states. It also tracks the last
+ * successfully persisted selection ("durable"), a selection-identity version for
+ * async commit guards, and the source id of the current sync winner so three or
+ * more tabs converge to the deterministic maximum `(revision, sourceId)`. The UI
+ * talks to it through the module singleton accessor below; no host config or
+ * boot payload is involved.
  */
 import type { TokenMap } from '../../core/types.js'
 import {
@@ -20,7 +23,6 @@ import {
   DEFAULT_WALLPAPER_POSITION,
   normalizeWallpaperPosition,
   normalizeWallpaperRevision,
-  parseWallpaperState,
   serializeWallpaperState,
   WALLPAPER_STORAGE_KEY,
 } from '../wallpaper.js'
@@ -88,6 +90,27 @@ export interface WallpaperStorage {
 export interface WallpaperControllerApi {
   getSnapshot(): WallpaperState
   subscribe(listener: () => void): () => void
+  /**
+   * Selection last confirmed written to localStorage by this controller (also
+   * seeded from the stored record on hydrate/start). This is the selection that
+   * a reload can still recover after a failed persist, so callers that delete an
+   * upload blob it may reference must check this first.
+   */
+  getDurableSelection(): WallpaperSelection
+  /**
+   * Selection currently recoverable from localStorage, parsed defensively at
+   * call time. Undefined when the key is absent, corrupt, unknown-version, or a
+   * revisioned clear tombstone.
+   */
+  getPersistedSelection(): WallpaperSelection
+  /**
+   * Monotonic counter bumped ONLY when the effective selection identity changes
+   * (local or external); effect/position-only changes never bump it. Async
+   * upload commits capture it before awaiting and abort when it changed, so a
+   * slow IndexedDB write can never overwrite a newer selection (including one
+   * adopted from another tab).
+   */
+  getSelectionVersion(): number
   /**
    * Apply one wallpaper (builtin, validated remote URL, or upload blob), or
    * clear with undefined. Pass the blob to render a local object URL
@@ -205,6 +228,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let effects: WallpaperEffects = { ...DEFAULT_WALLPAPER_EFFECTS }
   let position: WallpaperPosition = { ...DEFAULT_WALLPAPER_POSITION }
   let revision = 0
+  /** Selection last confirmed written to localStorage (or seeded by hydrate). */
+  let durableSelection: WallpaperSelection = undefined
+  /** Bumped only when the effective selection identity changes. */
+  let selectionVersion = 0
+  /** Source id of the tab whose state currently wins the revision ordering. */
+  let winnerSourceId: string | undefined
   let tokens: { light: TokenMap | undefined; dark: TokenMap | undefined } = { ...EMPTY_TOKENS }
   let snapshot: WallpaperState = { selection, effects, position, revision }
   let saveTimer: ReturnType<typeof setTimeout> | undefined
@@ -268,6 +297,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       const record = serializeWallpaperState(selection, effects, position, revision)
       const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
       storage.setItem(WALLPAPER_STORAGE_KEY, raw)
+      // Durable state only advances once the bytes are actually in storage: a
+      // quota/disabled failure must leave the previous recoverable selection.
+      durableSelection = selection
       lastPublishedRaw = raw
       return true
     } catch {
@@ -317,22 +349,24 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
 
   const hydrate = (): void => {
     if (storage === undefined) return
-    let raw: unknown
+    let text: string | null
     try {
-      const text = storage.getItem(WALLPAPER_STORAGE_KEY)
-      if (text === null || text.length === 0) return
-      raw = JSON.parse(text)
+      text = storage.getItem(WALLPAPER_STORAGE_KEY)
     } catch {
       return
     }
+    if (text === null || text.length === 0) return
     // Corrupt or unknown-version records are ignored; the live wallpaper is
     // never cleared just because a stored record failed to parse.
-    const stored = parseWallpaperState(raw)
+    const stored = parseExternalWallpaperState(text)
     if (stored === undefined) return
-    selection = stored.selection
-    effects = stored.effects
-    position = stored.position
-    revision = stored.revision
+    if (!sameSelection(selection, stored.state.selection)) selectionVersion += 1
+    selection = stored.state.selection
+    effects = stored.state.effects
+    position = stored.state.position
+    revision = stored.state.revision
+    durableSelection = stored.state.selection
+    winnerSourceId = stored.sourceId
   }
 
   // Uploaded blobs live in IndexedDB: restore the object URL asynchronously once
@@ -343,10 +377,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   // remembered remote background renders even when the network is down.
   const restoreRemote = async (): Promise<void> => {
     if (disposed || selection === undefined || selection.kind !== 'remote') return
-    const expectedRevision = revision
+    // Guard the async commit on selection identity, not the revision: changing
+    // effects/position (which bumps the revision) must not cancel a restore.
+    const expectedSelectionVersion = selectionVersion
     const { url } = selection
     const record = await loadCachedRemote(url, images)
-    if (disposed || record === undefined || revision !== expectedRevision) return
+    if (disposed || record === undefined || selectionVersion !== expectedSelectionVersion) return
     if (selection === undefined || selection.kind !== 'remote' || selection.url !== url) return
     replaceLocalImageUrl(record.blob)
     apply()
@@ -355,7 +391,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
 
   const restoreUpload = async (): Promise<void> => {
     if (disposed || selection === undefined || selection.kind !== 'upload') return
-    const expectedRevision = revision
+    // Upload commits capture the selection version before awaiting and abort if
+    // a newer local/external selection replaced this one in the meantime.
+    const expectedSelectionVersion = selectionVersion
     const { key } = selection
     if (images === undefined || objectUrls === undefined) return
     let record: StoredImageRecord | undefined
@@ -366,7 +404,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       // (and its recoverable key) instead of permanently clearing the wallpaper.
       return
     }
-    if (disposed || revision !== expectedRevision) return
+    if (disposed || selectionVersion !== expectedSelectionVersion) return
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
     if (record === undefined) {
       setState({ selection: undefined })
@@ -391,6 +429,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (external === undefined) return
     if (!shouldApplyExternalState({
       currentRevision: revision,
+      winnerSourceId,
       incomingRevision: external.state.revision,
       incomingSourceId: external.sourceId,
       ownSourceId: sourceId,
@@ -400,15 +439,20 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     // A newer tab wins: drop the pending local save so it cannot overwrite it.
     cancelPendingSave()
     const tie = external.state.revision === revision
+    if (!sameSelection(selection, external.state.selection)) selectionVersion += 1
     selection = external.state.selection
     effects = external.state.effects
     position = external.state.position
     revision = external.state.revision
+    // The adopted record now defines the winning (revision, sourceId) identity
+    // for this tab, so a later same-revision delivery only wins if it is greater.
+    winnerSourceId = external.sourceId
     if (tie && storage !== undefined) {
       // Same counter from two tabs: persist the deterministic winner so a
       // later reload cannot resurrect the losing branch.
       try {
         storage.setItem(WALLPAPER_STORAGE_KEY, external.raw)
+        durableSelection = selection
         lastPublishedRaw = external.raw
       } catch {
         /* convergence write is best effort */
@@ -440,12 +484,15 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       }
       return snapshot
     }
+    if (selectionChanged) selectionVersion += 1
     selection = nextSelection
     effects = nextEffects
     position = nextPosition
     revision = stateOptions.revision === undefined
       ? revision + 1
       : normalizeWallpaperRevision(stateOptions.revision)
+    // A local write owns the new revision even when it reuses a stored counter.
+    winnerSourceId = sourceId
     if (selectionChanged || stateOptions.blob !== undefined) replaceLocalImageUrl(stateOptions.blob)
     apply()
     scheduleSave()
@@ -462,6 +509,17 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
         listeners.delete(listener)
       }
     },
+    getDurableSelection: () => durableSelection,
+    getPersistedSelection: () => {
+      if (storage === undefined) return undefined
+      try {
+        const text = storage.getItem(WALLPAPER_STORAGE_KEY)
+        return parseExternalWallpaperState(text)?.state.selection
+      } catch {
+        return undefined
+      }
+    },
+    getSelectionVersion: () => selectionVersion,
     setSelection: (next: WallpaperSelection, blob?: Blob) => {
       if (disposed) return
       setState({ selection: next }, blob === undefined ? {} : { blob })

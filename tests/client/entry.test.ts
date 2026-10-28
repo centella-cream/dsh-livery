@@ -191,7 +191,7 @@ afterEach(() => {
 
 describe('client entry contributions', () => {
   it('exposes the documented Cordis service dependencies and constants', () => {
-    expect(inject).toEqual(['configForms', 'slots', 'locale'])
+    expect(inject).toEqual(['configForms', 'slots', 'locale', 'theme'])
     expect(LIVERY_SETTINGS_ORDER).toBe(25)
     expect(PANEL_ROW_ORDER).toBe(30)
     expect(PANEL_NAVIGATION_GRACE_MS).toBe(1500)

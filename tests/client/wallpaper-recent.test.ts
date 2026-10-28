@@ -40,6 +40,13 @@ class FakeImages implements WallpaperImageStore {
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
   list = vi.fn(async () => [...this.records.values()])
   clear = vi.fn(async () => { this.records.clear() })
+  touch = vi.fn(async (key: string, now: number) => {
+    const record = this.records.get(key)
+    if (record === undefined) return undefined
+    const touched = { ...record, lastUsedAt: Math.max(now, record.lastUsedAt) }
+    this.records.set(key, touched)
+    return touched
+  })
 }
 
 const entry = (url: string, extra: Partial<RecentWallpaperEntry> = {}): RecentWallpaperEntry => ({
@@ -150,7 +157,7 @@ describe('controller renders cached remote images', () => {
     expect(urls.revoke).toHaveBeenCalledWith('blob:fake-1')
   })
 
-  it('falls back to the remote URL when no cache exists and adopts a late blob', async () => {
+  it('never renders the raw remote URL and adopts a late verified blob', async () => {
     const storage = new MemoryStorage()
     const images = new FakeImages()
     const urls: string[] = []
@@ -161,7 +168,7 @@ describe('controller renders cached remote images', () => {
     })
     controller.start()
     controller.setSelection({ kind: 'remote', url: 'https://cdn.example/a.jpg' })
-    expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain("url('https://cdn.example/a.jpg')")
+    expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
     controller.setSelection({ kind: 'remote', url: 'https://cdn.example/a.jpg' }, blob())
     expect(doc.getElementById(WALLPAPER_STYLE_ID)?.textContent).toContain("url('blob:1')")
     controller.dispose()
@@ -191,20 +198,21 @@ describe('late cache results and dispose races', () => {
     storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
       kind: 'remote', url: 'https://cdn.example/a.jpg', ...DEFAULT_WALLPAPER_EFFECTS,
     }))
-    let resolveGet: ((record: StoredImageRecord | undefined) => void) | undefined
+    let resolveTouch: ((record: StoredImageRecord | undefined) => void) | undefined
     const images = {
       put: vi.fn(async () => undefined),
-      get: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveGet = resolve })),
+      get: vi.fn(async () => undefined),
       delete: vi.fn(async () => undefined),
       list: vi.fn(async () => [] as readonly StoredImageRecord[]),
       clear: vi.fn(async () => undefined),
+      touch: vi.fn(() => new Promise<StoredImageRecord | undefined>(resolve => { resolveTouch = resolve })),
     }
     const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
     const doc = new FakeDocument()
     const controller = createWallpaperController({ storage, document: doc as never, images, objectUrls: urls })
     controller.start()
     controller.dispose()
-    resolveGet?.({ key: 'remote-x', kind: 'remote', size: 3, createdAt: 1, lastUsedAt: 1, sourceUrl: 'https://cdn.example/a.jpg', blob: blob() })
+    resolveTouch?.({ key: 'remote-x', kind: 'remote', size: 3, createdAt: 1, lastUsedAt: 1, sourceUrl: 'https://cdn.example/a.jpg', blob: blob() })
     await flush()
     expect(urls.create).not.toHaveBeenCalled()
     expect(doc.getElementById(WALLPAPER_STYLE_ID)).toBeNull()
@@ -224,6 +232,7 @@ describe('late cache results and dispose races', () => {
       delete: vi.fn(async () => undefined),
       list: vi.fn(async () => [] as readonly StoredImageRecord[]),
       clear: vi.fn(async () => undefined),
+      touch: vi.fn(async () => undefined as StoredImageRecord | undefined),
     }
     const urls = { create: vi.fn(() => 'blob:late'), revoke: vi.fn() }
     const doc = new FakeDocument()

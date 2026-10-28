@@ -211,6 +211,58 @@ describe('preset schema v1 — strict rejection', () => {
     }
   })
 
+  it('rejects single-label intranet hostnames', () => {
+    for (const url of [
+      'https://printer/image.jpg',
+      'https://printer./image.jpg',
+      'https://nas/a.png',
+      'https://intranet/a.png',
+    ]) {
+      const result = parse({ ...makePreset(), wallpaper: { kind: 'remote', url } })
+      expect(result.ok, url).toBe(false)
+      if (!result.ok) expect(result.problem, url).toBe('wallpaper-url')
+    }
+  })
+
+  it('rejects IPv6 site-local, multicast and IPv4-mapped private hosts', () => {
+    for (const url of [
+      'https://[fec0::1]/a.jpg',
+      'https://[fee0:1::1]/a.jpg',
+      'https://[feff::1]/a.jpg',
+      'https://[ff00::1]/a.jpg',
+      'https://[ff02::1]/a.jpg',
+      'https://[::ffff:192.168.1.1]/a.jpg',
+      'https://[::ffff:127.0.0.1]/a.jpg',
+      'https://[::ffff:172.16.0.1]/a.jpg',
+      'https://[::ffff:0:10.0.0.1]/a.jpg',
+      // Deprecated IPv4-compatible literal: ::127.0.0.1.
+      'https://[::7f00:1]/a.jpg',
+    ]) {
+      const result = parse({ ...makePreset(), wallpaper: { kind: 'remote', url } })
+      expect(result.ok, url).toBe(false)
+      if (!result.ok) expect(result.problem, url).toBe('wallpaper-url')
+    }
+  })
+
+  it('keeps legitimate public hosts portable', () => {
+    for (const url of [
+      'https://cdn.example.com/a.jpg',
+      'https://example.co.uk/a.jpg',
+      'https://93.184.216.34/a.jpg',
+      'https://8.8.8.8/a.jpg',
+      // Outside TEST-NET-3 (203.0.113.0/24); must not be caught by a /16 guess.
+      'https://203.0.1.1/a.jpg',
+      // Outside TEST-NET-2 (198.51.100.0/24); must not be caught by a /16 guess.
+      'https://198.51.99.1/a.jpg',
+      'https://[2001:4860:4860::8888]/a.jpg',
+      // An IPv4-mapped *public* address is still a legitimate destination.
+      'https://[::ffff:8.8.8.8]/a.jpg',
+    ]) {
+      const result = parse({ ...makePreset(), wallpaper: { kind: 'remote', url } })
+      expect(result.ok, url).toBe(true)
+    }
+  })
+
   it('rejects unknown or malformed effects', () => {
     expectProblem(parse({ ...makePreset(), effects: { ...effects(), saturate: 4 } }), 'unknown-field')
     expectProblem(parse({ ...makePreset(), effects: { ...effects(), blur: '8' } }), 'effects')
@@ -324,6 +376,14 @@ describe('preset export', () => {
       .toEqual({ ok: false, problem: 'invalid-url' })
     expect(exportPreset({ ...base, selection: { kind: 'remote', url: 'https://example.com/url(x).jpg' } }))
       .toEqual({ ok: false, problem: 'invalid-url' })
+    // The same host-boundary rules apply to export, so an exported preset can
+    // always be imported by another device.
+    expect(exportPreset({ ...base, selection: { kind: 'remote', url: 'https://printer/image.jpg' } }))
+      .toEqual({ ok: false, problem: 'invalid-url' })
+    expect(exportPreset({ ...base, selection: { kind: 'remote', url: 'https://[fec0::1]/a.jpg' } }))
+      .toEqual({ ok: false, problem: 'invalid-url' })
+    expect(exportPreset({ ...base, selection: { kind: 'remote', url: 'https://[ff02::1]/a.jpg' } }))
+      .toEqual({ ok: false, problem: 'invalid-url' })
     expect(exportPreset({ ...base, styleId: 'Bad Id' })).toEqual({ ok: false, problem: 'invalid-style' })
     expect(exportPreset({ ...base, pluginVersion: 'dev' })).toEqual({ ok: false, problem: 'invalid-version' })
   })
@@ -338,6 +398,26 @@ describe('preset export', () => {
     if (!result.ok) return
     expect(result.preset.effects).toEqual({ blur: 24, dim: 0, frost: 30, atmosphere: 100 })
     expect(result.preset.position).toEqual({ x: 50, y: 100 })
+  })
+
+  it('round-trips plain-text attribution that looks like markup or CSS', () => {
+    const result = exportPreset({
+      ...base,
+      attribution: { title: '<No. 2>', creator: 'url(...)', license: '{CC0}', source: 'example.com' },
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    // Plain display text: length/control characters only, never an HTML/CSS
+    // sanitizer, so credits like "<No. 2>" and "url(...)" survive the round-trip.
+    expect(result.preset.attribution).toEqual({
+      title: '<No. 2>',
+      creator: 'url(...)',
+      license: '{CC0}',
+      source: 'example.com',
+    })
+    const parsed = parsePresetText(result.json, { catalogIds: CATALOG_IDS })
+    expect(parsed.ok).toBe(true)
+    if (parsed.ok) expect(parsed.preset.attribution).toEqual(result.preset.attribution)
   })
 
   it('drops unportable attribution fragments instead of writing them', () => {
@@ -615,5 +695,87 @@ describe('preset public constants', () => {
     const preset = makePreset()
     expect(validatePreset(preset, { catalogIds: CATALOG_IDS }).ok).toBe(true)
     expect(validatePreset(preset, { catalogIds: CATALOG_IDS, maxBytes: 100 }).ok).toBe(false)
+  })
+})
+
+describe('preset JSON safety (never throws)', () => {
+  it('rejects deeply nested values with a stable invalid-json failure', () => {
+    let deep: unknown = 1
+    for (let depth = 0; depth < 20_000; depth += 1) deep = { a: deep }
+    // JSON.stringify recurses and throws RangeError at this depth; preset
+    // validation must never surface that as an exception.
+    expect(() => JSON.stringify(deep)).toThrow(RangeError)
+    expect(() => validatePreset(deep, { catalogIds: CATALOG_IDS })).not.toThrow()
+    expect(validatePreset(deep, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'invalid-json',
+      detail: 'depth',
+    })
+  })
+
+  it('rejects deeply nested JSON text without a stack overflow', () => {
+    const text = `${'['.repeat(10_000)}${']'.repeat(10_000)}`
+    expect(text.length).toBeLessThan(PRESET_FILE_MAX_BYTES)
+    expect(() => parsePresetText(text, { catalogIds: CATALOG_IDS })).not.toThrow()
+    expect(parsePresetText(text, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'invalid-json',
+      detail: 'depth',
+    })
+  })
+
+  it('rejects cyclic and non-JSON values with stable codes', () => {
+    const cyclic: Record<string, unknown> = { ...makePreset() }
+    cyclic.self = cyclic
+    expect(() => validatePreset(cyclic, { catalogIds: CATALOG_IDS })).not.toThrow()
+    expect(validatePreset(cyclic, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'invalid-json',
+      detail: 'cyclic',
+    })
+
+    const withBigInt: unknown = { ...makePreset(), huge: 1n }
+    expect(validatePreset(withBigInt, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'invalid-json',
+      detail: 'type',
+    })
+
+    const withFunction: unknown = { ...makePreset(), render: () => undefined }
+    expect(validatePreset(withFunction, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'invalid-json',
+      detail: 'type',
+    })
+  })
+
+  it('reports oversized shallow payloads as too-large without serializing them', () => {
+    const huge = { ...makePreset(), css: 'x'.repeat(PRESET_FILE_MAX_BYTES + 1) }
+    expect(validatePreset(huge, { catalogIds: CATALOG_IDS })).toEqual({
+      ok: false,
+      problem: 'too-large',
+      detail: 'bytes',
+    })
+  })
+
+  it('never rejects when file metadata is hostile', async () => {
+    const hostile = {
+      get size(): number { throw new Error('boom') },
+      async text(): Promise<string> { return '' },
+    }
+    await expect(importPresetFile(hostile, { catalogIds: CATALOG_IDS })).resolves.toEqual({
+      ok: false,
+      problem: 'unreadable',
+      detail: 'size',
+    })
+  })
+
+  it('never rejects for a deeply nested preset read from a file', async () => {
+    const text = `${'['.repeat(10_000)}${']'.repeat(10_000)}`
+    const result = await importPresetFile({
+      size: Buffer.byteLength(text, 'utf8'),
+      async text() { return text },
+    }, { catalogIds: CATALOG_IDS })
+    expect(result).toEqual({ ok: false, problem: 'invalid-json', detail: 'depth' })
   })
 })

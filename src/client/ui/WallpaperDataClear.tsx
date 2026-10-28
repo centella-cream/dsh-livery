@@ -16,6 +16,7 @@ import type { LiveryKey } from '../../i18n/index.js'
 import type { LiveryTranslate } from '../platform.js'
 import type { WallpaperSelection } from '../wallpaper.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
+import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
 import { createIndexedDbImageStore } from '../wallpaper/storage.js'
 import { clearAllLocalWallpaperData } from '../wallpaper/lifecycle.js'
 import type {
@@ -56,12 +57,13 @@ export async function runWallpaperDataClear(
 ): Promise<ClearLocalWallpaperDataResult> {
   const selection: WallpaperSelection = options.selection ?? getWallpaperController()?.getSnapshot().selection
   try {
-    return await clearAllLocalWallpaperData({
+    return await withWallpaperGcLock(() => clearAllLocalWallpaperData({
       images: options.images ?? createIndexedDbImageStore(),
       storage: options.storage ?? browserStorage(),
       selection,
       getSelection: () => getWallpaperController()?.getSnapshot().selection ?? selection,
-    })
+      getDurableSelection: () => getWallpaperController()?.getDurableSelection() ?? selection,
+    }))
   } catch {
     // The operation itself is defensive; this is the last-resort guard so a
     // broken platform API can never crash the panel.

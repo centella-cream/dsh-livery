@@ -22,6 +22,13 @@ class FakeImages implements WallpaperImageStore {
   delete = vi.fn(async (key: string) => { this.deleted.push(key); this.records.delete(key) })
   list = vi.fn(async () => [...this.records.values()])
   clear = vi.fn(async () => { this.records.clear() })
+  touch = vi.fn(async (key: string, now: number) => {
+    const record = this.records.get(key)
+    if (record === undefined) return undefined
+    const touched = { ...record, lastUsedAt: Math.max(now, record.lastUsedAt) }
+    this.records.set(key, touched)
+    return touched
+  })
 }
 
 const png = (bytes = 4): Blob => new Blob([new Uint8Array(bytes)], { type: 'image/png' })
@@ -61,6 +68,7 @@ describe('upload lifecycle helpers', () => {
       delete: async () => { throw new Error('quota') },
       list: async () => [],
       clear: async () => undefined,
+      touch: async () => undefined,
     }
     await expect(deleteStoredImage(failing, 'upload-1-a', 'previous upload')).resolves.toBe(false)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('could not delete previous upload'), expect.any(Error))
@@ -197,6 +205,7 @@ describe('remote cache LRU', () => {
       delete: async () => { throw new Error('locked') },
       list: async () => [remoteRecord('https://cdn.example/a.jpg'), remoteRecord('https://cdn.example/b.jpg')],
       clear: async () => undefined,
+      touch: async () => undefined,
     }
     const evicted = await pruneRemoteCache({ images, maxEntries: 1 })
     expect(evicted).toEqual([])

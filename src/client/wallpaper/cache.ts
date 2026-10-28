@@ -14,6 +14,7 @@
  * so two colliding URLs can never display each other's image.
  */
 import { validateWallpaperUrl } from '../wallpaper.js'
+import { isLocalOrPrivateHost } from './host-safety.js'
 import {
   createIndexedDbImageStore,
   REMOTE_IMAGE_KEY_PREFIX,
@@ -136,6 +137,32 @@ function defaultFetch(): typeof fetch | undefined {
 /** Whether a signal exists and has already been aborted. */
 function isAborted(signal: AbortSignal | undefined): boolean {
   return signal !== undefined && signal.aborted
+}
+
+/**
+ * Latest cache operation token per store key. Overlapping downloads for the same
+ * URL race on the same record; a superseded operation must never delete the
+ * record a newer operation just wrote (e.g. A cancels after B already stored).
+ */
+const latestRemoteOperations = new Map<string, number>()
+let nextRemoteOperationId = 0
+
+/** Claim the latest-operation token for one cache key. */
+function beginRemoteOperation(key: string): number {
+  nextRemoteOperationId += 1
+  latestRemoteOperations.set(key, nextRemoteOperationId)
+  return nextRemoteOperationId
+}
+
+/** Whether this operation is still the newest one for the key. */
+function isLatestRemoteOperation(key: string, token: number): boolean {
+  return latestRemoteOperations.get(key) === token
+}
+
+/** Release the token, but never clobber a newer operation's token. */
+function finishRemoteOperation(key: string, token: number): void {
+  if (latestRemoteOperations.get(key) !== token) return
+  latestRemoteOperations.delete(key)
 }
 
 /**
@@ -282,10 +309,17 @@ export async function cacheRemoteImage(
 ): Promise<RemoteCacheResult> {
   const check = validateWallpaperUrl(url)
   if (!check.ok) return { ok: false, reason: 'invalid' }
+  let host = ''
+  try { host = new URL(check.url).hostname } catch { return { ok: false, reason: 'invalid' } }
+  if (isLocalOrPrivateHost(host)) return { ok: false, reason: 'invalid' }
   if (isAborted(deps.signal)) return { ok: false, reason: 'cancelled' }
   const fetchImpl = deps.fetchImpl ?? defaultFetch()
   const images = deps.images ?? createIndexedDbImageStore()
   if (fetchImpl === undefined || images === undefined) return { ok: false, reason: 'unsupported' }
+  // The key is known before the download starts, so a newer same-URL operation
+  // supersedes this one immediately (even while this one is mid-flight).
+  const key = deps.key ?? remoteCacheKey(check.url)
+  const operationToken = beginRemoteOperation(key)
   const controller = typeof AbortController === 'undefined' ? undefined : new AbortController()
   let cancelledExternally = false
   const onExternalAbort = (): void => {
@@ -322,8 +356,9 @@ export async function cacheRemoteImage(
     if (blob === undefined || blob.size <= 0) {
       return { ok: false, reason: cancelledExternally ? 'cancelled' : 'invalid' }
     }
-    if (cancelledExternally || isAborted(deps.signal)) return { ok: false, reason: 'cancelled' }
-    const key = deps.key ?? remoteCacheKey(check.url)
+    if (cancelledExternally || isAborted(deps.signal) || !isLatestRemoteOperation(key, operationToken)) {
+      return { ok: false, reason: 'cancelled' }
+    }
     const now = Date.now()
     const record: StoredImageRecord = {
       key,
@@ -338,7 +373,11 @@ export async function cacheRemoteImage(
     // Cancellation can arrive while the IDB transaction is in flight. Do not
     // publish/prune after that: delete the just-written stale blob instead.
     if (cancelledExternally || isAborted(deps.signal)) {
-      try { await images.delete(key) } catch { /* best effort */ }
+      // Only the newest operation may clean up its own record. A newer
+      // same-URL download may already have written a fresh blob under this key.
+      if (isLatestRemoteOperation(key, operationToken)) {
+        try { await images.delete(key) } catch { /* best effort */ }
+      }
       return { ok: false, reason: 'cancelled' }
     }
     if (deps.storage !== undefined) {
@@ -350,13 +389,16 @@ export async function cacheRemoteImage(
       protectedUrl: deps.protectedUrl ?? check.url,
     })
     if (cancelledExternally || isAborted(deps.signal)) {
-      try { await images.delete(key) } catch { /* best effort */ }
+      if (isLatestRemoteOperation(key, operationToken)) {
+        try { await images.delete(key) } catch { /* best effort */ }
+      }
       return { ok: false, reason: 'cancelled' }
     }
     return { ok: true, key, record }
   } catch {
     return { ok: false, reason: cancelledExternally ? 'cancelled' : 'network' }
   } finally {
+    finishRemoteOperation(key, operationToken)
     if (timer !== undefined) clearTimeout(timer)
     if (deps.signal !== undefined && controller !== undefined) {
       try {
@@ -415,21 +457,23 @@ export async function loadCachedRemote(
   images: WallpaperImageStore | undefined = createIndexedDbImageStore(),
 ): Promise<StoredImageRecord | undefined> {
   if (images === undefined) return undefined
+  const key = remoteCacheKey(url)
+  let record: StoredImageRecord | undefined
   try {
-    const record = await images.get(remoteCacheKey(url))
-    if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
-    // Every production load is a use: refresh the LRU timestamp so a re-shown
-    // old wallpaper is not evicted before genuinely stale entries.
-    const touched = { ...record, lastUsedAt: Date.now() }
-    try {
-      await images.put(touched)
-    } catch {
-      /* the LRU refresh is best effort; the record is still valid */
-    }
-    return touched
+    // One readwrite transaction: the LRU refresh cannot resurrect a record that
+    // a concurrent clear() removed between a separate get and put.
+    record = await images.touch(key, Date.now())
   } catch {
-    return undefined
+    // A read-only/quota-blocked store must not hide a valid cached wallpaper:
+    // fall back to a plain read (no write, so it still cannot resurrect rows).
+    try {
+      record = await images.get(key)
+    } catch {
+      return undefined
+    }
   }
+  if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
+  return record
 }
 
 /**

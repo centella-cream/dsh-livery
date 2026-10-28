@@ -325,7 +325,8 @@ describe('focal position nine-grid', () => {
     controller.start()
     const html = renderPanel()
     expect(html).toMatch(/data-testid="wallpaper-position-bottom-left"[^>]*checked/)
-    expect(html).toContain('background-position:0% 100%')
+    // No verified blob exists in this SSR fixture; remote CSS must stay empty.
+    expect(html).toContain('data-testid="wallpaper-hero-empty"')
     expect(html).not.toMatch(/data-testid="wallpaper-position-center"[^>]*checked/)
   })
 
@@ -334,7 +335,7 @@ describe('focal position nine-grid', () => {
     controller.setPosition({ x: 100, y: 0 })
     const html = renderPanel()
     expect(html).toMatch(/data-testid="wallpaper-position-top-right"[^>]*checked/)
-    expect(html).toContain('background-position:100% 0%')
+
     // The saved state is a schema v2 position (batch transition covered in the
     // controller suite; here we assert the controller snapshot contract).
     expect(controller.getSnapshot().position).toEqual({ x: 100, y: 0 })

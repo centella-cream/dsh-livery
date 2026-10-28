@@ -22,10 +22,10 @@ export const WORKSPACE_ROOT = path.resolve(path.dirname(fileURLToPath(import.met
 export const TMP_ROOT = path.join(WORKSPACE_ROOT, '.tmp', 'acceptance')
 
 /** Default artifact directory for acceptance evidence. */
-export const DEFAULT_ARTIFACTS = path.join(WORKSPACE_ROOT, 'artifacts', 'acceptance')
+export const DEFAULT_ARTIFACTS = path.join(WORKSPACE_ROOT, 'artifacts', 'acceptance', `run-${process.pid}-${Date.now()}`)
 
 /** Default isolated Harness home (never the user's `~/.dsh`). */
-export const DEFAULT_DSH_HOME = path.join(TMP_ROOT, 'dsh-home')
+export const DEFAULT_DSH_HOME = path.join(TMP_ROOT, `dsh-home-${process.pid}-${Date.now()}`)
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 

@@ -36,7 +36,7 @@ const evidence = JSON.parse(readFileSync(resolve(evidencePath), 'utf8'))
 const matrix = readMatrix()
 const matrixEntryFor = (hostVersion) =>
   matrix.entries.find((entry) => entry.hostVersion === hostVersion) ?? null
-if (evidence.schemaVersion !== 1) fail(`unsupported evidence schemaVersion ${String(evidence.schemaVersion)}`)
+if (evidence.schemaVersion !== 2) fail(`unsupported evidence schemaVersion ${String(evidence.schemaVersion)}`)
 if (evidence.tarballSha256 !== digest) fail(`tarball sha mismatch: file=${digest} evidence=${String(evidence.tarballSha256)}`)
 if (!/^[0-9a-f]{40}$/u.test(evidence.commit ?? '')) fail('evidence.commit must be a full git commit')
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
@@ -148,41 +148,93 @@ const REQUIRED_DESKTOP_CHECKS = [
   'desktop.restore-stock',
   'desktop.matrix-consistency',
 ]
-if (!Array.isArray(evidence.criticalChecks)) {
-  fail('evidence.criticalChecks is required (key safety checks must be recorded, not inferred from counts)')
-}
-const criticalById = new Map(evidence.criticalChecks.map((check) => [check.id, check]))
 const profile = evidence.scope?.profile
 const requiredChecks = profile === 'web'
   ? REQUIRED_WEB_CHECKS
   : profile === 'desktop'
     ? REQUIRED_DESKTOP_CHECKS
     : []
-for (const id of requiredChecks) {
-  const check = criticalById.get(id)
-  if (check === undefined) fail(`critical check missing from evidence: ${id}`)
-  if (check.status !== 'pass') fail(`critical check not passing: ${id} (${String(check.status)})`)
+if (!Array.isArray(evidence.criticalChecks)) {
+  fail('evidence.criticalChecks is required for display, but it is validated against raw probes')
 }
-
+const evidenceCritical = new Map(evidence.criticalChecks.map((check) => [check.id, check.status]))
+const observedCritical = new Map()
+let runCommit
 for (const run of evidence.runs) {
   if (typeof run.id !== 'string' || typeof run.hostVersion !== 'string' || typeof run.adapterId !== 'string') {
     fail('every evidence run needs id, hostVersion and adapterId')
   }
-  const summary = run.summary ?? {}
-  if (typeof summary.pass !== 'number' || summary.pass <= 0) fail(`${run.id}: no passing checks recorded`)
-  if (typeof summary.fail !== 'number' || summary.fail !== 0) fail(`${run.id}: failing checks recorded`)
-  if (run.tarballSha256 !== undefined && run.tarballSha256 !== digest) fail(`${run.id}: run was not executed on this tarball`)
-  if (typeof run.report === 'string') {
-    let report
-    try {
-      report = readFileSync(resolve(run.report))
-    } catch {
-      fail(`${run.id}: report file is missing: ${run.report}`)
-    }
-    if (typeof run.reportSha256 === 'string') {
-      const hash = createHash('sha256').update(report).digest('hex')
-      if (hash !== run.reportSha256) fail(`${run.id}: report sha mismatch: file=${hash} evidence=${run.reportSha256}`)
+  if (typeof run.commit !== 'string' || !/^[0-9a-f]{40}$/u.test(run.commit)) fail(`${run.id}: run.commit must be exact`)
+  if (runCommit === undefined) runCommit = run.commit
+  if (run.commit !== runCommit) fail(`${run.id}: all runs must execute on the same final commit`)
+  if (run.tarballSha256 !== digest) fail(`${run.id}: run.tarballSha256 must equal the candidate`)
+  if (typeof run.probe !== 'string' || typeof run.probeSha256 !== 'string') {
+    fail(`${run.id}: sanitized raw probe path + probeSha256 are required`)
+  }
+  let probeBytes
+  try {
+    probeBytes = readFileSync(resolve(run.probe))
+  } catch {
+    fail(`${run.id}: probe file is missing: ${run.probe}`)
+  }
+  const probeHash = createHash('sha256').update(probeBytes).digest('hex')
+  if (probeHash !== run.probeSha256) fail(`${run.id}: probe sha mismatch: file=${probeHash} evidence=${run.probeSha256}`)
+  let probe
+  try {
+    probe = JSON.parse(probeBytes.toString('utf8'))
+  } catch {
+    fail(`${run.id}: probe is not valid JSON`)
+  }
+  const probeSummary = probe.summary ?? {}
+  for (const key of ['pass', 'fail', 'skip', 'warn', 'total']) {
+    if (run.summary?.[key] !== probeSummary[key]) {
+      fail(`${run.id}: evidence summary.${key}=${String(run.summary?.[key])} != probe ${String(probeSummary[key])}`)
     }
   }
+  if (typeof probeSummary.pass !== 'number' || probeSummary.pass <= 0) fail(`${run.id}: probe has no passing checks`)
+  if (probeSummary.fail !== 0) fail(`${run.id}: probe records failing checks`)
+  if (probe.target?.packageVersion !== evidence.packageVersion) fail(`${run.id}: probe packageVersion mismatch`)
+  if (probe.target?.tarballSha256 !== digest) fail(`${run.id}: probe was not run on this tarball`)
+  if (probe.target?.hostVersion !== run.hostVersion) fail(`${run.id}: probe hostVersion mismatch`)
+  if (probe.target?.adapterId !== run.adapterId) fail(`${run.id}: probe adapterId mismatch`)
+  if (probe.environment?.commit !== run.commit) fail(`${run.id}: probe commit mismatch`)
+  if (profile === 'web' && probe.target?.scope?.browserVersion !== evidence.target?.scope?.browserVersion) {
+    fail(`${run.id}: probe browser version does not match evidence target`)
+  }
+  const checks = new Map((probe.checks ?? []).map((check) => [check.id, check.status]))
+  for (const id of requiredChecks) {
+    const status = checks.get(id)
+    if (status === undefined) fail(`${run.id}: required critical check missing from raw probe: ${id}`)
+    if (status !== 'pass') fail(`${run.id}: required critical check not pass in raw probe: ${id} (${String(status)})`)
+    if (evidenceCritical.get(id) !== status) fail(`${run.id}: evidence criticalChecks.${id} does not match raw probe`)
+    observedCritical.set(id, status)
+  }
+  let report
+  try {
+    report = readFileSync(resolve(run.report))
+  } catch {
+    fail(`${run.id}: report file is missing: ${run.report}`)
+  }
+  if (typeof run.reportSha256 !== 'string') fail(`${run.id}: reportSha256 is required`)
+  const reportHash = createHash('sha256').update(report).digest('hex')
+  if (reportHash !== run.reportSha256) fail(`${run.id}: report sha mismatch: file=${reportHash} evidence=${run.reportSha256}`)
+  if (!report.toString('utf8').includes(run.commit)) fail(`${run.id}: report does not record the run commit`)
+}
+if (runCommit !== undefined) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', runCommit, head])
+  } catch {
+    fail(`run commit ${runCommit} is not an ancestor of HEAD ${head}`)
+  }
+  const changedSinceRun = execFileSync('git', ['diff', '--name-only', `${runCommit}..${head}`], { encoding: 'utf8' })
+    .trim().split('\n').filter(Boolean)
+  const allowedAfterRun = /^(contracts\/dsh\/evidence\/|contracts\/dsh\/perf-baseline\.json$)/
+  const forbidden = changedSinceRun.filter(file => !allowedAfterRun.test(file))
+  if (forbidden.length > 0) {
+    fail(`acceptance ran on a dirty/older harness: changes after run commit include ${forbidden.slice(0, 5).join(', ')}`)
+  }
+}
+for (const id of requiredChecks) {
+  if (evidenceCritical.get(id) !== observedCritical.get(id)) fail(`evidence criticalChecks.${id} is not backed by a probe`)
 }
 console.log(`release-evidence: OK ${digest} commit=${head} runs=${evidence.runs.length}`)
