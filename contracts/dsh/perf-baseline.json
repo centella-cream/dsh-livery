@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-28T00:05:00.000Z",
+  "generatedAt": "2026-10-28T03:45:00.000Z",
   "measuredFrom": {
     "candidate": "dsh-livery-0.1.3.tgz",
-    "sha256": "e86a8bdd9e6078855eaca6f0aee3f71d3950200fe0506f4fc8c2f4ec197ab806",
-    "commit": "81d5ecafaae192e8fbdf1c90d9d188cd87a95178",
+    "sha256": "1209a2fed85c6f837f64706e18e96220654e0ac12e7dc8b25d6de9ff83b46cd8",
+    "commit": "ab8deb048bb910243e542ec2d655c1ff9f9b7836",
     "chromeVersion": "156.0.8078.48",
-    "note": "remeasured on the final correctness-fix 0.1.3 candidate"
+    "note": "remeasured on the final round-2 0.1.3 candidate (no product/artifact change from previous build)"
   },
   "catalogJson": {
     "bytes": 1313436,
@@ -17,23 +17,23 @@
   "coldStart": {
     "off": {
       "samplesMs": [
-        1917,
-        1315,
-        1213
+        1820,
+        1416,
+        1212
       ],
-      "p50Ms": 1315,
-      "p95Ms": 1917,
+      "p50Ms": 1416,
+      "p95Ms": 1820,
       "method": "host cold boot ready (dsh web line) with stock/off wallpaper, three serial boots on one isolated home"
     },
     "on": {
       "samplesMs": [
-        191,
-        198,
-        151
+        1545,
+        188,
+        176
       ],
-      "p50Ms": 191,
-      "p95Ms": 198,
-      "method": "wallpaper-on renderer cold paint: persisted state-v2 aurora wallpaper, hard reload to app-ready; totalMs samples"
+      "p50Ms": 188,
+      "p95Ms": 1545,
+      "method": "wallpaper-on renderer cold paint: persisted state-v2 aurora wallpaper, hard reload to app-ready; totalMs samples (first run included browser warm-up)"
     }
   },
   "openverseCanary": {
