@@ -6,7 +6,7 @@
  */
 import type { WallpaperSelection } from '../wallpaper.js'
 import { REMOTE_CACHE_INDEX_KEY } from './cache.js'
-import { RECENT_WALLPAPER_KEY } from './history.js'
+import { RECENT_WALLPAPER_CLEAR_KEY, RECENT_WALLPAPER_KEY } from './history.js'
 import { createIndexedDbImageStore } from './storage.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 
@@ -131,7 +131,7 @@ export async function pruneStaleUploads(
 }
 
 /** Local keys owned by the wallpaper studio (the active wallpaper state is NOT cleared). */
-export const LOCAL_WALLPAPER_DATA_KEYS = [RECENT_WALLPAPER_KEY, REMOTE_CACHE_INDEX_KEY] as const
+export const LOCAL_WALLPAPER_DATA_KEYS = [RECENT_WALLPAPER_KEY, RECENT_WALLPAPER_CLEAR_KEY, REMOTE_CACHE_INDEX_KEY] as const
 
 /** Status of a clean-all-local-wallpaper-data run. */
 export type ClearLocalWallpaperDataStatus = 'cleared' | 'empty' | 'partial'

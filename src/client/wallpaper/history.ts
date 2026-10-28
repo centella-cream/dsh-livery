@@ -20,6 +20,8 @@ export interface RecentWallpaperEntry {
 
 /** localStorage key. */
 export const RECENT_WALLPAPER_KEY = 'dsh-livery.wallpaper.recent.v1'
+/** Clear tombstone: survives the entries-key removal and wins over stale tabs. */
+export const RECENT_WALLPAPER_CLEAR_KEY = 'dsh-livery.wallpaper.recent.clear.v1'
 /** Maximum remembered entries. */
 export const MAX_RECENT_WALLPAPERS = 24
 /** Max length of a stored display string. */
@@ -161,6 +163,7 @@ export function rememberRecentWallpaper(
   const next = addRecentEntry(readRecentWallpapers(storage), entry)
   if (storage !== undefined) {
     try {
+      storage.removeItem(RECENT_WALLPAPER_CLEAR_KEY)
       storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify(next))
     } catch {
       /* quota/disabled storage: keep the in-memory result */
@@ -173,6 +176,10 @@ export function rememberRecentWallpaper(
 export function clearRecentWallpapers(storage: RecentWallpaperStorage | undefined): void {
   if (storage === undefined) return
   try {
+    // Versioned tombstone first, then remove entries. A tab that only sees the
+    // key removal treats it as an authoritative clear; the tombstone prevents a
+    // stale tab from re-adding its old list.
+    storage.setItem(RECENT_WALLPAPER_CLEAR_KEY, JSON.stringify({ schemaVersion: 2, revision: Date.now() }))
     storage.removeItem(RECENT_WALLPAPER_KEY)
   } catch {
     /* storage can be disabled */

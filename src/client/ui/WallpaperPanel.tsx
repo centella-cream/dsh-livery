@@ -27,6 +27,7 @@ import {
 import type { BuiltinWallpaperId, WallpaperEffects, WallpaperPositionId, WallpaperRemoteResult, WallpaperRemoteSource, WallpaperSelection, WallpaperUrlProblem } from '../wallpaper.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
+  RECENT_WALLPAPER_CLEAR_KEY,
   clearRecentWallpapers,
   mergeRecentEntries,
   readRecentWallpapers,
@@ -477,6 +478,13 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
     const listener = (event: StorageEvent): void => {
+      if (event.key === RECENT_WALLPAPER_CLEAR_KEY) {
+        if (event.newValue !== null) {
+          setRecent([])
+          releaseAllObjectUrls()
+        }
+        return
+      }
       if (event.key !== 'dsh-livery.wallpaper.recent.v1') return
       if (event.newValue === null) {
         // An explicit clear is authoritative; never merge the old local list
