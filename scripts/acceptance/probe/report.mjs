@@ -3,6 +3,7 @@
  * Markdown acceptance report under docs/verification.md.
  */
 
+import { execFileSync } from 'node:child_process'
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { oneLine, redact, writeJson, writeText } from './util.mjs'
@@ -82,9 +83,18 @@ function summarizeCatalog(catalog) {
   }
 }
 
+function readGitHead() {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  } catch {
+    return null
+  }
+}
+
 export function buildProbeReport(ctx) {
   const environment = {
     date: new Date().toISOString(),
+    commit: readGitHead(),
     dshVersion: ctx.environment?.dshVersion,
     dshBin: ctx.environment?.dshBin,
     hostRuntime: ctx.environment?.hostRuntime ?? null,
@@ -441,6 +451,7 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push('| item | value |')
   lines.push('|---|---|')
   lines.push(`| date | ${environment.date} |`)
+  lines.push(`| run commit | ${environment.commit ?? '—'} |`)
   lines.push(`| DSH | ${environment.dshVersion ?? '—'} |`)
   lines.push(`| Node | ${environment.nodeVersion} |`)
   lines.push(`| OS | ${environment.platform} ${environment.osRelease ?? ''} (${environment.arch}) |`)

@@ -199,6 +199,52 @@ export async function capture(page, ctx, { locale = ctx.config.locale, mode = 'l
   return shot
 }
 
+/**
+ * Cache-only remote rendering: remote wallpaper CSS must carry a live `blob:`
+ * object URL (verified by fetching it in-page), never the raw remote URL.
+ * Product round-2 renders remotes from the local cache only; raw-URL fallback is
+ * no longer a valid acceptance state.
+ */
+async function waitForCacheOnlyLayer(page, rawUrl, { timeoutMs = 15_000 } = {}) {
+  await page.waitForFunction(
+    (url) => {
+      const text = document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? ''
+      return text.includes('blob:') && !text.includes(url)
+    },
+    rawUrl,
+    { timeout: timeoutMs },
+  ).catch(() => {})
+  return readCacheOnlyLayer(page, rawUrl)
+}
+
+async function readCacheOnlyLayer(page, rawUrl) {
+  const evidence = await page.evaluate((url) => {
+    const text = document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? ''
+    const blobUrls = [...text.matchAll(/blob:[^)'"\s]+/gu)].map((match) => match[0])
+    return {
+      styleText: text,
+      attribute: document.body.getAttribute('data-dsh-wallpaper'),
+      stylePresent: document.querySelector('style#dsh-livery-wallpaper') !== null,
+      blobUrls,
+      hasBlob: blobUrls.length > 0,
+      rawInStyle: text.includes(url),
+      rawUrl: url,
+    }
+  }, rawUrl)
+  let blobFetchOk = false
+  if (evidence.blobUrls.length > 0) {
+    blobFetchOk = await page.evaluate(async (blobUrl) => {
+      try {
+        const response = await fetch(blobUrl)
+        return response.ok && (response.headers.get('content-type') ?? '').startsWith('image/')
+      } catch {
+        return false
+      }
+    }, evidence.blobUrls[0]).catch(() => false)
+  }
+  return { ...evidence, blobFetchOk }
+}
+
 /** Canonicalize CSS colour values using the browser's own parser. */
 export async function canonicalizeColors(page, values) {
   return page.evaluate((input) => {
@@ -3165,7 +3211,8 @@ export async function checkWallpaperStudio(ctx) {
     const appliedOnlineTitle = appliedOnlineLabel.split(' · ')[0]
     await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
     await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-hero-preview"]') !== null, undefined, { timeout: 10_000 }).catch(() => {})
-    await sleep(600)
+    const onlineLayer = await waitForCacheOnlyLayer(page, appliedOnlineUrl)
+    await sleep(300)
     const onlineApplied = await readWallpaperState(page)
     expect(
       runner,
@@ -3173,11 +3220,11 @@ export async function checkWallpaperStudio(ctx) {
       'clicking an online result applies that wallpaper (cached blob or URL layer) and shows attribution',
       onlineApplied.attribute !== null &&
         onlineApplied.styleText.includes('background-image') &&
-        (onlineApplied.styleText.includes(appliedOnlineUrl) || onlineApplied.styleText.includes('blob:')) &&
+        onlineLayer.hasBlob && onlineLayer.blobFetchOk && !onlineLayer.rawInStyle &&
         onlineApplied.attribution.length > 0 &&
         appliedOnlineTitle.length > 0 &&
         onlineApplied.attribution.includes(appliedOnlineTitle),
-      `url=${oneLine(appliedOnlineUrl, 120)}; layer=${onlineApplied.styleText.includes('blob:') ? 'cached blob' : 'url'}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.attribution, 120)}"`,
+      `url=${oneLine(appliedOnlineUrl, 120)}; blob=${onlineLayer.hasBlob} fetchOk=${onlineLayer.blobFetchOk} rawInStyle=${onlineLayer.rawInStyle}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.attribution, 120)}"`,
     )
     await capture(page, ctx, { state: 'wallpaper-online-applied', mode: 'light' })
 
@@ -3626,19 +3673,17 @@ export async function checkWallpaperStudio(ctx) {
     )
     await urlInput.fill('https://images.example.test/custom.jpg')
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
-    await page.waitForFunction(() => {
-      const style = document.querySelector('style#dsh-livery-wallpaper')
-      return style !== null && (style.textContent ?? '').includes('custom.jpg') && document.querySelector('[data-testid="wallpaper-url-error"]') === null
-    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const customLayer = await waitForCacheOnlyLayer(page, 'https://images.example.test/custom.jpg')
+    await sleep(350)
     const customApplied = await readWallpaperState(page)
     expect(
       runner,
       'wallpaper.url-accepted',
       'https custom image URLs are accepted and applied through the owned layer',
-      customApplied.styleText.includes("url('https://images.example.test/custom.jpg')") &&
+      customLayer.hasBlob && customLayer.blobFetchOk && !customLayer.rawInStyle &&
         customApplied.attribute !== null &&
         customApplied.urlErrorText === '',
-      `styleHasUrl=${customApplied.styleText.includes('custom.jpg')}; attr=${customApplied.attribute}; error="${oneLine(customApplied.urlErrorText, 80)}" (custom URLs surface no attribution line by design)`,
+      `blob=${customLayer.hasBlob} fetchOk=${customLayer.blobFetchOk} rawInStyle=${customLayer.rawInStyle}; attr=${customApplied.attribute}; error="${oneLine(customApplied.urlErrorText, 80)}" (custom URLs surface no attribution line by design)`,
     )
     await capture(page, ctx, { state: 'wallpaper-custom-url', mode: 'light' })
 
@@ -3661,6 +3706,7 @@ export async function checkWallpaperStudio(ctx) {
     const oldestTitle = (recentThree.recentCard.items[2]?.label ?? '').split(' · ')[0]
     await page.locator('[data-testid="wallpaper-recent-item"]').nth(2).click({ timeout: 8_000 })
     await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-hero-preview"]') !== null, undefined, { timeout: 10_000 }).catch(() => {})
+    const reapplyLayer = await waitForCacheOnlyLayer(page, oldestUrl ?? '')
     await sleep(600)
     const reapplied = await readWallpaperState(page)
     const reapplyHeroText = await page.locator('[data-testid="wallpaper-hero"]').innerText().catch(() => '')
@@ -3670,9 +3716,10 @@ export async function checkWallpaperStudio(ctx) {
       'clicking a Recent item re-applies that wallpaper and moves it to newest (cached blob layer is legitimate)',
       reapplied.recentCard.items[0]?.url === oldestUrl &&
         reapplied.styleText.includes('background-image') &&
+        reapplyLayer.hasBlob && reapplyLayer.blobFetchOk && !reapplyLayer.rawInStyle &&
         oldestTitle.length > 0 &&
         reapplyHeroText.includes(oldestTitle),
-      `newest=${oneLine(reapplied.recentCard.items[0]?.url ?? '', 120)}; expected=${oneLine(oldestUrl ?? '', 120)}; hero="${oneLine(reapplyHeroText, 120)}"; expectedTitle="${oneLine(oldestTitle, 80)}"`,
+      `newest=${oneLine(reapplied.recentCard.items[0]?.url ?? '', 120)}; expected=${oneLine(oldestUrl ?? '', 120)}; blob=${reapplyLayer.hasBlob} fetchOk=${reapplyLayer.blobFetchOk} rawInStyle=${reapplyLayer.rawInStyle}; hero="${oneLine(reapplyHeroText, 120)}"; expectedTitle="${oneLine(oldestTitle, 80)}"`,
     )
     // Cache-failure fallback: the image fetch fails, but the history entry is
     // still recorded (data-cached=false) and re-applying works via its URL.
@@ -3683,17 +3730,19 @@ export async function checkWallpaperStudio(ctx) {
     await sleep(900)
     const brokenState = await readWallpaperState(page)
     const brokenItem = brokenState.recentCard.items.find((item) => item.url === brokenUrl)
+    // Re-apply the failed-cache entry: the history entry is retained, but a
+    // cache-only client must not fall back to rendering the raw remote URL.
     const brokenReapply = page.locator(`[data-testid="wallpaper-recent-item"][data-url="${brokenUrl}"]`).first()
     if ((await brokenReapply.count()) > 0) await brokenReapply.click({ timeout: 8_000 })
-    await page.waitForFunction((url) => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes(url), brokenUrl, { timeout: 10_000 }).catch(() => {})
-    await sleep(300)
+    await sleep(700)
     const brokenReapplied = await readWallpaperState(page)
+    const brokenLayer = await readCacheOnlyLayer(page, brokenUrl)
     expect(
       runner,
       'recent.cache-failure',
-      'a failed image cache still records the history entry (data-cached=false) and re-apply works via the URL',
-      brokenItem !== undefined && brokenItem.cached === 'false' && brokenReapplied.styleText.includes(brokenUrl) && brokenReapplied.attribute !== null,
-      `entry=${JSON.stringify(brokenItem)}; reapplyStyleHasUrl=${brokenReapplied.styleText.includes(brokenUrl)}`,
+      'a failed image cache keeps the history entry (data-cached=false) with no raw-URL fallback/style (no render claim)',
+      brokenItem !== undefined && brokenItem.cached === 'false' && !brokenLayer.rawInStyle && !brokenReapplied.styleText.includes(brokenUrl),
+      `entry=${JSON.stringify(brokenItem)}; rawInStyle=${brokenLayer.rawInStyle}; rawInState=${brokenReapplied.styleText.includes(brokenUrl)}; blob=${brokenLayer.hasBlob} (no render claim)`,
     )
     // Clear: card disappears, localStorage key removed, remote cache keys deleted.
     const keysBeforeClear = await readIndexedDbKeys(page)
@@ -4744,7 +4793,7 @@ export async function checkMergedFeatures(ctx) {
     await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/remote.jpg')
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
-    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/remote.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+    const remoteLayer = await waitForCacheOnlyLayer(page, 'https://images.example.test/remote.jpg')
     await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position-center"]')?.checked === true, undefined, { timeout: 8_000 }).catch(() => {})
     const positionInitial = await readMergedWallpaper(page)
     await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 6_000 })
@@ -4763,6 +4812,7 @@ export async function checkMergedFeatures(ctx) {
       'merged.position-remote',
       'nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position',
       positionInitial.positionGroup.present === true &&
+        remoteLayer.hasBlob && remoteLayer.blobFetchOk && !remoteLayer.rawInStyle &&
         positionInitial.positionGroup.radios === 9 &&
         positionInitial.positionGroup.name === 'wallpaper-position' &&
         positionInitial.positionGroup.checked === 'wallpaper-position-center' &&
@@ -4879,7 +4929,8 @@ export async function checkMergedFeatures(ctx) {
     )
     await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="preset-apply-status"]', { timeout: 15_000 }).catch(() => {})
-    await sleep(500)
+    const presetLayer = await waitForCacheOnlyLayer(page, validPreset.wallpaper.url)
+    await sleep(350)
     const appliedPreset = await readMergedWallpaper(page)
     await capture(page, ctx, { state: 'merged-preset-applied', mode: 'light' })
     expect(
@@ -4890,6 +4941,7 @@ export async function checkMergedFeatures(ctx) {
         appliedPreset.schemaVersion === 2 &&
         appliedPreset.selection?.kind === 'remote' &&
         appliedPreset.selection?.url === validPreset.wallpaper.url &&
+        presetLayer.hasBlob && presetLayer.blobFetchOk && !presetLayer.rawInStyle &&
         appliedPreset.effects?.frost === validPreset.effects.frost &&
         appliedPreset.position?.x === 100 && appliedPreset.position?.y === 100,
       `applyStatus="${oneLine(appliedPreset.preset.applyStatus, 120)}" stored=${oneLine(appliedPreset.storedRaw ?? '', 220)}`,
@@ -4961,8 +5013,8 @@ export async function checkMergedFeatures(ctx) {
       const retryButton = page.locator('[data-testid="preset-retry-wallpaper"]')
       const hasRetry = (await retryButton.count()) > 0
       if (hasRetry) await retryButton.click({ timeout: 8_000 })
-      await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/partial.jpg'), undefined, { timeout: 20_000 }).catch(() => {})
-      await sleep(700)
+      const recoveredLayer = await waitForCacheOnlyLayer(page, 'https://images.example.test/partial.jpg', { timeoutMs: 20_000 })
+      await sleep(500)
       const recovered = await readMergedWallpaper(page)
       const heroAttribution = (await page.locator('[data-testid="wallpaper-hero-attribution"]').innerText().catch(() => '')) || ''
       const attributionCoherent = /Partial Preset/u.test(heroAttribution)
@@ -4981,6 +5033,7 @@ export async function checkMergedFeatures(ctx) {
           recovered.preset.error === null &&
           recovered.selection?.kind === 'remote' &&
           recovered.selection?.url === 'https://images.example.test/partial.jpg' &&
+          recoveredLayer.hasBlob && recoveredLayer.blobFetchOk && !recoveredLayer.rawInStyle &&
           attributionCoherent,
         `styleApplied=${styleApplied}; error=${JSON.stringify(partial.preset.error)}; noFalseSuccess=${noFalseSuccess}; hasRetry=${hasRetry}; recoveredSelection=${JSON.stringify(recovered.selection)}; attrib="${oneLine(heroAttribution, 140)}"`,
         { partialError: partial.preset.error, recoveredSelection: recovered.selection, heroAttribution },
@@ -5147,18 +5200,20 @@ export async function checkMergedFeatures(ctx) {
       })
       await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/sync.jpg')
       await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
-      await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/sync.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+      const syncLayerA = await waitForCacheOnlyLayer(page, 'https://images.example.test/sync.jpg')
       await page.locator('[data-testid="wallpaper-position-top-left"]').waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {})
       await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 6_000 }).catch(() => {})
-      await pageB.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/sync.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
-      await sleep(700)
+      const syncedBLayer = await waitForCacheOnlyLayer(pageB, 'https://images.example.test/sync.jpg')
+      await sleep(500)
       const syncedB = await readMergedWallpaper(pageB)
       const syncEvents = await pageB.evaluate(() => window.__STORAGE_EVENTS__ ?? 0)
       expect(
         runner,
         'merged.two-tab-sync',
         'a second real page in the same profile applies wallpaper/position changes through storage events without reload loops',
-        syncedB.selection?.kind === 'remote' &&
+        syncLayerA.hasBlob && syncLayerA.blobFetchOk && !syncLayerA.rawInStyle &&
+          syncedBLayer.hasBlob && syncedBLayer.blobFetchOk && !syncedBLayer.rawInStyle &&
+          syncedB.selection?.kind === 'remote' &&
           syncedB.selection?.url === 'https://images.example.test/sync.jpg' &&
           syncedB.position?.x === 0 && syncedB.position?.y === 0 &&
           syncedB.attribute !== null && syncedB.stylePresent === true &&

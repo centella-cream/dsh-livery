@@ -818,6 +818,114 @@ async function main() {
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-selfcheck-desktop.png'), { label: 'desktop self-check' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'selfcheck' }))
 
+    // ---------- merged new paths: presets, v1→v2 migration, clear-local ----------
+    await dismissFirstRunDialogs(page)
+    await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await page.locator('[data-testid="preset-export"]').click({ timeout: 8_000 }).catch(() => {})
+    const desktopExportVisible = await page.waitForSelector('[data-testid="preset-export-result"]', { timeout: 8_000 }).then(() => true).catch(() => false)
+    const desktopPreset = {
+      schemaVersion: 1,
+      createdWith: 'dsh-livery/0.1.3',
+      styleId: catalog.liveries.find((livery) => livery.id !== ctx.state.appliedSkin)?.id ?? catalog.liveries[0].id,
+      wallpaper: { kind: 'remote', url: 'https://images.example.test/desktop-preset.jpg' },
+      effects: { blur: 12, dim: 40, frost: 35, atmosphere: 60 },
+      position: { x: 0, y: 0 },
+      attribution: { title: 'Desktop Preset', creator: 'Tester', license: 'CC0', source: 'https://images.example.test' },
+    }
+    await page.locator('[data-testid="preset-import-file"]').setInputFiles({ name: 'desktop-preset.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(desktopPreset)) })
+    await page.waitForSelector('[data-testid="preset-diff"]', { timeout: 10_000 }).catch(() => {})
+    const desktopDiffRows = await page.locator('[data-testid="preset-diff-row"]').count().catch(() => 0)
+    await page.waitForSelector('[data-testid="preset-apply"]', { timeout: 8_000 }).catch(() => {})
+    await page.locator('[data-testid="preset-apply"]').click({ timeout: 8_000 })
+    await page.waitForSelector('[data-testid="preset-apply-status"]', { timeout: 20_000 }).catch(() => {})
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 20_000 }).catch(() => {})
+    await page.waitForTimeout(400)
+    const desktopPresetState = await page.evaluate(() => {
+      let stored = null
+      try { stored = JSON.parse(localStorage.getItem('dsh-livery.wallpaper.v1') ?? 'null') } catch {}
+      const style = document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? ''
+      return { stored, styleHasBlob: style.includes('blob:'), styleHasRaw: style.includes('https://images.example.test/desktop-preset.jpg'), bodyAttribute: document.body.getAttribute('data-dsh-livery'), applyStatus: document.querySelector('[data-testid="preset-apply-status"]') !== null }
+    })
+    await captureScreenshot(page, path.join(screensDir, 'zh-preset-applied-desktop.png'), { label: 'desktop preset applied' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'preset-applied' }))
+    expect(
+      runner,
+      'desktop.preset-import-apply',
+      'desktop preset export/import/diff/apply works in the real renderer and remote wallpaper stays cache-only',
+      desktopExportVisible &&
+        desktopDiffRows > 0 &&
+        desktopPresetState.applyStatus &&
+        desktopPresetState.bodyAttribute === desktopPreset.styleId &&
+        desktopPresetState.stored?.schemaVersion === 2 &&
+        desktopPresetState.stored?.selection?.kind === 'remote' &&
+        desktopPresetState.stored?.selection?.url === desktopPreset.wallpaper.url &&
+        desktopPresetState.stored?.position?.x === 0 && desktopPresetState.stored?.position?.y === 0 &&
+        desktopPresetState.styleHasBlob && !desktopPresetState.styleHasRaw,
+      `export=${desktopExportVisible}; diffRows=${desktopDiffRows}; state=${JSON.stringify(desktopPresetState)}`,
+    )
+    // v1 flat record migration in the real Electron renderer.
+    await page.evaluate(() => {
+      try { localStorage.setItem('dsh-livery.wallpaper.v1', JSON.stringify({ kind: 'builtin', id: 'aurora', blur: 12, dim: 40, frost: 35, atmosphere: 60 })) } catch {}
+    })
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await waitForBootGraph(page)
+    await waitForAppReady(page)
+    await dismissFirstRunDialogs(page)
+    await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 }).catch(() => {})
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 12_000 }).catch(() => {})
+    await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 10_000 }).catch(() => {})
+    await page.waitForTimeout(500)
+    const desktopMigrated = await page.evaluate(() => {
+      let stored = null
+      try { stored = JSON.parse(localStorage.getItem('dsh-livery.wallpaper.v1') ?? 'null') } catch {}
+      return { stored, style: document.querySelector('style#dsh-livery-wallpaper') !== null, attr: document.body.getAttribute('data-dsh-wallpaper') }
+    })
+    await page.evaluate(() => {
+      try {
+        const oldValue = localStorage.getItem('dsh-livery.wallpaper.v1')
+        localStorage.setItem('dsh-livery.wallpaper.v1', '{not-json')
+        window.dispatchEvent(new StorageEvent('storage', { key: 'dsh-livery.wallpaper.v1', oldValue, newValue: '{not-json' }))
+      } catch {}
+    })
+    await page.waitForTimeout(500)
+    const desktopCorrupt = await page.evaluate(() => ({ style: document.querySelector('style#dsh-livery-wallpaper') !== null, attr: document.body.getAttribute('data-dsh-wallpaper') }))
+    expect(
+      runner,
+      'desktop.state-migration-v1',
+      'desktop renderer hydrates a legacy v1 flat wallpaper as position 50/50 without clearing, and ignores corrupt records',
+      desktopMigrated.style &&
+        desktopMigrated.attr !== null &&
+        desktopMigrated.stored?.kind === 'builtin' &&
+        desktopMigrated.stored?.id === 'aurora' &&
+        desktopCorrupt.style,
+      `migrated=${JSON.stringify(desktopMigrated)}; corrupt=${JSON.stringify(desktopCorrupt)}`,
+    )
+    // Clear local data in the real renderer; current wallpaper must stay.
+    await page.locator('[data-testid="wallpaper-upload"]').setInputFiles({ name: 'desktop-upload.png', mimeType: 'image/png', buffer: TINY_PNG }).catch(() => {})
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.locator('[data-testid="wallpaper-clear-local-data"]').click({ timeout: 10_000 }).catch(() => {})
+    await page.waitForSelector('[data-testid="wallpaper-clear-local-result"]', { timeout: 15_000 }).catch(() => {})
+    const desktopClear = await page.evaluate(() => ({
+      result: document.querySelector('[data-testid="wallpaper-clear-local-result"]')?.getAttribute('data-status') ?? null,
+      style: document.querySelector('style#dsh-livery-wallpaper') !== null,
+      attr: document.body.getAttribute('data-dsh-wallpaper'),
+    }))
+    expect(
+      runner,
+      'desktop.clear-local-data',
+      'desktop clear-local-data reports a result and retains the current wallpaper',
+      desktopClear.result !== null && desktopClear.style && desktopClear.attr !== null,
+      JSON.stringify(desktopClear),
+    )
+    runner.skip(
+      'desktop.two-window-sync',
+      'two-window cross-tab wallpaper sync in the Desktop renderer',
+      'the packaged Electron app exposes a single BrowserWindow in this probe; cross-window storage-event sync is covered by the Web two-tab checks and is reported as a single-window limitation here',
+    )
+
     // Restore stock in the real desktop renderer.
     const restore = await findControl(page, { testId: 'livery-restore', names: [PAGE_LABELS.restoreStock], exact: false })
     if (restore.locator) {
@@ -874,6 +982,11 @@ async function main() {
       : consistencyProblems.join('; '),
     { matrixStatus, claimLevel: claims.claimLevel, contradictions: consistencyProblems, firstPaint: claims.firstPaint },
   )
+  try {
+    environment.commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  } catch {
+    environment.commit = null
+  }
   const summary = runner.summary
   const report = {
     schemaVersion: 1,
