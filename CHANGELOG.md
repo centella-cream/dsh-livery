@@ -46,8 +46,11 @@ packaging; they are folded into the `0.1.0` entry.
   new `acceptance-artifact.yml` workflow (same expected sha), validates manifest
   sha/bytes/version before use, and checks `LIVERY_ACCEPTANCE_RUN_ID` before
   downloading; it has `actions: read` and never rebuilds the candidate.
-- Runtime distinguishes the in-flight write's own echo from external updates and
-  uses the local observation serial when host revisions are absent/incomplete.
+- Runtime observation serial is now the primary supersession signal for same-id
+  updates even when the host omits revisions; same-target notifications roll
+  forward normally instead of being silently treated as self echoes. `applyStyle`
+  checks settled/phase/preview state before the already-effective no-op and only
+  enforces writable for an actual config write.
 - Recent eviction/clear protect live, durable and persisted remote URLs.
   Client CSS upgrades content when a newer instance supplies different CSS.
 - Remote pruning now actually enforces `protectedUrls` as a set (current live,

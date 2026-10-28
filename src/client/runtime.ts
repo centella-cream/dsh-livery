@@ -125,8 +125,6 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   private pendingConfig: { readonly revision: number | undefined; readonly serial: number; readonly confirmedId: string } | undefined
   /** Local observation serial; revision may be absent on repeated updates. */
   private configObservationSerial = 0
-  /** Target of the in-flight form.set(); distinguishes self echoes. */
-  private writeTarget: string | undefined
   /** Phase to return to after cancel/rollback (ready or degraded). */
   private basePhase: 'ready' | 'degraded' = 'ready'
   /** Resolved CSS of the confirmed (non-stock) livery. */
@@ -292,7 +290,6 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const skin = this.previewSkin
     const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
-    this.writeTarget = target
     this.lastWrite = target === STOCK_ID ? { kind: 'restore' } : { kind: 'commit', id: target }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -377,8 +374,17 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    */
   async applyStyle(id: string): Promise<StyleApplyOutcome> {
     if (this.disposed || this.snapshot.writing) return { ok: false, failure: 'busy' }
-    // A preset whose style is already active needs only the wallpaper half, so
-    // a read-only host must not reject it before this no-op check.
+    const phase = this.snapshot.phase
+    if (phase !== 'ready' && phase !== 'degraded' && phase !== 'previewing') {
+      return { ok: false, failure: 'busy' }
+    }
+    if (!this.settled) return { ok: false, failure: 'busy' }
+    // A transient preview must be dropped before deciding the target is already
+    // effective; otherwise the page can stay on the preview while the preset
+    // reports success.
+    if (this.snapshot.phase === 'previewing') this.cancelPreview()
+    // Already-effective target needs only the wallpaper half (read-only hosts
+    // must still allow this no-op).
     if ((isStock(id) && isStock(this.snapshot.confirmedId) && isStock(this.snapshot.effectiveId))
       || (this.snapshot.confirmedId === id && this.snapshot.effectiveId === id)) {
       return { ok: true }
@@ -386,12 +392,6 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     if (this.snapshot.configStatus !== 'ready' || this.snapshot.writable !== true) {
       return { ok: false, failure: 'unavailable' }
     }
-    const phase = this.snapshot.phase
-    if (phase !== 'ready' && phase !== 'degraded' && phase !== 'previewing') {
-      return { ok: false, failure: 'busy' }
-    }
-    if (this.snapshot.writing) return { ok: false, failure: 'busy' }
-    if (this.snapshot.phase === 'previewing') this.cancelPreview()
     if (isStock(id)) {
       if (isStock(this.snapshot.confirmedId) && isStock(this.snapshot.effectiveId)) return { ok: true }
       return this.styleOutcome(await this.restoreStock())
@@ -441,7 +441,6 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const basePhase = this.snapshot.phase === 'degraded' ? 'degraded' : 'ready'
     const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
-    this.writeTarget = STOCK_ID
     this.lastWrite = { kind: 'restore' }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -655,17 +654,15 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       this.maybeSettle()
       return
     }
-    // The host echoing our own in-flight write must not replace a pending
-    // external update with the same target.
-    if (this.snapshot.writing && confirmedId === this.writeTarget) return
     if (confirmedId === previous) {
-      // Same skin id but a newer host revision is still a real external update:
-      // it must supersede an in-flight write and refresh the confirmed baseline.
-      if (snapshot.revision === undefined || previousRevision === undefined || snapshot.revision <= previousRevision) return
+      // Observation serial is the primary arbitration signal: with no revision a
+      // same-id host update during a write can still be the authoritative state
+      // that must supersede the in-flight write.
       if (this.snapshot.writing) {
         this.pendingConfig = { revision: snapshot.revision, serial: this.configObservationSerial, confirmedId }
         return
       }
+      if (snapshot.revision === undefined || previousRevision === undefined || snapshot.revision <= previousRevision) return
       if (this.snapshot.phase === 'previewing') {
         this.previewSkin = undefined
         this.deps.presenter.rollbackPreview(undefined)

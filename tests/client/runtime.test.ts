@@ -595,6 +595,28 @@ describe('write reconciliation with newer config revisions', () => {
     expect(snapshot.notes).toContain('newer host configuration superseded the in-flight settings write')
   })
 
+  it('lets a same-id host update without revision supersede an in-flight write', async () => {
+    const { runtime, form } = await settlePreview()
+    const commit = runtime.commitPreview()
+    form.update({ value: { skinId: 'fjord' }, revision: undefined })
+    form.resolveWrite?.(true)
+    expect(await commit).toBe(true)
+    const snapshot = runtime.getSnapshot()
+    expect(snapshot.confirmedId).toBe('fjord')
+    expect(snapshot.effectiveId).toBe('fjord')
+    expect(snapshot.writing).toBe(false)
+  })
+
+  it('treats a same-target observation as a normal roll-forward, not a silent echo', async () => {
+    const { runtime, form } = await settlePreview()
+    const commit = runtime.commitPreview()
+    form.update({ value: { skinId: 'midnight' }, revision: undefined })
+    form.resolveWrite?.(true)
+    expect(await commit).toBe(true)
+    expect(runtime.getSnapshot().confirmedId).toBe('midnight')
+    expect(runtime.getSnapshot().effectiveId).toBe('midnight')
+  })
+
   it('rolls a failed older write back to the newest confirmed revision, not a stale one', async () => {
     const { runtime, form } = await settlePreview()
     const commit = runtime.commitPreview()
