@@ -79,17 +79,23 @@ function asStyle(element: Element | null): HTMLStyleElement | null {
  * injectable so the runtime can be unit-tested without a DOM.
  * @returns the presenter face.
  */
-let nextPresenterOwner = 0
-const activePresenterOwners = new WeakMap<Document, number>()
+const activePresenterOwners = new WeakMap<Document, string>()
+
+function presenterOwnerId(): string {
+  try {
+    const cryptoApi = (globalThis as unknown as { crypto?: { randomUUID?: () => string } }).crypto
+    if (typeof cryptoApi?.randomUUID === 'function') return `presenter-${cryptoApi.randomUUID()}`
+  } catch { /* fall through */ }
+  return `presenter-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 export function createPresenter(
   doc: Document | undefined = typeof document === 'undefined' ? undefined : document,
 ): Presenter {
   let cssTextWrites = 0
-  const owner = ++nextPresenterOwner
-  const ownerKey = `presenter-${owner}`
+  const ownerKey = presenterOwnerId()
   const root = doc?.documentElement as HTMLElement | undefined
-  if (doc !== undefined) activePresenterOwners.set(doc, owner)
+  if (doc !== undefined) activePresenterOwners.set(doc, ownerKey)
   try { root?.setAttribute('data-dsh-livery-presenter', ownerKey) } catch { /* fake DOM */ }
   // DOM lease survives a hot-reloaded copy of this module (a per-module WeakMap
   // would not); fake documents fall back to the local WeakMap.
@@ -98,7 +104,7 @@ export function createPresenter(
     if (root !== undefined) {
       try { return root.getAttribute('data-dsh-livery-presenter') === ownerKey } catch { /* fall through */ }
     }
-    return activePresenterOwners.get(doc) === owner
+    return activePresenterOwners.get(doc) === ownerKey
   }
   let adoptedBootStyle = false
 

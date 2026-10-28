@@ -227,6 +227,14 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     : window as unknown as StorageEventTarget)
   let lastPublishedRaw: string | undefined
   let syncUnsubscribe: (() => void) | undefined
+  // Keep the per-tab upload reference fresh even while the page is idle; a
+  // stale 24h ref must never be the only reason a live tab loses its blob.
+  const refHeartbeat = typeof setInterval === 'function'
+    ? setInterval(publishRefs, 5 * 60 * 1000)
+    : undefined
+  const stopRefHeartbeat = (): void => {
+    if (refHeartbeat !== undefined) clearInterval(refHeartbeat)
+  }
   const listeners = new Set<() => void>()
   let selection: WallpaperSelection = undefined
   let effects: WallpaperEffects = { ...DEFAULT_WALLPAPER_EFFECTS }
@@ -453,6 +461,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     // The adopted record now defines the winning (revision, sourceId) identity
     // for this tab, so a later same-revision delivery only wins if it is greater.
     winnerSourceId = external.sourceId
+    publishRefs()
     if (tie && storage !== undefined) {
       // Same counter from two tabs: persist the deterministic winner so a
       // later reload cannot resurrect the losing branch.
@@ -566,10 +575,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     },
     dispose: () => {
       disposed = true
+      stopRefHeartbeat()
       syncUnsubscribe?.()
       syncUnsubscribe = undefined
-      removeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId)
+      // Flush FIRST: a pending save republishes the ref, so removing it before
+      // the flush would resurrect a closed tab's reference record.
       flushSave()
+      removeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId)
       listeners.clear()
       replaceLocalImageUrl(undefined)
       layer.dispose()

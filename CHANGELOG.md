@@ -23,6 +23,20 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Fixed
 
+- Pending uploads/sweeps now publish a per-tab upload reference with a heartbeat;
+  external selection adoption republishes refs immediately, disposal flushes the
+  pending save before removing its ref, and automatic GC is paused when the
+  browser cannot provide a cross-tab Web Lock.
+- Remote cache candidates are pruned only after the selection commit; the current
+  live/durable/persisted images are protected. Same-URL cache writes use a
+  cross-tab Web Lock and cancelled operations never delete a potentially newer
+  row.
+- Picsum's bounded production redirects are followed and the final URL is
+  revalidated (https/public/no credentials) before MIME/size/decode checks; an
+  actual 302 fixture is part of acceptance instead of a direct-200 mock.
+- Recent clear invalidates in-flight remote commits; theme observers are
+  reference-counted; preset unmount prevents the wallpaper half of a slow
+  application; DOM lease ids use cross-module UUIDs.
 - Uploaded blobs are staged and committed inside ONE GC critical section: blob
   write, ticket/selection-version check, selection commit, localStorage flush and
   failure rollback cannot interleave with mount/clear GC. A failed persist rolls

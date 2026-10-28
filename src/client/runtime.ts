@@ -134,6 +134,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   /** Last failed settings write, replayed by {@link retryLastWrite}. */
   private lastWrite: { readonly kind: 'commit'; readonly id: string } | { readonly kind: 'restore' } | undefined
   private themeUnsubscribe: (() => void) | undefined
+  /** Number of live `observeTheme()` callers sharing one subscription. */
+  private themeObserverCount = 0
 
   /**
    * @param deps - host composition; see {@link LiveryRuntimeDeps}.
@@ -514,14 +516,22 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   observeTheme(): () => void {
     const theme = this.deps.theme
     if (theme === undefined) return () => undefined
-    this.themeUnsubscribe?.()
-    this.patch({ themeMode: theme.getMode() })
-    this.themeUnsubscribe = theme.subscribe((mode) => {
-      if (mode !== this.snapshot.themeMode) this.patch({ themeMode: mode })
-    })
+    if (this.themeObserverCount === 0) {
+      this.patch({ themeMode: theme.getMode() })
+      this.themeUnsubscribe = theme.subscribe((mode) => {
+        if (mode !== this.snapshot.themeMode) this.patch({ themeMode: mode })
+      })
+    }
+    this.themeObserverCount += 1
+    let active = true
     return () => {
-      this.themeUnsubscribe?.()
-      this.themeUnsubscribe = undefined
+      if (!active) return
+      active = false
+      this.themeObserverCount = Math.max(0, this.themeObserverCount - 1)
+      if (this.themeObserverCount === 0) {
+        this.themeUnsubscribe?.()
+        this.themeUnsubscribe = undefined
+      }
     }
   }
 

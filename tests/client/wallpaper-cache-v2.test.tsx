@@ -191,7 +191,7 @@ describe('remote cache cancellation', () => {
     expect(images.put).not.toHaveBeenCalled()
   })
 
-  it('cancels after the put await and removes the just-written stale blob', async () => {
+  it('cancels after the put await without deleting a potentially newer same-key blob', async () => {
     const images = new FakeImages()
     let release: (() => void) | undefined
     const originalPut = images.put
@@ -210,8 +210,8 @@ describe('remote cache cancellation', () => {
     release?.()
     const result = await pending
     expect(result).toEqual({ ok: false, reason: 'cancelled' })
-    expect(images.records.has(remoteCacheKey('https://cdn.example/after-put.jpg'))).toBe(false)
-    expect(images.delete).toHaveBeenCalled()
+    // A same-URL write in another tab may own this row; leave it for LRU prune.
+    expect(images.records.has(remoteCacheKey('https://cdn.example/after-put.jpg'))).toBe(true)
   })
 
   it('aborts an in-flight download when the selection changes (no IndexedDB write)', async () => {
@@ -276,7 +276,7 @@ describe('same-URL operation tokens', () => {
     expect(images.records.has(key)).toBe(true)
   })
 
-  it('still lets the newest cancelled task clean up its own just-written record', async () => {
+  it('keeps a cancelled task’s row instead of risking another tab’s same-key blob', async () => {
     const images = new FakeImages()
     const url = 'https://cdn.example/own-record.jpg'
     const key = remoteCacheKey(url)
@@ -292,8 +292,7 @@ describe('same-URL operation tokens', () => {
     controller.abort()
     releasePut?.()
     expect(await pending).toEqual({ ok: false, reason: 'cancelled' })
-    expect(images.delete).toHaveBeenCalledWith(key)
-    expect(images.records.has(key)).toBe(false)
+    expect(images.records.has(key)).toBe(true)
   })
 
   it('keeps a newer record when the older operation completes after being superseded', async () => {

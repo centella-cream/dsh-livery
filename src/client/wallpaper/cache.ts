@@ -159,18 +159,27 @@ const remoteWriteTails = new Map<string, Promise<unknown>>()
 
 /** Serialize same-URL IndexedDB writes so an older put cannot commit after a newer one. */
 async function withRemoteWriteLock<T>(key: string, body: () => Promise<T>): Promise<T> {
-  const previous = remoteWriteTails.get(key) ?? Promise.resolve()
-  let release: () => void = () => undefined
-  const gate = new Promise<void>((resolve) => { release = resolve })
-  const tail = previous.catch(() => undefined).then(() => gate)
-  remoteWriteTails.set(key, tail)
-  await previous.catch(() => undefined)
-  try {
-    return await body()
-  } finally {
-    release()
-    if (remoteWriteTails.get(key) === tail) remoteWriteTails.delete(key)
+  const runLocal = async (): Promise<T> => {
+    const previous = remoteWriteTails.get(key) ?? Promise.resolve()
+    let release: () => void = () => undefined
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const tail = previous.catch(() => undefined).then(() => gate)
+    remoteWriteTails.set(key, tail)
+    await previous.catch(() => undefined)
+    try {
+      return await body()
+    } finally {
+      release()
+      if (remoteWriteTails.get(key) === tail) remoteWriteTails.delete(key)
+    }
   }
+  const locks = typeof navigator === 'undefined'
+    ? undefined
+    : (navigator as unknown as { locks?: { request<T>(name: string, body: () => Promise<T>): Promise<T> } }).locks
+  if (locks !== undefined && typeof locks.request === 'function') {
+    return locks.request(`dsh-livery-cache-${key}`, runLocal)
+  }
+  return runLocal()
 }
 
 function isLatestRemoteOperation(key: string, token: number): boolean {
@@ -323,6 +332,8 @@ export async function cacheRemoteImage(
     readonly storage?: RemoteCacheStorage | undefined
     readonly protectedUrl?: string | undefined
     readonly signal?: AbortSignal | undefined
+    /** Caller commits the selection first, then prunes with live protection. */
+    readonly deferPrune?: boolean | undefined
   } = {},
 ): Promise<RemoteCacheResult> {
   const check = validateWallpaperUrl(url)
@@ -359,16 +370,20 @@ export async function cacheRemoteImage(
       method: 'GET',
       cache: 'force-cache',
       credentials: 'omit',
-      redirect: 'error',
+      // Follow the browser's bounded (20-hop) redirect chain; the final
+      // response URL is validated below, and credentials remain omitted.
+      redirect: 'follow',
       ...(controller === undefined ? {} : { signal: controller.signal }),
     })
     if (!response.ok) return { ok: false, reason: 'network' }
     // Defense in depth: even if a platform ignores redirect:'error', the final
     // response URL must still be a public https origin.
     if (response.url !== undefined && response.url.length > 0) {
-      let finalHost = ''
-      try { finalHost = new URL(response.url).hostname } catch { return { ok: false, reason: 'invalid' } }
-      if (isLocalOrPrivateHost(finalHost)) return { ok: false, reason: 'invalid' }
+      let finalUrl: URL
+      try { finalUrl = new URL(response.url) } catch { return { ok: false, reason: 'invalid' } }
+      if (finalUrl.protocol !== 'https:' || isLocalOrPrivateHost(finalUrl.hostname)) {
+        return { ok: false, reason: 'invalid' }
+      }
     }
     const type = (response.headers.get('content-type') ?? '').toLowerCase()
     if (!type.startsWith('image/')) return { ok: false, reason: 'invalid' }
@@ -404,7 +419,8 @@ export async function cacheRemoteImage(
       }
       await images.put(record)
       if (cancelledExternally || isAborted(deps.signal)) {
-        await images.delete(key)
+        // Never delete here: another tab may have replaced the same-key record
+        // with its own verified blob. The LRU prune/size cap bounds stale rows.
         return 'cancelled' as const
       }
       return 'written' as const
@@ -413,15 +429,16 @@ export async function cacheRemoteImage(
     if (deps.storage !== undefined) {
       touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: now })
     }
-    await pruneRemoteCache({
-      images,
-      storage: deps.storage,
-      protectedUrl: deps.protectedUrl ?? check.url,
-    })
+    if (deps.deferPrune !== true) {
+      await pruneRemoteCache({
+        images,
+        storage: deps.storage,
+        protectedUrl: deps.protectedUrl ?? check.url,
+      })
+    }
     if (cancelledExternally || isAborted(deps.signal)) {
-      if (isLatestRemoteOperation(key, operationToken)) {
-        try { await images.delete(key) } catch { /* best effort */ }
-      }
+      // The row may belong to a newer same-URL op in another tab; leave it to
+      // LRU/prune rather than risking deletion of the new blob.
       return { ok: false, reason: 'cancelled' }
     }
     return { ok: true, key, record }

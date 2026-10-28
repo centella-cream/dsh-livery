@@ -10,6 +10,14 @@
 
 type LockBody<T> = () => Promise<T>
 
+/** Whether destructive cross-tab GC is backed by a real Web Lock. */
+export function hasCrossTabGcLock(): boolean {
+  const locks = typeof navigator === 'undefined'
+    ? undefined
+    : (navigator as unknown as { locks?: { request?: unknown } }).locks
+  return locks !== undefined && typeof locks.request === 'function'
+}
+
 let localTail: Promise<unknown> = Promise.resolve()
 
 /**

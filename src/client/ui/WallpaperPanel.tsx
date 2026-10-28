@@ -35,7 +35,7 @@ import {
   writeRecentWallpapers,
 } from '../wallpaper/history.js'
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
-import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
+import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote, pruneRemoteCache } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
 import { isLocalOrPrivateHost, safeRemoteImageUrl } from '../wallpaper/host-safety.js'
@@ -46,7 +46,7 @@ import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUplo
 import { handleDropzoneKeyDown } from '../wallpaper/upload-a11y.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
-import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
+import { hasCrossTabGcLock, withWallpaperGcLock } from '../wallpaper/gc-lock.js'
 import { readReferencedUploadKeys } from '../wallpaper/refs.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
 import { PresetCard } from './PresetCard.js'
@@ -280,6 +280,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
    */
   const scheduleUploadDelete = (key: string | undefined, label: string): void => {
     if (key === undefined || imageStore === undefined) return
+    // Without a cross-tab Web Lock a delayed delete cannot prove no other tab
+    // needs the blob; keep it and let explicit cleanup handle storage pressure.
+    if (!hasCrossTabGcLock()) return
     const previous = pendingUploadDeletes.current.get(key)
     if (previous !== undefined) clearTimeout(previous)
     const timer = setTimeout(() => {
@@ -323,6 +326,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
 
   useEffect(() => {
     mounted.current = true
+    // Destructive GC is paused unless the browser provides a cross-tab lock.
+    if (!hasCrossTabGcLock()) return () => { mounted.current = false }
     // Reclaim upload blobs left behind by an interrupted prior session. This is
     // best effort and protects the currently selected upload key.
     const active = getWallpaperController()
@@ -422,6 +427,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       storage: recentStorage,
       protectedUrl: entry.url,
       signal,
+      deferPrune: true,
     })
     if (!mounted.current || ticket !== remoteCommitTicket.current) return false
     if (!result.ok) return false
@@ -429,6 +435,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     recordRemoteHistory(entry)
     if (attribution !== undefined) setAttribution(attribution)
     selectWallpaper({ kind: 'remote', url: entry.url }, result.record.blob)
+    if (controller?.flushState() === true) {
+      void pruneRemoteCache({ images: imageStore, storage: recentStorage, protectedUrl: entry.url })
+    }
     return true
   }
 
@@ -463,6 +472,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   }
 
   const clearRecent = (): void => {
+    // Invalidate any in-flight remote commit so a late download cannot restore
+    // the history/tombstone we are about to clear.
+    remoteCommitTicket.current += 1
+    cacheCancellation.current.cancel()
     const entries = recent
     const currentSelection = controller?.getSnapshot().selection
     const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
@@ -561,11 +574,15 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       storage: recentStorage,
       protectedUrl: url,
       signal: abort?.signal,
+      deferPrune: true,
     }).then(result => {
       if (cancelled || !result.ok || !mounted.current) return
       if (!isCurrentRemoteSelection(controller?.getSnapshot().selection, url)) return
       rememberBlob(url, result.record.blob)
       selectWallpaper({ kind: 'remote', url }, result.record.blob)
+      if (controller?.flushState() === true) {
+        void pruneRemoteCache({ images: imageStore, storage: recentStorage, protectedUrl: url })
+      }
     })
     return () => {
       cancelled = true
@@ -728,6 +745,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
         storage: recentStorage,
         protectedUrl: target.selection.url,
         signal: cacheCancellation.current.reset(),
+        deferPrune: true,
       })
       if (!mounted.current || !result.ok) return false
       blob = result.record.blob
@@ -743,6 +761,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     if (ok) {
       const obsolete = obsoleteUploadKey(previous, target.selection)
       scheduleUploadDelete(obsolete, 'preset')
+      if (target.selection?.kind === 'remote') {
+        void pruneRemoteCache({ images: imageStore, storage: recentStorage, protectedUrl: target.selection.url })
+      }
     }
     return ok
   }

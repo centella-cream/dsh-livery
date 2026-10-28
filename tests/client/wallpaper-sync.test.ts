@@ -126,13 +126,12 @@ describe('controller multi-tab sync', () => {
   it('applies newer external revisions in one transition without echoing a save', async () => {
     const { storage, events, controller } = setup()
     storage.map.set(WALLPAPER_STORAGE_KEY, record(7, 'https://cdn.example/b.jpg', 'tab-b'))
-    const writesBefore = storage.writes
     events.emit({ key: WALLPAPER_STORAGE_KEY, newValue: record(7, 'https://cdn.example/b.jpg', 'tab-b') })
     await flush()
     const snapshot = controller.getSnapshot()
     expect(snapshot.revision).toBe(7)
     expect(snapshot.selection).toEqual({ kind: 'remote', url: 'https://cdn.example/b.jpg' })
-    expect(storage.writes).toBe(writesBefore) // external adoption does not write back
+    expect(storage.map.get(WALLPAPER_STORAGE_KEY)).toBe(record(7, 'https://cdn.example/b.jpg', 'tab-b')) // no wallpaper echo; refs may update
   })
 
   it('applies a cross-tab clear tombstone with its revision', async () => {

@@ -432,13 +432,20 @@ export function PresetCard({
     setError({ kind: 'apply', code: result.failure })
   }
 
+  const applyWallpaperWhileMounted = (target: PresetWallpaperTarget): boolean | Promise<boolean> => {
+    // Never start a wallpaper write after the card unmounted; the style write
+    // may already be in flight, but the wallpaper half must be cancelled.
+    if (!mounted.current) return false
+    return applyWallpaper(target)
+  }
+
   const onApply = async (): Promise<void> => {
     const targetPreset = preset
     if (targetPreset === undefined || applying) return
     const ticket = ++operationId.current
     setApplying(true)
     setError(undefined)
-    const result = await applyPreset(targetPreset, { applyStyle, applyWallpaper })
+    const result = await applyPreset(targetPreset, { applyStyle, applyWallpaper: applyWallpaperWhileMounted })
     // A newer operation or a different imported preset must not receive this
     // operation's result, and this operation must not clear/overwrite it.
     if (!mounted.current || ticket !== operationId.current || presetRef.current !== targetPreset) {
@@ -459,7 +466,7 @@ export function PresetCard({
     if (preset === undefined || applying) return
     setApplying(true)
     setError(undefined)
-    const ok = await applyPresetWallpaper(preset, { applyWallpaper })
+    const ok = await applyPresetWallpaper(preset, { applyWallpaper: applyWallpaperWhileMounted })
     if (!mounted.current) return
     setApplying(false)
     if (ok) {

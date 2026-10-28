@@ -65,8 +65,15 @@ const NOOP_LAYER: WallpaperLayer = {
  * @param doc - document-like object; defaults to the browser document.
  * @returns the wallpaper DOM layer.
  */
-let nextLayerOwner = 0
 const activeLayerOwners = new WeakMap<object, string>()
+
+function layerOwnerId(): string {
+  try {
+    const cryptoApi = (globalThis as unknown as { crypto?: { randomUUID?: () => string } }).crypto
+    if (typeof cryptoApi?.randomUUID === 'function') return `layer-${cryptoApi.randomUUID()}`
+  } catch { /* fall through */ }
+  return `layer-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 /**
  * Build a wallpaper layer with an owner lease. A newer layer for the same
@@ -79,7 +86,7 @@ const activeLayerOwners = new WeakMap<object, string>()
 export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerId?: string): WallpaperLayer {
   const target = doc ?? (typeof document === 'undefined' ? undefined : document as unknown as WallpaperDocument)
   if (target === undefined) return NOOP_LAYER
-  const owner = ownerId ?? `layer-${++nextLayerOwner}`
+  const owner = ownerId ?? layerOwnerId()
   activeLayerOwners.set(target, owner)
   const root = (target as unknown as { documentElement?: { setAttribute?: (n: string, v: string) => void; getAttribute?: (n: string) => string | null } }).documentElement
   try { root?.setAttribute?.('data-dsh-livery-layer', owner) } catch { /* fake DOM */ }
