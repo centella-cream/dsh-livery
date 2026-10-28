@@ -96,8 +96,11 @@ Options:
   --expect-version <v>    Exact certified host version this run must certify
                           (default: dsh --version for isolated runs; optional for --reuse)
   --expect-browser-version <full>
-                          Exact full system Chrome version (e.g. 156.0.8078.48);
+                          Exact full Chrome version (e.g. 156.0.8078.48);
                           mismatch is a fail-fast startup error (exit 2)
+  --chrome-binary <path>  Explicit Chrome-for-Testing executable to launch
+                          (version must still match the certified full version);
+                          default is the system Chrome channel 'chrome'
   --expect-profile-kind <web|desktop>
                           Expected BootPayload.profileKind (default: web for isolated web runs)
   --clone-from <dir>      Byte-clone an existing profile directory into the isolated home
@@ -144,7 +147,7 @@ function buildKnownLimitations(ctx, adapter) {
     'Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → panel config apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).',
     '§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.',
     `DSH ${version} serves client bundles only through boot-graph grouped URLs (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (asserted as a documented warning).`,
-    'No Playwright browser download is used: the harness drives the system Chrome through channel: \'chrome\' (web carrier) or connects over CDP to the Electron renderer (desktop).',
+    'No automatic Playwright browser download is used: the harness drives the system Chrome through channel: \'chrome\' (or an explicit --chrome-binary matching the frozen certified version) for the web carrier, and connects over CDP to the Electron renderer (desktop).',
   ]
   if (adapter?.sourceKind === 'packaged-app' || ctx.config.expectedProfileKind === 'desktop') {
     limitations.push(
@@ -185,6 +188,7 @@ async function main() {
         'title',
         'expect-version',
         'expect-browser-version',
+        'chrome-binary',
         'expect-profile-kind',
         'clone-from',
         'notes',
@@ -219,6 +223,7 @@ async function main() {
   const cloneFrom = options['clone-from'] ? path.resolve(options['clone-from']) : null
   const expectVersionOption = options['expect-version'] ?? null
   const expectBrowserVersionOption = options['expect-browser-version'] ?? null
+  const chromeBinary = options['chrome-binary'] ? path.resolve(options['chrome-binary']) : null
   const expectProfileKindOption = options['expect-profile-kind'] ?? null
   if (expectBrowserVersionOption !== null && !/^\d+\.\d+\.\d+\.\d+$/u.test(expectBrowserVersionOption)) {
     failStartup(`--expect-browser-version must be a full Chrome version (four numeric parts), got "${expectBrowserVersionOption}"`)
@@ -475,7 +480,7 @@ async function main() {
     // -------------------------------------------------------------- browser
     {
       const p = phase('browser')
-      browserInfo = await launchChrome({ explicitPlaywright: ctx.config.pwCore, headless: !ctx.config.headed })
+      browserInfo = await launchChrome({ explicitPlaywright: ctx.config.pwCore, executablePath: chromeBinary ?? undefined, headless: !ctx.config.headed })
       ctx.environment.chromeVersion = browserInfo.chromeVersion
       ctx.environment.playwrightVersion = browserInfo.playwrightVersion
       ctx.browser = browserInfo.browser
@@ -490,14 +495,14 @@ async function main() {
       if (!browserCertification.ok) {
         await browserInfo.browser.close().catch(() => {})
         failStartup(
-          `system Chrome ${browserInfo.chromeVersion ?? '(unknown)'} does not match the exact certified browser requirement: ${browserCertification.problems.join('; ')}`,
+          `Chrome ${browserInfo.chromeVersion ?? '(unknown)'} does not match the exact certified browser requirement: ${browserCertification.problems.join('; ')}`,
           browserCertification,
         )
       }
       ctx.runner.pass(
         'env.browser',
-        'system Chrome launches through playwright-core (no browser download)',
-        `Chrome ${browserInfo.chromeVersion}; playwright-core ${browserInfo.playwrightVersion} at ${oneLine(browserInfo.playwrightPath, 160)}`,
+        'Chrome launches through playwright-core (no automatic browser download)',
+        `Chrome ${browserInfo.chromeVersion}${chromeBinary ? ' (explicit Chrome-for-Testing executable)' : ' (system channel)'}; playwright-core ${browserInfo.playwrightVersion} at ${oneLine(browserInfo.playwrightPath, 160)}`,
       )
       ctx.runner.pass(
         'env.browser-version',

@@ -6,8 +6,10 @@
  *   2. the checkout's own `node_modules/playwright-core` (pnpm-linked in the workspace)
  *   3. a bare `import('playwright-core')` if the package is resolvable anyway
  *
- * The system Chrome (`channel: 'chrome'`) is the only browser we ever launch:
- * Playwright's own browser downloads are never needed by this harness.
+ * The harness launches either the system Chrome (`channel: 'chrome'`) or an
+ * explicit Chrome-for-Testing executable (--chrome-binary) that must match the
+ * frozen certified full version; Playwright browser downloads are never used
+ * automatically.
  */
 
 import { existsSync } from 'node:fs'
@@ -58,11 +60,14 @@ export async function loadPlaywright(explicit) {
   )
 }
 
-/** Launch the system Chrome through playwright-core (headless by default). */
-export async function launchChrome({ explicitPlaywright, headless = true, viewport = { width: 1440, height: 900 } } = {}) {
+/** Launch Chrome through playwright-core (headless by default). */
+export async function launchChrome({ explicitPlaywright, executablePath, headless = true, viewport = { width: 1440, height: 900 } } = {}) {
   const { module, version, path: modulePath } = await loadPlaywright(explicitPlaywright)
+  if (executablePath !== undefined && !existsSync(executablePath)) {
+    throw new Error(`Chrome executable not found: ${executablePath}`)
+  }
   const browser = await module.chromium.launch({
-    channel: 'chrome',
+    ...(executablePath === undefined ? { channel: 'chrome' } : { executablePath }),
     headless,
     args: [
       '--no-first-run',

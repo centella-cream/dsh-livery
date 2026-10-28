@@ -54,7 +54,11 @@ from a self-reported list. The `0.1.2` evidence files are never rewritten.
 A real-profile clone run remains a supplementary diagnostic and is intentionally
 not part of formal release evidence: only isolated-home runs are authoritative.
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
-22.23.1 and Playwright with system Chrome 156.0.8078.48. The Desktop run uses the real
+22.23.1 and Playwright with the exact certified Chrome build 156.0.8078.48. When
+the system Chrome channel auto-updates to an uncertified build, the same official
+Chrome for Testing build for the certified version is provisioned explicitly;
+the harness still fails fast unless the reported four-part version matches the
+matrix exactly. The Desktop run uses the real
 Electron app, the official rc.3 plugin manager and an isolated app
 `DSH_HOME`/user-data-dir, driving the actual renderer.
 
