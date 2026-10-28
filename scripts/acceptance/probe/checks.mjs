@@ -2340,7 +2340,12 @@ export async function checkFirstPaint(ctx) {
     samples: state.lastReloadSamples.slice(0, 60),
   })
   state.firstPaint = { samples, paintTimings, frames: filmstrip.frames.length }
-  const bodySamples = (samples?.samples ?? []).filter(Boolean)
+  // rAF callbacks before the browser's first paint entry are pre-paint DOM
+  // snapshots, not painted frames; the stock-frame assertion must only judge
+  // frames that were actually painted.
+  const firstPaintAt = typeof paintTimings.firstPaint === 'number' ? paintTimings.firstPaint : 0
+  const allSamples = (samples?.samples ?? []).filter(Boolean)
+  const bodySamples = allSamples.filter((sample) => sample.t >= firstPaintAt)
   const expectedLight = await canonicalizeColors(page, THEME_TOKENS.map((token) => livery.light.tokens[token]))
   const badSamples = bodySamples.filter(
     (sample) => sample.attr !== state.appliedSkin || (sample.liveryStyles === 0 && !sample.bootStyle),
@@ -2350,7 +2355,7 @@ export async function checkFirstPaint(ctx) {
     'firstpaint.no-stock-frame',
     'every painted frame after body creation already carries the livery body attribute and boot style',
     bodySamples.length > 0 && badSamples.length === 0,
-    `${bodySamples.length} rAF sample(s); ${badSamples.length} without attribute/boot style; first sample: ${oneLine(JSON.stringify(bodySamples[0] ?? null), 300)}`,
+    `${bodySamples.length}/${allSamples.length} painted rAF sample(s) considered (pre-first-paint samples ignored); ${badSamples.length} without attribute/boot style; first painted sample: ${oneLine(JSON.stringify(bodySamples[0] ?? null), 300)}`,
     { samples: bodySamples.slice(0, 12), frames: filmstrip.frames.length },
   )
   // Colour of the first sampled frame must already be the livery background.

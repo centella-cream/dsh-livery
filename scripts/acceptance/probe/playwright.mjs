@@ -138,6 +138,9 @@ export async function launchChrome({ explicitPlaywright, executablePath, headles
       '--disable-renderer-backgrounding',
       '--force-color-profile=srgb',
       '--ignore-certificate-errors',
+      // A system HTTP(S) proxy must not capture the loopback redirect fixture.
+      // This is a local-only acceptance run; the Openverse canary stays warn-only.
+      '--no-proxy-server',
       `--host-resolver-rules=MAP fastly.picsum.photos 127.0.0.1:${fixture.port}`,
     ],
   })
