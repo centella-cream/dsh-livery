@@ -27,6 +27,7 @@ import {
   createRemoteCacheCancellation,
   deleteCachedRemote,
   loadCachedRemote,
+  pruneRemoteCache,
   readRemoteCacheIndex,
   remoteCacheKey,
   touchCachedRemote,
@@ -241,6 +242,27 @@ describe('remote cache cancellation', () => {
   })
 })
 
+describe('remote cache pruning protection', () => {
+  it('honours every protectedUrls entry, not only protectedUrl', async () => {
+    const images = new FakeImages()
+    const currentUrl = 'https://cdn.example/current.jpg'
+    const candidateUrl = 'https://cdn.example/candidate.jpg'
+    const staleUrl = 'https://cdn.example/stale.jpg'
+    images.records.set(remoteCacheKey(currentUrl), remoteRecord(currentUrl, { lastUsedAt: 1 }))
+    images.records.set(remoteCacheKey(candidateUrl), remoteRecord(candidateUrl, { lastUsedAt: 2 }))
+    images.records.set(remoteCacheKey(staleUrl), remoteRecord(staleUrl, { lastUsedAt: 3 }))
+    const removed = await pruneRemoteCache({
+      images,
+      protectedUrls: [currentUrl, candidateUrl],
+      maxEntries: 1,
+      maxBytes: 1,
+    })
+    expect(removed).toEqual([staleUrl])
+    expect(images.records.has(remoteCacheKey(currentUrl))).toBe(true)
+    expect(images.records.has(remoteCacheKey(candidateUrl))).toBe(true)
+  })
+})
+
 describe('same-URL operation tokens', () => {
   it('does not let an older cancelled download delete the newer download’s record', async () => {
     const images = new FakeImages()
@@ -330,6 +352,7 @@ describe('upload lifecycle v2', () => {
       size: 12,
       createdAt: 77,
       lastUsedAt: 77,
+      generation: 77,
       blob: expect.any(Blob),
     })
   })

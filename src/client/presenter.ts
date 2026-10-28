@@ -175,28 +175,23 @@ export function createPresenter(
 
   return {
     installClientCss(css: string): () => void {
-      const existing = doc?.querySelector(`style[data-plugin-css="${CLIENT_CSS_FILE}"]`) ?? null
-      const attach = (element: Element): (() => void) => {
-        const current = Number(element.getAttribute('data-dsh-livery-css-owners') ?? '1')
-        const owners = Number.isFinite(current) ? Math.max(1, current) + 1 : 2
-        element.setAttribute('data-dsh-livery-css-owners', String(owners))
+      const release = (element: Element): (() => void) => {
         let released = false
         return () => {
           if (released) return
           released = true
           const count = Number(element.getAttribute('data-dsh-livery-css-owners') ?? '1')
           const next = Number.isFinite(count) ? count - 1 : 0
-          if (next > 0) {
-            element.setAttribute('data-dsh-livery-css-owners', String(next))
-          } else {
-            removeElement(element)
-          }
+          if (next > 0) element.setAttribute('data-dsh-livery-css-owners', String(next))
+          else removeElement(element)
         }
       }
+      const existing = doc?.querySelector(`style[data-plugin-css="${CLIENT_CSS_FILE}"]`) ?? null
       if (existing !== null) {
-        // HMR/overlap: share one node with reference counting; a disposer from
-        // an older presenter must not remove CSS a newer instance still uses.
-        return attach(existing)
+        // HMR/overlap: share one node with reference counting.
+        const count = Number(existing.getAttribute('data-dsh-livery-css-owners') ?? '1')
+        existing.setAttribute('data-dsh-livery-css-owners', String(Number.isFinite(count) ? Math.max(1, count) + 1 : 2))
+        return release(existing)
       }
       const parent = head()
       if (parent === undefined) return () => undefined
@@ -206,12 +201,7 @@ export function createPresenter(
       element.setAttribute('data-dsh-livery-css-owners', '1')
       element.textContent = css
       parent.appendChild(element)
-      let released = false
-      return () => {
-        if (released) return
-        released = true
-        removeElement(element)
-      }
+      return release(element)
     },
 
     adoptBootStyle(skin: SkinCss): boolean {

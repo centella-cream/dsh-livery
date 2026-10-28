@@ -545,7 +545,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       const merged = mergeRecentEntries(recentRef.current, next)
       const keep = new Set(merged.map(entry => entry.url))
       setRecent(merged)
-      if (merged.length !== next.length || merged.some((entry, index) => entry.url !== next[index]?.url)) {
+      if (JSON.stringify(merged) !== JSON.stringify(next)) {
         // Preserve a concurrently added local entry instead of losing it to the
         // other tab's last write; both tabs eventually converge on the union.
         writeRecentWallpapers(recentStorage, merged)
@@ -758,6 +758,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
           ? 'wallpaper.error'
           : undefined
   const attributionLine = effectiveAttribution === undefined
+    || (effectiveAttribution.title.length === 0 && effectiveAttribution.creator.length === 0
+      && effectiveAttribution.license.length === 0 && effectiveAttribution.source.length === 0)
     ? undefined
     : t('wallpaper.attribution', {
       title: effectiveAttribution.title,
@@ -1101,6 +1103,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
 
           <WallpaperDataClear
             t={t}
+            onBeforeClear={() => {
+              remoteCommitTicket.current += 1
+              cacheCancellation.current.cancel()
+            }}
             onCleared={() => {
               setRecent([])
               releaseAllObjectUrls()

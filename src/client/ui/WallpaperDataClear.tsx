@@ -35,6 +35,8 @@ export interface WallpaperDataClearProps {
    * thumbnail object URLs instead of showing history that no longer exists.
    */
   readonly onCleared?: ((result: ClearLocalWallpaperDataResult) => void) | undefined
+  /** Invalidate in-flight remote commits before destructive cleanup. */
+  readonly onBeforeClear?: (() => void) | undefined
 }
 
 /** Browser localStorage, or undefined in SSR/private mode. */
@@ -110,7 +112,7 @@ export function wallpaperDataClearMessage(
  * @param props - locale seat.
  * @returns the card with the stable control/result hooks.
  */
-export function WallpaperDataClear({ t, onCleared }: WallpaperDataClearProps): JSX.Element {
+export function WallpaperDataClear({ t, onCleared, onBeforeClear }: WallpaperDataClearProps): JSX.Element {
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<ClearLocalWallpaperDataResult | undefined>(undefined)
   const run = async (): Promise<void> => {
@@ -121,6 +123,7 @@ export function WallpaperDataClear({ t, onCleared }: WallpaperDataClearProps): J
     }
     setBusy(true)
     try {
+      onBeforeClear?.()
       const next = await runWallpaperDataClear()
       setResult(next)
       try {

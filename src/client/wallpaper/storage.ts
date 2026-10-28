@@ -34,6 +34,8 @@ export interface StoredImageRecord {
   readonly lastUsedAt: number
   /** Original https URL of a cached remote image (absent for uploads). */
   readonly sourceUrl?: string
+  /** Monotonic write generation; lets conditional deletes avoid stale rows. */
+  readonly generation?: number
   readonly blob: Blob
 }
 
@@ -136,6 +138,7 @@ export function normalizeStoredImageRecord(key: string, raw: unknown): StoredIma
     createdAt,
     lastUsedAt,
     ...(sourceUrl === undefined ? {} : { sourceUrl }),
+    ...(typeof row.generation === 'number' && Number.isFinite(row.generation) ? { generation: row.generation } : {}),
     blob,
   }
 }
@@ -160,6 +163,7 @@ export function migrateLegacyImageRecord(
     ...normalized,
     createdAt: normalized.createdAt > 0 ? normalized.createdAt : now,
     lastUsedAt: normalized.lastUsedAt > 0 ? normalized.lastUsedAt : now,
+    generation: normalized.generation ?? now,
   }
 }
 
@@ -171,6 +175,7 @@ function storedValue(record: StoredImageRecord): Record<string, unknown> {
     createdAt: record.createdAt,
     lastUsedAt: record.lastUsedAt,
     ...(record.sourceUrl === undefined ? {} : { sourceUrl: record.sourceUrl }),
+    ...(record.generation === undefined ? {} : { generation: record.generation }),
     blob: record.blob,
   }
 }
@@ -184,6 +189,11 @@ export interface WallpaperImageStore {
   list(): Promise<readonly StoredImageRecord[]>
   /** Remove every stored image (local wallpapers/cache only; not localStorage). */
   clear(): Promise<void>
+  /**
+   * Delete only when the row still has this generation (atomic compare/delete).
+   * Optional so minimal test stores keep working; production implements it.
+   */
+  deleteIfGeneration?(key: string, generation: number): Promise<boolean>
   /**
    * Atomically read + refresh one record's `lastUsedAt` in ONE readwrite
    * transaction. Returns undefined when the record is absent/corrupt (never
@@ -199,6 +209,7 @@ interface IdbRequestLike<T> {
   onsuccess: ((event: unknown) => void) | null
   onerror: ((event: unknown) => void) | null
   result?: T
+  readonly error?: unknown
 }
 
 interface IdbCursorLike {
@@ -224,6 +235,7 @@ interface IdbTransactionLike {
   oncomplete: ((event: unknown) => void) | null
   onerror: ((event: unknown) => void) | null
   onabort: ((event: unknown) => void) | null
+  readonly error?: unknown
 }
 
 interface IdbDatabaseLike {
@@ -251,11 +263,20 @@ export interface IdbFactoryLike {
   open(name: string, version?: number): IdbOpenRequestLike
 }
 
+/** Preserve the original DOMException name/message as Error.cause. */
+function withDatabaseCause(message: string, cause: unknown): Error {
+  const error = new Error(message, cause === undefined ? undefined : { cause })
+  if (typeof cause === 'object' && cause !== null && typeof (cause as { name?: unknown }).name === 'string') {
+    error.name = (cause as { name: string }).name
+  }
+  return error
+}
+
 /** Resolve one IndexedDB request to its result. */
 function requestResult<T>(request: IdbRequestLike<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result as T)
-    request.onerror = () => reject(new Error('wallpaper database request failed'))
+    request.onerror = () => reject(withDatabaseCause('wallpaper database request failed', request.error))
   })
 }
 
@@ -263,8 +284,8 @@ function requestResult<T>(request: IdbRequestLike<T>): Promise<T> {
 function transactionDone(transaction: IdbTransactionLike): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve()
-    transaction.onerror = () => reject(new Error('wallpaper database transaction failed'))
-    transaction.onabort = () => reject(new Error('wallpaper database transaction aborted'))
+    transaction.onerror = () => reject(withDatabaseCause('wallpaper database transaction failed', transaction.error))
+    transaction.onabort = () => reject(withDatabaseCause('wallpaper database transaction aborted', transaction.error))
   })
 }
 

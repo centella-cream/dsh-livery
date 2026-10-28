@@ -119,12 +119,12 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   private configSettled = false
   private catalogSettled = false
   private generation = 0
-  /** Latest config revision observed from the host form. */
-  private configRevision: number | undefined
   /** Previous observed revision, used to detect same-value/higher-revision updates. */
   private lastObservedConfigRevision: number | undefined
   /** Newer host config that arrived while a settings write was in flight. */
-  private pendingConfig: { readonly revision: number | undefined; readonly confirmedId: string } | undefined
+  private pendingConfig: { readonly revision: number | undefined; readonly serial: number; readonly confirmedId: string } | undefined
+  /** Local observation serial; revision may be absent on repeated updates. */
+  private configObservationSerial = 0
   /** Phase to return to after cancel/rollback (ready or degraded). */
   private basePhase: 'ready' | 'degraded' = 'ready'
   /** Resolved CSS of the confirmed (non-stock) livery. */
@@ -288,7 +288,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const priorSkin = this.confirmedSkin
     const basePhase = this.basePhase
     const skin = this.previewSkin
-    const startRevision = this.configRevision
+    const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
     this.lastWrite = target === STOCK_ID ? { kind: 'restore' } : { kind: 'commit', id: target }
     this.patch({ writing: true, writeFailure: undefined })
@@ -302,7 +302,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     }
     if (this.disposed) return false
     const pendingCommit = this.pendingConfigSnapshot()
-    if (pendingCommit !== undefined && pendingCommit.revision !== startRevision) {
+    if (pendingCommit !== undefined && pendingCommit.serial !== startSerial) {
       // A newer host configuration landed while we waited: it wins over this
       // older write result. Roll forward to the newest confirmed style instead
       // of overwriting it with the stale target/rollback.
@@ -373,7 +373,13 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    * @returns `{ ok: true }` or `{ ok: false, failure }`.
    */
   async applyStyle(id: string): Promise<StyleApplyOutcome> {
-    if (this.disposed) return { ok: false, failure: 'busy' }
+    if (this.disposed || this.snapshot.writing) return { ok: false, failure: 'busy' }
+    // A preset whose style is already active needs only the wallpaper half, so
+    // a read-only host must not reject it before this no-op check.
+    if ((isStock(id) && isStock(this.snapshot.confirmedId) && isStock(this.snapshot.effectiveId))
+      || (this.snapshot.confirmedId === id && this.snapshot.effectiveId === id)) {
+      return { ok: true }
+    }
     if (this.snapshot.configStatus !== 'ready' || this.snapshot.writable !== true) {
       return { ok: false, failure: 'unavailable' }
     }
@@ -430,7 +436,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const form = this.form
     if (form === undefined) return false
     const basePhase = this.snapshot.phase === 'degraded' ? 'degraded' : 'ready'
-    const startRevision = this.configRevision
+    const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
     this.lastWrite = { kind: 'restore' }
     this.patch({ writing: true, writeFailure: undefined })
@@ -444,7 +450,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     }
     if (this.disposed) return false
     const pendingRestore = this.pendingConfigSnapshot()
-    if (pendingRestore !== undefined && pendingRestore.revision !== startRevision) {
+    if (pendingRestore !== undefined && pendingRestore.serial !== startSerial) {
       const newest = pendingRestore.confirmedId
       this.pendingConfig = undefined
       this.lastWrite = undefined
@@ -537,7 +543,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
 
   // --- internals -----------------------------------------------------------
 
-  private pendingConfigSnapshot(): { readonly revision: number | undefined; readonly confirmedId: string } | undefined {
+  private pendingConfigSnapshot(): { readonly revision: number | undefined; readonly serial: number; readonly confirmedId: string } | undefined {
     return this.pendingConfig
   }
 
@@ -633,8 +639,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const confirmedId = value ?? fallback ?? STOCK_ID
     this.configSettled = true
     const previousRevision = this.lastObservedConfigRevision
+    this.configObservationSerial += 1
     this.lastObservedConfigRevision = snapshot.revision
-    this.configRevision = snapshot.revision
     const previous = this.snapshot.confirmedId
     this.patch({
       configStatus: snapshot.status,
@@ -650,7 +656,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       // it must supersede an in-flight write and refresh the confirmed baseline.
       if (snapshot.revision === undefined || previousRevision === undefined || snapshot.revision <= previousRevision) return
       if (this.snapshot.writing) {
-        this.pendingConfig = { revision: snapshot.revision, confirmedId }
+        this.pendingConfig = { revision: snapshot.revision, serial: this.configObservationSerial, confirmedId }
         return
       }
       if (this.snapshot.phase === 'previewing') {
@@ -664,7 +670,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     if (this.snapshot.writing) {
       // Never present over an in-flight write, but remember the newest config so
       // the write result can reconcile forward when it settles.
-      this.pendingConfig = { revision: snapshot.revision, confirmedId }
+      this.pendingConfig = { revision: snapshot.revision, serial: this.configObservationSerial, confirmedId }
       return
     }
     if (this.snapshot.phase === 'previewing') {

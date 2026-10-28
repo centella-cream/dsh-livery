@@ -37,6 +37,23 @@ packaging; they are folded into the `0.1.0` entry.
 - Recent clear invalidates in-flight remote commits; theme observers are
   reference-counted; preset unmount prevents the wallpaper half of a slow
   application; DOM lease ids use cross-module UUIDs.
+- Remote pruning now actually enforces `protectedUrls` as a set (current live,
+  durable, persisted and candidate), and prune/delete share the same per-URL
+  cross-tab lock as writes. IndexedDB records carry a write generation and use
+  atomic compare/delete so a stale prune cannot delete a newer blob.
+- IDB errors preserve the original DOMException name/message via `cause`, so
+  production QuotaExceededError reaches the quota-prune-and-retry path.
+- Manual clear-local-data invalidates in-flight remote commits before cleanup.
+  Recent metadata merges write back when full canonical entries differ, not only
+  when URL count/order differ.
+- Runtime reconciliation uses a local observation serial (not optional host
+  revision) so same/undefined-revision updates cannot be overwritten by a late
+  write. Wallpaper DOM lease and ref heartbeat start only with `start()`.
+- Client CSS first/reused owners share one reference-count release path.
+  `applyStyle()` allows the already-active style no-op even in read-only mode so
+  wallpaper-only presets still apply.
+- Search JSON is capped at 2 MiB; decoded image dimensions are capped at 40 MP
+  when createImageBitmap is available.
 - Mount sweep now reads live/durable/persisted selections and tab refs INSIDE the
   cross-tab lock (then re-reads protection before each delete); if the browser
   cannot enumerate refs, destructive GC fails closed instead of assuming empty.

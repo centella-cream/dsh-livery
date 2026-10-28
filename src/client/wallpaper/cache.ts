@@ -280,15 +280,23 @@ export async function pruneRemoteCache(deps: {
     .sort((a, b) => a.lastUsedAt - b.lastUsedAt || a.createdAt - b.createdAt || a.key.localeCompare(b.key))
   let total = candidates.reduce((sum, record) => sum + record.size, 0)
   let count = candidates.length
+  const protectedUrls = new Set<string>(deps.protectedUrls ?? [])
+  if (deps.protectedUrl !== undefined) protectedUrls.add(deps.protectedUrl)
   const evicted: string[] = []
   const kept: StoredImageRecord[] = []
   for (const record of candidates) {
     const overCount = count > maxEntries
     const overBytes = total > maxBytes
-    const protectedRecord = deps.protectedUrl !== undefined && record.sourceUrl === deps.protectedUrl
+    const protectedRecord = record.sourceUrl !== undefined && protectedUrls.has(record.sourceUrl)
     if ((overCount || overBytes) && !protectedRecord) {
       try {
-        await images.delete(record.key)
+        await withRemoteWriteLock(record.key, async () => {
+          if (images.deleteIfGeneration !== undefined && record.generation !== undefined) {
+            return images.deleteIfGeneration(record.key, record.generation)
+          }
+          await images.delete(record.key)
+          return true
+        })
         evicted.push(record.sourceUrl ?? record.key)
         total -= record.size
         count -= 1
@@ -327,8 +335,9 @@ function isQuotaError(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) return false
   const name = (error as { name?: unknown }).name
   const message = (error as { message?: unknown }).message
-  return name === 'QuotaExceededError'
-    || (typeof message === 'string' && /quota|storage.*full/i.test(message))
+  const cause = (error as { cause?: unknown }).cause
+  if (name === 'QuotaExceededError' || (typeof message === 'string' && /quota|storage.*full/i.test(message))) return true
+  return cause !== undefined && cause !== error && isQuotaError(cause)
 }
 
 export async function cacheRemoteImage(
@@ -419,6 +428,7 @@ export async function cacheRemoteImage(
       createdAt: now,
       lastUsedAt: now,
       sourceUrl: check.url,
+      generation: now,
       blob,
     }
     const writeOnce = (): Promise<'written' | 'cancelled'> => withRemoteWriteLock(key, async () => {
@@ -521,7 +531,11 @@ async function isDecodableImage(blob: Blob): Promise<boolean> {
   if (typeof createBitmap !== 'function') return true
   try {
     const bitmap = await createBitmap(blob)
+    const width = (bitmap as unknown as { width?: number }).width ?? 0
+    const height = (bitmap as unknown as { height?: number }).height ?? 0
     bitmap.close?.()
+    // 40 MP cap: compressed-size limits alone do not bound decoded pixels.
+    if (width > 0 && height > 0 && width * height > 40_000_000) return false
     return true
   } catch {
     return false
@@ -604,7 +618,11 @@ export async function deleteCachedRemote(
       if (record !== undefined && record.kind === 'remote' && record.sourceUrl !== undefined && record.sourceUrl !== url) {
         return
       }
-      await images.delete(key)
+      if (record?.generation !== undefined && images.deleteIfGeneration !== undefined) {
+        await images.deleteIfGeneration(key, record.generation)
+      } else {
+        await images.delete(key)
+      }
     })
   } catch {
     /* cache deletion is best effort */

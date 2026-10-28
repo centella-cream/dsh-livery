@@ -41,6 +41,7 @@ export function createUploadRecord(key: string, blob: Blob, now: number = Date.n
     size: blob.size,
     createdAt: now,
     lastUsedAt: now,
+    generation: now,
     blob,
   }
 }
@@ -122,7 +123,10 @@ export async function pruneStaleUploads(
     if (persistedUploadKey !== undefined && record.key === persistedUploadKey) continue
     if (extraProtectedUploadKeys?.has(record.key) === true) continue
     try {
-      await images.delete(record.key)
+      const deleted = record.generation !== undefined && images.deleteIfGeneration !== undefined
+        ? await images.deleteIfGeneration(record.key, record.generation)
+        : (await images.delete(record.key), true)
+      if (!deleted) continue
       removed.push(record.key)
     } catch (error) {
       errors.push(record.key)
@@ -253,7 +257,13 @@ export async function clearAllLocalWallpaperData(
         continue
       }
       try {
-        await images.delete(record.key)
+        const deleted = record.generation !== undefined && images.deleteIfGeneration !== undefined
+          ? await images.deleteIfGeneration(record.key, record.generation)
+          : (await images.delete(record.key), true)
+        if (!deleted) {
+          kept.push(record)
+          continue
+        }
         removedImages += 1
       } catch (error) {
         errors.push(record.key)

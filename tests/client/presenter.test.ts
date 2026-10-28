@@ -52,6 +52,16 @@ describe('client stylesheet lifecycle', () => {
     disposeA()
     expect(doc.head.walk().filter(element => element.dataset.pluginCss === CLIENT_CSS_FILE)).toHaveLength(0)
   })
+
+  it('keeps the CSS when the first owner releases before a second owner', () => {
+    const { doc, presenter } = setup()
+    const disposeA = presenter.installClientCss('a{}')
+    const disposeB = presenter.installClientCss('b{}')
+    disposeA()
+    expect(doc.head.walk().filter(element => element.dataset.pluginCss === CLIENT_CSS_FILE)).toHaveLength(1)
+    disposeB()
+    expect(doc.head.walk().filter(element => element.dataset.pluginCss === CLIENT_CSS_FILE)).toHaveLength(0)
+  })
 })
 
 describe('confirmed presentation', () => {

@@ -396,7 +396,7 @@ export function PresetCard({
   const onCopy = async (): Promise<void> => {
     if (exported === undefined) return
     const targetJson = exported.json
-    const ticket = copyTicket.current
+    const ticket = ++copyTicket.current
     let ok = false
     try {
       ok = await clipboardWriter(targetJson)

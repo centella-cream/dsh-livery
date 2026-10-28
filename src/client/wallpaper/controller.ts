@@ -212,7 +212,9 @@ function samePosition(a: WallpaperPosition, b: WallpaperPosition): boolean {
  * @returns the controller (not started).
  */
 export function createWallpaperController(options: WallpaperControllerOptions = {}): WallpaperControllerApi {
-  const layer: WallpaperLayer = createWallpaperLayer(options.document, options.ownerId)
+  // Created lazily in start(): a boot-less controller that never passes catalog
+  // certification must not steal the DOM lease from the still-running instance.
+  let layer: WallpaperLayer = { apply: () => undefined, clear: () => undefined, dispose: () => undefined }
   const storage = options.storage ?? defaultStorage()
   const images = options.images ?? createIndexedDbImageStore()
   const objectUrls = options.objectUrls ?? defaultObjectUrls()
@@ -227,13 +229,16 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     : window as unknown as StorageEventTarget)
   let lastPublishedRaw: string | undefined
   let syncUnsubscribe: (() => void) | undefined
-  // Keep the per-tab upload reference fresh even while the page is idle; a
-  // stale 24h ref must never be the only reason a live tab loses its blob.
-  const refHeartbeat = typeof setInterval === 'function'
-    ? setInterval(publishRefs, 5 * 60 * 1000)
-    : undefined
+  // Started only with the controller: refs/heartbeat must not exist for a
+  // boot-less or uncertified instance.
+  let refHeartbeat: ReturnType<typeof setInterval> | undefined
+  const startRefHeartbeat = (): void => {
+    if (refHeartbeat !== undefined || typeof setInterval !== 'function') return
+    refHeartbeat = setInterval(publishRefs, 5 * 60 * 1000)
+  }
   const stopRefHeartbeat = (): void => {
     if (refHeartbeat !== undefined) clearInterval(refHeartbeat)
+    refHeartbeat = undefined
   }
   const listeners = new Set<() => void>()
   let selection: WallpaperSelection = undefined
@@ -562,6 +567,8 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     start: () => {
       if (disposed || started) return
       started = true
+      layer = createWallpaperLayer(options.document, options.ownerId)
+      startRefHeartbeat()
       hydrate()
       apply()
       notify()

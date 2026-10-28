@@ -777,7 +777,14 @@ export async function requestWallpaperResults(
       ...(controller === undefined ? {} : { signal: controller.signal }),
     })
     if (!response.ok) return { ok: false, reason: 'error' }
-    const json: unknown = await response.json()
+    const declared = Number(response.headers.get('content-length') ?? '')
+    const maxJsonBytes = 2 * 1024 * 1024
+    if (Number.isFinite(declared) && declared > maxJsonBytes) return { ok: false, reason: 'error' }
+    const text = await response.text()
+    if (typeof TextEncoder !== 'undefined' && new TextEncoder().encode(text).length > maxJsonBytes) {
+      return { ok: false, reason: 'error' }
+    }
+    const json: unknown = JSON.parse(text)
     const results = request.source === 'openverse'
       ? parseOpenverseResults(json)
       : parsePicsumResults(json)
