@@ -34,7 +34,7 @@
         "contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json"
       ],
       "notes": [
-        "DSH 0.2.1-rc.2 + Web Profile + Chrome 155 only; Chrome 155 is the only certified browser version.",
+        "DSH 0.2.1-rc.2 + Web Profile + exact Chrome 156.0.8078.48; 156.0.8078.48 is the only certified browser version.",
         "Desktop macOS/Windows and Web Edge are not-supported support boundaries, not active runtime gates: no support or guarantee is provided for those surfaces.",
         "Only unsupported DSH builds are rejected at install/runtime and fail closed to stock.",
         "clientTarget chrome120 records the build target, not a browser certification claim."
@@ -110,7 +110,7 @@
       "notes": [
         "Next-channel preview: verified against the signed official npm tarball for @deepseek-ai/dsh@0.2.1-rc.4.",
         "Upstream GitHub tag/release was not present at certification time; this is not a stability promise for the pre-release channel. GitHub-tagged 0.2.1-rc.2 (npm latest) and 0.2.1-rc.3 (Desktop) remain the stable claims.",
-        "Web Profile + Chrome 155 only; Desktop macOS/Windows and Web Edge are not-supported for this host build; rc.4 Desktop app was not available for certification."
+        "Web Profile + exact Chrome 156.0.8078.48 only; Desktop macOS/Windows and Web Edge are not-supported for this host build; rc.4 Desktop app was not available for certification."
       ]
     }
   ]

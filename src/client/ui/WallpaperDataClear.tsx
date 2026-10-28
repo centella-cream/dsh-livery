@@ -65,7 +65,7 @@ export async function runWallpaperDataClear(
       getSelection: () => getWallpaperController()?.getSnapshot().selection ?? selection,
       getDurableSelection: () => getWallpaperController()?.getDurableSelection() ?? selection,
       getPersistedSelection: () => getWallpaperController()?.getPersistedSelection() ?? selection,
-      getReferencedUploadKeys: () => readReferencedUploadKeys(browserStorage()),
+      getReferencedUploadKeys: options.getReferencedUploadKeys ?? (() => readReferencedUploadKeys(browserStorage())),
     }))
   } catch {
     // The operation itself is defensive; this is the last-resort guard so a

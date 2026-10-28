@@ -31,6 +31,9 @@ describe('0.1.3 release parameterization', () => {
     const evidenceGate = read('scripts/release-evidence.mjs')
     expect(evidenceGate).toContain('REQUIRED_WEB_CHECKS')
     expect(evidenceGate).toContain('REQUIRED_DESKTOP_CHECKS')
+    expect(workflow).not.toContain('pnpm pack:candidate')
+    expect(workflow).toContain('LIVERY_ACCEPTANCE_RUN_ID')
+    expect(workflow).toContain('actions/download-artifact@v4')
   })
 
   it('uses the formal matrix for evidence and exact certification claims', () => {

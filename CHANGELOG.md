@@ -37,6 +37,20 @@ packaging; they are folded into the `0.1.0` entry.
 - Recent clear invalidates in-flight remote commits; theme observers are
   reference-counted; preset unmount prevents the wallpaper half of a slow
   application; DOM lease ids use cross-module UUIDs.
+- Mount sweep now reads live/durable/persisted selections and tab refs INSIDE the
+  cross-tab lock (then re-reads protection before each delete); if the browser
+  cannot enumerate refs, destructive GC fails closed instead of assuming empty.
+- Cross-tab recent clear cancels the receiving tab's in-flight remote commit
+  before clearing UI/history, so a late download cannot resurrect the old list.
+- Client CSS uses node reference counting rather than the presenter lease, so a
+  normal teardown or HMR overlap cannot leave the plugin stylesheet behind.
+- Remote-cache prune/delete take the same per-URL cross-tab lock as writes;
+  quota errors prune once with current/candidate URLs protected and retry the
+  put only once.
+- Async recent reads and remote commits capture the shared selection version, so
+  selecting a builtin/upload/clear while a read is pending cannot be overwritten.
+- Recent metadata merging is ordered by `addedAt` (stable JSON tie-break): older
+  events only fill missing fields and cannot replace newer creator/license data.
 - Uploaded blobs are staged and committed inside ONE GC critical section: blob
   write, ticket/selection-version check, selection commit, localStorage flush and
   failure rollback cannot interleave with mount/clear GC. A failed persist rolls

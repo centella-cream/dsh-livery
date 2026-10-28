@@ -298,7 +298,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
             if (candidate?.kind === 'upload' && candidate.key === key) return
           }
         }
-        if (readReferencedUploadKeys(recentStorage as never).has(key)) return
+        const refs = readReferencedUploadKeys(recentStorage as never)
+        if (refs === undefined || refs.has(key)) return
         await deleteStoredImage(imageStore, key, label)
       })
     }, 5000)
@@ -330,22 +331,37 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     if (!hasCrossTabGcLock()) return () => { mounted.current = false }
     // Reclaim upload blobs left behind by an interrupted prior session. This is
     // best effort and protects the currently selected upload key.
-    const active = getWallpaperController()
-    const current = active?.getSnapshot().selection
-    const durable = active?.getDurableSelection()
-    const persisted = active?.getPersistedSelection()
-    const uploadKeys = new Set<string>()
-    for (const candidate of [current, durable, persisted]) {
-      if (candidate?.kind === 'upload') uploadKeys.add(candidate.key)
-    }
-    const [liveKey, durableKey, persistedKey] = [...uploadKeys]
-    void withWallpaperGcLock(() => pruneStaleUploads(
-      imageStore,
-      liveKey,
-      durableKey,
-      persistedKey,
-      readReferencedUploadKeys(recentStorage as never),
-    ))
+    void withWallpaperGcLock(async () => {
+      // EVERY protection read happens inside the cross-tab lock: a tab that
+      // committed an upload just before us must not be classified as stale.
+      const active = getWallpaperController()
+      const current = active?.getSnapshot().selection
+      const durable = active?.getDurableSelection()
+      const persisted = active?.getPersistedSelection()
+      const refs = readReferencedUploadKeys(recentStorage as never)
+      // Unknown ref state (no storage enumeration) means fail closed: no GC.
+      if (refs === undefined) return
+      const uploadKeys = new Set<string>(refs)
+      for (const candidate of [current, durable, persisted]) {
+        if (candidate?.kind === 'upload') uploadKeys.add(candidate.key)
+      }
+      const [liveKey, durableKey, persistedKey] = [...uploadKeys]
+      await pruneStaleUploads(
+        imageStore,
+        liveKey,
+        durableKey,
+        persistedKey,
+        refs,
+        () => {
+          const latest = getWallpaperController()
+          const keys = new Set<string>(readReferencedUploadKeys(recentStorage as never) ?? [])
+          for (const candidate of [latest?.getSnapshot().selection, latest?.getDurableSelection(), latest?.getPersistedSelection()]) {
+            if (candidate?.kind === 'upload') keys.add(candidate.key)
+          }
+          return keys
+        },
+      )
+    })
     return () => {
       mounted.current = false
       cacheCancellation.current.cancel()
@@ -416,20 +432,32 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
    * object URL and history. A failed download leaves the previous wallpaper in
    * place (no persisted remote selection with no renderable image).
    */
+  const protectedRemoteUrls = (): string[] => {
+    const active = controller
+    const urls = new Set<string>()
+    for (const candidate of [active?.getSnapshot().selection, active?.getDurableSelection(), active?.getPersistedSelection()]) {
+      if (candidate?.kind === 'remote') urls.add(candidate.url)
+    }
+    return [...urls]
+  }
+
   const commitRemote = async (
     entry: Omit<RecentWallpaperEntry, 'addedAt'>,
     attribution?: Attribution,
   ): Promise<boolean> => {
     const ticket = ++remoteCommitTicket.current
+    const selectionVersion = controller?.getSelectionVersion()
     const signal = cacheCancellation.current.reset()
     const result = await cacheRemoteImage(entry.url, {
       images: imageStore,
       storage: recentStorage,
       protectedUrl: entry.url,
+      protectedUrls: protectedRemoteUrls(),
       signal,
       deferPrune: true,
     })
-    if (!mounted.current || ticket !== remoteCommitTicket.current) return false
+    if (!mounted.current || ticket !== remoteCommitTicket.current
+      || (selectionVersion !== undefined && controller?.getSelectionVersion() !== selectionVersion)) return false
     if (!result.ok) return false
     rememberBlob(entry.url, result.record.blob)
     recordRemoteHistory(entry)
@@ -444,8 +472,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
     void (async () => {
       const ticket = ++remoteCommitTicket.current
+      const selectionVersion = controller?.getSelectionVersion()
       const record = await loadCachedRemote(entry.url, imageStore)
-      if (!mounted.current || ticket !== remoteCommitTicket.current) return
+      if (!mounted.current || ticket !== remoteCommitTicket.current
+        || (selectionVersion !== undefined && controller?.getSelectionVersion() !== selectionVersion)) return
       if (record !== undefined) {
         rememberBlob(entry.url, record.blob)
         recordRemoteHistory(entry)
@@ -490,20 +520,24 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   // Another tab changed the recent history: refresh entries/thumbnail state.
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
+    const applyExternalClear = (): void => {
+      // A clear from another tab must also cancel our in-flight remote commit,
+      // otherwise it could finish later and rewrite history/tombstone.
+      remoteCommitTicket.current += 1
+      cacheCancellation.current.cancel()
+      setRecent([])
+      releaseAllObjectUrls()
+    }
     const listener = (event: StorageEvent): void => {
       if (event.key === RECENT_WALLPAPER_CLEAR_KEY) {
-        if (event.newValue !== null) {
-          setRecent([])
-          releaseAllObjectUrls()
-        }
+        if (event.newValue !== null) applyExternalClear()
         return
       }
       if (event.key !== 'dsh-livery.wallpaper.recent.v1') return
       if (event.newValue === null) {
         // An explicit clear is authoritative; never merge the old local list
         // back into an empty cross-tab history.
-        setRecent([])
-        releaseAllObjectUrls()
+        applyExternalClear()
         return
       }
       const next = readRecentFromStorageEvent(event as unknown as { key: string | null; newValue: string | null }, recentStorage)
@@ -573,6 +607,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       images: imageStore,
       storage: recentStorage,
       protectedUrl: url,
+      protectedUrls: protectedRemoteUrls(),
       signal: abort?.signal,
       deferPrune: true,
     }).then(result => {
@@ -738,16 +773,18 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller
     if (active === undefined) return false
+    const selectionVersion = active.getSelectionVersion()
     let blob: Blob | undefined
     if (target.selection?.kind === 'remote') {
       const result = await cacheRemoteImage(target.selection.url, {
         images: imageStore,
         storage: recentStorage,
         protectedUrl: target.selection.url,
+        protectedUrls: protectedRemoteUrls(),
         signal: cacheCancellation.current.reset(),
         deferPrune: true,
       })
-      if (!mounted.current || !result.ok) return false
+      if (!mounted.current || !result.ok || active.getSelectionVersion() !== selectionVersion) return false
       blob = result.record.blob
       rememberBlob(target.selection.url, blob)
     }

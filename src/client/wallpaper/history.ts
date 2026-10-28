@@ -131,13 +131,24 @@ export function mergeRecentEntries(
     const parsed = parseRecentEntry(entry)
     if (parsed === undefined) continue
     const previous = byUrl.get(parsed.url)
-    byUrl.set(parsed.url, previous === undefined
-      ? parsed
-      : parseRecentEntry({
-        ...previous,
-        ...parsed,
-        addedAt: Math.max(previous.addedAt, parsed.addedAt),
-      }) as RecentWallpaperEntry)
+    if (previous === undefined) {
+      byUrl.set(parsed.url, parsed)
+      continue
+    }
+    const parsedNewer = parsed.addedAt > previous.addedAt
+      || (parsed.addedAt === previous.addedAt && JSON.stringify(parsed) >= JSON.stringify(previous))
+    const newer = parsedNewer ? parsed : previous
+    const older = parsedNewer ? previous : parsed
+    const merged: RecentWallpaperEntry = {
+      url: newer.url,
+      addedAt: Math.max(previous.addedAt, parsed.addedAt),
+      ...(newer.thumbnail ?? older.thumbnail) === undefined ? {} : { thumbnail: newer.thumbnail ?? older.thumbnail },
+      ...(newer.title ?? older.title) === undefined ? {} : { title: newer.title ?? older.title },
+      ...(newer.creator ?? older.creator) === undefined ? {} : { creator: newer.creator ?? older.creator },
+      ...(newer.license ?? older.license) === undefined ? {} : { license: newer.license ?? older.license },
+      ...(newer.source ?? older.source) === undefined ? {} : { source: newer.source ?? older.source },
+    }
+    byUrl.set(parsed.url, parseRecentEntry(merged) as RecentWallpaperEntry)
   }
   return [...byUrl.values()].sort((a, b) => b.addedAt - a.addedAt).slice(0, MAX_RECENT_WALLPAPERS)
 }

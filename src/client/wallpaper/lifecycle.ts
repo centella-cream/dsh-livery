@@ -102,6 +102,7 @@ export async function pruneStaleUploads(
   durableUploadKey?: string | undefined,
   persistedUploadKey?: string | undefined,
   extraProtectedUploadKeys?: ReadonlySet<string> | undefined,
+  getProtection?: (() => ReadonlySet<string>) | undefined,
 ): Promise<StaleUploadCleanupResult> {
   if (images === undefined) return { removed: [], errors: [] }
   let records: readonly StoredImageRecord[]
@@ -115,6 +116,7 @@ export async function pruneStaleUploads(
   const errors: string[] = []
   for (const record of records) {
     if (record.kind !== 'upload') continue
+    if (getProtection !== undefined && getProtection().has(record.key)) continue
     if (currentUploadKey !== undefined && record.key === currentUploadKey) continue
     if (durableUploadKey !== undefined && record.key === durableUploadKey) continue
     if (persistedUploadKey !== undefined && record.key === persistedUploadKey) continue
@@ -172,7 +174,7 @@ export interface ClearLocalWallpaperDataOptions {
   /** Current recoverable localStorage selection resolver. */
   readonly getPersistedSelection?: (() => WallpaperSelection) | undefined
   /** Upload keys referenced by any live tab (explicit ref table). */
-  readonly getReferencedUploadKeys?: (() => ReadonlySet<string>) | undefined
+  readonly getReferencedUploadKeys?: (() => ReadonlySet<string> | undefined) | undefined
 }
 
 /**
@@ -217,7 +219,7 @@ export async function clearAllLocalWallpaperData(
   const liveSelection = (): WallpaperSelection => options.getSelection?.() ?? selection
   const liveDurable = (): WallpaperSelection => options.getDurableSelection?.() ?? options.durableSelection ?? selection
   const livePersisted = (): WallpaperSelection => options.getPersistedSelection?.() ?? selection
-  const liveReferencedUploadKeys = (): ReadonlySet<string> => options.getReferencedUploadKeys?.() ?? new Set<string>()
+  const liveReferencedUploadKeys = (): ReadonlySet<string> | undefined => options.getReferencedUploadKeys?.()
   const errors: string[] = []
   let removedImages = 0
   let keptImages = 0
@@ -235,7 +237,9 @@ export async function clearAllLocalWallpaperData(
       const current = liveSelection()
       const durable = liveDurable()
       const persisted = livePersisted()
-      const protectedUploadKeys = new Set<string>(liveReferencedUploadKeys())
+      const referenced = liveReferencedUploadKeys()
+      const refsKnown = referenced !== undefined
+      const protectedUploadKeys = new Set<string>(referenced ?? [])
       const protectedRemoteUrls = new Set<string>()
       for (const candidate of [current, durable, persisted]) {
         if (candidate?.kind === 'upload') protectedUploadKeys.add(candidate.key)
@@ -243,7 +247,7 @@ export async function clearAllLocalWallpaperData(
       }
       const isCurrent = (record.kind === 'upload' && protectedUploadKeys.has(record.key))
         || (record.kind === 'remote' && record.sourceUrl !== undefined && protectedRemoteUrls.has(record.sourceUrl))
-      if (isCurrent) {
+      if (isCurrent || !refsKnown) {
         keptImages += 1
         kept.push(record)
         continue

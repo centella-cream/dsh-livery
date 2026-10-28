@@ -98,10 +98,13 @@ export function removeWallpaperRefs(storage: WallpaperRefStorage | undefined, so
 export function readReferencedUploadKeys(
   storage: WallpaperRefStorage | undefined,
   now: number = Date.now(),
-): ReadonlySet<string> {
+): ReadonlySet<string> | undefined {
+  if (storage === undefined) return undefined
+  const keys = refKeys(storage)
+  // No enumeration support is UNKNOWN, not empty: destructive GC must fail closed.
+  if (typeof storage.key !== 'function' || typeof storage.length !== 'number') return undefined
   const protectedKeys = new Set<string>()
-  if (storage === undefined) return protectedKeys
-  for (const key of refKeys(storage)) {
+  for (const key of keys) {
     const record = parseRef(storage.getItem(key))
     if (record === undefined) continue
     if (now - record.updatedAt > WALLPAPER_REF_TTL_MS) continue

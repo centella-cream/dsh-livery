@@ -39,18 +39,28 @@ jobs:
             test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "tag/version mismatch: v$VERSION vs $GITHUB_REF_NAME" >&2; exit 1; }
           fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
-      - name: Build and inspect the real tarball
-        run: pnpm pack:candidate
-      - name: Assert derived candidate exists
-        run: test -f ".tmp/release-check/${{ steps.meta.outputs.tarball }}"
-      - name: Upload candidate tarball + manifest
+      - name: Download the EXACT accepted candidate (no rebuild)
+        uses: actions/download-artifact@v4
+        with:
+          name: dsh-livery-candidate
+          run-id: ${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .tmp/accepted
+      - name: Assert the accepted tarball is the one bound by evidence
+        run: |
+          test -n "${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}" || { echo "LIVERY_ACCEPTANCE_RUN_ID repository variable is required; tag workflow never rebuilds the candidate" >&2; exit 1; }
+          TGZ=$(find .tmp/accepted -maxdepth 1 -name '${{ steps.meta.outputs.tarball }}' -print -quit)
+          test -n "$TGZ"
+          cp "$TGZ" .tmp/accepted-candidate.tgz
+          test -f .tmp/accepted/release-manifest.json
+          cp .tmp/accepted/release-manifest.json .tmp/release-manifest.json
+      - name: Upload accepted candidate + manifest
         uses: actions/upload-artifact@v4
         with:
           name: dsh-livery-candidate
           path: |
-            .tmp/release-check/*.tgz
-            .tmp/release-check/release-manifest.json
+            .tmp/accepted-candidate.tgz
+            .tmp/release-manifest.json
 
   release-gates:
     needs: candidate
@@ -72,15 +82,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build gate CLIs (no artifact rebuild)
         run: pnpm build:cli
-      - name: Download the exact candidate artifact
+      - name: Download the exact accepted candidate
         uses: actions/download-artifact@v4
         with:
           name: dsh-livery-candidate
           path: .tmp/candidate
       - name: Resolve downloaded candidate
         run: |
-          TGZ=$(find .tmp/candidate -maxdepth 1 -name '*.tgz' -print -quit)
-          test -n "$TGZ"
+          test -f .tmp/candidate/accepted-candidate.tgz
+          mv .tmp/candidate/accepted-candidate.tgz .tmp/candidate/candidate.tgz
+          TGZ=.tmp/candidate/candidate.tgz
           echo "TGZ=$TGZ" >> "$GITHUB_ENV"
           VERSION=$(tar -xOzf "$TGZ" package/package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")
           test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "tag/version mismatch: v$VERSION vs $GITHUB_REF_NAME" >&2; exit 1; }

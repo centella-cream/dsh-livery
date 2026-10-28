@@ -119,9 +119,11 @@ pnpm pack:candidate
 pnpm release:prepare -- --tgz .tmp/release-check/dsh-livery-<version>.tgz
 ```
 
-The publication workflow downloads the accepted candidate, verifies every
-matrix evidence file, publishes that exact tarball, then downloads the version
-back from npm and checks sha256, byte size and package version. The accepted
+The tag/publication workflow does **not** rebuild the candidate. It downloads
+the exact accepted tarball + release manifest from the immutable GitHub Actions
+acceptance run named by the `LIVERY_ACCEPTANCE_RUN_ID` repository variable,
+verifies every matrix evidence file, publishes those bytes, then downloads the
+version back from npm and checks sha256, byte size and package version. The accepted
 tarball, `SHA256SUMS` and release manifest are attached to the GitHub Release.
 The Web acceptance harness must be run with `--expect-browser-version
 156.0.8078.48` for the Web hosts; any other system Chrome version fails the run.

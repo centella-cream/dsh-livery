@@ -261,6 +261,7 @@ export async function pruneRemoteCache(deps: {
   readonly images?: WallpaperImageStore | undefined
   readonly storage?: RemoteCacheStorage | undefined
   readonly protectedUrl?: string | undefined
+  readonly protectedUrls?: readonly string[] | undefined
   readonly maxEntries?: number | undefined
   readonly maxBytes?: number | undefined
 } = {}): Promise<readonly string[]> {
@@ -322,6 +323,14 @@ export async function pruneRemoteCache(deps: {
  * @param deps - injected store/fetch/timeout/signal/index (defaults: IndexedDB + fetch).
  * @returns ok with the stored record, or a non-fatal failure reason.
  */
+function isQuotaError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  const name = (error as { name?: unknown }).name
+  const message = (error as { message?: unknown }).message
+  return name === 'QuotaExceededError'
+    || (typeof message === 'string' && /quota|storage.*full/i.test(message))
+}
+
 export async function cacheRemoteImage(
   url: string,
   deps: {
@@ -334,6 +343,7 @@ export async function cacheRemoteImage(
     readonly signal?: AbortSignal | undefined
     /** Caller commits the selection first, then prunes with live protection. */
     readonly deferPrune?: boolean | undefined
+    readonly protectedUrls?: readonly string[] | undefined
   } = {},
 ): Promise<RemoteCacheResult> {
   const check = validateWallpaperUrl(url)
@@ -411,7 +421,7 @@ export async function cacheRemoteImage(
       sourceUrl: check.url,
       blob,
     }
-    const writeResult = await withRemoteWriteLock(key, async () => {
+    const writeOnce = (): Promise<'written' | 'cancelled'> => withRemoteWriteLock(key, async () => {
       // A newer same-URL operation may have started while this one was fetching;
       // never overwrite it with an older blob.
       if (!isLatestRemoteOperation(key, operationToken) || cancelledExternally || isAborted(deps.signal)) {
@@ -425,6 +435,21 @@ export async function cacheRemoteImage(
       }
       return 'written' as const
     })
+    let writeResult: 'written' | 'cancelled'
+    try {
+      writeResult = await writeOnce()
+    } catch (error) {
+      if (!isQuotaError(error)) throw error
+      // Quota full: make room once, protecting the current wallpaper and this
+      // candidate, then retry the put exactly one time.
+      await pruneRemoteCache({
+        images,
+        storage: deps.storage,
+        protectedUrl: deps.protectedUrl,
+        protectedUrls: [...(deps.protectedUrls ?? []), check.url],
+      })
+      writeResult = await writeOnce()
+    }
     if (writeResult === 'cancelled') return { ok: false, reason: 'cancelled' }
     if (deps.storage !== undefined) {
       touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: now })
@@ -434,6 +459,7 @@ export async function cacheRemoteImage(
         images,
         storage: deps.storage,
         protectedUrl: deps.protectedUrl ?? check.url,
+        protectedUrls: deps.protectedUrls,
       })
     }
     if (cancelledExternally || isAborted(deps.signal)) {
@@ -573,11 +599,13 @@ export async function deleteCachedRemote(
   if (images === undefined) return
   const key = remoteCacheKey(url)
   try {
-    const record = await images.get(key)
-    if (record !== undefined && record.kind === 'remote' && record.sourceUrl !== undefined && record.sourceUrl !== url) {
-      return
-    }
-    await images.delete(key)
+    await withRemoteWriteLock(key, async () => {
+      const record = await images.get(key)
+      if (record !== undefined && record.kind === 'remote' && record.sourceUrl !== undefined && record.sourceUrl !== url) {
+        return
+      }
+      await images.delete(key)
+    })
   } catch {
     /* cache deletion is best effort */
   }

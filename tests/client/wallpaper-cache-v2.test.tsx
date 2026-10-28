@@ -374,6 +374,7 @@ describe('clear all local wallpaper data', () => {
     images.records.set(remoteCacheKey(currentRemote), remoteRecord(currentRemote))
     let reads = 0
     const result = await clearAllLocalWallpaperData({
+      getReferencedUploadKeys: () => new Set(),
       images,
       storage: new MemoryStorage(),
       getSelection: () => {
@@ -399,6 +400,7 @@ describe('clear all local wallpaper data', () => {
     storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({ kind: 'upload', key: 'upload-current' }))
 
     const result = await clearAllLocalWallpaperData({
+      getReferencedUploadKeys: () => new Set(),
       images,
       storage,
       selection: { kind: 'upload', key: 'upload-current' },
@@ -419,7 +421,8 @@ describe('clear all local wallpaper data', () => {
     const currentUrl = 'https://cdn.example/current.jpg'
     images.records.set(remoteCacheKey(currentUrl), remoteRecord(currentUrl))
     storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify([{ url: currentUrl, addedAt: 1 }]))
-    const kept = await clearAllLocalWallpaperData({ images, storage, selection: { kind: 'remote', url: currentUrl } })
+    const kept = await clearAllLocalWallpaperData({
+      getReferencedUploadKeys: () => new Set(), images, storage, selection: { kind: 'remote', url: currentUrl } })
     expect(kept.status).toBe('cleared')
     expect(kept.clearedHistory).toBe(true)
     expect(kept.removedImages).toBe(0)
@@ -427,6 +430,7 @@ describe('clear all local wallpaper data', () => {
     expect([...images.records.keys()]).toEqual([remoteCacheKey(currentUrl)])
 
     const empty = await clearAllLocalWallpaperData({
+      getReferencedUploadKeys: () => new Set(),
       images: new FakeImages(),
       storage: new MemoryStorage(),
       selection: { kind: 'builtin', id: 'aurora' },
@@ -447,7 +451,8 @@ describe('clear all local wallpaper data', () => {
       clear: async () => undefined,
       touch: async () => undefined,
     }
-    const result = await clearAllLocalWallpaperData({ images: failing, storage: new MemoryStorage(), selection: undefined })
+    const result = await clearAllLocalWallpaperData({
+      getReferencedUploadKeys: () => new Set(), images: failing, storage: new MemoryStorage(), selection: undefined })
     expect(result.status).toBe('partial')
     expect(result.removedImages).toBe(1)
     expect(result.errors).toEqual(['upload-locked'])
@@ -463,6 +468,7 @@ describe('clear all local wallpaper data', () => {
       images,
       storage,
       selection: undefined,
+      getReferencedUploadKeys: () => new Set(),
     })
     expect(result.status).toBe('cleared')
     expect(result.removedImages).toBe(1)

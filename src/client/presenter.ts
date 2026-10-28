@@ -176,20 +176,41 @@ export function createPresenter(
   return {
     installClientCss(css: string): () => void {
       const existing = doc?.querySelector(`style[data-plugin-css="${CLIENT_CSS_FILE}"]`) ?? null
+      const attach = (element: Element): (() => void) => {
+        const current = Number(element.getAttribute('data-dsh-livery-css-owners') ?? '1')
+        const owners = Number.isFinite(current) ? Math.max(1, current) + 1 : 2
+        element.setAttribute('data-dsh-livery-css-owners', String(owners))
+        let released = false
+        return () => {
+          if (released) return
+          released = true
+          const count = Number(element.getAttribute('data-dsh-livery-css-owners') ?? '1')
+          const next = Number.isFinite(count) ? count - 1 : 0
+          if (next > 0) {
+            element.setAttribute('data-dsh-livery-css-owners', String(next))
+          } else {
+            removeElement(element)
+          }
+        }
+      }
       if (existing !== null) {
-        // The kernel already owns an identical tag (HMR re-materialization);
-        // never remove a tag we did not create.
-        return () => undefined
+        // HMR/overlap: share one node with reference counting; a disposer from
+        // an older presenter must not remove CSS a newer instance still uses.
+        return attach(existing)
       }
       const parent = head()
       if (parent === undefined) return () => undefined
       const element = doc!.createElement('style')
       element.dataset.plugin = PLUGIN_MARKER
       element.dataset.pluginCss = CLIENT_CSS_FILE
+      element.setAttribute('data-dsh-livery-css-owners', '1')
       element.textContent = css
       parent.appendChild(element)
+      let released = false
       return () => {
-        if (isActive()) removeElement(element)
+        if (released) return
+        released = true
+        removeElement(element)
       }
     },
 
