@@ -142,6 +142,8 @@ export interface WallpaperControllerOptions {
   readonly sourceId?: string
   /** Injectable `storage` event target (defaults to `window` when available). */
   readonly eventTarget?: StorageEventTarget | undefined
+  /** DOM-layer ownership lease (HMR/overlap); defaults to a generated id. */
+  readonly ownerId?: string | undefined
 }
 
 const DEFAULT_SAVE_DELAY_MS = 250
@@ -186,7 +188,7 @@ function samePosition(a: WallpaperPosition, b: WallpaperPosition): boolean {
  * @returns the controller (not started).
  */
 export function createWallpaperController(options: WallpaperControllerOptions = {}): WallpaperControllerApi {
-  const layer: WallpaperLayer = createWallpaperLayer(options.document)
+  const layer: WallpaperLayer = createWallpaperLayer(options.document, options.ownerId)
   const storage = options.storage ?? defaultStorage()
   const images = options.images ?? createIndexedDbImageStore()
   const objectUrls = options.objectUrls ?? defaultObjectUrls()

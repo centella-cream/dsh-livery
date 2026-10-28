@@ -370,6 +370,9 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    */
   async applyStyle(id: string): Promise<StyleApplyOutcome> {
     if (this.disposed) return { ok: false, failure: 'busy' }
+    if (this.snapshot.configStatus !== 'ready' || this.snapshot.writable !== true) {
+      return { ok: false, failure: 'unavailable' }
+    }
     const phase = this.snapshot.phase
     if (phase !== 'ready' && phase !== 'degraded' && phase !== 'previewing') {
       return { ok: false, failure: 'busy' }

@@ -65,9 +65,23 @@ const NOOP_LAYER: WallpaperLayer = {
  * @param doc - document-like object; defaults to the browser document.
  * @returns the wallpaper DOM layer.
  */
-export function createWallpaperLayer(doc?: WallpaperDocument | undefined): WallpaperLayer {
+let nextLayerOwner = 0
+const activeLayerOwners = new WeakMap<object, string>()
+
+/**
+ * Build a wallpaper layer with an owner lease. A newer layer for the same
+ * document becomes the sole writer; an older controller's cleanup can no longer
+ * remove the new instance's stylesheet/overlay (HMR/React overlap safety).
+ * @param doc - document-like object.
+ * @param ownerId - optional explicit owner id.
+ * @returns the wallpaper DOM layer.
+ */
+export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerId?: string): WallpaperLayer {
   const target = doc ?? (typeof document === 'undefined' ? undefined : document as unknown as WallpaperDocument)
   if (target === undefined) return NOOP_LAYER
+  const owner = ownerId ?? `layer-${++nextLayerOwner}`
+  activeLayerOwners.set(target, owner)
+  const isActive = (): boolean => activeLayerOwners.get(target) === owner
 
   const findStyle = (): WallpaperStyleElement | null => {
     const existing = target.getElementById(WALLPAPER_STYLE_ID)
@@ -108,6 +122,7 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined): Wallp
 
   return {
     apply: (css: string, overlay: boolean) => {
+      if (!isActive()) return
       if (css.trim().length === 0) {
         clear()
         return
@@ -117,7 +132,11 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined): Wallp
       target.body.setAttribute(WALLPAPER_ATTRIBUTE, '')
       syncOverlay(overlay)
     },
-    clear,
-    dispose: clear,
+    clear: () => {
+      if (isActive()) clear()
+    },
+    dispose: () => {
+      if (isActive()) clear()
+    },
   }
 }

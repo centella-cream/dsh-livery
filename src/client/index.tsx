@@ -33,7 +33,7 @@ import { isStock } from './model.js'
 import type { RuntimeIdentity } from './model.js'
 import { PANEL_ID, PANEL_NAVIGATION_GRACE_MS, PANEL_ROW_ORDER } from './navigation.js'
 import { createPresenter } from './presenter.js'
-import { createWallpaperController, setWallpaperController } from './wallpaper/controller.js'
+import { createWallpaperController, getWallpaperController, setWallpaperController } from './wallpaper/controller.js'
 import { createTabSourceId } from './wallpaper/sync.js'
 import { createLiveryRuntime } from './runtime.js'
 import type { ConfigFormLike, LocaleSource, ThemeSource } from './runtime.js'
@@ -43,7 +43,7 @@ import { LiverySettingsPage } from './ui/LiverySettingsPage.js'
 export const LIVERY_SETTINGS_ORDER = 25
 
 /** Cordis services the plugin waits on. */
-export const inject = ['configForms', 'slots', 'locale']
+export const inject = ['configForms', 'slots', 'locale', 'theme']
 
 /** Timeout for the one lazy catalog request; a hung route must not stall boot. */
 const CATALOG_TIMEOUT_MS = 8000
@@ -157,7 +157,7 @@ export function apply(ctx: Context): void {
   // persisted wallpaper, so the controller only starts for a non-mismatched boot.
   if (boot.kind !== 'mismatch') ctx.effect(() => {
     const wallpaper = createWallpaperController({ sourceId: createTabSourceId() })
-    setWallpaperController(wallpaper)
+    let started = false
     const syncLiveryTokens = (): void => {
       const snapshot = runtime.getSnapshot()
       const id = snapshot.effectiveId
@@ -166,13 +166,30 @@ export function apply(ctx: Context): void {
         : snapshot.catalog?.liveries.find(candidate => candidate.id === id)
       wallpaper.setTokens(livery?.light.tokens, livery?.dark.tokens)
     }
-    const unsubscribe = runtime.subscribe(syncLiveryTokens)
+    const maybeStart = (): void => {
+      if (started) return
+      const snapshot = runtime.getSnapshot()
+      // Valid first-frame payload is authoritative. With no payload, wallpaper
+      // must wait for the catalog to certify this exact host; a failed/unknown
+      // catalog keeps the whole visual layer stock.
+      const certified = boot.kind === 'valid'
+        || (snapshot.catalogStatus === 'ready' && snapshot.catalog !== undefined)
+      if (!certified) return
+      started = true
+      setWallpaperController(wallpaper)
+      syncLiveryTokens()
+      wallpaper.start()
+    }
+    const unsubscribe = runtime.subscribe(() => {
+      syncLiveryTokens()
+      maybeStart()
+    })
     syncLiveryTokens()
-    wallpaper.start()
+    maybeStart()
     return () => {
       unsubscribe()
       wallpaper.dispose()
-      setWallpaperController(undefined)
+      if (getWallpaperController() === wallpaper) setWallpaperController(undefined)
     }
   }, 'livery: wallpaper')
 
