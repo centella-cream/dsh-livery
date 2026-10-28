@@ -280,6 +280,19 @@ describe('IndexedDB v2 store basics', () => {
     expect(await store!.list()).toEqual([])
   })
 
+  it('atomically deletes only matching generations', async () => {
+    const factory = new FakeFactory()
+    const store = createIndexedDbImageStore(factoryAsIdb(factory))
+    await store!.put({
+      key: uploadKey, kind: 'upload', size: 8, createdAt: 10, lastUsedAt: 20,
+      generation: 'generation-a', blob: blob(),
+    })
+    expect(await store!.deleteIfGeneration!(uploadKey, 'generation-b')).toBe(false)
+    expect((await store!.get(uploadKey))?.generation).toBe('generation-a')
+    expect(await store!.deleteIfGeneration!(uploadKey, 'generation-a')).toBe(true)
+    expect(await store!.get(uploadKey)).toBeUndefined()
+  })
+
   it('returns undefined when no IndexedDB factory exists', () => {
     expect(createIndexedDbImageStore(undefined)).toBeUndefined()
   })

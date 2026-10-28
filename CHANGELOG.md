@@ -37,6 +37,19 @@ packaging; they are folded into the `0.1.0` entry.
 - Recent clear invalidates in-flight remote commits; theme observers are
   reference-counted; preset unmount prevents the wallpaper half of a slow
   application; DOM lease ids use cross-module UUIDs.
+- Production IndexedDB store implements atomic `deleteIfGeneration` (get →
+  compare token → delete in one readwrite transaction); cache prune, upload GC
+  and clear-all fail closed instead of falling back to unconditional delete.
+  Record generations are collision-free UUID tokens; legacy rows are upgraded on
+  touch. Prune only accounts a deletion when the compare-delete returned true.
+- The release workflow consumes an immutable acceptance artifact produced by the
+  new `acceptance-artifact.yml` workflow (same expected sha), validates manifest
+  sha/bytes/version before use, and checks `LIVERY_ACCEPTANCE_RUN_ID` before
+  downloading; it has `actions: read` and never rebuilds the candidate.
+- Runtime distinguishes the in-flight write's own echo from external updates and
+  uses the local observation serial when host revisions are absent/incomplete.
+- Recent eviction/clear protect live, durable and persisted remote URLs.
+  Client CSS upgrades content when a newer instance supplies different CSS.
 - Remote pruning now actually enforces `protectedUrls` as a set (current live,
   durable, persisted and candidate), and prune/delete share the same per-URL
   cross-tab lock as writes. IndexedDB records carry a write generation and use

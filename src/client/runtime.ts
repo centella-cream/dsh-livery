@@ -125,6 +125,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   private pendingConfig: { readonly revision: number | undefined; readonly serial: number; readonly confirmedId: string } | undefined
   /** Local observation serial; revision may be absent on repeated updates. */
   private configObservationSerial = 0
+  /** Target of the in-flight form.set(); distinguishes self echoes. */
+  private writeTarget: string | undefined
   /** Phase to return to after cancel/rollback (ready or degraded). */
   private basePhase: 'ready' | 'degraded' = 'ready'
   /** Resolved CSS of the confirmed (non-stock) livery. */
@@ -290,6 +292,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const skin = this.previewSkin
     const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
+    this.writeTarget = target
     this.lastWrite = target === STOCK_ID ? { kind: 'restore' } : { kind: 'commit', id: target }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -438,6 +441,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const basePhase = this.snapshot.phase === 'degraded' ? 'degraded' : 'ready'
     const startSerial = this.configObservationSerial
     this.pendingConfig = undefined
+    this.writeTarget = STOCK_ID
     this.lastWrite = { kind: 'restore' }
     this.patch({ writing: true, writeFailure: undefined })
     let accepted = false
@@ -651,6 +655,9 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       this.maybeSettle()
       return
     }
+    // The host echoing our own in-flight write must not replace a pending
+    // external update with the same target.
+    if (this.snapshot.writing && confirmedId === this.writeTarget) return
     if (confirmedId === previous) {
       // Same skin id but a newer host revision is still a real external update:
       // it must supersede an in-flight write and refresh the confirmed baseline.

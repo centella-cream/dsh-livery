@@ -38,6 +38,14 @@ class FakeImages implements WallpaperImageStore {
   put = vi.fn(async (record: StoredImageRecord) => { this.records.set(record.key, record) })
   get = vi.fn(async (key: string) => this.records.get(key))
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
+  deleteIfGeneration = vi.fn(async (key: string, generation: string) => {
+    const record = this.records.get(key)
+    if (record === undefined || record.generation !== generation) return false
+    const withDeleted = this as unknown as { deleted?: string[] }
+    withDeleted.deleted?.push(key)
+    this.records.delete(key)
+    return true
+  })
   list = vi.fn(async () => [...this.records.values()])
   clear = vi.fn(async () => { this.records.clear() })
   touch = vi.fn(async (key: string, now: number) => {

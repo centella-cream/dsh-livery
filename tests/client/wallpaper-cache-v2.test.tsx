@@ -59,6 +59,14 @@ class FakeImages implements WallpaperImageStore {
   put = vi.fn(async (record: StoredImageRecord) => { this.records.set(record.key, record) })
   get = vi.fn(async (key: string) => this.records.get(key))
   delete = vi.fn(async (key: string) => { this.records.delete(key) })
+  deleteIfGeneration = vi.fn(async (key: string, generation: string) => {
+    const record = this.records.get(key)
+    if (record === undefined || record.generation !== generation) return false
+    const withDeleted = this as unknown as { deleted?: string[] }
+    withDeleted.deleted?.push(key)
+    this.records.delete(key)
+    return true
+  })
   list = vi.fn(async () => [...this.records.values()])
   clear = vi.fn(async () => { this.records.clear() })
   touch = vi.fn(async (key: string, now: number) => {
@@ -91,6 +99,7 @@ const remoteRecord = (url: string, extra: Partial<StoredImageRecord> = {}): Stor
   createdAt: 5,
   lastUsedAt: 5,
   sourceUrl: url,
+  generation: 'gen-test',
   blob: blob(),
   ...extra,
 })
@@ -175,7 +184,7 @@ describe('remote cache sourceUrl verification', () => {
   it('treats legacy remote rows without a source URL as cache misses', async () => {
     const images = new FakeImages()
     const key = remoteCacheKey('https://cdn.example/a.jpg')
-    images.records.set(key, { key, kind: 'remote', size: 8, createdAt: 1, lastUsedAt: 1, blob: blob() })
+    images.records.set(key, { key, kind: 'remote', size: 8, createdAt: 1, lastUsedAt: 1, generation: 'gen-test', blob: blob() })
     expect(await loadCachedRemote('https://cdn.example/a.jpg', images)).toBeUndefined()
   })
 })
@@ -352,7 +361,7 @@ describe('upload lifecycle v2', () => {
       size: 12,
       createdAt: 77,
       lastUsedAt: 77,
-      generation: 77,
+      generation: expect.any(String),
       blob: expect.any(Blob),
     })
   })
@@ -375,6 +384,7 @@ describe('upload lifecycle v2', () => {
       put: async () => undefined,
       get: async () => undefined,
       delete: async () => { throw new Error('locked') },
+      deleteIfGeneration: async () => { throw new Error('locked') },
       list: async () => [uploadRecord('upload-a'), uploadRecord('upload-b')],
       clear: async () => undefined,
       touch: async () => undefined,
@@ -469,6 +479,10 @@ describe('clear all local wallpaper data', () => {
       get: async () => undefined,
       delete: async (key: string) => {
         if (key === 'upload-locked') throw new Error('locked')
+      },
+      deleteIfGeneration: async (key: string) => {
+        if (key === 'upload-locked') throw new Error('locked')
+        return true
       },
       list: async () => [uploadRecord('upload-locked'), uploadRecord('upload-ok')],
       clear: async () => undefined,

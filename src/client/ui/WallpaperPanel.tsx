@@ -420,10 +420,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     const previous = recentRef.current
     const next = rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() })
     setRecent(next)
-    const currentSelection = controller?.getSnapshot().selection
-    const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
-    for (const evicted of evictedRecentUrls(previous, next, protectedUrl)) {
-      void deleteCachedRemote(evicted, imageStore, recentStorage)
+    const protectedUrls = new Set(protectedRemoteUrls())
+    for (const evicted of evictedRecentUrls(previous, next, undefined)) {
+      if (!protectedUrls.has(evicted)) void deleteCachedRemote(evicted, imageStore, recentStorage)
     }
   }
 
@@ -507,12 +506,11 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     remoteCommitTicket.current += 1
     cacheCancellation.current.cancel()
     const entries = recent
-    const currentSelection = controller?.getSnapshot().selection
-    const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
+    const protectedUrls = new Set(protectedRemoteUrls())
     clearRecentWallpapers(recentStorage)
     setRecent([])
-    for (const url of clearableRecentUrls(entries, protectedUrl)) {
-      void deleteCachedRemote(url, imageStore, recentStorage)
+    for (const url of clearableRecentUrls(entries, undefined)) {
+      if (!protectedUrls.has(url)) void deleteCachedRemote(url, imageStore, recentStorage)
     }
     releaseAllObjectUrls()
   }

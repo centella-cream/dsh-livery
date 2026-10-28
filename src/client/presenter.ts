@@ -188,6 +188,8 @@ export function createPresenter(
       }
       const existing = doc?.querySelector(`style[data-plugin-css="${CLIENT_CSS_FILE}"]`) ?? null
       if (existing !== null) {
+        // HMR/upgrade: the new instance's CSS content wins for all owners.
+        if (existing.textContent !== css) existing.textContent = css
         // HMR/overlap: share one node with reference counting.
         const count = Number(existing.getAttribute('data-dsh-livery-css-owners') ?? '1')
         existing.setAttribute('data-dsh-livery-css-owners', String(Number.isFinite(count) ? Math.max(1, count) + 1 : 2))

@@ -1,0 +1,58 @@
+name: acceptance-artifact
+
+# Immutable producer for the exact candidate consumed by the tag/release
+# workflow. Run this on the product/evidence commit, record the run id in the
+# repository variable LIVERY_ACCEPTANCE_RUN_ID, and never rebuild during release.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA/tag to build the candidate from
+        required: true
+      expected_sha:
+        description: Expected sha256 of the accepted candidate
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.1
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - name: Build deterministic candidate from the accepted commit
+        run: pnpm pack:candidate
+      - name: Require the exact accepted bytes
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name.split('/').at(-1)")
+          TGZ=".tmp/release-check/${NAME}-${VERSION}.tgz"
+          test -f "$TGZ"
+          ACTUAL=$(sha256sum "$TGZ" | cut -d' ' -f1)
+          test "$ACTUAL" = "${{ inputs.expected_sha }}" || {
+            echo "candidate sha mismatch: built=$ACTUAL expected=${{ inputs.expected_sha }}" >&2
+            exit 1
+          }
+          cp "$TGZ" ".tmp/${NAME}-${VERSION}.tgz"
+          cp .tmp/release-check/release-manifest.json .tmp/release-manifest.json
+      - name: Upload exact accepted candidate + manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-livery-candidate
+          path: |
+            .tmp/*.tgz
+            .tmp/release-manifest.json

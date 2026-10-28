@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   candidate:
@@ -39,6 +40,12 @@ jobs:
             test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "tag/version mismatch: v$VERSION vs $GITHUB_REF_NAME" >&2; exit 1; }
           fi
       - run: pnpm install --frozen-lockfile
+      - name: Require the acceptance artifact run id BEFORE downloading
+        run: |
+          test -n "${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}" || {
+            echo "LIVERY_ACCEPTANCE_RUN_ID repository variable is required; tag workflow never rebuilds the candidate" >&2
+            exit 1
+          }
       - name: Download the EXACT accepted candidate (no rebuild)
         uses: actions/download-artifact@v4
         with:
@@ -48,12 +55,26 @@ jobs:
           path: .tmp/accepted
       - name: Assert the accepted tarball is the one bound by evidence
         run: |
-          test -n "${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}" || { echo "LIVERY_ACCEPTANCE_RUN_ID repository variable is required; tag workflow never rebuilds the candidate" >&2; exit 1; }
           TGZ=$(find .tmp/accepted -maxdepth 1 -name '${{ steps.meta.outputs.tarball }}' -print -quit)
           test -n "$TGZ"
           cp "$TGZ" .tmp/accepted-candidate.tgz
           test -f .tmp/accepted/release-manifest.json
           cp .tmp/accepted/release-manifest.json .tmp/release-manifest.json
+      - name: Validate downloaded manifest bytes/version/hash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          MANIFEST=.tmp/release-manifest.json
+          test -f "$MANIFEST"
+          node - "$MANIFEST" "$VERSION" .tmp/accepted-candidate.tgz <<'NODE'
+          const fs = require('node:fs')
+          const crypto = require('node:crypto')
+          const [manifestPath, version, tgzPath] = process.argv.slice(2)
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+          const digest = crypto.createHash('sha256').update(fs.readFileSync(tgzPath)).digest('hex')
+          if (manifest.version !== version) throw new Error(`manifest version ${manifest.version} != ${version}`)
+          if (manifest.sha256 !== digest) throw new Error(`manifest sha ${manifest.sha256} != ${digest}`)
+          if (manifest.bytes !== fs.statSync(tgzPath).size) throw new Error('manifest bytes mismatch')
+          NODE
       - name: Upload accepted candidate + manifest
         uses: actions/upload-artifact@v4
         with:

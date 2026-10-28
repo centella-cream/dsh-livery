@@ -46,7 +46,7 @@ describe('client stylesheet lifecycle', () => {
     const disposeB = presenter.installClientCss('b{}')
     const tags = doc.head.walk().filter(element => element.dataset.pluginCss === CLIENT_CSS_FILE)
     expect(tags).toHaveLength(1)
-    expect(tags[0]?.textContent).toBe('a{}')
+    expect(tags[0]?.textContent).toBe('b{}')
     disposeB()
     expect(doc.head.walk().filter(element => element.dataset.pluginCss === CLIENT_CSS_FILE)).toHaveLength(1)
     disposeA()

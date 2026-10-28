@@ -7,7 +7,7 @@
 import type { WallpaperSelection } from '../wallpaper.js'
 import { REMOTE_CACHE_INDEX_KEY } from './cache.js'
 import { RECENT_WALLPAPER_CLEAR_KEY, RECENT_WALLPAPER_KEY } from './history.js'
-import { createIndexedDbImageStore } from './storage.js'
+import { createImageGeneration, createIndexedDbImageStore } from './storage.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 
 /** localStorage subset needed for local wallpaper cleanup (injectable in tests). */
@@ -41,7 +41,7 @@ export function createUploadRecord(key: string, blob: Blob, now: number = Date.n
     size: blob.size,
     createdAt: now,
     lastUsedAt: now,
-    generation: now,
+    generation: createImageGeneration(),
     blob,
   }
 }
@@ -125,7 +125,7 @@ export async function pruneStaleUploads(
     try {
       const deleted = record.generation !== undefined && images.deleteIfGeneration !== undefined
         ? await images.deleteIfGeneration(record.key, record.generation)
-        : (await images.delete(record.key), true)
+        : false
       if (!deleted) continue
       removed.push(record.key)
     } catch (error) {
@@ -259,7 +259,7 @@ export async function clearAllLocalWallpaperData(
       try {
         const deleted = record.generation !== undefined && images.deleteIfGeneration !== undefined
           ? await images.deleteIfGeneration(record.key, record.generation)
-          : (await images.delete(record.key), true)
+          : false
         if (!deleted) {
           kept.push(record)
           continue

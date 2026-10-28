@@ -16,6 +16,7 @@
 import { validateWallpaperUrl } from '../wallpaper.js'
 import { isLocalOrPrivateHost } from './host-safety.js'
 import {
+  createImageGeneration,
   createIndexedDbImageStore,
   REMOTE_IMAGE_KEY_PREFIX,
 } from './storage.js'
@@ -290,13 +291,16 @@ export async function pruneRemoteCache(deps: {
     const protectedRecord = record.sourceUrl !== undefined && protectedUrls.has(record.sourceUrl)
     if ((overCount || overBytes) && !protectedRecord) {
       try {
-        await withRemoteWriteLock(record.key, async () => {
-          if (images.deleteIfGeneration !== undefined && record.generation !== undefined) {
-            return images.deleteIfGeneration(record.key, record.generation)
-          }
-          await images.delete(record.key)
-          return true
+        const deleted = await withRemoteWriteLock(record.key, async () => {
+          if (images.deleteIfGeneration === undefined || record.generation === undefined) return false
+          return images.deleteIfGeneration(record.key, record.generation)
         })
+        if (!deleted) {
+          // Generation changed: another tab wrote a newer blob. Keep it and let
+          // the next prune re-list; never decrement eviction accounting.
+          kept.push(record)
+          continue
+        }
         evicted.push(record.sourceUrl ?? record.key)
         total -= record.size
         count -= 1
@@ -428,7 +432,7 @@ export async function cacheRemoteImage(
       createdAt: now,
       lastUsedAt: now,
       sourceUrl: check.url,
-      generation: now,
+      generation: createImageGeneration(),
       blob,
     }
     const writeOnce = (): Promise<'written' | 'cancelled'> => withRemoteWriteLock(key, async () => {
@@ -618,11 +622,8 @@ export async function deleteCachedRemote(
       if (record !== undefined && record.kind === 'remote' && record.sourceUrl !== undefined && record.sourceUrl !== url) {
         return
       }
-      if (record?.generation !== undefined && images.deleteIfGeneration !== undefined) {
-        await images.deleteIfGeneration(key, record.generation)
-      } else {
-        await images.delete(key)
-      }
+      if (record?.generation === undefined || images.deleteIfGeneration === undefined) return
+      await images.deleteIfGeneration(key, record.generation)
     })
   } catch {
     /* cache deletion is best effort */

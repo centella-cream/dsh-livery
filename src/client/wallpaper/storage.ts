@@ -34,8 +34,8 @@ export interface StoredImageRecord {
   readonly lastUsedAt: number
   /** Original https URL of a cached remote image (absent for uploads). */
   readonly sourceUrl?: string
-  /** Monotonic write generation; lets conditional deletes avoid stale rows. */
-  readonly generation?: number
+  /** Unique write token; lets conditional deletes avoid stale rows. */
+  readonly generation?: string
   readonly blob: Blob
 }
 
@@ -110,6 +110,15 @@ function timestamp(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
 }
 
+/** Collision-free record write token (crypto UUID, with a local fallback). */
+export function createImageGeneration(): string {
+  try {
+    const cryptoApi = (globalThis as unknown as { crypto?: { randomUUID?: () => string } }).crypto
+    if (typeof cryptoApi?.randomUUID === 'function') return cryptoApi.randomUUID()
+  } catch { /* fall through */ }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+}
+
 /**
  * Normalize one stored row (v1 or v2) into a complete v2 record. Unknown/foreign
  * values are rejected instead of throwing; `name`/`type` from v1 are dropped
@@ -138,7 +147,7 @@ export function normalizeStoredImageRecord(key: string, raw: unknown): StoredIma
     createdAt,
     lastUsedAt,
     ...(sourceUrl === undefined ? {} : { sourceUrl }),
-    ...(typeof row.generation === 'number' && Number.isFinite(row.generation) ? { generation: row.generation } : {}),
+    ...(typeof row.generation === 'string' && row.generation.length > 0 ? { generation: row.generation } : {}),
     blob,
   }
 }
@@ -163,7 +172,7 @@ export function migrateLegacyImageRecord(
     ...normalized,
     createdAt: normalized.createdAt > 0 ? normalized.createdAt : now,
     lastUsedAt: normalized.lastUsedAt > 0 ? normalized.lastUsedAt : now,
-    generation: normalized.generation ?? now,
+    generation: normalized.generation ?? createImageGeneration(),
   }
 }
 
@@ -193,7 +202,7 @@ export interface WallpaperImageStore {
    * Delete only when the row still has this generation (atomic compare/delete).
    * Optional so minimal test stores keep working; production implements it.
    */
-  deleteIfGeneration?(key: string, generation: number): Promise<boolean>
+  deleteIfGeneration?(key: string, generation: string): Promise<boolean>
   /**
    * Atomically read + refresh one record's `lastUsedAt` in ONE readwrite
    * transaction. Returns undefined when the record is absent/corrupt (never
@@ -552,6 +561,26 @@ export function createIndexedDbImageStore(
       await requestResult(objectStore.clear())
       await transactionDone(dbTransaction)
     },
+    deleteIfGeneration: async (key, generation) => {
+      if (typeof key !== 'string' || key.length === 0 || typeof generation !== 'string') return false
+      const dbTransaction = await transaction('readwrite')
+      const objectStore = dbTransaction.objectStore(WALLPAPER_DB_STORE)
+      const completion = transactionDone(dbTransaction)
+      try {
+        const raw = await requestResult<unknown>(objectStore.get(key))
+        const record = normalizeStoredImageRecord(key, raw)
+        if (record === undefined || record.generation !== generation) {
+          await completion
+          return false
+        }
+        await requestResult(objectStore.delete(key))
+        await completion
+        return true
+      } catch (error) {
+        await completion.catch(() => undefined)
+        throw error
+      }
+    },
     touch: async (key, now) => {
       if (typeof key !== 'string' || key.length === 0) return undefined
       const dbTransaction = await transaction('readwrite')
@@ -572,6 +601,8 @@ export function createIndexedDbImageStore(
         const touched: StoredImageRecord = {
           ...record,
           lastUsedAt: Math.max(stamp, record.lastUsedAt),
+          // Upgrade legacy rows that predate generation tokens.
+          ...(record.generation === undefined ? { generation: createImageGeneration() } : {}),
         }
         objectStore.put(storedValue(touched), key)
         await completion

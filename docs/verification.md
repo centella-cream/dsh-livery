@@ -119,9 +119,12 @@ pnpm pack:candidate
 pnpm release:prepare -- --tgz .tmp/release-check/dsh-livery-<version>.tgz
 ```
 
-The tag/publication workflow does **not** rebuild the candidate. It downloads
-the exact accepted tarball + release manifest from the immutable GitHub Actions
-acceptance run named by the `LIVERY_ACCEPTANCE_RUN_ID` repository variable,
+The tag/publication workflow does **not** rebuild the candidate. The accepted
+artifact is produced by the manual `acceptance-artifact.yml` workflow, which
+builds from the accepted commit, requires the expected sha256, and uploads the
+tarball + manifest as one immutable Actions artifact. The tag workflow downloads
+that exact accepted tarball + release manifest from the run named by the
+`LIVERY_ACCEPTANCE_RUN_ID` repository variable,
 verifies every matrix evidence file, publishes those bytes, then downloads the
 version back from npm and checks sha256, byte size and package version. The accepted
 tarball, `SHA256SUMS` and release manifest are attached to the GitHub Release.
