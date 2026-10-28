@@ -249,7 +249,7 @@ describe('recent wallpapers card', () => {
     expect(html).toContain('data-url="https://cdn.example/a.jpg"')
     expect(html).toContain('data-cached="false"')
     expect(html).toContain('data-testid="wallpaper-recent-clear"')
-    expect(html).toContain('src="https://cdn.example/a-t.jpg"')
+    expect(html).not.toContain('src="https://cdn.example/a-t.jpg"')
     expect(html).toContain('Recent wallpapers')
     // Recent card sits after the online card and before the custom card.
     const online = html.indexOf('data-testid="wallpaper-online-card"')

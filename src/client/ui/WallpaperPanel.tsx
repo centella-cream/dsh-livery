@@ -37,7 +37,7 @@ import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
-import { isLocalOrPrivateHost } from '../wallpaper/host-safety.js'
+import { isLocalOrPrivateHost, safeRemoteImageUrl } from '../wallpaper/host-safety.js'
 import type { LiveryPreset, PresetApplyResult, PresetAttribution, PresetWallpaperTarget } from '../wallpaper/preset.js'
 import { readRecentFromStorageEvent } from '../wallpaper/sync.js'
 import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
@@ -46,6 +46,7 @@ import { handleDropzoneKeyDown } from '../wallpaper/upload-a11y.js'
 import type { UploadProblem } from '../wallpaper/storage.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
+import { readReferencedUploadKeys } from '../wallpaper/refs.js'
 import type { WallpaperState } from '../wallpaper/controller.js'
 import { PresetCard } from './PresetCard.js'
 import { WallpaperDataClear } from './WallpaperDataClear.js'
@@ -129,6 +130,31 @@ interface Attribution {
   readonly context: 'online' | 'custom'
 }
 
+const ATTRIBUTION_STORAGE_KEY = 'dsh-livery.wallpaper.attribution.v1'
+
+/** Read the last attribution record (display-only; never trusted for requests). */
+function readStoredAttribution(): Attribution | undefined {
+  try {
+    if (typeof localStorage === 'undefined') return undefined
+    const raw: unknown = JSON.parse(localStorage.getItem(ATTRIBUTION_STORAGE_KEY) ?? 'null')
+    if (typeof raw !== 'object' || raw === null) return undefined
+    const row = raw as Record<string, unknown>
+    if (typeof row.identity !== 'string' || typeof row.title !== 'string'
+      || typeof row.creator !== 'string' || typeof row.license !== 'string'
+      || typeof row.source !== 'string' || (row.context !== 'online' && row.context !== 'custom')) return undefined
+    return {
+      identity: row.identity,
+      title: row.title.slice(0, 200),
+      creator: row.creator.slice(0, 120),
+      license: row.license.slice(0, 120),
+      source: row.source.slice(0, 200),
+      context: row.context,
+    }
+  } catch {
+    return undefined
+  }
+}
+
 /** Stable wallpaper identity used to bind attribution and cross-tab state. */
 function wallpaperIdentity(selection: WallpaperSelection): string {
   if (selection === undefined) return 'none'
@@ -171,7 +197,16 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
-  const [attribution, setAttribution] = useState<Attribution | undefined>(undefined)
+  const [attribution, setAttribution] = useState<Attribution | undefined>(() => readStoredAttribution())
+  useEffect(() => {
+    try {
+      if (typeof localStorage === 'undefined') return
+      if (attribution === undefined) localStorage.removeItem(ATTRIBUTION_STORAGE_KEY)
+      else localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(attribution))
+    } catch {
+      /* attribution persistence is display-only/best effort */
+    }
+  }, [attribution])
   const localAttribution = attribution !== undefined && attribution.identity === liveIdentity
     ? attribution
     : undefined
@@ -199,6 +234,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
   const objectUrlsRef = useRef<Map<string, string>>(new Map())
   const pendingUploadDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const remoteCommitTicket = useRef(0)
   const rememberObjectUrl = (url: string, objectUrl: string): void => {
     const previous = objectUrlsRef.current.get(url)
     if (previous !== undefined && previous !== objectUrl) {
@@ -258,6 +294,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
             if (candidate?.kind === 'upload' && candidate.key === key) return
           }
         }
+        if (readReferencedUploadKeys(recentStorage as never).has(key)) return
         await deleteStoredImage(imageStore, key, label)
       })
     }, 5000)
@@ -296,7 +333,13 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       if (candidate?.kind === 'upload') uploadKeys.add(candidate.key)
     }
     const [liveKey, durableKey, persistedKey] = [...uploadKeys]
-    void withWallpaperGcLock(() => pruneStaleUploads(imageStore, liveKey, durableKey, persistedKey))
+    void withWallpaperGcLock(() => pruneStaleUploads(
+      imageStore,
+      liveKey,
+      durableKey,
+      persistedKey,
+      readReferencedUploadKeys(recentStorage as never),
+    ))
     return () => {
       mounted.current = false
       cacheCancellation.current.cancel()
@@ -339,8 +382,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     else void run('openverse', online.query, Math.max(1, online.page))
   }
 
-  const displayUrlFor = (entry: RecentWallpaperEntry): string =>
-    cachedUrls[entry.url] ?? entry.thumbnail ?? entry.url
+  const displayUrlFor = (entry: RecentWallpaperEntry): string | undefined =>
+    cachedUrls[entry.url]
 
   const rememberBlob = (url: string, blob: Blob): void => {
     try {
@@ -351,56 +394,69 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     }
   }
 
-  // Best-effort disk cache + history entry whenever an online wallpaper is chosen.
-  const rememberRemote = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
-    const url = entry.url
-    const previous = recent
+  const recordRemoteHistory = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
+    const previous = recentRef.current
     const next = rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() })
     setRecent(next)
-    // History eviction: drop the evicted remote blobs unless still applied.
     const currentSelection = controller?.getSnapshot().selection
     const protectedUrl = currentSelection?.kind === 'remote' ? currentSelection.url : undefined
     for (const evicted of evictedRecentUrls(previous, next, protectedUrl)) {
       void deleteCachedRemote(evicted, imageStore, recentStorage)
     }
-    void (async () => {
-      const result = await cacheRemoteImage(url, { images: imageStore, storage: recentStorage, protectedUrl, signal: cacheCancellation.current.reset() })
-      if (!result.ok) return
-      // Keep the blob available for the recent-card thumbnail regardless of what
-      // is selected now, but only re-adopt it when the user is still on this
-      // wallpaper (A→B races must not switch the hero back to A).
-      if (mounted.current) rememberBlob(url, result.record.blob)
-      if (!mounted.current || !isCurrentRemoteSelection(controller?.getSnapshot().selection, url)) return
-      selectWallpaper({ kind: 'remote', url }, result.record.blob)
-    })()
+  }
+
+  /**
+   * Download and VERIFY a remote image first; only then commit the selection,
+   * object URL and history. A failed download leaves the previous wallpaper in
+   * place (no persisted remote selection with no renderable image).
+   */
+  const commitRemote = async (
+    entry: Omit<RecentWallpaperEntry, 'addedAt'>,
+    attribution?: Attribution,
+  ): Promise<boolean> => {
+    const ticket = ++remoteCommitTicket.current
+    const signal = cacheCancellation.current.reset()
+    const result = await cacheRemoteImage(entry.url, {
+      images: imageStore,
+      storage: recentStorage,
+      protectedUrl: entry.url,
+      signal,
+    })
+    if (!mounted.current || ticket !== remoteCommitTicket.current) return false
+    if (!result.ok) return false
+    rememberBlob(entry.url, result.record.blob)
+    recordRemoteHistory(entry)
+    if (attribution !== undefined) setAttribution(attribution)
+    selectWallpaper({ kind: 'remote', url: entry.url }, result.record.blob)
+    return true
   }
 
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
-    selectWallpaper({ kind: 'remote', url: entry.url })
-    setAttribution({
-      identity: `remote:${entry.url}`,
-      title: entry.title ?? t('wallpaper.customSelected'),
-      creator: entry.creator ?? '',
-      license: entry.license ?? '',
-      source: entry.source ?? '',
-      context: 'online',
-    })
-    setRecent(rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() }))
     void (async () => {
+      const ticket = ++remoteCommitTicket.current
       const record = await loadCachedRemote(entry.url, imageStore)
+      if (!mounted.current || ticket !== remoteCommitTicket.current) return
       if (record !== undefined) {
-        if (mounted.current) rememberBlob(entry.url, record.blob)
-        if (mounted.current && isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
-          selectWallpaper({ kind: 'remote', url: entry.url }, record.blob)
-        }
+        rememberBlob(entry.url, record.blob)
+        recordRemoteHistory(entry)
+        setAttribution({
+          identity: `remote:${entry.url}`,
+          title: entry.title ?? t('wallpaper.customSelected'),
+          creator: entry.creator ?? '',
+          license: entry.license ?? '',
+          source: entry.source ?? '',
+          context: 'online',
+        })
+        selectWallpaper({ kind: 'remote', url: entry.url }, record.blob)
         return
       }
-      void cacheRemoteImage(entry.url, { images: imageStore, storage: recentStorage, protectedUrl: entry.url, signal: cacheCancellation.current.reset() }).then(result => {
-        if (!result.ok || !mounted.current) return
-        rememberBlob(entry.url, result.record.blob)
-        if (isCurrentRemoteSelection(controller?.getSnapshot().selection, entry.url)) {
-          selectWallpaper({ kind: 'remote', url: entry.url }, result.record.blob)
-        }
+      await commitRemote(entry, {
+        identity: `remote:${entry.url}`,
+        title: entry.title ?? t('wallpaper.customSelected'),
+        creator: entry.creator ?? '',
+        license: entry.license ?? '',
+        source: entry.source ?? '',
+        context: 'online',
       })
     })()
   }
@@ -421,6 +477,14 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return
     const listener = (event: StorageEvent): void => {
+      if (event.key !== 'dsh-livery.wallpaper.recent.v1') return
+      if (event.newValue === null) {
+        // An explicit clear is authoritative; never merge the old local list
+        // back into an empty cross-tab history.
+        setRecent([])
+        releaseAllObjectUrls()
+        return
+      }
       const next = readRecentFromStorageEvent(event as unknown as { key: string | null; newValue: string | null }, recentStorage)
       if (next === undefined) return
       const merged = mergeRecentEntries(recentRef.current, next)
@@ -509,23 +573,21 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     setUploadProblem(undefined)
   }
   const selectResult = (result: WallpaperRemoteResult): void => {
-    selectWallpaper({ kind: 'remote', url: result.url })
-    setAttribution({
-      identity: `remote:${result.url}`,
-      title: result.title,
-      creator: result.creator,
-      license: result.license,
-      source: result.source,
-      context: 'online',
-    })
     setProblem(undefined)
-    rememberRemote({
+    void commitRemote({
       url: result.url,
       thumbnail: result.thumbnail,
       title: result.title,
       creator: result.creator,
       license: result.license,
       source: result.source,
+    }, {
+      identity: `remote:${result.url}`,
+      title: result.title,
+      creator: result.creator,
+      license: result.license,
+      source: result.source,
+      context: 'online',
     })
   }
   const applyUrl = (): void => {
@@ -538,14 +600,15 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     try { host = new URL(check.url).hostname } catch { setProblem('invalid'); return }
     if (isLocalOrPrivateHost(host)) { setProblem('invalid'); return }
     setProblem(undefined)
-    selectWallpaper({ kind: 'remote', url: check.url })
     const source = host
-    setAttribution({
-      identity: `remote:${check.url}`,
-      title: t('wallpaper.customSelected'), creator: '', license: '',
-      source, context: 'custom',
-    })
-    rememberRemote({ url: check.url, title: t('wallpaper.customSelected'), source })
+    void commitRemote(
+      { url: check.url, title: t('wallpaper.customSelected'), source },
+      {
+        identity: `remote:${check.url}`,
+        title: t('wallpaper.customSelected'), creator: '', license: '',
+        source, context: 'custom',
+      },
+    ).then(ok => { if (!ok) setProblem('invalid') })
   }
   const applyUpload = async (file: File): Promise<void> => {
     // Invalidate any slow upload before validating the new pick: an invalid file
@@ -558,17 +621,18 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     }
     const startSelectionVersion = controller?.getSelectionVersion()
     const key = `upload-${Date.now()}-${Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 10)}`
-    let sessionOnly = imageStore === undefined
-    if (imageStore !== undefined) {
-      try {
-        await imageStore.put(createUploadRecord(key, file))
-      } catch {
-        sessionOnly = true
-      }
-    }
-    // A newer upload (or teardown) owns the result now: late completions must
-    // not change errors/attribution/selection, and their orphan blob is removed.
+    // The IndexedDB put, the ticket/generation check, the selection commit and
+    // the localStorage flush are ONE GC critical section: a mount sweep or a
+    // concurrent clear can never delete a new blob before the state references it.
     await withWallpaperGcLock(async () => {
+      let sessionOnly = imageStore === undefined
+      if (imageStore !== undefined) {
+        try {
+          await imageStore.put(createUploadRecord(key, file))
+        } catch {
+          sessionOnly = true
+        }
+      }
       const stateChanged = controller !== undefined
         && startSelectionVersion !== undefined
         && controller.getSelectionVersion() !== startSelectionVersion
@@ -576,10 +640,17 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
         if (imageStore !== undefined) void deleteStoredImage(imageStore, key, 'obsolete upload')
         return
       }
+      const previous = controller?.getSnapshot().selection
       setUploadProblem(undefined)
       setUploadSessionOnly(sessionOnly)
       setAttribution(undefined)
       selectWallpaper({ kind: 'upload', key }, file)
+      if (controller !== undefined && controller.flushState() !== true) {
+        // The state is not recoverable after a failed write: roll the in-memory
+        // selection back and remove the new blob instead of persisting a ghost.
+        controller.setState({ selection: previous }, { flush: true })
+        if (imageStore !== undefined) void deleteStoredImage(imageStore, key, 'failed upload persist')
+      }
     })
   }
   const pickFiles = (files: FileList | null | undefined): void => {
@@ -639,13 +710,25 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       source: effectiveAttribution.source,
     })
 
-  const presetWallpaperTarget = (target: PresetWallpaperTarget): boolean => {
+  const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller
     if (active === undefined) return false
+    let blob: Blob | undefined
+    if (target.selection?.kind === 'remote') {
+      const result = await cacheRemoteImage(target.selection.url, {
+        images: imageStore,
+        storage: recentStorage,
+        protectedUrl: target.selection.url,
+        signal: cacheCancellation.current.reset(),
+      })
+      if (!mounted.current || !result.ok) return false
+      blob = result.record.blob
+      rememberBlob(target.selection.url, blob)
+    }
     const previous = active.getSnapshot().selection
     const next = active.setState(
       { selection: target.selection, effects: target.effects, position: target.position },
-      { flush: true },
+      { flush: true, ...(blob === undefined ? {} : { blob }) },
     )
     const persisted = active.flushState()
     const ok = persisted && matchesPresetWallpaperState(next, target)
@@ -660,15 +743,19 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     : { title: effectiveAttribution.title, creator: effectiveAttribution.creator, license: effectiveAttribution.license, source: effectiveAttribution.source }
   const onPresetApplied = (result: PresetApplyResult, preset: LiveryPreset): void => {
     if (result.status !== 'applied') return
-    if (preset.attribution === undefined) {
-      setAttribution(undefined)
-      return
-    }
     const identity = preset.wallpaper === null
       ? 'none'
       : preset.wallpaper.kind === 'builtin'
         ? `builtin:${preset.wallpaper.id}`
         : `remote:${preset.wallpaper.url}`
+    if (preset.attribution === undefined) {
+      // A preset without attribution must suppress older history metadata for
+      // the same remote URL; an explicit empty record still carries identity.
+      setAttribution(preset.wallpaper?.kind === 'remote'
+        ? { identity, title: '', creator: '', license: '', source: '', context: 'online' }
+        : undefined)
+      return
+    }
     setAttribution({
       identity,
       title: preset.attribution.title ?? '',
@@ -678,7 +765,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       context: preset.wallpaper?.kind === 'remote' ? 'online' : 'custom',
     })
     if (preset.wallpaper?.kind === 'remote') {
-      rememberRemote({
+      recordRemoteHistory({
         url: preset.wallpaper.url,
         title: preset.attribution.title,
         creator: preset.attribution.creator,
@@ -804,7 +891,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     onClick={() => selectResult(result)}
                   >
                     <span className={THUMB}>
-                      <img className={THUMB_IMG} src={result.thumbnail} alt="" loading="lazy" decoding="async" />
+                      {safeRemoteImageUrl(result.thumbnail) !== undefined && (
+                        <img className={THUMB_IMG} src={safeRemoteImageUrl(result.thumbnail)} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                      )}
                     </span>
                     <span className="livery-card__body">
                       <span className={NAME}>{result.title}</span>
@@ -839,7 +928,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     aria-label={[entry.title ?? entry.source ?? entry.url, cachedUrls[entry.url] !== undefined ? t('wallpaper.recentCached') : ''].filter(Boolean).join(' · ')}
                     onClick={() => reapplyRecent(entry)}
                   >
-                    <img className="wallpaper-recent-thumb" src={displayUrlFor(entry)} alt="" loading="lazy" decoding="async" />
+                    {displayUrlFor(entry) !== undefined && (
+                      <img className="wallpaper-recent-thumb" src={displayUrlFor(entry)} alt="" loading="lazy" decoding="async" />
+                    )}
                     <span className="wallpaper-recent-title">{entry.title ?? entry.source ?? entry.url}</span>
                     {entry.source !== undefined && <span className="wallpaper-recent-source">{entry.source}</span>}
                   </button>

@@ -23,6 +23,25 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Fixed
 
+- Uploaded blobs are staged and committed inside ONE GC critical section: blob
+  write, ticket/selection-version check, selection commit, localStorage flush and
+  failure rollback cannot interleave with mount/clear GC. A failed persist rolls
+  the memory selection back and removes the staged blob.
+- Remote wallpapers are downloaded, MIME/decode-verified and cached BEFORE the
+  selection is committed; network/IDB/host-safety/decode failure leaves the
+  previous wallpaper in place instead of persisting an unrenderable remote URL.
+- A per-tab cross-tab upload reference table protects live/durable upload keys;
+  clear-all additionally re-reads the persisted selection. Delayed GC checks
+  live, durable, persisted and all live tab refs under the shared lock.
+- Recent-history clear propagates as an authoritative removal instead of being
+  merged back from stale local entries; same-URL updates preserve metadata.
+- Remote cache follow-ups revalidate the final response URL, use redirect:'error',
+  preserve the real image MIME, optionally decode-verify via createImageBitmap,
+  and serialize same-URL writes so an older put cannot commit after a newer one.
+- All config write entries share a central writable gate; same-id/higher-revision
+  host updates supersede an in-flight write; presenter and wallpaper DOM layers
+  use cross-module DOM leases; attribution is persisted and remote presets
+  without attribution suppress stale history credit.
 - Uploaded blobs are deleted only after the replacement state is persisted, with
   a delayed cross-tab convergence window; mount/clear GC protects the live, last
   durable and currently persisted selections, and upload commits are serialized

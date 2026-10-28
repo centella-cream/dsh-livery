@@ -17,6 +17,7 @@ import type { LiveryTranslate } from '../platform.js'
 import type { WallpaperSelection } from '../wallpaper.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
 import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
+import { readReferencedUploadKeys } from '../wallpaper/refs.js'
 import { createIndexedDbImageStore } from '../wallpaper/storage.js'
 import { clearAllLocalWallpaperData } from '../wallpaper/lifecycle.js'
 import type {
@@ -63,6 +64,8 @@ export async function runWallpaperDataClear(
       selection,
       getSelection: () => getWallpaperController()?.getSnapshot().selection ?? selection,
       getDurableSelection: () => getWallpaperController()?.getDurableSelection() ?? selection,
+      getPersistedSelection: () => getWallpaperController()?.getPersistedSelection() ?? selection,
+      getReferencedUploadKeys: () => readReferencedUploadKeys(browserStorage()),
     }))
   } catch {
     // The operation itself is defensive; this is the last-resort guard so a

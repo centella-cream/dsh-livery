@@ -5,6 +5,7 @@
  * newest first, deduped by URL, capped at 24, https-only, corrupt records ignored.
  */
 import { validateWallpaperUrl } from '../wallpaper.js'
+import { safeRemoteImageUrl } from './host-safety.js'
 
 /** One remembered online wallpaper. */
 export interface RecentWallpaperEntry {
@@ -22,7 +23,7 @@ export const RECENT_WALLPAPER_KEY = 'dsh-livery.wallpaper.recent.v1'
 /** Maximum remembered entries. */
 export const MAX_RECENT_WALLPAPERS = 24
 /** Max length of a stored display string. */
-const MAX_TEXT = 160
+const MAX_TEXT = 200
 
 /** localStorage subset (injectable in tests). */
 export interface RecentWallpaperStorage {
@@ -52,11 +53,11 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
   if (typeof raw !== 'object' || raw === null) return undefined
   const row = raw as Record<string, unknown>
   const url = https(row.url)
-  if (url === undefined) return undefined
+  if (url === undefined || safeRemoteImageUrl(url) === undefined) return undefined
   const addedAt = typeof row.addedAt === 'number' && Number.isFinite(row.addedAt) ? row.addedAt : 0
   return {
     url,
-    ...(https(row.thumbnail) === undefined ? {} : { thumbnail: https(row.thumbnail) }),
+    ...(safeRemoteImageUrl(row.thumbnail) === undefined ? {} : { thumbnail: safeRemoteImageUrl(row.thumbnail) }),
     ...(text(row.title) === undefined ? {} : { title: text(row.title) }),
     ...(text(row.creator) === undefined ? {} : { creator: text(row.creator) }),
     ...(text(row.license) === undefined ? {} : { license: text(row.license) }),

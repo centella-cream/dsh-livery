@@ -79,10 +79,27 @@ function asStyle(element: Element | null): HTMLStyleElement | null {
  * injectable so the runtime can be unit-tested without a DOM.
  * @returns the presenter face.
  */
+let nextPresenterOwner = 0
+const activePresenterOwners = new WeakMap<Document, number>()
+
 export function createPresenter(
   doc: Document | undefined = typeof document === 'undefined' ? undefined : document,
 ): Presenter {
   let cssTextWrites = 0
+  const owner = ++nextPresenterOwner
+  const ownerKey = `presenter-${owner}`
+  const root = doc?.documentElement as HTMLElement | undefined
+  if (doc !== undefined) activePresenterOwners.set(doc, owner)
+  try { root?.setAttribute('data-dsh-livery-presenter', ownerKey) } catch { /* fake DOM */ }
+  // DOM lease survives a hot-reloaded copy of this module (a per-module WeakMap
+  // would not); fake documents fall back to the local WeakMap.
+  const isActive = (): boolean => {
+    if (doc === undefined) return true
+    if (root !== undefined) {
+      try { return root.getAttribute('data-dsh-livery-presenter') === ownerKey } catch { /* fall through */ }
+    }
+    return activePresenterOwners.get(doc) === owner
+  }
   let adoptedBootStyle = false
 
   const head = (): HTMLElement | undefined => doc?.head ?? undefined
@@ -166,11 +183,12 @@ export function createPresenter(
       element.textContent = css
       parent.appendChild(element)
       return () => {
-        removeElement(element)
+        if (isActive()) removeElement(element)
       }
     },
 
     adoptBootStyle(skin: SkinCss): boolean {
+      if (!isActive()) return false
       const element = bootStyle()
       if (element === null) return false
       // The declared hash alone is not proof: verify the actual stylesheet text
@@ -188,6 +206,7 @@ export function createPresenter(
     },
 
     applyConfirmed(skin: SkinCss): void {
+      if (!isActive()) return
       if (skin.id === 'stock' || skin.cssText.length === 0) {
         this.clearSkin()
         return
@@ -202,6 +221,7 @@ export function createPresenter(
     },
 
     applyPreview(skin: SkinCss): void {
+      if (!isActive()) return
       if (skin.id === 'stock' || skin.cssText.length === 0) {
         removeElement(byId(PREVIEW_STYLE_ID))
         setBodySkin(null, null)
@@ -214,6 +234,7 @@ export function createPresenter(
     },
 
     rollbackPreview(confirmed: SkinCss | undefined): void {
+      if (!isActive()) return
       removeElement(byId(PREVIEW_STYLE_ID))
       if (confirmed === undefined || confirmed.id === 'stock' || confirmed.cssText.length === 0) {
         setBodySkin(null, null)
@@ -225,6 +246,7 @@ export function createPresenter(
     },
 
     clearSkin(): void {
+      if (!isActive()) return
       removeElement(byId(TOKEN_STYLE_ID))
       removeElement(byId(PREVIEW_STYLE_ID))
       removeElement(bootStyle())
@@ -232,12 +254,17 @@ export function createPresenter(
     },
 
     removeBootArtifacts(): void {
+      if (!isActive()) return
       removeElement(bootStyle())
       setBodySkin(null, null)
     },
 
     dispose(): void {
+      if (!isActive()) return
       this.clearSkin()
+      try {
+        if (root?.getAttribute('data-dsh-livery-presenter') === ownerKey) root.removeAttribute('data-dsh-livery-presenter')
+      } catch { /* fake DOM */ }
     },
 
     snapshot(): PresenterSnapshot {

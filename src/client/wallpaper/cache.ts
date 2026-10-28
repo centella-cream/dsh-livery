@@ -155,6 +155,24 @@ function beginRemoteOperation(key: string): number {
 }
 
 /** Whether this operation is still the newest one for the key. */
+const remoteWriteTails = new Map<string, Promise<unknown>>()
+
+/** Serialize same-URL IndexedDB writes so an older put cannot commit after a newer one. */
+async function withRemoteWriteLock<T>(key: string, body: () => Promise<T>): Promise<T> {
+  const previous = remoteWriteTails.get(key) ?? Promise.resolve()
+  let release: () => void = () => undefined
+  const gate = new Promise<void>((resolve) => { release = resolve })
+  const tail = previous.catch(() => undefined).then(() => gate)
+  remoteWriteTails.set(key, tail)
+  await previous.catch(() => undefined)
+  try {
+    return await body()
+  } finally {
+    release()
+    if (remoteWriteTails.get(key) === tail) remoteWriteTails.delete(key)
+  }
+}
+
 function isLatestRemoteOperation(key: string, token: number): boolean {
   return latestRemoteOperations.get(key) === token
 }
@@ -341,9 +359,17 @@ export async function cacheRemoteImage(
       method: 'GET',
       cache: 'force-cache',
       credentials: 'omit',
+      redirect: 'error',
       ...(controller === undefined ? {} : { signal: controller.signal }),
     })
     if (!response.ok) return { ok: false, reason: 'network' }
+    // Defense in depth: even if a platform ignores redirect:'error', the final
+    // response URL must still be a public https origin.
+    if (response.url !== undefined && response.url.length > 0) {
+      let finalHost = ''
+      try { finalHost = new URL(response.url).hostname } catch { return { ok: false, reason: 'invalid' } }
+      if (isLocalOrPrivateHost(finalHost)) return { ok: false, reason: 'invalid' }
+    }
     const type = (response.headers.get('content-type') ?? '').toLowerCase()
     if (!type.startsWith('image/')) return { ok: false, reason: 'invalid' }
     // Trusted oversized Content-Length: abort before materializing the body.
@@ -352,10 +378,11 @@ export async function cacheRemoteImage(
       controller?.abort()
       return { ok: false, reason: 'invalid' }
     }
-    const blob = await readCappedBody(response)
+    const blob = await readCappedBody(response, type)
     if (blob === undefined || blob.size <= 0) {
       return { ok: false, reason: cancelledExternally ? 'cancelled' : 'invalid' }
     }
+    if (!(await isDecodableImage(blob))) return { ok: false, reason: 'invalid' }
     if (cancelledExternally || isAborted(deps.signal) || !isLatestRemoteOperation(key, operationToken)) {
       return { ok: false, reason: 'cancelled' }
     }
@@ -369,17 +396,20 @@ export async function cacheRemoteImage(
       sourceUrl: check.url,
       blob,
     }
-    await images.put(record)
-    // Cancellation can arrive while the IDB transaction is in flight. Do not
-    // publish/prune after that: delete the just-written stale blob instead.
-    if (cancelledExternally || isAborted(deps.signal)) {
-      // Only the newest operation may clean up its own record. A newer
-      // same-URL download may already have written a fresh blob under this key.
-      if (isLatestRemoteOperation(key, operationToken)) {
-        try { await images.delete(key) } catch { /* best effort */ }
+    const writeResult = await withRemoteWriteLock(key, async () => {
+      // A newer same-URL operation may have started while this one was fetching;
+      // never overwrite it with an older blob.
+      if (!isLatestRemoteOperation(key, operationToken) || cancelledExternally || isAborted(deps.signal)) {
+        return 'cancelled' as const
       }
-      return { ok: false, reason: 'cancelled' }
-    }
+      await images.put(record)
+      if (cancelledExternally || isAborted(deps.signal)) {
+        await images.delete(key)
+        return 'cancelled' as const
+      }
+      return 'written' as const
+    })
+    if (writeResult === 'cancelled') return { ok: false, reason: 'cancelled' }
     if (deps.storage !== undefined) {
       touchRemoteCacheIndex(deps.storage, { url: check.url, key, size: blob.size, usedAt: now })
     }
@@ -415,7 +445,7 @@ export async function cacheRemoteImage(
  * @param response - image response.
  * @returns the blob, or undefined when the cumulative size exceeds the cap.
  */
-async function readCappedBody(response: Response): Promise<Blob | undefined> {
+async function readCappedBody(response: Response, type: string): Promise<Blob | undefined> {
   const body = response.body
   if (body === null || typeof body.getReader !== 'function') {
     const blob = await response.blob()
@@ -439,7 +469,20 @@ async function readCappedBody(response: Response): Promise<Blob | undefined> {
   } catch {
     return undefined
   }
-  return new Blob(chunks as BlobPart[], { type: 'image/*' })
+  return new Blob(chunks as BlobPart[], { type: type.startsWith('image/') ? type : 'application/octet-stream' })
+}
+
+/** Reject corrupt/forged image payloads when the platform can decode images. */
+async function isDecodableImage(blob: Blob): Promise<boolean> {
+  const createBitmap = (globalThis as unknown as { createImageBitmap?: (input: Blob) => Promise<{ close?: () => void }> }).createImageBitmap
+  if (typeof createBitmap !== 'function') return true
+  try {
+    const bitmap = await createBitmap(blob)
+    bitmap.close?.()
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**

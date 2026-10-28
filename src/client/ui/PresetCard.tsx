@@ -89,7 +89,7 @@ export interface PresetCardProps {
    * One batch wallpaper apply. Expected wrapper:
    * `target => matchesPresetWallpaperState(controller.setState(target, {flush: true}), target)`.
    */
-  readonly applyWallpaper: (target: PresetWallpaperTarget) => boolean
+  readonly applyWallpaper: (target: PresetWallpaperTarget) => boolean | Promise<boolean>
   /** Live image credit of the current wallpaper, when one is shown. */
   readonly currentAttribution?: PresetAttribution | undefined
   /** Optional localized livery name for readable diff rows. */
@@ -455,11 +455,12 @@ export function PresetCard({
     onApplyResult?.(result, targetPreset)
   }
 
-  const onRetryWallpaper = (): void => {
+  const onRetryWallpaper = async (): Promise<void> => {
     if (preset === undefined || applying) return
     setApplying(true)
     setError(undefined)
-    const ok = applyPresetWallpaper(preset, { applyWallpaper })
+    const ok = await applyPresetWallpaper(preset, { applyWallpaper })
+    if (!mounted.current) return
     setApplying(false)
     if (ok) {
       setApplyResult({ status: 'applied' })
@@ -553,7 +554,7 @@ export function PresetCard({
                 size="sm"
                 data-testid="preset-retry-wallpaper"
                 disabled={applying}
-                onClick={onRetryWallpaper}
+                onClick={() => { void onRetryWallpaper() }}
               >
                 {t('preset.retryWallpaper')}
               </Button>

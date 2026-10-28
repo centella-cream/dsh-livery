@@ -242,9 +242,11 @@ describe('controller multi-tab sync', () => {
         getItem: key => map.get(key) ?? null,
         setItem: (key, value) => {
           map.set(key, value)
-          // Like real storage events: fan out to every document (the controller
-          // still filters own echoes and identical published bytes).
-          for (const tab of tabs) pending.push({ tab: tab.events, event: { key, newValue: value } })
+          // Like real storage events: fan out wallpaper-state writes only (ref
+          // table writes are a different key and are filtered by the listener).
+          if (key === WALLPAPER_STORAGE_KEY) {
+            for (const tab of tabs) pending.push({ tab: tab.events, event: { key, newValue: value } })
+          }
         },
         removeItem: key => { map.delete(key) },
       }

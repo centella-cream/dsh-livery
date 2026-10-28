@@ -254,7 +254,7 @@ export interface PresetApplyPorts {
   /** Direct, single-write style apply (runtime `applyStyle`). */
   readonly applyStyle: (styleId: string) => Promise<StyleApplyOutcome>
   /** Batch wallpaper apply (state-v2 controller `setState`/`applyState` wrapper). */
-  readonly applyWallpaper: (target: PresetWallpaperTarget) => boolean
+  readonly applyWallpaper: (target: PresetWallpaperTarget) => boolean | Promise<boolean>
 }
 
 /** Outcome of applying one preset. */
@@ -1012,9 +1012,9 @@ export function matchesPresetWallpaperState(
  * @param ports - wallpaper port.
  * @returns true when the controller confirmed the target state.
  */
-export function applyPresetWallpaper(preset: LiveryPreset, ports: Pick<PresetApplyPorts, 'applyWallpaper'>): boolean {
+export async function applyPresetWallpaper(preset: LiveryPreset, ports: Pick<PresetApplyPorts, 'applyWallpaper'>): Promise<boolean> {
   try {
-    return ports.applyWallpaper(presetWallpaperTarget(preset)) === true
+    return (await ports.applyWallpaper(presetWallpaperTarget(preset))) === true
   } catch {
     return false
   }
@@ -1039,6 +1039,6 @@ export async function applyPreset(preset: LiveryPreset, ports: PresetApplyPorts)
     return { status: 'style-failed', failure: 'transport' }
   }
   if (!style.ok) return { status: 'style-failed', failure: style.failure }
-  if (!applyPresetWallpaper(preset, ports)) return { status: 'partial', styleId: preset.styleId }
+  if (!(await applyPresetWallpaper(preset, ports))) return { status: 'partial', styleId: preset.styleId }
   return { status: 'applied' }
 }

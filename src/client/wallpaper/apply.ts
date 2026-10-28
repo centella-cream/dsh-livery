@@ -81,7 +81,15 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerI
   if (target === undefined) return NOOP_LAYER
   const owner = ownerId ?? `layer-${++nextLayerOwner}`
   activeLayerOwners.set(target, owner)
-  const isActive = (): boolean => activeLayerOwners.get(target) === owner
+  const root = (target as unknown as { documentElement?: { setAttribute?: (n: string, v: string) => void; getAttribute?: (n: string) => string | null } }).documentElement
+  try { root?.setAttribute?.('data-dsh-livery-layer', owner) } catch { /* fake DOM */ }
+  // DOM lease is shared across module copies; the WeakMap is the fake-doc fallback.
+  const isActive = (): boolean => {
+    if (root?.getAttribute !== undefined) {
+      try { return root.getAttribute('data-dsh-livery-layer') === owner } catch { /* fall through */ }
+    }
+    return activeLayerOwners.get(target) === owner
+  }
 
   const findStyle = (): WallpaperStyleElement | null => {
     const existing = target.getElementById(WALLPAPER_STYLE_ID)
@@ -136,7 +144,13 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerI
       if (isActive()) clear()
     },
     dispose: () => {
-      if (isActive()) clear()
+      if (!isActive()) return
+      clear()
+      try {
+        if (root?.getAttribute?.('data-dsh-livery-layer') === owner) {
+          (root as unknown as { removeAttribute?: (name: string) => void }).removeAttribute?.('data-dsh-livery-layer')
+        }
+      } catch { /* fake DOM */ }
     },
   }
 }

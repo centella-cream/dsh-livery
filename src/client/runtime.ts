@@ -121,6 +121,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   private generation = 0
   /** Latest config revision observed from the host form. */
   private configRevision: number | undefined
+  /** Previous observed revision, used to detect same-value/higher-revision updates. */
+  private lastObservedConfigRevision: number | undefined
   /** Newer host config that arrived while a settings write was in flight. */
   private pendingConfig: { readonly revision: number | undefined; readonly confirmedId: string } | undefined
   /** Phase to return to after cancel/rollback (ready or degraded). */
@@ -275,7 +277,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    * @returns true when the host accepted the write.
    */
   async commitPreview(): Promise<boolean> {
-    if (!this.canInteract()) return false
+    if (!this.canWrite()) return false
     if (this.snapshot.phase !== 'previewing' || this.snapshot.writing) return false
     const form = this.form
     const target = this.snapshot.previewId
@@ -420,7 +422,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    * @returns true when the host accepted the write.
    */
   async restoreStock(): Promise<boolean> {
-    if (!this.canInteract()) return false
+    if (!this.canWrite()) return false
     if (this.snapshot.phase === 'previewing') this.cancelPreview()
     if (this.snapshot.writing) return false
     const form = this.form
@@ -484,7 +486,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
    */
   async retryLastWrite(): Promise<boolean> {
     const last = this.lastWrite
-    if (this.disposed || last === undefined) return false
+    if (!this.canWrite() || last === undefined) return false
     if (last.kind === 'restore') return this.restoreStock()
     if (!this.preview(last.id)) return false
     return this.commitPreview()
@@ -533,6 +535,14 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     if (this.disposed) return false
     const phase = this.snapshot.phase
     return phase === 'ready' || phase === 'degraded' || phase === 'previewing'
+  }
+
+  /** Central host-config write permission (all form.set paths). */
+  private canWrite(): boolean {
+    return this.canInteract()
+      && this.snapshot.configStatus === 'ready'
+      && this.snapshot.writable === true
+      && this.form !== undefined
   }
 
   private readThemeMode(): LiveryMode {
@@ -612,6 +622,8 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const fallback = snapshot.status === 'unavailable' ? this.deps.boot.payload?.skinId : undefined
     const confirmedId = value ?? fallback ?? STOCK_ID
     this.configSettled = true
+    const previousRevision = this.lastObservedConfigRevision
+    this.lastObservedConfigRevision = snapshot.revision
     this.configRevision = snapshot.revision
     const previous = this.snapshot.confirmedId
     this.patch({
@@ -623,7 +635,22 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       this.maybeSettle()
       return
     }
-    if (confirmedId === previous) return
+    if (confirmedId === previous) {
+      // Same skin id but a newer host revision is still a real external update:
+      // it must supersede an in-flight write and refresh the confirmed baseline.
+      if (snapshot.revision === undefined || previousRevision === undefined || snapshot.revision <= previousRevision) return
+      if (this.snapshot.writing) {
+        this.pendingConfig = { revision: snapshot.revision, confirmedId }
+        return
+      }
+      if (this.snapshot.phase === 'previewing') {
+        this.previewSkin = undefined
+        this.deps.presenter.rollbackPreview(undefined)
+        this.patch({ previewId: undefined, phase: this.basePhase })
+      }
+      this.present(confirmedId, true)
+      return
+    }
     if (this.snapshot.writing) {
       // Never present over an in-flight write, but remember the newest config so
       // the write result can reconcile forward when it settles.

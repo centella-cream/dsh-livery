@@ -594,14 +594,14 @@ describe('preset apply ordering and partial failure', () => {
     expect(result).toEqual({ status: 'partial', styleId: 'midnight' })
   })
 
-  it('supports wallpaper-only recovery after a partial apply', () => {
+  it('supports wallpaper-only recovery after a partial apply', async () => {
     const calls: unknown[] = []
-    expect(applyPresetWallpaper(preset, {
+    expect(await applyPresetWallpaper(preset, {
       applyWallpaper(target) { calls.push(target); return true },
     })).toBe(true)
     expect(calls).toHaveLength(1)
-    expect(applyPresetWallpaper(preset, { applyWallpaper: () => false })).toBe(false)
-    expect(applyPresetWallpaper(preset, { applyWallpaper: () => { throw new Error('x') } })).toBe(false)
+    expect(await applyPresetWallpaper(preset, { applyWallpaper: () => false })).toBe(false)
+    expect(await applyPresetWallpaper(preset, { applyWallpaper: () => { throw new Error('x') } })).toBe(false)
   })
 
   it('clears the wallpaper when the preset carries none', () => {

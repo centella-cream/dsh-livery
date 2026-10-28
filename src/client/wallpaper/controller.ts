@@ -38,6 +38,7 @@ import {
 } from './sync.js'
 import type { StorageEventTarget } from './sync.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
+import { removeWallpaperRefs, writeWallpaperRefs } from './refs.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 
 /** Reactive wallpaper state consumed by the studio UI. */
@@ -218,6 +219,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const saveDelay = options.saveDelayMs ?? DEFAULT_SAVE_DELAY_MS
   const sourceId = options.sourceId ?? createTabSourceId()
   const publishSourceId = options.sourceId !== undefined
+  const publishRefs = (): void => {
+    writeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId, [selection, durableSelection])
+  }
   const eventTarget = options.eventTarget ?? (typeof window === 'undefined'
     ? undefined
     : window as unknown as StorageEventTarget)
@@ -301,6 +305,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       // quota/disabled failure must leave the previous recoverable selection.
       durableSelection = selection
       lastPublishedRaw = raw
+      publishRefs()
       return true
     } catch {
       /* storage can be quota-blocked/disabled; the live layer still works */
@@ -367,6 +372,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     revision = stored.state.revision
     durableSelection = stored.state.selection
     winnerSourceId = stored.sourceId
+    publishRefs()
   }
 
   // Uploaded blobs live in IndexedDB: restore the object URL asynchronously once
@@ -497,6 +503,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     apply()
     scheduleSave()
     if (stateOptions.flush === true) flushSave()
+    publishRefs()
     notify()
     return snapshot
   }
@@ -561,6 +568,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       disposed = true
       syncUnsubscribe?.()
       syncUnsubscribe = undefined
+      removeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId)
       flushSave()
       listeners.clear()
       replaceLocalImageUrl(undefined)

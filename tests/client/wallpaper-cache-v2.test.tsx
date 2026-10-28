@@ -261,18 +261,19 @@ describe('same-URL operation tokens', () => {
     const controllerA = new AbortController()
     const pendingA = cacheRemoteImage(url, { images, fetchImpl, signal: controllerA.signal })
     await vi.waitFor(() => { expect(putCalls).toBe(1) })
-    const resultB = await cacheRemoteImage(url, { images, fetchImpl })
-    expect(resultB.ok).toBe(true)
-    expect(images.records.has(key)).toBe(true)
+    const pendingB = cacheRemoteImage(url, { images, fetchImpl })
 
-    // A is cancelled while its put is still in flight, then its write lands.
+    // A is cancelled while its put is still in flight, then its write lands;
+    // B serializes behind A and writes the fresh record afterwards.
     controllerA.abort()
     releaseFirstPut?.()
     expect(await pendingA).toEqual({ ok: false, reason: 'cancelled' })
+    const resultB = await pendingB
+    expect(resultB.ok).toBe(true)
+    expect(images.records.has(key)).toBe(true)
     // The newer task's record must survive: an old cancelled task may only
     // delete a record it still owns.
     expect(images.records.has(key)).toBe(true)
-    expect(images.delete).not.toHaveBeenCalledWith(key)
   })
 
   it('still lets the newest cancelled task clean up its own just-written record', async () => {
@@ -310,11 +311,13 @@ describe('same-URL operation tokens', () => {
     const controllerA = new AbortController()
     const pendingA = cacheRemoteImage(url, { images, fetchImpl, signal: controllerA.signal })
     await vi.waitFor(() => { expect(putCalls).toBe(1) })
-    const resultB = await cacheRemoteImage(url, { images, fetchImpl })
-    expect(resultB.ok).toBe(true)
-    // A completes (not cancelled) after B: its cleanup must not remove B's row.
+    const pendingB = cacheRemoteImage(url, { images, fetchImpl })
+    // A completes (not cancelled); B waits for the same-key write lock and then
+    // writes its newer record.
     releaseFirstPut?.()
     expect(await pendingA).toEqual({ ok: true, key, record: expect.any(Object) })
+    const resultB = await pendingB
+    expect(resultB.ok).toBe(true)
     expect(images.records.has(key)).toBe(true)
   })
 })

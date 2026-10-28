@@ -66,3 +66,21 @@ export function isLocalOrPrivateHost(hostname: string): boolean {
   // Single-label names are local DNS names, not public hosts.
   return !normalized.includes('.') && !normalized.includes(':')
 }
+
+/**
+ * Validate a remote image URL for direct UI use (thumbnails): https and a
+ * public host. Returns the normalized URL or undefined.
+ * @param raw - untrusted image URL.
+ * @returns safe http(s) URL or undefined.
+ */
+export function safeRemoteImageUrl(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined
+  try {
+    const url = new URL(raw)
+    if (url.protocol !== 'https:') return undefined
+    if (isLocalOrPrivateHost(url.hostname)) return undefined
+    return url.toString()
+  } catch {
+    return undefined
+  }
+}
