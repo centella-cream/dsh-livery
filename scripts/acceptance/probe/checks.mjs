@@ -63,6 +63,7 @@ import {
   expectedPreviewsBase,
   otherCatalogProfiles,
 } from './certified-adapters.mjs'
+import { getPicsumFixturePort } from './playwright.mjs'
 import {
   ensureDir,
   firstConcreteFamily,
@@ -276,6 +277,39 @@ async function readStoredWallpaper(page) {
       return null
     }
   })
+}
+
+/**
+ * Realistic Picsum fixture: the list endpoint returns JSON; image requests on
+ * picsum.photos answer a real 302 to `fastly.picsum.photos` (with the local
+ * fixture port). The acceptance browser maps that hostname to a loopback HTTPS
+ * server, so the redirect is followed by the real network stack and the product's
+ * final-URL revalidation runs against a public HTTPS URL.
+ */
+async function installPicsumRedirectMock(page, { tinyPng, listBody = [{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }], onList, listResponse } = {}) {
+  const fixturePort = getPicsumFixturePort()
+  await page.route('https://picsum.photos/**', (route) => {
+    const url = route.request().url()
+    if (!url.includes('/v2/list')) {
+      const pathname = new URL(url).pathname
+      const finalUrl = `https://fastly.picsum.photos:${fixturePort}${pathname}.jpg?hmac=acceptance-fixture`
+      return route.fulfill({
+        status: 302,
+        headers: {
+          location: finalUrl,
+          'access-control-allow-origin': '*',
+          'cache-control': 'no-store',
+        },
+      })
+    }
+    if (onList !== undefined) onList(url)
+    if (listResponse !== undefined) return listResponse(route)
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(listBody) })
+  })
+}
+
+async function uninstallPicsumRedirectMock(page) {
+  await page.unroute('https://picsum.photos/**').catch(() => {})
 }
 
 /** Canonicalize CSS colour values using the browser's own parser. */
@@ -3075,19 +3109,27 @@ export async function checkWallpaperStudio(ctx) {
       if (openverseMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(openverseFixture) })
       return route.fulfill({ status: 500, contentType: 'text/plain', body: 'openverse unavailable' })
     })
-    await page.route('https://picsum.photos/**', (route) => {
-      const url = route.request().url()
-      if (!url.includes('/v2/list')) return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
-      picsumListRequests.push(url)
-      if (picsumMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(picsumFixture) })
-      return route.fulfill({ status: 500, contentType: 'text/plain', body: 'picsum unavailable' })
+    await installPicsumRedirectMock(page, {
+      tinyPng,
+      onList: (url) => picsumListRequests.push(url),
+      listResponse: (route) => (picsumMode === 'ok'
+        ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(picsumFixture) })
+        : route.fulfill({ status: 500, contentType: 'text/plain', body: 'picsum unavailable' })),
     })
     await page.route('https://images.example.test/**', (route) => {
       const url = route.request().url()
       if (url.includes('broken')) return route.fulfill({ status: 500, contentType: 'text/plain', body: 'image unavailable' })
       if (url.includes('mime')) return route.fulfill({ status: 200, contentType: 'text/plain', body: 'not an image' })
+      if (url.includes('redirect-private')) {
+        return route.fulfill({ status: 302, headers: { location: `https://127.0.0.1:${getPicsumFixturePort()}/private.jpg`, 'cache-control': 'no-store', 'access-control-allow-origin': '*' } })
+      }
+      if (url.includes('redirect-http')) {
+        return route.fulfill({ status: 302, headers: { location: `http://127.0.0.1:${getPicsumFixturePort()}/plain.jpg`, 'cache-control': 'no-store', 'access-control-allow-origin': '*' } })
+      }
       return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
     })
+    // The redirect bodies are served by the same loopback HTTPS fixture; the
+    // product must reject the final private/non-https URL after following.
     await reopenLivery()
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
@@ -3730,6 +3772,8 @@ export async function checkWallpaperStudio(ctx) {
     const failureCases = [
       { url: 'https://images.example.test/broken.jpg', label: 'network/status failure' },
       { url: 'https://images.example.test/mime.jpg', label: 'non-image MIME failure' },
+      { url: 'https://images.example.test/redirect-private.jpg', label: 'private-host redirect rejection' },
+      { url: 'https://images.example.test/redirect-http.jpg', label: 'non-https final redirect rejection' },
     ]
     const failureEvidence = []
     for (const failure of failureCases) {
@@ -4001,7 +4045,7 @@ export async function checkWallpaperStudio(ctx) {
   } finally {
     await page.unroute('https://api.openverse.org/**').catch(() => {})
     await page.unroute('https://images.example.test/**').catch(() => {})
-    await page.unroute('https://picsum.photos/**').catch(() => {})
+    await uninstallPicsumRedirectMock(page)
   }
 }
 
@@ -4046,13 +4090,7 @@ export async function checkLayoutStructure(ctx) {
     await page.route('https://api.openverse.org/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
-    await page.route('https://picsum.photos/**', (route) => {
-      const url = route.request().url()
-      if (url.includes('/v2/list')) {
-        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
-      }
-      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
-    })
+    await installPicsumRedirectMock(page, { tinyPng })
     await page.route('https://images.example.test/**', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }))
     routed = true
     await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale ?? 'zh', timeoutMs: 25_000 })
@@ -4329,7 +4367,7 @@ export async function checkLayoutStructure(ctx) {
     if (routed) {
       await page.unroute('https://api.openverse.org/**').catch(() => {})
       await page.unroute('https://images.example.test/**').catch(() => {})
-      await page.unroute('https://picsum.photos/**').catch(() => {})
+      await uninstallPicsumRedirectMock(page)
     }
     await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
   }
@@ -4434,13 +4472,7 @@ export async function checkVisualMatrix(ctx) {
     await page.route('https://api.openverse.org/**', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
     )
-    await page.route('https://picsum.photos/**', (route) => {
-      const url = route.request().url()
-      if (url.includes('/v2/list')) {
-        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
-      }
-      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
-    })
+    await installPicsumRedirectMock(page, { tinyPng })
     await page.route('https://images.example.test/**', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }))
     routed = true
 
@@ -4742,7 +4774,7 @@ export async function checkVisualMatrix(ctx) {
     if (routed) {
       await page.unroute('https://api.openverse.org/**').catch(() => {})
       await page.unroute('https://images.example.test/**').catch(() => {})
-      await page.unroute('https://picsum.photos/**').catch(() => {})
+      await uninstallPicsumRedirectMock(page)
     }
     await page.emulateMedia({ colorScheme: 'light', forcedColors: 'none' }).catch(() => {})
     await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
@@ -4861,13 +4893,7 @@ export async function checkMergedFeatures(ctx) {
   const tinyPng = MERGED_TINY_PNG
   let routed = false
   try {
-    await page.route('https://picsum.photos/**', (route) => {
-      const url = route.request().url()
-      if (url.includes('/v2/list')) {
-        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
-      }
-      return route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng })
-    })
+    await installPicsumRedirectMock(page, { tinyPng })
     await page.route('https://api.openverse.org/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }))
     await page.route('https://images.example.test/**', (route) => {
       if (route.request().url().includes('broken')) return route.fulfill({ status: 500, contentType: 'text/plain', body: 'broken' })
@@ -5321,6 +5347,105 @@ export async function checkMergedFeatures(ctx) {
         clearedB.stylePresent === false && clearedB.attribute === null,
         `style=${clearedB.stylePresent} attr=${clearedB.attribute}`,
       )
+
+      // ---------- cross-tab upload refs: B external adoption republishes its own ref ----------
+      await page.locator('[data-testid="wallpaper-upload"]').setInputFiles({ name: 'two-tab-upload.png', mimeType: 'image/png', buffer: MERGED_TINY_PNG })
+      await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
+      const uploadA = await readStoredWallpaper(page)
+      const uploadKey = uploadA?.selection?.kind === 'upload' ? uploadA.selection.key : null
+      let uploadRef = null
+      if (uploadKey !== null) {
+        await pageB.waitForFunction(
+          (key) => {
+            try {
+              const raw = window.localStorage.getItem('dsh-livery.wallpaper.v1')
+              const state = raw === null ? null : JSON.parse(raw)
+              return state?.selection?.kind === 'upload' && state.selection.key === key
+            } catch {
+              return false
+            }
+          },
+          uploadKey,
+          { timeout: 15_000 },
+        ).catch(() => {})
+        await pageB.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
+        const readRefs = (target) => target.evaluate(() => {
+          const rows = []
+          try {
+            for (let index = 0; index < window.localStorage.length; index += 1) {
+              const key = window.localStorage.key(index)
+              if (key === null || !key.startsWith('dsh-livery.wallpaper.ref.')) continue
+              try {
+                const record = JSON.parse(window.localStorage.getItem(key) ?? 'null')
+                rows.push({ key, uploads: Array.isArray(record?.uploads) ? record.uploads : [], updatedAt: record?.updatedAt ?? null })
+              } catch {
+                /* ignore corrupt refs */
+              }
+            }
+          } catch {
+            /* ignore */
+          }
+          return rows
+        })
+        await pageB.waitForFunction(
+          (key) => {
+            let count = 0
+            try {
+              for (let index = 0; index < window.localStorage.length; index += 1) {
+                const storageKey = window.localStorage.key(index)
+                if (storageKey === null || !storageKey.startsWith('dsh-livery.wallpaper.ref.')) continue
+                try {
+                  const record = JSON.parse(window.localStorage.getItem(storageKey) ?? 'null')
+                  if (Array.isArray(record?.uploads) && record.uploads.includes(key)) count += 1
+                } catch {
+                  /* ignore */
+                }
+              }
+            } catch {
+              /* ignore */
+            }
+            return count >= 2
+          },
+          uploadKey,
+          { timeout: 10_000 },
+        ).catch(() => {})
+        const refsAfterAdopt = await readRefs(pageB)
+        const refRows = refsAfterAdopt.filter((row) => row.uploads.includes(uploadKey))
+        const uploadB = await readStoredWallpaper(pageB)
+        let clearProtection = null
+        const clearButton = pageB.locator('[data-testid="wallpaper-clear-local-data"]')
+        if ((await clearButton.count()) > 0) {
+          await clearButton.scrollIntoViewIfNeeded().catch(() => {})
+          await clearButton.click({ timeout: 8_000 }).catch(() => {})
+          await pageB.waitForSelector('[data-testid="wallpaper-clear-local-result"]', { timeout: 15_000 }).catch(() => {})
+          const afterClear = await readStoredWallpaper(pageB)
+          const refsAfterClear = await readRefs(pageB)
+          clearProtection = {
+            result: await pageB.locator('[data-testid="wallpaper-clear-local-result"]').getAttribute('data-status').catch(() => null),
+            selectionKept: JSON.stringify(afterClear?.selection) === JSON.stringify(uploadB?.selection),
+            refsStillContain: refsAfterClear.filter((row) => row.uploads.includes(uploadKey)).length >= 2,
+            stylePresent: await pageB.evaluate(() => document.querySelector('style#dsh-livery-wallpaper') !== null),
+          }
+        }
+        uploadRef = { uploadKey, refRows: refRows.length, refsAfterAdopt, uploadBSelection: uploadB?.selection ?? null, clearProtection }
+      }
+      expect(
+        runner,
+        'merged.two-tab-upload-ref',
+        'page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref',
+        uploadKey !== null &&
+          uploadRef !== null &&
+          uploadRef.refRows >= 2 &&
+          uploadRef.uploadBSelection?.kind === 'upload' && uploadRef.uploadBSelection?.key === uploadKey &&
+          uploadRef.clearProtection !== null &&
+          uploadRef.clearProtection.selectionKept === true &&
+          uploadRef.clearProtection.refsStillContain === true &&
+          uploadRef.clearProtection.stylePresent === true,
+        uploadKey === null ? 'upload selection was not persisted' : JSON.stringify(uploadRef),
+      )
+      // Cleanup the wallpaper in both tabs before closing B.
+      await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 }).catch(() => {})
+      await pageB.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 12_000 }).catch(() => {})
     } finally {
       await pageB.close().catch(() => {})
     }
@@ -5328,7 +5453,7 @@ export async function checkMergedFeatures(ctx) {
     runner.fail('merged.features', 'merged 0.1.3 client acceptance completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
   } finally {
     if (routed) {
-      await page.unroute('https://picsum.photos/**').catch(() => {})
+      await uninstallPicsumRedirectMock(page)
       await page.unroute('https://api.openverse.org/**').catch(() => {})
       await page.unroute('https://images.example.test/**').catch(() => {})
     }
