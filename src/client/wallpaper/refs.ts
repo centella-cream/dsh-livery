@@ -11,7 +11,7 @@ import type { WallpaperSelection } from '../wallpaper.js'
 /** localStorage key prefix for one tab's refs. */
 export const WALLPAPER_REFS_PREFIX = 'dsh-livery.wallpaper.ref.'
 /** Refs older than this are treated as crashed-tab leftovers. */
-export const WALLPAPER_REF_TTL_MS = 24 * 60 * 60 * 1000
+export const WALLPAPER_REF_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 /** localStorage subset used by refs (enumeration is optional in tests). */
 export interface WallpaperRefStorage {

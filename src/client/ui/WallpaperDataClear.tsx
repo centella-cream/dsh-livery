@@ -16,7 +16,7 @@ import type { LiveryKey } from '../../i18n/index.js'
 import type { LiveryTranslate } from '../platform.js'
 import type { WallpaperSelection } from '../wallpaper.js'
 import { getWallpaperController } from '../wallpaper/controller.js'
-import { withWallpaperGcLock } from '../wallpaper/gc-lock.js'
+import { hasCrossTabGcLock, withWallpaperGcLock } from '../wallpaper/gc-lock.js'
 import { readReferencedUploadKeys } from '../wallpaper/refs.js'
 import { createIndexedDbImageStore } from '../wallpaper/storage.js'
 import { clearAllLocalWallpaperData } from '../wallpaper/lifecycle.js'
@@ -115,6 +115,10 @@ export function WallpaperDataClear({ t, onCleared }: WallpaperDataClearProps): J
   const [result, setResult] = useState<ClearLocalWallpaperDataResult | undefined>(undefined)
   const run = async (): Promise<void> => {
     if (busy) return
+    if (!hasCrossTabGcLock()) {
+      setResult({ status: 'partial', removedImages: 0, keptImages: 0, clearedHistory: false, clearedIndex: false, errors: ['cross-tab-lock'] })
+      return
+    }
     setBusy(true)
     try {
       const next = await runWallpaperDataClear()
