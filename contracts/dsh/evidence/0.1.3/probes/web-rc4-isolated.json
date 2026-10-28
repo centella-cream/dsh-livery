@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "runId": "2026-10-28T15-06-00-061Z-isolated",
+  "runId": "2026-10-28T16-20-33-968Z-isolated",
   "mode": "isolated",
   "ok": true,
-  "startedAt": "2026-10-28T15:06:00.062Z",
-  "finishedAt": "2026-10-28T15:08:55.470Z",
+  "startedAt": "2026-10-28T16:20:33.969Z",
+  "finishedAt": "2026-10-28T16:23:40.336Z",
   "summary": {
     "pass": 259,
     "fail": 0,
@@ -13,8 +13,8 @@
     "total": 266
   },
   "environment": {
-    "date": "2026-10-28T15:08:55.461Z",
-    "commit": "10fc2db4ae61c24a0ea2f1f0c7d500490f653e81",
+    "date": "2026-10-28T16:23:40.327Z",
+    "commit": "6663485a5f94e8dcb65f44004662ac681cd09e1b",
     "dshVersion": "0.2.1-rc.4",
     "dshBin": "<tmp>",
     "hostRuntime": "installed-package",
@@ -30,7 +30,7 @@
     "pluginId": "dsh-livery",
     "packageVersion": "0.1.3",
     "tarball": "file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz",
-    "tarballSha256": "2623b7589bacf340aaea3a0345eff0d0eb87c5c1e65f610e2f9990749cd1b674",
+    "tarballSha256": "95329add9cafc2b310c4be594fd2acd7ed811d29fb69663b90cdc15115cf3385",
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
@@ -111,175 +111,175 @@
   },
   "config": {
     "profileName": "0.2.1-rc.4-web-chrome",
-    "dshHome": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r6-final/web-rc4-home",
+    "dshHome": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r7-final/web-rc4-home",
     "reuseUrl": null,
     "locale": "zh",
     "expectedVersion": "0.2.1-rc.4",
     "expectedProfileKind": "web",
     "cloneFrom": null,
     "bootTimeoutMs": 120000,
-    "artifactsDir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4",
-    "reportPath": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/report.md",
+    "artifactsDir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4",
+    "reportPath": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/report.md",
     "readOnly": false
   },
-  "dshWebLine": "dsh web: http://127.0.0.1:52654/?token=<redacted>",
+  "dshWebLine": "dsh web: http://127.0.0.1:62930/?token=<redacted>",
   "boot": {
-    "readyMs": 1833,
-    "installMs": 166,
-    "port": 52654
+    "readyMs": 1817,
+    "installMs": 197,
+    "port": 62930
   },
   "phases": [
     {
       "name": "prepare",
-      "startedAt": "2026-10-28T15:06:00.063Z",
-      "durationMs": 262,
+      "startedAt": "2026-10-28T16:20:33.970Z",
+      "durationMs": 298,
       "ok": true,
-      "detail": "dsh 0.2.1-rc.4; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz → exit 0 in 166ms"
+      "detail": "dsh 0.2.1-rc.4; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz → exit 0 in 197ms"
     },
     {
       "name": "boot",
-      "startedAt": "2026-10-28T15:06:00.325Z",
-      "durationMs": 1833,
+      "startedAt": "2026-10-28T16:20:34.268Z",
+      "durationMs": 1817,
       "ok": true,
-      "detail": "ready in 1833ms port 52654"
+      "detail": "ready in 1817ms port 62930"
     },
     {
       "name": "browser",
-      "startedAt": "2026-10-28T15:06:02.158Z",
-      "durationMs": 389,
+      "startedAt": "2026-10-28T16:20:36.085Z",
+      "durationMs": 662,
       "ok": true,
       "detail": "Chrome 156.0.8078.48"
     },
     {
       "name": "boot-graph",
-      "startedAt": "2026-10-28T15:06:02.993Z",
-      "durationMs": 278,
+      "startedAt": "2026-10-28T16:20:37.040Z",
+      "durationMs": 320,
       "ok": true,
       "detail": ""
     },
     {
       "name": "boot-handshake",
-      "startedAt": "2026-10-28T15:06:02.820Z",
-      "durationMs": 451,
+      "startedAt": "2026-10-28T16:20:36.917Z",
+      "durationMs": 443,
       "ok": true,
       "detail": ""
     },
     {
       "name": "trust",
-      "startedAt": "2026-10-28T15:06:03.271Z",
-      "durationMs": 35,
+      "startedAt": "2026-10-28T16:20:37.360Z",
+      "durationMs": 33,
       "ok": true,
       "detail": ""
     },
     {
       "name": "stock",
-      "startedAt": "2026-10-28T15:06:03.306Z",
-      "durationMs": 1588,
+      "startedAt": "2026-10-28T16:20:37.393Z",
+      "durationMs": 2425,
       "ok": true,
       "detail": ""
     },
     {
       "name": "catalog",
-      "startedAt": "2026-10-28T15:06:04.894Z",
-      "durationMs": 53,
+      "startedAt": "2026-10-28T16:20:39.818Z",
+      "durationMs": 63,
       "ok": true,
       "detail": ""
     },
     {
       "name": "nav",
-      "startedAt": "2026-10-28T15:06:04.947Z",
-      "durationMs": 14684,
+      "startedAt": "2026-10-28T16:20:39.881Z",
+      "durationMs": 15245,
       "ok": true,
       "detail": ""
     },
     {
       "name": "theme",
-      "startedAt": "2026-10-28T15:06:19.631Z",
-      "durationMs": 1259,
+      "startedAt": "2026-10-28T16:20:55.126Z",
+      "durationMs": 1284,
       "ok": true,
       "detail": ""
     },
     {
       "name": "fonts",
-      "startedAt": "2026-10-28T15:06:20.890Z",
-      "durationMs": 4561,
+      "startedAt": "2026-10-28T16:20:56.410Z",
+      "durationMs": 3262,
       "ok": true,
       "detail": ""
     },
     {
       "name": "selfcheck",
-      "startedAt": "2026-10-28T15:06:25.451Z",
-      "durationMs": 2060,
+      "startedAt": "2026-10-28T16:20:59.672Z",
+      "durationMs": 2077,
       "ok": true,
       "detail": ""
     },
     {
       "name": "firstpaint",
-      "startedAt": "2026-10-28T15:06:27.511Z",
-      "durationMs": 834,
+      "startedAt": "2026-10-28T16:21:01.749Z",
+      "durationMs": 843,
       "ok": true,
       "detail": ""
     },
     {
       "name": "web",
-      "startedAt": "2026-10-28T15:06:28.345Z",
-      "durationMs": 1249,
+      "startedAt": "2026-10-28T16:21:02.592Z",
+      "durationMs": 1304,
       "ok": true,
       "detail": ""
     },
     {
       "name": "layout",
-      "startedAt": "2026-10-28T15:06:29.594Z",
-      "durationMs": 2837,
+      "startedAt": "2026-10-28T16:21:03.896Z",
+      "durationMs": 2902,
       "ok": true,
       "detail": ""
     },
     {
       "name": "style",
-      "startedAt": "2026-10-28T15:06:32.431Z",
-      "durationMs": 6426,
+      "startedAt": "2026-10-28T16:21:06.798Z",
+      "durationMs": 6516,
       "ok": true,
       "detail": ""
     },
     {
       "name": "wallpaper",
-      "startedAt": "2026-10-28T15:06:38.857Z",
-      "durationMs": 65829,
+      "startedAt": "2026-10-28T16:21:13.314Z",
+      "durationMs": 66449,
       "ok": true,
       "detail": ""
     },
     {
       "name": "visual",
-      "startedAt": "2026-10-28T15:07:44.686Z",
-      "durationMs": 19612,
+      "startedAt": "2026-10-28T16:22:19.763Z",
+      "durationMs": 19487,
       "ok": true,
       "detail": ""
     },
     {
       "name": "merged",
-      "startedAt": "2026-10-28T15:08:04.298Z",
-      "durationMs": 45695,
+      "startedAt": "2026-10-28T16:22:39.250Z",
+      "durationMs": 45829,
       "ok": true,
       "detail": ""
     },
     {
       "name": "perf",
-      "startedAt": "2026-10-28T15:08:49.993Z",
-      "durationMs": 328,
+      "startedAt": "2026-10-28T16:23:25.079Z",
+      "durationMs": 10003,
       "ok": true,
       "detail": ""
     },
     {
       "name": "restore",
-      "startedAt": "2026-10-28T15:08:50.321Z",
-      "durationMs": 2068,
+      "startedAt": "2026-10-28T16:23:35.082Z",
+      "durationMs": 2119,
       "ok": true,
       "detail": ""
     },
     {
       "name": "lifecycle",
-      "startedAt": "2026-10-28T15:08:52.389Z",
-      "durationMs": 3038,
+      "startedAt": "2026-10-28T16:23:37.201Z",
+      "durationMs": 3081,
       "ok": true,
       "detail": ""
     }
@@ -313,52 +313,52 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:00.148Z"
+      "at": "2026-10-28T16:20:34.059Z"
     },
     {
       "id": "lifecycle.install",
       "title": "official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle",
       "status": "pass",
-      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz → exit 0 in 166ms; dependency=file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
+      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz → exit 0 in 197ms; dependency=file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
       "evidence": {
         "command": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz",
-        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Personal/openprojects/dsh-livery/.pnpm-store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz\n\nDone in 59ms using pnpm v12.3.4\n",
-        "stderr": "dsh: initialized profile web at <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r6-final/web-rc4-home/profiles/web\n"
+        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Personal/openprojects/dsh-livery/.pnpm-store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz\n\nDone in 72ms using pnpm v12.3.4\n",
+        "stderr": "dsh: initialized profile web at <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r7-final/web-rc4-home/profiles/web\n"
       },
-      "at": "2026-10-28T15:06:00.325Z"
+      "at": "2026-10-28T16:20:34.267Z"
     },
     {
       "id": "lifecycle.profile-initialized",
       "title": "isolated profile initialized from the shipped web template",
       "status": "pass",
-      "detail": "home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r6-final/web-rc4-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r6-final/web-rc4-home/profiles/web; initialized=true; sha256=2623b7589bacf340aaea3a0345eff0d0eb87c5c1e65f610e2f9990749cd1b674",
-      "at": "2026-10-28T15:06:00.325Z"
+      "detail": "home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r7-final/web-rc4-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r7-final/web-rc4-home/profiles/web; initialized=true; sha256=95329add9cafc2b310c4be594fd2acd7ed811d29fb69663b90cdc15115cf3385",
+      "at": "2026-10-28T16:20:34.268Z"
     },
     {
       "id": "lifecycle.boot",
       "title": "`dsh --profile web --no-open --port 0` boots and prints its authenticated URL",
       "status": "pass",
-      "detail": "ready in 1833ms on port 52654; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
+      "detail": "ready in 1817ms on port 62930; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
       "evidence": {
-        "url": "http://127.0.0.1:52654/?token=<redacted>",
-        "readyMs": 1833,
-        "pid": 20785
+        "url": "http://127.0.0.1:62930/?token=<redacted>",
+        "readyMs": 1817,
+        "pid": 57659
       },
-      "at": "2026-10-28T15:06:02.158Z"
+      "at": "2026-10-28T16:20:36.085Z"
     },
     {
       "id": "lifecycle.boot-warnings",
       "title": "boot log has no skipped-bundle or compatibility warnings",
       "status": "pass",
       "detail": "no skipped/incompatible/warning lines in the boot log",
-      "at": "2026-10-28T15:06:02.158Z"
+      "at": "2026-10-28T16:20:36.085Z"
     },
     {
       "id": "env.browser",
       "title": "Chrome launches through playwright-core (no automatic browser download)",
       "status": "pass",
       "detail": "Chrome 156.0.8078.48 (explicit Chrome-for-Testing executable); playwright-core 1.63.0 at <home>/Personal/openprojects/dsh-livery/node_modules/playwright-core/index.mjs",
-      "at": "2026-10-28T15:06:02.547Z"
+      "at": "2026-10-28T16:20:36.747Z"
     },
     {
       "id": "env.browser-version",
@@ -372,46 +372,46 @@
           "156.0.8078.48"
         ]
       },
-      "at": "2026-10-28T15:06:02.547Z"
+      "at": "2026-10-28T16:20:36.747Z"
     },
     {
       "id": "boot.token-exchange",
       "title": "launch token is exchanged for the signed cookie and dropped from the URL",
       "status": "pass",
-      "detail": "final url http://127.0.0.1:52654/; navigation 173ms",
+      "detail": "final url http://127.0.0.1:62930/; navigation 123ms",
       "evidence": {
-        "requestedUrl": "http://127.0.0.1:52654/?token=<redacted>",
-        "finalUrl": "http://127.0.0.1:52654/",
+        "requestedUrl": "http://127.0.0.1:62930/?token=<redacted>",
+        "finalUrl": "http://127.0.0.1:62930/",
         "tokenDropped": true,
-        "navigationMs": 173
+        "navigationMs": 123
       },
-      "at": "2026-10-28T15:06:02.993Z"
+      "at": "2026-10-28T16:20:37.040Z"
     },
     {
       "id": "boot.graph-entry",
       "title": "__DSH_BOOT__ lists client entry \"dsh-livery\"",
       "status": "pass",
-      "detail": "url plugins/??dsh-livery/client.js&rev=e892cd3af825",
+      "detail": "url plugins/??dsh-livery/client.js&rev=60bf336c2ea9",
       "evidence": {
         "entry": {
           "id": "dsh-livery",
-          "url": "plugins/??dsh-livery/client.js&rev=e892cd3af825"
+          "url": "plugins/??dsh-livery/client.js&rev=60bf336c2ea9"
         }
       },
-      "at": "2026-10-28T15:06:03.075Z"
+      "at": "2026-10-28T16:20:37.146Z"
     },
     {
       "id": "bundle.serves-client-js",
       "title": "plugin client bundle (boot-graph URL) is served as JavaScript",
       "status": "pass",
-      "detail": "GET /plugins/??dsh-livery/client.js&rev=e892cd3af825 → 200 text/javascript; charset=utf-8 (212658 bytes)",
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=60bf336c2ea9 → 200 text/javascript; charset=utf-8 (213208 bytes)",
       "evidence": {
-        "url": "http://127.0.0.1:52654/plugins/??dsh-livery/client.js&rev=e892cd3af825",
+        "url": "http://127.0.0.1:62930/plugins/??dsh-livery/client.js&rev=60bf336c2ea9",
         "status": 200,
         "contentType": "text/javascript; charset=utf-8",
-        "bytes": 212658
+        "bytes": 213208
       },
-      "at": "2026-10-28T15:06:03.081Z"
+      "at": "2026-10-28T16:20:37.156Z"
     },
     {
       "id": "bundle.requires-rev",
@@ -419,10 +419,10 @@
       "status": "pass",
       "detail": "GET graph URL without rev → 404",
       "evidence": {
-        "url": "http://127.0.0.1:52654/plugins/??dsh-livery/client.js",
+        "url": "http://127.0.0.1:62930/plugins/??dsh-livery/client.js",
         "status": 404
       },
-      "at": "2026-10-28T15:06:03.081Z"
+      "at": "2026-10-28T16:20:37.156Z"
     },
     {
       "id": "bundle.canonical-route",
@@ -432,50 +432,50 @@
       "evidence": {
         "canonicalStatus": 404,
         "canonicalNoRevStatus": 404,
-        "rev": "e892cd3af825",
-        "entryUrl": "http://127.0.0.1:52654/plugins/??dsh-livery/client.js&rev=e892cd3af825"
+        "rev": "60bf336c2ea9",
+        "entryUrl": "http://127.0.0.1:62930/plugins/??dsh-livery/client.js&rev=60bf336c2ea9"
       },
-      "at": "2026-10-28T15:06:03.081Z"
+      "at": "2026-10-28T16:20:37.156Z"
     },
     {
       "id": "bundle.gzip-budget",
       "title": "client bundle gzip stays within the final 56 KiB performance budget (host peers excluded)",
       "status": "pass",
-      "detail": "55228 bytes gzip / 212658 bytes raw (budget 57344 B / 56 KiB)",
+      "detail": "55326 bytes gzip / 213208 bytes raw (budget 57344 B / 56 KiB)",
       "evidence": {
-        "gzipBytes": 55228,
-        "rawBytes": 212658,
+        "gzipBytes": 55326,
+        "rawBytes": 213208,
         "budgetBytes": 57344
       },
-      "at": "2026-10-28T15:06:03.086Z"
+      "at": "2026-10-28T16:20:37.162Z"
     },
     {
       "id": "handshake.stock-no-rows",
       "title": "stock default injects no first-frame rows (fail-safe stock)",
       "status": "pass",
       "detail": "__DSH_LIVERY_BOOT__ absent; skin style elements=0; body attribute=null",
-      "at": "2026-10-28T15:06:03.271Z"
+      "at": "2026-10-28T16:20:37.360Z"
     },
     {
       "id": "handshake.boot-global",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-10-28T15:06:03.271Z"
+      "at": "2026-10-28T16:20:37.360Z"
     },
     {
       "id": "handshake.echo",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-10-28T15:06:03.271Z"
+      "at": "2026-10-28T16:20:37.360Z"
     },
     {
       "id": "handshake.catalog-url",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-10-28T15:06:03.271Z"
+      "at": "2026-10-28T16:20:37.360Z"
     },
     {
       "id": "trust.no-cookie-401",
@@ -485,7 +485,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-10-28T15:06:03.305Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.wrong-token-rejected",
@@ -495,7 +495,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.token-exchange-303",
@@ -506,22 +506,22 @@
         "status": 303,
         "location": "./"
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.cookie-issued",
       "title": "browser trust: cookie issued",
       "status": "pass",
-      "detail": "Set-Cookie: Max-Age=2592000; Path=/; Expires=Fri, 27 Nov 2026 15:06:03 GMT; HttpOnly; SameSite=Strict",
+      "detail": "Set-Cookie: Max-Age=2592000; Path=/; Expires=Fri, 27 Nov 2026 16:20:37 GMT; HttpOnly; SameSite=Strict",
       "evidence": {
         "cookieNames": [
-          "dsh-auth-S-wInjbQZZ4Hn-4P2rAWALRl_IuBzKhlSv6TF9H9Qdk"
+          "dsh-auth-pfpFLcD-oF0u3Qp4r1MjW20-KAPqU1kT25QDk7p5YrU"
         ],
         "setCookie": [
-          "dsh-auth-S-wInjbQZZ4Hn-4P2rAWALRl_IuBzKhlSv6TF9H9Qdk=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6NTI2NTQiLCJpc3N1ZWRBdCI6MTc5MzE5OTk2MzI4MiwiZXhwaXJlc0F0IjoxNzk1NzkxOTYzMjgyfQ.DoRVxJxOw6eWXGoS5kJ0ABvOSY2RvOmbaPtqHTwWM4U; Max-Age=2592000; Path=/; Expires=Fri, 27 Nov 2026 15:06:03 GMT; HttpOnly; SameSite=Strict"
+          "dsh-auth-pfpFLcD-oF0u3Qp4r1MjW20-KAPqU1kT25QDk7p5YrU=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6NjI5MzAiLCJpc3N1ZWRBdCI6MTc5MzIwNDQzNzM3NCwiZXhwaXJlc0F0IjoxNzk1Nzk2NDM3Mzc0fQ.aeIt3gVcq_Ol8B8qvtTQPcoPszPPc9ncP09ZPlu0qs4; Max-Age=2592000; Path=/; Expires=Fri, 27 Nov 2026 16:20:37 GMT; HttpOnly; SameSite=Strict"
         ]
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.cookie-200",
@@ -533,7 +533,7 @@
         "contentType": "text/html; charset=utf-8",
         "bytes": 38284
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.bad-host-index-refused",
@@ -543,7 +543,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.bad-host-api-403",
@@ -553,7 +553,7 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.cross-origin-403",
@@ -563,7 +563,7 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "trust.cross-site-403",
@@ -573,21 +573,21 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-10-28T15:06:03.306Z"
+      "at": "2026-10-28T16:20:37.393Z"
     },
     {
       "id": "stock.no-body-attribute",
       "title": "stock boot leaves body without data-dsh-livery",
       "status": "pass",
       "detail": "data-dsh-livery=null",
-      "at": "2026-10-28T15:06:03.316Z"
+      "at": "2026-10-28T16:20:37.407Z"
     },
     {
       "id": "stock.no-livery-styles",
       "title": "stock boot injects no Livery skin style elements or handshake rows",
       "status": "pass",
       "detail": "0 skin style element(s); __DSH_LIVERY_BOOT__ present=false",
-      "at": "2026-10-28T15:06:03.316Z"
+      "at": "2026-10-28T16:20:37.407Z"
     },
     {
       "id": "stock.tokens-recorded",
@@ -599,28 +599,28 @@
         "--dsw-alias-label-primary": "#0f1115",
         "--dsw-alias-border-l1": "#0000000a"
       },
-      "at": "2026-10-28T15:06:03.316Z"
+      "at": "2026-10-28T16:20:37.407Z"
     },
     {
       "id": "stock.host-theme-source",
       "title": "host theme source is system (preference untouched)",
       "status": "pass",
       "detail": "html[data-ds-theme-source]=system body[data-ds-dark-theme]=null",
-      "at": "2026-10-28T15:06:03.316Z"
+      "at": "2026-10-28T16:20:37.407Z"
     },
     {
       "id": "stock.no-theme-write",
       "title": "no ui-theme row was written to the profile patch",
       "status": "pass",
       "detail": "no ui-theme row in profile patch",
-      "at": "2026-10-28T15:06:03.317Z"
+      "at": "2026-10-28T16:20:37.407Z"
     },
     {
       "id": "nav.sidebar-entry-present-stock",
       "title": "Livery sidebar row is present on a stock start (client navigation registration)",
       "status": "pass",
       "detail": "row #2 label \"视觉风格\" panellistSlot=true icon=true selected=false",
-      "at": "2026-10-28T15:06:03.317Z"
+      "at": "2026-10-28T16:20:37.408Z"
     },
     {
       "id": "catalog.serves-json",
@@ -628,9 +628,9 @@
       "status": "pass",
       "detail": "status 200, content-type application/json, cache-control no-store",
       "evidence": {
-        "url": "http://127.0.0.1:52654/livery/api/catalog"
+        "url": "http://127.0.0.1:62930/livery/api/catalog"
       },
-      "at": "2026-10-28T15:06:04.901Z"
+      "at": "2026-10-28T16:20:39.826Z"
     },
     {
       "id": "catalog.schema",
@@ -645,7 +645,7 @@
         "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec",
         "previewsBase": "/livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/"
       },
-      "at": "2026-10-28T15:06:04.901Z"
+      "at": "2026-10-28T16:20:39.826Z"
     },
     {
       "id": "catalog.certified-identity",
@@ -681,14 +681,14 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:04.901Z"
+      "at": "2026-10-28T16:20:39.826Z"
     },
     {
       "id": "catalog.cache-control-no-store",
       "title": "catalog is not cached",
       "status": "pass",
       "detail": "cache-control: no-store",
-      "at": "2026-10-28T15:06:04.901Z"
+      "at": "2026-10-28T16:20:39.826Z"
     },
     {
       "id": "catalog.gallery-size",
@@ -723,7 +723,7 @@
           "cinnabar"
         ]
       },
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.token-coverage",
@@ -736,28 +736,28 @@
         "missing": 0,
         "required": 3456
       },
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.contrast-zero-failures",
       "title": "compiled catalog has 0 contrast failures",
       "status": "pass",
       "detail": "all liveries report contrastFailures=0",
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.css-safety-clean",
       "title": "compiled catalog has 0 !important / 0 hash selectors",
       "status": "pass",
       "detail": "all liveries report cssSafety pass",
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.livery-hashes",
       "title": "every compiled livery cssHash equals sha256(tokens+typography+layout)",
       "status": "pass",
       "detail": "24 livery hashes verified",
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.css-budget",
@@ -868,7 +868,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:04.902Z"
+      "at": "2026-10-28T16:20:39.827Z"
     },
     {
       "id": "catalog.style-vocabulary",
@@ -894,7 +894,7 @@
           "border": 12
         }
       },
-      "at": "2026-10-28T15:06:04.903Z"
+      "at": "2026-10-28T16:20:39.828Z"
     },
     {
       "id": "catalog.capabilities",
@@ -987,7 +987,7 @@
           "host-font-role-hooks": true
         }
       },
-      "at": "2026-10-28T15:06:04.903Z"
+      "at": "2026-10-28T16:20:39.828Z"
     },
     {
       "id": "previews.assets-served",
@@ -996,30 +996,30 @@
       "detail": "96/96 preview assets HTTP 200 image/svg+xml under /livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/ (24 liveries × zh/en × light/dark)",
       "evidence": {
         "base": "/livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/",
-        "sample": "http://127.0.0.1:52654/livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/fjord-zh-light.svg"
+        "sample": "http://127.0.0.1:62930/livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/fjord-zh-light.svg"
       },
-      "at": "2026-10-28T15:06:04.947Z"
+      "at": "2026-10-28T16:20:39.881Z"
     },
     {
       "id": "previews.unknown-404",
       "title": "unknown preview asset returns 404",
       "status": "pass",
       "detail": "unknown file → 404",
-      "at": "2026-10-28T15:06:04.947Z"
+      "at": "2026-10-28T16:20:39.881Z"
     },
     {
       "id": "previews.profile-isolation",
       "title": "previews are served per catalog profile; another profile directory is not exposed",
       "status": "skip",
       "detail": "both certified adapters share exactly one catalog profile — cross-profile isolation is not applicable",
-      "at": "2026-10-28T15:06:04.947Z"
+      "at": "2026-10-28T16:20:39.881Z"
     },
     {
       "id": "catalog.get-only-405",
       "title": "catalog route is GET-only (POST → 405)",
       "status": "pass",
       "detail": "POST /livery/api/catalog → 405",
-      "at": "2026-10-28T15:06:04.947Z"
+      "at": "2026-10-28T16:20:39.881Z"
     },
     {
       "id": "nav.sidebar-entry",
@@ -1082,21 +1082,21 @@
           "Visual Style"
         ]
       },
-      "at": "2026-10-28T15:06:05.658Z"
+      "at": "2026-10-28T16:20:40.653Z"
     },
     {
       "id": "nav.row-order",
       "title": "Livery row comes after the existing plugin rows (order 30)",
       "status": "pass",
       "detail": "row #2; existing plugin rows at [0,1]; rows: 插件, 自动化任务, 视觉风格, 更多",
-      "at": "2026-10-28T15:06:05.658Z"
+      "at": "2026-10-28T16:20:40.653Z"
     },
     {
       "id": "nav.above-workspaces",
       "title": "Livery row sits above the workspace section in the sidebar",
       "status": "pass",
       "detail": "navBeforeWorkspaces=true rowTop=196 workspacesTop=0 workspacesHeight=0",
-      "at": "2026-10-28T15:06:05.658Z"
+      "at": "2026-10-28T16:20:40.653Z"
     },
     {
       "id": "nav.main-panel",
@@ -1117,14 +1117,14 @@
           "bodyTextStart": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n视觉风格\n更多\n工作区\n默认工作区\n新会话\n更多\n视觉风格\n\n挑选配色、字体和界面细节。\n\n视觉风格\n壁纸\n当前风格\n浅色与深色\n当前视觉风格\n默认外观\nDSH 自带的默认外观。\nID\nstock\n全部\n静谧\n自然\n明亮\n复古\n霓虹\n深色\n更多筛选\n预览语言\n跟随 DSH\n中文\nE"
         }
       },
-      "at": "2026-10-28T15:06:05.660Z"
+      "at": "2026-10-28T16:20:40.662Z"
     },
     {
       "id": "nav.conversation-hidden",
       "title": "the conversation is replaced while the Livery panel is selected",
       "status": "pass",
       "detail": "composer visible=false; conversation copy visible=false; body starts: 新会话 ⌥ ⌘ N 插件 自动化任务 视觉风格 更多 工作区 默认工作区 新会话 更多 视觉风格 挑选配色、字体和界面细节。 视觉风格 壁纸 当前风格 浅色与深色 当前视觉风格 默认外观 DSH 自带的默认外观。 ID stock 全部 静",
-      "at": "2026-10-28T15:06:05.660Z"
+      "at": "2026-10-28T16:20:40.662Z"
     },
     {
       "id": "nav.settings-section-absent",
@@ -1139,7 +1139,7 @@
           "Agent 预设"
         ]
       },
-      "at": "2026-10-28T15:06:06.683Z"
+      "at": "2026-10-28T16:20:41.852Z"
     },
     {
       "id": "nav.settings-open-path",
@@ -1149,21 +1149,21 @@
       "evidence": {
         "via": "account-menu"
       },
-      "at": "2026-10-28T15:06:06.683Z"
+      "at": "2026-10-28T16:20:41.852Z"
     },
     {
       "id": "nav.panel-still-selected",
       "title": "closing the settings dialog returns to the selected Livery panel",
       "status": "pass",
       "detail": "panel visible=true; selected row \"视觉风格\"",
-      "at": "2026-10-28T15:06:06.714Z"
+      "at": "2026-10-28T16:20:41.908Z"
     },
     {
       "id": "copy.selfcheck-labels-zh",
       "title": "zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码)",
       "status": "pass",
       "detail": "missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.4-r1 协议校验码: 18e63d003897 插件版本: 0.1.3 宿主版本: 0.2.1-rc.4 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec 配置中的视觉风格: stock 实际应用的视觉",
-      "at": "2026-10-28T15:06:06.750Z"
+      "at": "2026-10-28T16:20:42.028Z"
     },
     {
       "id": "gallery.cards",
@@ -1270,28 +1270,28 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:07.018Z"
+      "at": "2026-10-28T16:20:42.271Z"
     },
     {
       "id": "gallery.aria-label",
       "title": "gallery region exposes the renamed accessible label",
       "status": "pass",
       "detail": "aria-label=\"视觉风格画廊\" (expected \"视觉风格画廊\")",
-      "at": "2026-10-28T15:06:07.019Z"
+      "at": "2026-10-28T16:20:42.273Z"
     },
     {
       "id": "gallery.thumbnails",
       "title": "every livery card shows a loaded preview thumbnail",
       "status": "pass",
       "detail": "24/24 thumbs, broken: none",
-      "at": "2026-10-28T15:06:07.020Z"
+      "at": "2026-10-28T16:20:42.273Z"
     },
     {
       "id": "gallery.no-error-state",
       "title": "gallery is not in an error/catalog-unavailable state",
       "status": "pass",
       "detail": "0 livery-error node(s)",
-      "at": "2026-10-28T15:06:07.020Z"
+      "at": "2026-10-28T16:20:42.274Z"
     },
     {
       "id": "previewLocale.tab-present",
@@ -1324,21 +1324,21 @@
         },
         "hostPreviewLocale": "zh"
       },
-      "at": "2026-10-28T15:06:07.062Z"
+      "at": "2026-10-28T16:20:42.339Z"
     },
     {
       "id": "previewLocale.tab-labels",
       "title": "the segmented control labels and hint match the host locale copy",
       "status": "pass",
       "detail": "texts=[follow:\"跟随 DSH\", zh:\"中文\", en:\"English\"]; title=\"只影响预览图；应用后的字体仍跟随 DSH 当前语言。\" (expected \"只影响预览图；应用后的字体仍跟随 DSH 当前语言。\")",
-      "at": "2026-10-28T15:06:07.062Z"
+      "at": "2026-10-28T16:20:42.339Z"
     },
     {
       "id": "copy.state-strings",
       "title": "acceptance label constants match the round-12 rewritten copy for the non-happy-path states (unit-covered)",
       "status": "pass",
       "detail": "zh.catalogUnavailable=\"视觉风格暂时无法加载\"; zh.writeRefused=\"宿主没有保存这套视觉风格。\"; en.catalogUnavailable=\"Visual styles are unavailable right now\"; en.writeRefused=\"The host did not save this visual style.\"",
-      "at": "2026-10-28T15:06:07.063Z"
+      "at": "2026-10-28T16:20:42.339Z"
     },
     {
       "id": "previewLocale.default-follow",
@@ -1356,42 +1356,42 @@
         ],
         "hostPreviewLocale": "zh"
       },
-      "at": "2026-10-28T15:06:07.067Z"
+      "at": "2026-10-28T16:20:42.344Z"
     },
     {
       "id": "previewLocale.switch-en",
       "title": "switching the preview language to English pins every thumbnail to -en- SVG URLs",
       "status": "pass",
       "detail": "24 thumbs; -en-=24; pressed=follow,zh,en*",
-      "at": "2026-10-28T15:06:07.160Z"
+      "at": "2026-10-28T16:20:42.457Z"
     },
     {
       "id": "previewLocale.switch-zh",
       "title": "switching the preview language to 中文 pins every thumbnail to -zh- SVG URLs",
       "status": "pass",
       "detail": "24 thumbs; -zh-=24; pressed=follow,zh*,en",
-      "at": "2026-10-28T15:06:07.246Z"
+      "at": "2026-10-28T16:20:42.549Z"
     },
     {
       "id": "previewLocale.follow-restores",
       "title": "switching back to Follow DSH restores thumbnails to the host preview locale without changing card copy",
       "status": "pass",
       "detail": "follow pressed=true; thumb locales=[\"zh\"]; card copy unchanged while pinned=true",
-      "at": "2026-10-28T15:06:07.280Z"
+      "at": "2026-10-28T16:20:42.579Z"
     },
     {
       "id": "gallery.page-tabs",
       "title": "visual studio exposes 视觉风格 / 壁纸 page tabs with the style tab selected by default",
       "status": "pass",
       "detail": "tabs=[{\"id\":\"style\",\"role\":\"tab\",\"selected\":true,\"text\":\"视觉风格\"},{\"id\":\"wallpaper\",\"role\":\"tab\",\"selected\":false,\"text\":\"壁纸\"}]; stylePanel=true; wallpaperPanel=false; expected texts 视觉风格|壁纸",
-      "at": "2026-10-28T15:06:07.281Z"
+      "at": "2026-10-28T16:20:42.580Z"
     },
     {
       "id": "gallery.family-chips",
       "title": "primary filter row shows 全部 + six family chips in display order",
       "status": "pass",
       "detail": "chips=all:全部*, calm:静谧, nature:自然, light:明亮, retro:复古, vivid:霓虹, dark:深色",
-      "at": "2026-10-28T15:06:07.281Z"
+      "at": "2026-10-28T16:20:42.580Z"
     },
     {
       "id": "gallery.family-sections",
@@ -1446,126 +1446,126 @@
           "dark": 3
         }
       },
-      "at": "2026-10-28T15:06:07.281Z"
+      "at": "2026-10-28T16:20:42.580Z"
     },
     {
       "id": "gallery.family-mapping",
       "title": "family assignment follows the nature→calm→light→retro→vivid→dark tag priority for every style",
       "status": "pass",
       "detail": "24/24 cards mapped to the priority-picked family",
-      "at": "2026-10-28T15:06:07.281Z"
+      "at": "2026-10-28T16:20:42.580Z"
     },
     {
       "id": "gallery.more-filters",
       "title": "更多筛选 reveals the 16 tag chips and collapses again",
       "status": "pass",
       "detail": "more-filters found=true; expanded=false; tag chips visible=0",
-      "at": "2026-10-28T15:06:07.281Z"
+      "at": "2026-10-28T16:20:42.580Z"
     },
     {
       "id": "gallery.more-filters-expanded",
       "title": "expanded 更多筛选 shows the tag chips (aria-expanded=true)",
       "status": "pass",
       "detail": "expanded=true; tag chips=16; toggle text=\"收起筛选\"",
-      "at": "2026-10-28T15:06:07.315Z"
+      "at": "2026-10-28T16:20:42.613Z"
     },
     {
       "id": "gallery.more-filters-collapsed",
       "title": "collapsing 更多筛选 hides the tag chips again",
       "status": "pass",
       "detail": "expanded=false; tag chips=0",
-      "at": "2026-10-28T15:06:07.347Z"
+      "at": "2026-10-28T16:20:42.645Z"
     },
     {
       "id": "gallery.family-filter",
       "title": "selecting a family chip narrows the gallery to that one family section",
       "status": "pass",
       "detail": "sections=[nature:3]; cards=3 (expected nature=3)",
-      "at": "2026-10-28T15:06:07.585Z"
+      "at": "2026-10-28T16:20:42.880Z"
     },
     {
       "id": "gallery.family-keyboard",
       "title": "roving focus crosses family-section boundaries as one flattened list",
       "status": "pass",
       "detail": "focus after ArrowRight=\"moss\" (expected first nature card \"moss\")",
-      "at": "2026-10-28T15:06:08.022Z"
+      "at": "2026-10-28T16:20:43.316Z"
     },
     {
       "id": "search.accessible-name",
       "title": "gallery search exposes the renamed accessible name",
       "status": "pass",
       "detail": "search accessible name \"搜索视觉风格\" (expected \"搜索视觉风格\")",
-      "at": "2026-10-28T15:06:08.032Z"
+      "at": "2026-10-28T16:20:43.326Z"
     },
     {
       "id": "search.name",
       "title": "search: localized name filters to its card",
       "status": "pass",
       "detail": "query \"峡湾\" → 1 card(s): fjord",
-      "at": "2026-10-28T15:06:08.392Z"
+      "at": "2026-10-28T16:20:43.690Z"
     },
     {
       "id": "search.id",
       "title": "search: livery id filters to its card",
       "status": "pass",
       "detail": "query \"fjord\" → 1 card(s): fjord",
-      "at": "2026-10-28T15:06:08.751Z"
+      "at": "2026-10-28T16:20:44.049Z"
     },
     {
       "id": "search.tag",
       "title": "search: localized tag label filters the gallery",
       "status": "pass",
       "detail": "query \"安静\" → 7 card(s): fjord, linen, nord, catppuccin, moss, everforest, celadon",
-      "at": "2026-10-28T15:06:09.114Z"
+      "at": "2026-10-28T16:20:44.409Z"
     },
     {
       "id": "search.empty-state",
       "title": "search-empty state renders for an unknown query",
       "status": "pass",
       "detail": "0 card(s) remain; panel text: 视觉风格 挑选配色、字体和界面细节。 视觉风格 壁纸 当前风格 浅色与深色 当前视觉风格 默认外观 DSH 自带的默认外观。 ID stock 清空搜索 全部 静谧 自然 明亮 复古 霓虹 深色 更多筛选 预览语言 跟随 DSH 中文 English 可用视觉风格 0 种视觉风格 没有匹配的视觉风格换一个名称、ID 或标签试试。清除筛选 用方向键切换视觉风格，按回车预览。 操作 恢复默认外观 自检 展开自检 DSH Livery 0.1",
-      "at": "2026-10-28T15:06:09.540Z"
+      "at": "2026-10-28T16:20:44.822Z"
     },
     {
       "id": "keyboard.arrow-right",
       "title": "ArrowRight moves roving focus to the next card",
       "status": "pass",
       "detail": "focus moved to \"plum\" (expected \"plum\")",
-      "at": "2026-10-28T15:06:10.067Z"
+      "at": "2026-10-28T16:20:45.344Z"
     },
     {
       "id": "keyboard.home",
       "title": "Home moves roving focus to the first card",
       "status": "pass",
       "detail": "focus is \"fjord\"",
-      "at": "2026-10-28T15:06:10.190Z"
+      "at": "2026-10-28T16:20:45.468Z"
     },
     {
       "id": "keyboard.end",
       "title": "End moves roving focus to the last card",
       "status": "pass",
       "detail": "focus is \"one-dark\" (expected \"one-dark\")",
-      "at": "2026-10-28T15:06:10.314Z"
+      "at": "2026-10-28T16:20:45.592Z"
     },
     {
       "id": "preview.previewing",
       "title": "previewing a different skin sets the preview attribute and tokens",
       "status": "pass",
       "detail": "body attr=plum tokens={\"--dsw-alias-bg-base\":\"#f7f2f5\",\"--dsw-alias-label-primary\":\"#2a1c25\",\"--dsw-alias-border-l1\":\"#0000000a\"} expected=[\"rgb(247, 242, 245)\",\"rgb(42, 28, 37)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-10-28T15:06:10.463Z"
+      "at": "2026-10-28T16:20:45.759Z"
     },
     {
       "id": "preview.style-element",
       "title": "preview uses a transient Livery style element",
       "status": "pass",
       "detail": "0 → 1 livery style element(s)",
-      "at": "2026-10-28T15:06:10.463Z"
+      "at": "2026-10-28T16:20:45.759Z"
     },
     {
       "id": "preview.card-state",
       "title": "the previewed card reports the previewing state",
       "status": "pass",
       "detail": "data-state=preview",
-      "at": "2026-10-28T15:06:10.464Z"
+      "at": "2026-10-28T16:20:45.760Z"
     },
     {
       "id": "preview.cancel",
@@ -1576,70 +1576,70 @@
         "beforeAttr": null,
         "afterAttr": null
       },
-      "at": "2026-10-28T15:06:10.655Z"
+      "at": "2026-10-28T16:20:45.971Z"
     },
     {
       "id": "preview.cancel-style",
       "title": "Cancel removes the transient preview style element",
       "status": "pass",
       "detail": "1 → 0 livery style element(s)",
-      "at": "2026-10-28T15:06:10.655Z"
+      "at": "2026-10-28T16:20:45.971Z"
     },
     {
       "id": "previewLocale.apply-copy",
       "title": "Apply control copy is unchanged while a preview language is pinned",
       "status": "pass",
       "detail": "pinned=true; apply text \"应用此视觉风格\" (expected \"应用此视觉风格\")",
-      "at": "2026-10-28T15:06:10.716Z"
+      "at": "2026-10-28T16:20:46.031Z"
     },
     {
       "id": "apply.commits",
       "title": "Apply commits the previewed skin as the active livery",
       "status": "pass",
       "detail": "body attr=fjord (expected fjord)",
-      "at": "2026-10-28T15:06:10.761Z"
+      "at": "2026-10-28T16:20:46.081Z"
     },
     {
       "id": "apply.card-state",
       "title": "the applied card reports the current state",
       "status": "pass",
       "detail": "data-state=active",
-      "at": "2026-10-28T15:06:10.850Z"
+      "at": "2026-10-28T16:20:46.165Z"
     },
     {
       "id": "apply.previewbar-cleared",
       "title": "the transient preview bar is gone after Apply",
       "status": "pass",
       "detail": "0 preview bar(s) remain",
-      "at": "2026-10-28T15:06:10.856Z"
+      "at": "2026-10-28T16:20:46.166Z"
     },
     {
       "id": "panel.no-degraded-notice",
       "title": "optional-only capability fallbacks do not surface as a degraded notice on the Livery page (runtime stays ready)",
       "status": "pass",
       "detail": "0 livery-degraded notice(s) with all required capabilities available",
-      "at": "2026-10-28T15:06:10.862Z"
+      "at": "2026-10-28T16:20:46.167Z"
     },
     {
       "id": "panel.no-offline-notice",
       "title": "the Livery page is not in catalog-unavailable state",
       "status": "pass",
       "detail": "0 livery-offline notice(s)",
-      "at": "2026-10-28T15:06:10.866Z"
+      "at": "2026-10-28T16:20:46.169Z"
     },
     {
       "id": "copy.selfcheck-labels-zh-active",
       "title": "zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量)",
       "status": "pass",
       "detail": "missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.1-rc.4-r1 协议校验码: 18e63d003897 插件版本: 0.1.3 宿主版本: 0.2.1-rc.4 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 宿主能力 10 项中",
-      "at": "2026-10-28T15:06:10.950Z"
+      "at": "2026-10-28T16:20:46.251Z"
     },
     {
       "id": "previewLocale.apply-with-pinned",
       "title": "a pinned preview language survives Apply (thumbnails only) and the applied state is otherwise unchanged",
       "status": "pass",
       "detail": "en pressed=true; thumb locales=[\"en\"]",
-      "at": "2026-10-28T15:06:11.185Z"
+      "at": "2026-10-28T16:20:46.480Z"
     },
     {
       "id": "apply.one-mutation",
@@ -1654,14 +1654,14 @@
         "updatedInPlace": false,
         "skinRow": "- id: livery\n  name: dsh-livery\n  config:\n    skinId: fjord\n"
       },
-      "at": "2026-10-28T15:06:11.264Z"
+      "at": "2026-10-28T16:20:46.571Z"
     },
     {
       "id": "apply.persists",
       "title": "applied skin survives a hard reload (boot injection + client ready)",
       "status": "pass",
       "detail": "body attr=fjord handshake.skinId=fjord cssHash=sha256:cc8551943e49c…",
-      "at": "2026-10-28T15:06:11.489Z"
+      "at": "2026-10-28T16:20:46.976Z"
     },
     {
       "id": "handshake.applied-boot",
@@ -1683,7 +1683,7 @@
         "entryId": "livery",
         "diagnostics": []
       },
-      "at": "2026-10-28T15:06:11.489Z"
+      "at": "2026-10-28T16:20:46.976Z"
     },
     {
       "id": "handshake.certified-adapter",
@@ -1713,21 +1713,21 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:11.489Z"
+      "at": "2026-10-28T16:20:46.976Z"
     },
     {
       "id": "handshake.applied-skin",
       "title": "configured skin is echoed by the boot handshake",
       "status": "pass",
       "detail": "handshake.skinId=fjord (expected fjord)",
-      "at": "2026-10-28T15:06:11.489Z"
+      "at": "2026-10-28T16:20:46.976Z"
     },
     {
       "id": "nav.panel-after-reload",
       "title": "after a hard reload the Livery panel opens again from the sidebar row and shows the persisted skin",
       "status": "pass",
       "detail": "via=sidebar-panellist; panel visible=true; selected \"视觉风格\"",
-      "at": "2026-10-28T15:06:19.581Z"
+      "at": "2026-10-28T16:20:55.082Z"
     },
     {
       "id": "theme.light-tokens",
@@ -1746,28 +1746,28 @@
           "--dsw-alias-border-l1": "#0000000a"
         }
       },
-      "at": "2026-10-28T15:06:19.638Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "theme.tokens-change-with-skin",
       "title": "applying a livery changes the computed host tokens versus the stock baseline",
       "status": "pass",
       "detail": "livery light tokens [\"rgb(240, 243, 246)\",\"rgb(27, 39, 51)\",\"rgba(0, 0, 0, 0.04)\"] vs stock [\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-10-28T15:06:19.638Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "theme.host-preference",
       "title": "host theme source stays system and no ui-theme row is written",
       "status": "pass",
       "detail": "html[data-ds-theme-source]=system",
-      "at": "2026-10-28T15:06:19.638Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "theme.host-preference-file",
       "title": "profile patch contains no ui-theme writes",
       "status": "pass",
       "detail": "no ui-theme row",
-      "at": "2026-10-28T15:06:19.638Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "handshake.catalog-identity",
@@ -1788,7 +1788,7 @@
           "catalogProfile": "sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec"
         }
       },
-      "at": "2026-10-28T15:06:19.639Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "handshake.body-hash-catalog",
@@ -1799,7 +1799,7 @@
         "bodyHash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
         "catalogCssHash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e"
       },
-      "at": "2026-10-28T15:06:19.639Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "handshake.hash-equality",
@@ -1829,7 +1829,7 @@
           "309d613d1cb0547ac048d38816e6f2c0432070909341ec688ddc8c10bcd197eb"
         ]
       },
-      "at": "2026-10-28T15:06:19.639Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "handshake.hash-style-text",
@@ -1859,7 +1859,7 @@
           "309d613d1cb0547ac048d38816e6f2c0432070909341ec688ddc8c10bcd197eb"
         ]
       },
-      "at": "2026-10-28T15:06:19.639Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "handshake.boot-style-adopted",
@@ -1889,7 +1889,7 @@
           "309d613d1cb0547ac048d38816e6f2c0432070909341ec688ddc8c10bcd197eb"
         ]
       },
-      "at": "2026-10-28T15:06:19.639Z"
+      "at": "2026-10-28T16:20:55.136Z"
     },
     {
       "id": "css.token-scoping",
@@ -1901,14 +1901,14 @@
         "ruleCount": 0,
         "errors": []
       },
-      "at": "2026-10-28T15:06:19.640Z"
+      "at": "2026-10-28T16:20:55.138Z"
     },
     {
       "id": "css.no-important",
       "title": "Livery CSS contains 0 !important",
       "status": "pass",
       "detail": "0 occurrence(s)",
-      "at": "2026-10-28T15:06:19.640Z"
+      "at": "2026-10-28T16:20:55.138Z"
     },
     {
       "id": "css.no-hash-selectors",
@@ -1919,7 +1919,7 @@
         "ruleCount": 0,
         "errors": []
       },
-      "at": "2026-10-28T15:06:19.640Z"
+      "at": "2026-10-28T16:20:55.138Z"
     },
     {
       "id": "theme.dark-tokens",
@@ -1938,14 +1938,14 @@
           "--dsw-alias-border-l1": "#ffffff0f"
         }
       },
-      "at": "2026-10-28T15:06:19.681Z"
+      "at": "2026-10-28T16:20:55.177Z"
     },
     {
       "id": "theme.light-restored",
       "title": "returning to light restores exactly the light token branch",
       "status": "pass",
       "detail": "tokens={\"--dsw-alias-bg-base\":\"#f0f3f6\",\"--dsw-alias-label-primary\":\"#1b2733\",\"--dsw-alias-border-l1\":\"#0000000a\"}",
-      "at": "2026-10-28T15:06:19.870Z"
+      "at": "2026-10-28T16:20:55.363Z"
     },
     {
       "id": "theme.forced-colors",
@@ -1958,14 +1958,14 @@
         "bg": "rgb(255, 255, 255)",
         "color": "rgb(0, 0, 0)"
       },
-      "at": "2026-10-28T15:06:20.231Z"
+      "at": "2026-10-28T16:20:55.718Z"
     },
     {
       "id": "web.multi-tab",
       "title": "a second tab loads the same committed livery",
       "status": "pass",
       "detail": "tab2 attr=fjord tokens={\"--dsw-alias-bg-base\":\"#f0f3f6\",\"--dsw-alias-label-primary\":\"#1b2733\",\"--dsw-alias-border-l1\":\"#0000000a\"}",
-      "at": "2026-10-28T15:06:20.832Z"
+      "at": "2026-10-28T16:20:56.352Z"
     },
     {
       "id": "fonts.zh-cjk",
@@ -2767,7 +2767,7 @@
         "791": "\"",
         "792": "}"
       },
-      "at": "2026-10-28T15:06:20.895Z"
+      "at": "2026-10-28T16:20:56.414Z"
     },
     {
       "id": "fonts.zh-role-hooks",
@@ -2779,14 +2779,14 @@
         "roleCode": "\"SFMono-Regular\",Consolas,\"Liberation Mono\",\"Noto Sans Mono CJK SC\",monospace",
         "resolvedCodeFamily": "\"SFMono-Regular\",Consolas,\"Liberation Mono\",\"Noto Sans Mono CJK SC\",monospace, \"SF Mono\", \"JetBrains Mono\", \"Fira Code\", Consolas, \"Liberation Mono\", Menlo, Courier, \"PingFang SC\", \"Microsoft YaHei\""
       },
-      "at": "2026-10-28T15:06:20.895Z"
+      "at": "2026-10-28T16:20:56.414Z"
     },
     {
       "id": "fonts.zh-document-check",
       "title": "document.fonts.check() finds a CJK family from the stack",
       "status": "pass",
       "detail": "document.fonts.check(14px \"Hiragino Sans GB\") = true",
-      "at": "2026-10-28T15:06:20.896Z"
+      "at": "2026-10-28T16:20:56.415Z"
     },
     {
       "id": "fonts.en-latin",
@@ -3523,21 +3523,21 @@
         "726": "\"",
         "727": "}"
       },
-      "at": "2026-10-28T15:06:24.388Z"
+      "at": "2026-10-28T16:20:58.635Z"
     },
     {
       "id": "locale.en-gallery",
       "title": "English shell shows the Livery sidebar entry and English panel copy",
       "status": "pass",
       "detail": "sidebar row label \"Visual Style\" (expected \"Visual Style\"); via=sidebar-panellist",
-      "at": "2026-10-28T15:06:24.836Z"
+      "at": "2026-10-28T16:20:59.083Z"
     },
     {
       "id": "previewLocale.en-follow",
       "title": "Follow DSH follows the English host locale for thumbnails",
       "status": "pass",
       "detail": "24 thumbs; locales=[\"en\"]; follow pressed=true",
-      "at": "2026-10-28T15:06:24.838Z"
+      "at": "2026-10-28T16:20:59.084Z"
     },
     {
       "id": "selfcheck.capabilities",
@@ -3611,14 +3611,14 @@
         },
         "text": "Self-check\nHide self-check\nStartup check\n\nLoaded\n\nAdapter: dsh-0.2.1-rc.4-r1\n\nContract hash: 18e63d003897\n\nPlugin: 0.1.3\n\nHost: 0.2.1-rc.4\n\nColor mode: Light\n\nLocale: en\n\nCatalog: Loaded\n\nCatalog profile: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec\n\nConfigured visual style: fjord\n\nApplied visual style: fjord\n\nHost capabilities\n\n7 of 10 available\n\nforced-colors\nAvailable\nhost-density-tokens\nUnavailable\nhost-font-family\nAvailable\nRequired\nhost-font-role-hooks\nAvailable\nhost-message-flow\nUnavailable\nhost-transcript-width\nUnavailable\nreduced-motion\nAvailable\nreduced-transparency\nAvailable\nsurface-material\nAvailable\ntheme-css\nAvailable\nRequired\nContrast\n\nAll 118 checks pass\n\nStyle coverage\n\n78 covered, 66 inherited, 0 missing\n\nCSS safety\n\nPass\n\n!important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0\n\nDegraded capabilities\n\ndensity (host-density-tokens): host\n\nconversation width (host-transcript-width): host\n\nThese optional layout features are missing on this host: density and conversation width. The host layout is used instead.\n\nDiagnostics\nCopy diagnostics\nDSH Livery (dsh-livery) diagnostics\n\n## Environment\nPlugin: 0.1.3\nAdapter: dsh-0.2.1-rc.4-r1\nContract hash: 18e63d003897\nHost: 0.2.1-rc.4\nCatalog profile: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec\nLocale: en\nColor mode: Light\n\n## Startup check\nStartup check: Loaded\n\n## Catalog\nCatalog: Loaded\n\n## Configuration\nConfigured visual style: fjord\nApplied visual style: fjord\n\n## Capabilities\nforced-colors: Available [Optional]\nhost-density-tokens: Unavailable [Optional]\nhost-font-family: Available [Required]\nhost-font-role-hooks: Available [Optional]\nhost-message-flow: Unavailable [Optional]\nhost-transcript-width: Unavailable [Optional]\nreduced-motion: Available [Optional]\nreduced-transparency: Available [Optional]\nsurface-material: Available [Optional]\ntheme-css: Available [Required]\n  7 of 10 available\n\n## Degraded capabilities\nhost-density-tokens: No documented spacing/control token settable at document level; density falls back to host. (fallback: host)\nhost-transcript-width: Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host. (fallback: host)\n\n## Contrast\nContrast: All 118 checks pass\nStyle coverage: 78 covered, 66 inherited, 0 missing\nCSS safety: Pass\n: !important rules: 0\n: Hashed class selectors: 0\n: Remote URLs: 0\n: Unscoped variables: 0\n\n## Boot diagnostics\n(none)"
       },
-      "at": "2026-10-28T15:06:26.922Z"
+      "at": "2026-10-28T16:21:01.120Z"
     },
     {
       "id": "copy.selfcheck-labels",
       "title": "self-check uses the round-12 plain-language labels",
       "status": "pass",
       "detail": "locale=en; missing=[]; panel=Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.1-rc.4-r1 Contract hash: 18e63d003897 Plugin: 0.1.3 Host: 0.2.1-rc.4 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1",
-      "at": "2026-10-28T15:06:26.922Z"
+      "at": "2026-10-28T16:21:01.120Z"
     },
     {
       "id": "selfcheck.style-coverage",
@@ -3649,7 +3649,7 @@
         },
         "coverageText": "Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.1-rc.4-r1 Contract hash: 18e63d003897 Plugin: 0.1.3 Host: 0.2.1-rc.4 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec Configured visual style: fjord Applied visual style: fjord Host capabilities 7 of 10 available forced-colors Available host-density-tokens Unavailable host-font-family Available Required host-font-role-hooks Available host-message-flow Unavailable host-transcript-width Unavailable reduced-motion Available reduced-transparency Available surface-material Available theme-css Available Required Contrast All 118 checks pass Style coverage 78 covered, 66 inherited, 0 missing CSS safety Pass !important rules: 0 · Hashed class selecto"
       },
-      "at": "2026-10-28T15:06:26.924Z"
+      "at": "2026-10-28T16:21:01.121Z"
     },
     {
       "id": "selfcheck.identity",
@@ -3659,35 +3659,35 @@
       "evidence": {
         "text": "Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.1-rc.4-r1 Contract hash: 18e63d003897 Plugin: 0.1.3 Host: 0.2.1-rc.4 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec Configured visual style: fjord Applied visual style: fjord Host capabilities 7 of 10 available forced-colors Available host-density-tokens Unavailable host-font-family Available Required host-font-role-hooks Available host-message-flow Unavailable host-transcript-width Unavailable reduced-motion Available reduced-transparency Available surface-material Available theme-css Available Required Contrast All 118 checks pass Style coverage 78 covered, 66 inherited, 0 missing CSS safety Pass !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0 Degraded capabilities density (host-density-tokens): host conversation width (host-transcript-width): host These optional layout features are missing on this host: density and conversation width. The host layout is used instead. Diagnostics Copy diagnostics DSH Livery (dsh-livery) diagnostics ## Environment Plugin: 0.1.3 Adap"
       },
-      "at": "2026-10-28T15:06:26.924Z"
+      "at": "2026-10-28T16:21:01.121Z"
     },
     {
       "id": "selfcheck.catalog-profile",
       "title": "self-check shows the catalog profile id",
       "status": "pass",
       "detail": "panel shows 2de1e8f8… (sha256:2de1e8f801ffc4c49c65552…)",
-      "at": "2026-10-28T15:06:26.924Z"
+      "at": "2026-10-28T16:21:01.121Z"
     },
     {
       "id": "selfcheck.contrast",
       "title": "self-check reports 0 contrast failures",
       "status": "pass",
       "detail": "contrast failures=0 (panel: Self-check | Hide self-check | Startup check | Loaded | Adapter: dsh-0.2.1-rc.4-r1 | Contract hash: 18e63d003897 | Plugin: 0.1.3 | Host: 0.2.1-rc.4 | Color mode: Light | Locale: en | Catalog: Loaded |)",
-      "at": "2026-10-28T15:06:26.924Z"
+      "at": "2026-10-28T16:21:01.121Z"
     },
     {
       "id": "selfcheck.css-safety",
       "title": "self-check reports 0 !important / 0 hash selectors",
       "status": "pass",
       "detail": "!important=0 hashSelectors=0 (panel: !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0)",
-      "at": "2026-10-28T15:06:26.924Z"
+      "at": "2026-10-28T16:21:01.121Z"
     },
     {
       "id": "selfcheck.optional-info",
       "title": "self-check discloses optional capability fallbacks (optional-info line, or a degraded notice on older builds)",
       "status": "pass",
       "detail": "1 livery-optional-info line(s)",
-      "at": "2026-10-28T15:06:26.926Z"
+      "at": "2026-10-28T16:21:01.124Z"
     },
     {
       "id": "selfcheck.copy-diagnostics",
@@ -3697,7 +3697,7 @@
       "evidence": {
         "preview": "DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.1.3 适配器：dsh-0.2.1-rc.4-r1 协议校验码：18e63d003897 宿主版本：0.2.1-rc.4 目录分组：sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec 语言：zh 颜色模式：浅色 ## 启动信息 启动信息：已加载 ## 目录 目录：已加载 ## 配置 配置中的视觉风格：fjord 实际应用的视觉风格：fjord ## 能力 forced-colors：可用 [可选] host-density-tokens：不可用 [可选] host-font-family：可用 [必需] host-font-role-hooks：可用 [可选] host-message-flow：不可用 [可选] host-transcript-width：不可用 [可选] reduced-motion：可用 [可选] reduced-transparency：可用 [可选] surface-material：可用 [可选] theme-css：可用 [必需] 10 项中 7 项可用 ## 降级能力 host-density-tokens：No documented spacing/control token settable at document level; density falls back to host.（回退：host） host-transcript-width：Conversation width is a host-owned user-dragged preference published on component-local custom properties; no publ"
       },
-      "at": "2026-10-28T15:06:27.450Z"
+      "at": "2026-10-28T16:21:01.673Z"
     },
     {
       "id": "selfcheck.copy-diagnostics-content",
@@ -3707,17 +3707,17 @@
       "evidence": {
         "preview": "DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.1.3 适配器：dsh-0.2.1-rc.4-r1 协议校验码：18e63d003897 宿主版本：0.2.1-rc.4 目录分组：sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec 语言：zh 颜色模式：浅色 ## 启动信息 启动信息：已加载 ## 目录 目录：已加载 ## 配置 配置中的视觉风格：fjord 实际应用的视觉风格：fjord ## 能力 forced-colors：可用 [可选] host-density-tokens：不可用 [可选] host-font-family：可用 [必需] host-font-role-hooks：可用 [可选] host-message-flow：不可用 [可选] host-transcript-width：不可用 [可选] reduced-motion：可用 [可选] reduced-transparency：可用 [可选] surface-material：可用 [可选] theme-css：可用 [必需] 10 项中 7 项可用 ## 降级能力 host-density-tokens：No documented spacing/control token settable at document level; density falls back to host.（回退：host） host-transcript-width：Conversation width is a host-owned user-dragged preference published on component-local custom properties; no publ"
       },
-      "at": "2026-10-28T15:06:27.450Z"
+      "at": "2026-10-28T16:21:01.673Z"
     },
     {
       "id": "firstpaint.no-stock-frame",
       "title": "every painted frame after body creation already carries the livery body attribute and boot style",
       "status": "pass",
-      "detail": "43/45 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {\"t\":92,\"htmlLang\":\"zh-CN\",\"themeSource\":\"system\",\"dark\":false,\"attr\":\"fjord\",\"hash\":\"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e\",\"tokenBg\":\"#f0f3f6\",\"bg\":\"rgb(240, 243, 246)\",\"bootStyle\":true,\"liveryStyles\":1}",
+      "detail": "43/45 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {\"t\":35,\"htmlLang\":\"zh-CN\",\"themeSource\":\"system\",\"dark\":false,\"attr\":\"fjord\",\"hash\":\"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e\",\"tokenBg\":\"#f0f3f6\",\"bg\":\"rgb(240, 243, 246)\",\"bootStyle\":true,\"liveryStyles\":1}",
       "evidence": {
         "samples": [
           {
-            "t": 92,
+            "t": 35,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3729,7 +3729,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 108,
+            "t": 102,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3741,7 +3741,19 @@
             "liveryStyles": 1
           },
           {
-            "t": 125,
+            "t": 118,
+            "htmlLang": "zh-CN",
+            "themeSource": "system",
+            "dark": false,
+            "attr": "fjord",
+            "hash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
+            "tokenBg": "#f0f3f6",
+            "bg": "rgb(240, 243, 246)",
+            "bootStyle": true,
+            "liveryStyles": 1
+          },
+          {
+            "t": 135,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3753,7 +3765,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 142,
+            "t": 152,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3765,7 +3777,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 158,
+            "t": 168,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3777,7 +3789,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 175,
+            "t": 185,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3789,7 +3801,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 192,
+            "t": 202,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3801,7 +3813,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 208,
+            "t": 218,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3813,7 +3825,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 225,
+            "t": 235,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3825,7 +3837,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 242,
+            "t": 252,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3837,19 +3849,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 258,
-            "htmlLang": "zh-CN",
-            "themeSource": "system",
-            "dark": false,
-            "attr": "fjord",
-            "hash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
-            "tokenBg": "#f0f3f6",
-            "bg": "rgb(240, 243, 246)",
-            "bootStyle": false,
-            "liveryStyles": 1
-          },
-          {
-            "t": 275,
+            "t": 268,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3861,9 +3861,9 @@
             "liveryStyles": 1
           }
         ],
-        "frames": 8
+        "frames": 10
       },
-      "at": "2026-10-28T15:06:28.315Z"
+      "at": "2026-10-28T16:21:02.564Z"
     },
     {
       "id": "firstpaint.first-colour",
@@ -3873,7 +3873,7 @@
       "evidence": {
         "samples": [
           {
-            "t": 92,
+            "t": 35,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3885,7 +3885,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 108,
+            "t": 102,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3897,7 +3897,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 125,
+            "t": 118,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3905,19 +3905,19 @@
             "hash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
             "tokenBg": "#f0f3f6",
             "bg": "rgb(240, 243, 246)",
-            "bootStyle": false,
+            "bootStyle": true,
             "liveryStyles": 1
           }
         ]
       },
-      "at": "2026-10-28T15:06:28.315Z"
+      "at": "2026-10-28T16:21:02.564Z"
     },
     {
       "id": "firstpaint.paint-timings",
       "title": "paint timing entries are recorded (first-paint / first-contentful-paint)",
       "status": "pass",
-      "detail": "first-paint=28ms fcp=112ms dcl=23.80000001192093ms load=113.09999999403954ms",
-      "at": "2026-10-28T15:06:28.315Z"
+      "detail": "first-paint=20ms fcp=112ms dcl=23.80000001192093ms load=111.19999998807907ms",
+      "at": "2026-10-28T16:21:02.564Z"
     },
     {
       "id": "css.size-budget",
@@ -3929,7 +3929,7 @@
         "targetBytes": 16384,
         "budgetBytes": 20480
       },
-      "at": "2026-10-28T15:06:28.315Z"
+      "at": "2026-10-28T16:21:02.564Z"
     },
     {
       "id": "css.no-whole-document-observers",
@@ -3943,15 +3943,15 @@
           "observations": [
             {
               "target": "document",
-              "t": 241,
+              "t": 192,
               "liveryAttributed": false,
               "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at InjectedScript._setupGlobalListenersRemovalDetection (<anonymous>:7992:8) | at new InjectedScript (<anonymous>:6933:10) | at <anonymous>:8388:16 | at <anonymous>:8389:11"
             },
             {
               "target": "html",
-              "t": 297,
+              "t": 270,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:52654/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai"
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:62930/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai"
             }
           ]
         },
@@ -3961,20 +3961,20 @@
           "observations": [
             {
               "target": "html",
-              "t": 50,
+              "t": 48,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:52654/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai"
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:62930/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.js,@deepseek-ai/dsh-client-hmr/client.js,@deepseek-ai/dsh-cordis-client-runner/client.js,@deepseek-ai"
             },
             {
               "target": "document",
-              "t": 112,
+              "t": 108,
               "liveryAttributed": false,
               "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at InjectedScript._setupGlobalListenersRemovalDetection (<anonymous>:7992:8) | at new InjectedScript (<anonymous>:6933:10) | at <anonymous>:8388:16 | at <anonymous>:8389:11"
             }
           ]
         }
       },
-      "at": "2026-10-28T15:06:28.316Z"
+      "at": "2026-10-28T16:21:02.565Z"
     },
     {
       "id": "web.no-overflow-1023",
@@ -3988,7 +3988,7 @@
         "bodyOverflowX": 0,
         "attr": "fjord"
       },
-      "at": "2026-10-28T15:06:28.804Z"
+      "at": "2026-10-28T16:21:03.052Z"
     },
     {
       "id": "web.no-overflow-767",
@@ -4002,7 +4002,7 @@
         "bodyOverflowX": 0,
         "attr": "fjord"
       },
-      "at": "2026-10-28T15:06:29.296Z"
+      "at": "2026-10-28T16:21:03.581Z"
     },
     {
       "id": "layout.style-2col",
@@ -4037,35 +4037,35 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:30.418Z"
+      "at": "2026-10-28T16:21:04.717Z"
     },
     {
       "id": "layout.style-cards",
       "title": "style page renders current-style hero, gallery card, actions rail and self-check card",
       "status": "pass",
       "detail": "cards=livery-current-card:visible(728px), livery-gallery-card:visible(728px), livery-actions-card:visible(364px), livery-selfcheck:visible(364px)",
-      "at": "2026-10-28T15:06:30.418Z"
+      "at": "2026-10-28T16:21:04.717Z"
     },
     {
       "id": "layout.style-hero-thumb",
       "title": "current-style hero shows a loaded preview thumbnail",
       "status": "pass",
       "detail": "thumb={\"present\":true,\"visible\":true,\"tag\":\"img\",\"src\":\"/livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/fjord-zh-light.svg\",\"naturalWidth\":640,\"backgroundImage\":\"none\",\"width\":98,\"height\":62}",
-      "at": "2026-10-28T15:06:30.418Z"
+      "at": "2026-10-28T16:21:04.717Z"
     },
     {
       "id": "layout.style-card-surfaces",
       "title": "style page cards have a visible border and a non-flat surface (background/backdrop/shadow)",
       "status": "pass",
       "detail": "livery-current-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08) | livery-gallery-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08) | livery-actions-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08) | livery-selfcheck: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.899412 0.912941 0.926471), backdrop=blur(14px) saturate(1.08)",
-      "at": "2026-10-28T15:06:30.419Z"
+      "at": "2026-10-28T16:21:04.717Z"
     },
     {
       "id": "layout.style-no-overflow-1440",
       "title": "style page has no horizontal overflow at 1440×900",
       "status": "pass",
       "detail": "scrollWidth=1440 clientWidth=1440",
-      "at": "2026-10-28T15:06:30.419Z"
+      "at": "2026-10-28T16:21:04.717Z"
     },
     {
       "id": "footer.about-copy",
@@ -4097,28 +4097,28 @@
           "gap": "4px"
         }
       },
-      "at": "2026-10-28T15:06:30.479Z"
+      "at": "2026-10-28T16:21:04.793Z"
     },
     {
       "id": "copy.product-name",
       "title": "visible product name is DSH Livery (no “Visual Studio” anywhere in the UI)",
       "status": "pass",
       "detail": "footer line1=\"DSH Livery 0.1.3 · 已适配 DeepSeek Harness 0.2.1-rc.4\"; bodyHasDSHLivery=true; bodyHasVisualStudio=false",
-      "at": "2026-10-28T15:06:30.480Z"
+      "at": "2026-10-28T16:21:04.794Z"
     },
     {
       "id": "footer.about-lines",
       "title": "About footer renders its two lines separately (no run-on concatenation)",
       "status": "pass",
       "detail": "display=flex/column gap=4px; tops=333-353 / 357-393",
-      "at": "2026-10-28T15:06:30.480Z"
+      "at": "2026-10-28T16:21:04.794Z"
     },
     {
       "id": "footer.about-no-jargon",
       "title": "About footer carries no contract hash / adapter id / jargon (ids live in diagnostics only)",
       "status": "pass",
       "detail": "footer text=\"DSH Livery 0.1.3 · 已适配 DeepSeek Harness 0.2.1-rc.4画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。\"",
-      "at": "2026-10-28T15:06:30.480Z"
+      "at": "2026-10-28T16:21:04.794Z"
     },
     {
       "id": "typography.five-step-style",
@@ -4157,49 +4157,49 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:30.482Z"
+      "at": "2026-10-28T16:21:04.795Z"
     },
     {
       "id": "typography.root-tokens",
       "title": "shared --lw-fs-* type tokens exist on the real .livery-workspace/.livery-panel roots (not only a legacy .livery-section)",
       "status": "pass",
       "detail": "workspace={\"display\":\"20px\",\"title\":\"15px\",\"body\":\"13px\",\"label\":\"12px\",\"caption\":\"11px\"}; panel={\"display\":\"20px\",\"title\":\"15px\",\"body\":\"13px\",\"label\":\"12px\",\"caption\":\"11px\"}",
-      "at": "2026-10-28T15:06:30.482Z"
+      "at": "2026-10-28T16:21:04.795Z"
     },
     {
       "id": "layout.style-stacked-1024",
       "title": "style page stacks to a single column at 1024×800 (rail below main)",
       "status": "pass",
       "detail": "tracks=1 [696px]; main={\"left\":304,\"top\":162,\"width\":696,\"height\":5010}; rail={\"left\":304,\"top\":5191,\"width\":696,\"height\":214}",
-      "at": "2026-10-28T15:06:30.941Z"
+      "at": "2026-10-28T16:21:05.257Z"
     },
     {
       "id": "layout.style-no-overflow-1024",
       "title": "style page has no horizontal overflow at 1024×800",
       "status": "pass",
       "detail": "scrollWidth=1024 clientWidth=1024; cards=livery-current-card:true,livery-gallery-card:true,livery-actions-card:true,livery-selfcheck:true",
-      "at": "2026-10-28T15:06:30.942Z"
+      "at": "2026-10-28T16:21:05.257Z"
     },
     {
       "id": "layout.wallpaper-2col",
       "title": "wallpaper page uses a two-column card layout at 1440×900",
       "status": "pass",
       "detail": "tracks=2 [728px 364px]; main={\"left\":304,\"top\":162,\"width\":728,\"height\":1362}; rail={\"left\":1052,\"top\":162,\"width\":364,\"height\":1007}",
-      "at": "2026-10-28T15:06:31.704Z"
+      "at": "2026-10-28T16:21:06.050Z"
     },
     {
       "id": "layout.wallpaper-cards",
       "title": "wallpaper page renders hero / online / custom / effects / builtins cards (library removed)",
       "status": "pass",
       "detail": "cards=wallpaper-hero:visible(728px), wallpaper-online-card:visible(728px), wallpaper-custom-card:visible(728px), wallpaper-effects-card:visible(364px), wallpaper-builtins-card:visible(364px); heroPreview={\"present\":true,\"visible\":true,\"tag\":\"div\",\"src\":\"background-image: radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140, 248) 0%, transparent 60%), linear-gradient(160deg, rgb(11, 16, 38) 0%, rgb(17, 26, 58) 100%); background-position: center center;\",\"naturalWidth\":null,\"backgroundImage\":\"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140, 248) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(160deg, rgb(11, 16, 38) 0%, rgb(17, 26, 58) 100%)\",\"width\":692,\"height\":362}",
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.051Z"
     },
     {
       "id": "layout.wallpaper-card-surfaces",
       "title": "wallpaper page cards have a visible border and a non-flat surface",
       "status": "pass",
       "detail": "wallpaper-hero: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.878608 0.893016 0.907425 / 0.6675) | wallpaper-online-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.878608 0.893016 0.907425 / 0.6675) | wallpaper-custom-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.878608 0.893016 0.907425 / 0.6675) | wallpaper-effects-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.878608 0.893016 0.907425 / 0.6675) | wallpaper-builtins-card: border=1px color(srgb 0.105882 0.152941 0.2 / 0.2), bg=color(srgb 0.878608 0.893016 0.907425 / 0.6675)",
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.051Z"
     },
     {
       "id": "typography.five-step-wallpaper",
@@ -4238,42 +4238,42 @@
           }
         }
       },
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.052Z"
     },
     {
       "id": "typography.about-rail",
       "title": "About footer is visible on the wallpaper page as well (rail shared)",
       "status": "pass",
       "detail": "footer lines=2",
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.052Z"
     },
     {
       "id": "layout.effects-sliders-bounded",
       "title": "effect sliders are bounded (80–220px) inside the effects card, not viewport-wide",
       "status": "pass",
       "detail": "4 sliders expected; widths=[140,140,140,140] (viewport 1440); effectsGrid tracks=1 columns=\"326px\"",
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.052Z"
     },
     {
       "id": "layout.wallpaper-no-overflow-1440",
       "title": "wallpaper page has no horizontal overflow at 1440×900",
       "status": "pass",
       "detail": "scrollWidth=1440 clientWidth=1440",
-      "at": "2026-10-28T15:06:31.705Z"
+      "at": "2026-10-28T16:21:06.052Z"
     },
     {
       "id": "layout.wallpaper-stacked-1024",
       "title": "wallpaper page stacks to a single column at 1024×800 with effects/built-ins before the current wallpaper and bounded sliders",
       "status": "pass",
       "detail": "tracks=1; main={\"left\":304,\"top\":1021,\"width\":696,\"height\":1352}; rail={\"left\":304,\"top\":162,\"width\":696,\"height\":839}; effectsGridTracks=2; sliders=[140,140,140,140]",
-      "at": "2026-10-28T15:06:32.283Z"
+      "at": "2026-10-28T16:21:06.624Z"
     },
     {
       "id": "layout.wallpaper-no-overflow-1024",
       "title": "wallpaper page has no horizontal overflow at 1024×800",
       "status": "pass",
       "detail": "scrollWidth=1024 clientWidth=1024",
-      "at": "2026-10-28T15:06:32.283Z"
+      "at": "2026-10-28T16:21:06.624Z"
     },
     {
       "id": "style.candidates",
@@ -4332,7 +4332,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:38.855Z"
+      "at": "2026-10-28T16:21:13.313Z"
     },
     {
       "id": "style.host-radius",
@@ -4521,7 +4521,7 @@
           ]
         }
       },
-      "at": "2026-10-28T15:06:38.855Z"
+      "at": "2026-10-28T16:21:13.313Z"
     },
     {
       "id": "style.host-font",
@@ -4560,7 +4560,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:38.855Z"
+      "at": "2026-10-28T16:21:13.313Z"
     },
     {
       "id": "style.host-elevation",
@@ -4731,7 +4731,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:38.855Z"
+      "at": "2026-10-28T16:21:13.313Z"
     },
     {
       "id": "style.material-glass",
@@ -4746,7 +4746,7 @@
           ]
         }
       },
-      "at": "2026-10-28T15:06:38.856Z"
+      "at": "2026-10-28T16:21:13.314Z"
     },
     {
       "id": "style.cascade-tokens",
@@ -4871,119 +4871,119 @@
           }
         ]
       },
-      "at": "2026-10-28T15:06:38.857Z"
+      "at": "2026-10-28T16:21:13.314Z"
     },
     {
       "id": "style.screenshots",
       "title": "multi-livery comparison screenshots were captured",
       "status": "pass",
       "detail": "8 style screenshot(s) for 4 style candidate(s)",
-      "at": "2026-10-28T15:06:38.857Z"
+      "at": "2026-10-28T16:21:13.314Z"
     },
     {
       "id": "wallpaper.tab",
       "title": "壁纸 page tab switches to the wallpaper studio panel",
       "status": "pass",
       "detail": "selected=true; wallpaper panel=true; style panel=false; label=\"壁纸\"",
-      "at": "2026-10-28T15:06:39.763Z"
+      "at": "2026-10-28T16:21:14.209Z"
     },
     {
       "id": "recent.hidden-empty",
       "title": "the Recent wallpapers card is absent while the local history is empty",
       "status": "pass",
       "detail": "present=false; items=0",
-      "at": "2026-10-28T15:06:39.765Z"
+      "at": "2026-10-28T16:21:14.212Z"
     },
     {
       "id": "wallpaper.library-removed",
       "title": "curated library/category UI is removed; one search-first online card directly follows the hero",
       "status": "pass",
       "detail": "onlineCard=true; libraryElements=0; categoryChips=0; mainCardOrder=[\"wallpaper-hero\",\"wallpaper-online-card\",\"wallpaper-custom-card\",\"wallpaper-clear-local-card\"]",
-      "at": "2026-10-28T15:06:39.767Z"
+      "at": "2026-10-28T16:21:14.213Z"
     },
     {
       "id": "copy.wallpaper-online-hint",
       "title": "online card uses the round-12 human hint copy",
       "status": "pass",
       "detail": "online card text=在线壁纸 打开这个标签页会自动加载一批随机壁纸。点“搜索”“随机”或“换一批”才会联网获取新图片。 搜索 随机 换一批 Picsum #10 Picsum #11",
-      "at": "2026-10-28T15:06:39.768Z"
+      "at": "2026-10-28T16:21:14.214Z"
     },
     {
       "id": "copy.frost-label",
       "title": "effect slider keeps the plain 磨砂 (Frost) label",
       "status": "pass",
       "detail": "effects card labels=效果 重置效果 模糊 8 px 变暗 25% 磨砂 35% 全局氛围 30% 让界面表面像磨砂玻璃一样透出壁纸。 0 时壁纸只从透明处透出；调高后，所有页面都会罩上一层壁纸。",
-      "at": "2026-10-28T15:06:39.768Z"
+      "at": "2026-10-28T16:21:14.214Z"
     },
     {
       "id": "wallpaper.online-auto-random",
       "title": "opening the wallpaper tab auto-loads exactly one Picsum random batch (mockable)",
       "status": "pass",
       "detail": "picsum list requests=1; openverse requests=0; results=2; loaded thumbs=2; status=null",
-      "at": "2026-10-28T15:06:39.768Z"
+      "at": "2026-10-28T16:21:14.214Z"
     },
     {
       "id": "wallpaper.online-no-refetch",
       "title": "changing effect sliders never refetches the online card",
       "status": "pass",
       "detail": "picsum 1→1; openverse 0→0",
-      "at": "2026-10-28T15:06:40.620Z"
+      "at": "2026-10-28T16:21:15.150Z"
     },
     {
       "id": "wallpaper.online-search",
       "title": "explicit Openverse search renders the mocked results",
       "status": "pass",
       "detail": "openverse requests=1; results=[\"https://images.example.test/one.jpg\",\"https://images.example.test/two-full.jpg\"]; firstLabel=\"Aurora One · Tester · cc0 · openverse.org\"",
-      "at": "2026-10-28T15:06:40.696Z"
+      "at": "2026-10-28T16:21:15.228Z"
     },
     {
       "id": "wallpaper.online-random",
       "title": "随机 requests a new Picsum batch",
       "status": "pass",
       "detail": "picsum 1→2; results=2",
-      "at": "2026-10-28T15:06:41.102Z"
+      "at": "2026-10-28T16:21:15.633Z"
     },
     {
       "id": "wallpaper.online-refresh",
       "title": "换一批/refresh requests another batch for the active source",
       "status": "pass",
       "detail": "picsum 2→3",
-      "at": "2026-10-28T15:06:41.435Z"
+      "at": "2026-10-28T16:21:15.946Z"
     },
     {
       "id": "wallpaper.online-retry",
       "title": "a failed online batch exposes retry and succeeds when retried",
       "status": "pass",
       "detail": "status=error; retryVisible=true; picsum 4→5; results=2",
-      "at": "2026-10-28T15:06:41.934Z"
+      "at": "2026-10-28T16:21:16.430Z"
     },
     {
       "id": "wallpaper.online-applied",
       "title": "clicking an online result applies that wallpaper (cached blob or URL layer) and shows attribution",
       "status": "pass",
       "detail": "url=https://picsum.photos/id/10/1600/900; blob=true fetchOk=true rawInStyle=false; attr=true; attribution=\"Picsum #10 · Tester · Picsum · picsum.photos\"",
-      "at": "2026-10-28T15:06:42.242Z"
+      "at": "2026-10-28T16:21:16.740Z"
     },
     {
       "id": "recent.online-entry",
       "title": "applying an online wallpaper records it in the Recent card (newest first, cached flag best-effort)",
       "status": "pass",
       "detail": "card=true; items=[{\"url\":\"https://picsum.photos/id/10/1600/900\",\"cached\":\"true\",\"label\":\"Picsum #10 · 已缓存\"}]; applied=https://picsum.photos/id/10/1600/900",
-      "at": "2026-10-28T15:06:42.323Z"
+      "at": "2026-10-28T16:21:16.825Z"
     },
     {
       "id": "recent.two-entries",
       "title": "two applied online wallpapers appear newest-first in the Recent card",
       "status": "pass",
       "detail": "items=[\"https://picsum.photos/id/11/1600/900\",\"https://picsum.photos/id/10/1600/900\"]",
-      "at": "2026-10-28T15:06:42.884Z"
+      "at": "2026-10-28T16:21:17.381Z"
     },
     {
       "id": "wallpaper.builtin-count",
       "title": "wallpaper studio ships 24 deterministic built-in wallpapers",
       "status": "pass",
       "detail": "24 builtins: aurora, dusk, mist, paper, ink, ember, sea, mono, forest, desert, ocean, sky, snow, bloom, neon, cyber, retro, sand, rose, violet, midnight, sunrise, glacier, minimal",
-      "at": "2026-10-28T15:06:42.886Z"
+      "at": "2026-10-28T16:21:17.385Z"
     },
     {
       "id": "wallpaper.builtin-applied",
@@ -4993,77 +4993,77 @@
       "evidence": {
         "styleText": "body[data-dsh-wallpaper]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;background-image:radial-gradient(120% 130% at 8% 0%, #5eead4 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, #818cf8 0%, transparent 60%), linear-gradient(160deg, #0b1026 0%, #111a3a 100%);background-position:center;background-size:cover;filter:blur(16px)}\nbody[data-dsh-wallpaper]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(0,0,0,0.25)}\nbody[data-dsh-wallpaper]{background-color:transparent}\n.dsh-livery-wallpaper-overlay{position:fixed;inset:0;z-index:90;pointer-events:none;background-image:radial-gradient(120% 130% at 8% 0%, #5eead4 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, #818cf8 0%, transparent 60%), linear-gradie"
       },
-      "at": "2026-10-28T15:06:42.921Z"
+      "at": "2026-10-28T16:21:17.421Z"
     },
     {
       "id": "wallpaper.atmosphere-default",
       "title": "the global atmosphere overlay exists at the default atmosphere with the expected computed styles",
       "status": "pass",
       "detail": "overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.3\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover, cover, cover\",\"backgroundImage\":\"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140, 248) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(160deg, rgb(11, 16, 38) 0%, rgb(17, 26, 58) 100%)\"}; body::before cover=cover, cover, cover",
-      "at": "2026-10-28T15:06:42.921Z"
+      "at": "2026-10-28T16:21:17.421Z"
     },
     {
       "id": "wallpaper.selected-state",
       "title": "the active wallpaper and tab expose a visible selected state",
       "status": "pass",
       "detail": "selected=[{\"id\":\"aurora\",\"pressed\":true,\"label\":\"极光\"}]; tab=rgb(52, 84, 138)/rgb(52, 84, 138); swatch outline=2px, shadow=color(srgb 0.203922 0.329412 0.541176 / 0.28) 0px 0px 0px 4px",
-      "at": "2026-10-28T15:06:42.923Z"
+      "at": "2026-10-28T16:21:17.422Z"
     },
     {
       "id": "wallpaper.host-surfaces-opaque",
       "title": "frost never rewrites host modal, input or tooltip surface tokens",
       "status": "pass",
       "detail": "--dsw-alias-bg-layer-2=#d5d6db; --dsw-alias-bg-layer-1=#d5d6db; --dsw-alias-tooltip-bg=#484f6a",
-      "at": "2026-10-28T15:06:42.924Z"
+      "at": "2026-10-28T16:21:17.422Z"
     },
     {
       "id": "wallpaper.atmosphere-below-floating",
       "title": "the atmosphere layer stays below host Menu/Tooltip/HoverCard/Modal surfaces",
       "status": "pass",
       "detail": "atmosphere z-index=90; host ordinary floats=100/101, Modal=1000, Toast=1100",
-      "at": "2026-10-28T15:06:42.924Z"
+      "at": "2026-10-28T16:21:17.422Z"
     },
     {
       "id": "wallpaper.modal-clear",
       "title": "host Settings modal stays opaque above the atmosphere when wallpaper frost is active",
       "status": "pass",
       "detail": "overlay z=90; modal z=1; background=rgb(213, 214, 219); backdrop=none",
-      "at": "2026-10-28T15:06:43.462Z"
+      "at": "2026-10-28T16:21:17.961Z"
     },
     {
       "id": "wallpaper.atmosphere-zero",
       "title": "atmosphere 0 removes the overlay element (immersive-only layer remains)",
       "status": "pass",
       "detail": "overlay present=false; attribute=; style=true",
-      "at": "2026-10-28T15:06:43.556Z"
+      "at": "2026-10-28T16:21:18.052Z"
     },
     {
       "id": "wallpaper.atmosphere-60",
       "title": "atmosphere 60 sets overlay opacity 0.6 (z-index/pointer-events preserved)",
       "status": "pass",
       "detail": "overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.6\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover, cover, cover\",\"backgroundImage\":\"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140, 248) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(160deg, rgb(11, 16, 38) 0%, rgb(17, 26, 58) 100%)\"}",
-      "at": "2026-10-28T15:06:43.563Z"
+      "at": "2026-10-28T16:21:18.061Z"
     },
     {
       "id": "wallpaper.tab-stable-after-selection",
       "title": "selecting a wallpaper never changes the active page tab",
       "status": "pass",
       "detail": "selected tab=wallpaper",
-      "at": "2026-10-28T15:06:43.640Z"
+      "at": "2026-10-28T16:21:18.163Z"
     },
     {
       "id": "wallpaper.tab-navigation",
       "title": "the wallpaper tab survives navigation to another plugin panel and back",
       "status": "pass",
       "detail": "navigated to \"插件\" (selected=true); reopened=true; restored selected=true; wallpaper panel=true",
-      "at": "2026-10-28T15:06:44.182Z"
+      "at": "2026-10-28T16:21:18.716Z"
     },
     {
       "id": "wallpaper.effects-blur-dim",
       "title": "blur/dim sliders update the wallpaper layer (filter + veil)",
       "status": "pass",
       "detail": "sliders={\"blur\":20,\"dim\":60,\"frost\":35,\"atmosphere\":60}; filter=blur(20px); veil=rgba(0, 0, 0, 0.6) none repeat scroll 0% 0% / auto padding-box border-box",
-      "at": "2026-10-28T15:06:44.189Z"
+      "at": "2026-10-28T16:21:18.731Z"
     },
     {
       "id": "wallpaper.frost",
@@ -5073,126 +5073,126 @@
       "evidence": {
         "styleText": "body[data-dsh-wallpaper]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;background-image:radial-gradient(120% 130% at 8% 0%, #5eead4 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, #818cf8 0%, transparent 60%), linear-gradient(160deg, #0b1026 0%, #111a3a 100%);background-position:center;background-size:cover;filter:blur(20px)}\nbody[data-dsh-wallpaper]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(0,0,0,0.60)}\nbody[data-dsh-wallpaper]{background-color:transparent}\n.dsh-livery-wallpaper-overlay{position:fixed;inset:0;z-index:90;pointer-events:none;background-image:radial-gradient(120% 130% at 8% 0%, #5eead4 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, #818cf8 0%, transparent 60%), linear-gradient(160deg, #0b1026 0%, #111a3a 100%);background-size:cover;background-position:center;filter:blur(20"
       },
-      "at": "2026-10-28T15:06:44.378Z"
+      "at": "2026-10-28T16:21:19.116Z"
     },
     {
       "id": "wallpaper.reset",
       "title": "reset restores the default blur/dim/frost/atmosphere values",
       "status": "pass",
       "detail": "sliders={\"blur\":8,\"dim\":25,\"frost\":35,\"atmosphere\":30}; filter=filter:blur(8px)",
-      "at": "2026-10-28T15:06:44.514Z"
+      "at": "2026-10-28T16:21:19.247Z"
     },
     {
       "id": "wallpaper.persistence-layer",
       "title": "the persisted wallpaper layer (body attribute + atmosphere overlay) is re-applied globally after a reload, before the panel mounts",
       "status": "pass",
       "detail": "attr=(present); style=true; overlay=true; opacity=0.6",
-      "at": "2026-10-28T15:07:05.918Z"
+      "at": "2026-10-28T16:21:40.648Z"
     },
     {
       "id": "recent.reload-persist",
       "title": "Recent wallpapers survive a hard reload (localStorage history + cached thumbnails)",
       "status": "pass",
       "detail": "items=2; cached=[\"true\",\"true\"]",
-      "at": "2026-10-28T15:07:06.539Z"
+      "at": "2026-10-28T16:21:41.275Z"
     },
     {
       "id": "wallpaper.persistence",
       "title": "selected wallpaper and effects persist across a hard reload",
       "status": "pass",
       "detail": "global layer attr=true; builtin=aurora; sliders={\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60}; stored={\"schemaVersion\":2,\"revision\":16,\"selection\":{\"kind\":\"builtin\",\"id\":\"aurora\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":5",
-      "at": "2026-10-28T15:07:06.539Z"
+      "at": "2026-10-28T16:21:41.275Z"
     },
     {
       "id": "wallpaper.tab-reload",
       "title": "the wallpaper tab survives a hard reload (sessionStorage mirror)",
       "status": "pass",
       "detail": "reopened=true; wallpaper tab auto-selected after reload=true; overlay=true",
-      "at": "2026-10-28T15:07:06.539Z"
+      "at": "2026-10-28T16:21:41.275Z"
     },
     {
       "id": "wallpaper.upload-accept",
       "title": "upload input accepts the documented image MIME set",
       "status": "pass",
       "detail": "accept=\"image/jpeg,image/png,image/webp,image/avif\"",
-      "at": "2026-10-28T15:07:06.663Z"
+      "at": "2026-10-28T16:21:41.380Z"
     },
     {
       "id": "wallpaper.upload-applied",
       "title": "uploading a PNG applies a blob: wallpaper layer stored in IndexedDB",
       "status": "pass",
-      "detail": "blobInStyle=true; stored={\"schemaVersion\":2,\"revision\":17,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1793200026666-0qjlsfyhk2\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\"; error=\"\"",
-      "at": "2026-10-28T15:07:07.082Z"
+      "detail": "blobInStyle=true; stored={\"schemaVersion\":2,\"revision\":17,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1793204501386-0qvypg6llx\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\"; error=\"\"",
+      "at": "2026-10-28T16:21:41.812Z"
     },
     {
       "id": "wallpaper.upload-invalid-type",
       "title": "a non-image upload is rejected with a validation message",
       "status": "pass",
       "detail": "error=\"不支持的图片格式。\"",
-      "at": "2026-10-28T15:07:07.153Z"
+      "at": "2026-10-28T16:21:41.877Z"
     },
     {
       "id": "wallpaper.upload-invalid-size",
       "title": "an upload above the 10 MiB cap is rejected with a validation message",
       "status": "pass",
       "detail": "error=\"图片超过 10 MiB。\"",
-      "at": "2026-10-28T15:07:08.061Z"
+      "at": "2026-10-28T16:21:42.802Z"
     },
     {
       "id": "wallpaper.upload-reload",
       "title": "an uploaded wallpaper re-hydrates from IndexedDB after a hard reload",
       "status": "pass",
-      "detail": "blobInStyle=true; attribute=; stored={\"schemaVersion\":2,\"revision\":17,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1793200026666-0qjlsfyhk2\"},\"effects\":{\"blur\"",
-      "at": "2026-10-28T15:07:23.605Z"
+      "detail": "blobInStyle=true; attribute=; stored={\"schemaVersion\":2,\"revision\":17,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1793204501386-0qvypg6llx\"},\"effects\":{\"blur\"",
+      "at": "2026-10-28T16:21:58.367Z"
     },
     {
       "id": "wallpaper.url-validation",
       "title": "non-https / javascript / data URLs are rejected with a validation message",
       "status": "pass",
       "detail": "http://insecure.test/a.j rejected=true; javascript:alert(1) rejected=true; data:image/svg+xml,<svg/ rejected=true",
-      "at": "2026-10-28T15:07:23.759Z"
+      "at": "2026-10-28T16:21:58.527Z"
     },
     {
       "id": "wallpaper.url-accepted",
       "title": "https custom image URLs are accepted and applied through the owned layer",
       "status": "pass",
       "detail": "blob=true fetchOk=true rawInStyle=false; attr=; error=\"\" (custom URLs surface no attribution line by design)",
-      "at": "2026-10-28T15:07:24.066Z"
+      "at": "2026-10-28T16:21:58.830Z"
     },
     {
       "id": "wallpaper.remote-failure",
       "title": "failed remote cache (network/status or non-image MIME) keeps the previous selection/storage and never records history or raw-URL CSS",
       "status": "pass",
       "detail": "[{\"label\":\"network/status failure\",\"url\":\"https://images.example.test/broken.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"non-image MIME failure\",\"url\":\"https://images.example.test/mime.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"private-host redirect rejection\",\"url\":\"https://images.example.test/redirect-private.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"non-https final redirect rejection\",\"url\":\"https://images.example.test/redirect-http.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false}]",
-      "at": "2026-10-28T15:07:27.251Z"
+      "at": "2026-10-28T16:22:02.031Z"
     },
     {
       "id": "recent.three-entries",
       "title": "a custom https wallpaper is added as the newest Recent entry (3 entries, cached where possible)",
       "status": "pass",
       "detail": "items=[{\"url\":\"https://images.example.test/custom.jpg\",\"cached\":\"true\",\"label\":\"自定义地址 · 已缓存\"},{\"url\":\"https://picsum.photos/id/11/1600/900\",\"cached\":\"true\",\"label\":\"Picsum #11 · 已缓存\"},{\"url\":\"https://picsum.photos/id/10/1600/900\",\"cached\":\"true\",\"label\":\"Picsum #10 · 已缓存\"}]",
-      "at": "2026-10-28T15:07:27.255Z"
+      "at": "2026-10-28T16:22:02.038Z"
     },
     {
       "id": "recent.reapply",
       "title": "clicking a Recent item re-applies that wallpaper and moves it to newest (cached blob layer is legitimate)",
       "status": "pass",
       "detail": "newest=https://picsum.photos/id/10/1600/900; expected=https://picsum.photos/id/10/1600/900; blob=true fetchOk=true rawInStyle=false; hero=\"当前壁纸 移除壁纸 picsum.photos picsum.photos Picsum #10 · Tester · Picsum · picsum.photos 焦点位置 只有在线和上传的图片可以调整位置，内置壁纸始终居中。 左上 上 \"; expectedTitle=\"Picsum #10\"",
-      "at": "2026-10-28T15:07:27.702Z"
+      "at": "2026-10-28T16:22:02.483Z"
     },
     {
       "id": "recent.cache-failure",
       "title": "a failed cache download leaves the previous wallpaper selected, records no history entry for the URL, and never falls back to raw CSS",
       "status": "pass",
       "detail": "history=false; rawInStyle=false; selection={\"kind\":\"remote\",\"url\":\"https://picsum.photos/id/10/1600/900\"} vs {\"kind\":\"remote\",\"url\":\"https://picsum.photos/id/10/1600/900\"}; recent 3→3",
-      "at": "2026-10-28T15:07:28.481Z"
+      "at": "2026-10-28T16:22:03.266Z"
     },
     {
       "id": "recent.clear",
       "title": "clear removes the Recent card, the localStorage history and the best-effort remote image cache",
       "status": "pass",
       "detail": "card=false; stored=null; remote cache keys 3→0",
-      "at": "2026-10-28T15:07:29.342Z"
+      "at": "2026-10-28T16:22:04.143Z"
     },
     {
       "id": "wallpaper.adaptive-cover",
@@ -5227,14 +5227,14 @@
           }
         ]
       },
-      "at": "2026-10-28T15:07:31.258Z"
+      "at": "2026-10-28T16:22:06.228Z"
     },
     {
       "id": "wallpaper.atmosphere-conversation",
       "title": "the atmosphere overlay stays present over the host conversation page",
       "status": "pass",
       "detail": "attr=; overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.6\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover, cover, cover\",\"backgroundImage\":\"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140, 248) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(160deg, rgb(11, 16, 38) 0%, rgb(17, 26, 58) 100%)\"}",
-      "at": "2026-10-28T15:07:32.504Z"
+      "at": "2026-10-28T16:22:07.462Z"
     },
     {
       "id": "wallpaper.overlay-plugin",
@@ -5250,41 +5250,41 @@
         },
         "perceptible": true
       },
-      "at": "2026-10-28T15:07:36.544Z"
+      "at": "2026-10-28T16:22:11.533Z"
     },
     {
       "id": "wallpaper.clear",
       "title": "clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key)",
       "status": "pass",
-      "detail": "stylePresent=false; attribute=null; overlay=false; stored={\"schemaVersion\":2,\"revision\":23,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"fea79eb0-f525-491a-8dca-50e364b97cce\"}",
-      "at": "2026-10-28T15:07:44.601Z"
+      "detail": "stylePresent=false; attribute=null; overlay=false; stored={\"schemaVersion\":2,\"revision\":23,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"7b1195eb-7adb-4d52-b247-3f8d75d7b069\"}",
+      "at": "2026-10-28T16:22:19.607Z"
     },
     {
       "id": "wallpaper.tab-restore",
       "title": "returning to the 视觉风格 tab restores the gallery and the wallpaper layer stays cleared",
       "status": "pass",
       "detail": "style selected=true; stylePanel=true; wallpaperPanel=false",
-      "at": "2026-10-28T15:07:44.685Z"
+      "at": "2026-10-28T16:22:19.761Z"
     },
     {
       "id": "visual.matrix-shots",
       "title": "real screenshots captured for 1440/1024/767 × light/dark × wallpaper off/on",
       "status": "pass",
-      "detail": "frames=12; bytes=[133575,357025,359513,133542,125937,222166,221464,130148,113703,287438,286521,135469]",
+      "detail": "frames=12; bytes=[133575,357025,359513,133542,125937,222166,221464,130148,113703,287438,286521,135467]",
       "evidence": {
         "frames": [
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-off.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-off.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-off.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-off.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-off.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-on.png",
-          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-off.png"
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-off.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-off.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-off.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-off.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-off.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-on.png",
+          "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-off.png"
         ],
         "bytes": [
           133575,
@@ -5298,10 +5298,10 @@
           113703,
           287438,
           286521,
-          135469
+          135467
         ]
       },
-      "at": "2026-10-28T15:07:53.163Z"
+      "at": "2026-10-28T16:22:28.351Z"
     },
     {
       "id": "visual.no-overflow-767",
@@ -5320,7 +5320,7 @@
           "bodyScrollWidth": 767
         }
       },
-      "at": "2026-10-28T15:07:53.869Z"
+      "at": "2026-10-28T16:22:29.041Z"
     },
     {
       "id": "visual.narrow-card-order",
@@ -5359,7 +5359,7 @@
           }
         }
       },
-      "at": "2026-10-28T15:07:53.869Z"
+      "at": "2026-10-28T16:22:29.041Z"
     },
     {
       "id": "visual.theme-tokens",
@@ -5396,7 +5396,7 @@
           "contentFontSize": "14px"
         }
       },
-      "at": "2026-10-28T15:07:54.871Z"
+      "at": "2026-10-28T16:22:30.022Z"
     },
     {
       "id": "visual.frost-steps",
@@ -5443,7 +5443,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:07:57.138Z"
+      "at": "2026-10-28T16:22:32.274Z"
     },
     {
       "id": "visual.atmosphere-steps",
@@ -5490,7 +5490,7 @@
           }
         ]
       },
-      "at": "2026-10-28T15:07:59.171Z"
+      "at": "2026-10-28T16:22:34.279Z"
     },
     {
       "id": "visual.forced-colors",
@@ -5506,7 +5506,7 @@
           "boxShadow": "none"
         }
       },
-      "at": "2026-10-28T15:07:59.765Z"
+      "at": "2026-10-28T16:22:34.853Z"
     },
     {
       "id": "visual.reduced-transparency",
@@ -5522,7 +5522,7 @@
           "boxShadow": "rgba(0, 0, 0, 0.06) 0px 1px 2px 0px, rgba(0, 0, 0, 0.45) 0px 10px 28px -22px"
         }
       },
-      "at": "2026-10-28T15:08:00.426Z"
+      "at": "2026-10-28T16:22:35.482Z"
     },
     {
       "id": "visual.keyboard-focus",
@@ -5536,7 +5536,7 @@
           "boxShadow": "none"
         }
       },
-      "at": "2026-10-28T15:08:01.894Z"
+      "at": "2026-10-28T16:22:36.903Z"
     },
     {
       "id": "visual.selected-state",
@@ -5550,7 +5550,7 @@
           "pressed": "true"
         }
       },
-      "at": "2026-10-28T15:08:01.894Z"
+      "at": "2026-10-28T16:22:36.903Z"
     },
     {
       "id": "visual.floating-surfaces",
@@ -5565,14 +5565,14 @@
           "overlayZ": 90
         }
       },
-      "at": "2026-10-28T15:08:02.875Z"
+      "at": "2026-10-28T16:22:37.891Z"
     },
     {
       "id": "visual.other-floating-surfaces",
       "title": "confirm dialog / Toast / Tooltip / Menu / HoverCard stay opaque above the atmosphere",
       "status": "skip",
       "detail": "not triggerable without synthetic host interactions in this shell; Settings modal path covers the shared floating-surface token",
-      "at": "2026-10-28T15:08:02.875Z"
+      "at": "2026-10-28T16:22:37.892Z"
     },
     {
       "id": "merged.position-remote",
@@ -5596,21 +5596,21 @@
           "y": 100
         }
       },
-      "at": "2026-10-28T15:08:05.353Z"
+      "at": "2026-10-28T16:22:40.445Z"
     },
     {
       "id": "merged.position-keyboard",
       "title": "position radios are keyboard operable with native radio semantics",
       "status": "pass",
       "detail": "keyboard={\"x\":100,\"y\":50} group={\"present\":true,\"radios\":9,\"name\":\"wallpaper-position\",\"checked\":\"wallpaper-position-right\",\"checkedValue\":\"100,50\"}",
-      "at": "2026-10-28T15:08:05.703Z"
+      "at": "2026-10-28T16:22:40.785Z"
     },
     {
       "id": "merged.position-builtin-hidden",
       "title": "built-in wallpaper hides the focal-position control",
       "status": "pass",
       "detail": "group={\"present\":false} attr=",
-      "at": "2026-10-28T15:08:05.750Z"
+      "at": "2026-10-28T16:22:40.828Z"
     },
     {
       "id": "merged.preset-export",
@@ -5620,28 +5620,28 @@
       "evidence": {
         "exported": "{ \"schemaVersion\": 1, \"createdWith\": \"dsh-livery/0.1.3\", \"styleId\": \"tokyo-night\", \"wallpaper\": { \"kind\": \"builtin\", \"id\": \"aurora\" }, \"effects\": { \"blur\": 12, \"dim\": 40, \"frost\": 35, \"atmosphere\": 60 }, \"position\": { \"x\": 50, \"y\": 50 } }"
       },
-      "at": "2026-10-28T15:08:06.212Z"
+      "at": "2026-10-28T16:22:41.292Z"
     },
     {
       "id": "merged.preset-import-diff",
       "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position",
       "status": "pass",
       "detail": "preset={\"card\":true,\"exportButton\":true,\"importFile\":true,\"diff\":true,\"diffRows\":4,\"apply\":true,\"cancel\":true,\"exportStatus\":\"\",\"importStatus\":\"已载入由 dsh-livery/0.1.3 创建的预设。\",\"applyStatus\":\"\",\"error\":null} diffRows=4",
-      "at": "2026-10-28T15:08:06.827Z"
+      "at": "2026-10-28T16:22:41.908Z"
     },
     {
       "id": "merged.preset-apply-atomic",
       "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action",
       "status": "pass",
-      "detail": "applyStatus=\"预设已应用。关闭提示\" stored={\"schemaVersion\":2,\"revision\":52,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/preset.jpg\"},\"effects\":{\"blur\":14,\"dim\":30,\"frost\":45,\"atmosphere\":25},\"position\":{\"x\":100,\"y\":100},\"sourceId\":\"fea79eb0-f5",
-      "at": "2026-10-28T15:08:07.455Z"
+      "detail": "applyStatus=\"预设已应用。关闭提示\" stored={\"schemaVersion\":2,\"revision\":52,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/preset.jpg\"},\"effects\":{\"blur\":14,\"dim\":30,\"frost\":45,\"atmosphere\":25},\"position\":{\"x\":100,\"y\":100},\"sourceId\":\"7b1195eb-7a",
+      "at": "2026-10-28T16:22:42.508Z"
     },
     {
       "id": "merged.preset-invalid-rejected",
       "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage",
       "status": "pass",
       "detail": "[{\"name\":\"unknown-field\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"unknown-field\",\"text\":\"预设包含不支持的字段（css）。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"bad-url\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"wallpaper-url\",\"text\":\"预设壁纸不是有效的 https 图片地址。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"bad-position\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"position\",\"text\":\"预设的焦点位置无效。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"oversize\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"too-large\",\"text\":\"预设文件超过 64 KB。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}}]",
-      "at": "2026-10-28T15:08:10.311Z"
+      "at": "2026-10-28T16:22:45.293Z"
     },
     {
       "id": "merged.preset-partial-failure",
@@ -5665,48 +5665,48 @@
         },
         "heroAttribution": "Partial Preset · Tester · CC0 · https://images.example.test"
       },
-      "at": "2026-10-28T15:08:12.254Z"
+      "at": "2026-10-28T16:22:47.213Z"
     },
     {
       "id": "merged.state-migration-v1",
       "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored",
       "status": "pass",
-      "detail": "visible={\"kind\":\"builtin\",\"id\":\"aurora\",\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60} style=true attr=\"\"; persisted={\"schemaVersion\":2,\"revision\":1,\"selection\":{\"kind\":\"builtin\",\"id\":\"aurora\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":60,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"245b45c8-f24a-45f7-be7c-42760834cbb1\"} style=true attr=\"\"; corruptStyle=true corruptAttr=\"\" corruptStored={not-json",
-      "at": "2026-10-28T15:08:22.692Z"
+      "detail": "visible={\"kind\":\"builtin\",\"id\":\"aurora\",\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60} style=true attr=\"\"; persisted={\"schemaVersion\":2,\"revision\":1,\"selection\":{\"kind\":\"builtin\",\"id\":\"aurora\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":60,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"7fa30ba6-f712-49af-ba82-e730ed0230ab\"} style=true attr=\"\"; corruptStyle=true corruptAttr=\"\" corruptStored={not-json",
+      "at": "2026-10-28T16:22:57.705Z"
     },
     {
       "id": "merged.clear-local-data",
       "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache",
       "status": "pass",
-      "detail": "dbBefore=[{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793200084422,\"lastUsedAt\":1793200100550,\"sourceUrl\":\"https://images.example.test/remote.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793200091787,\"lastUsedAt\":1793200100541,\"sourceUrl\":\"https://images.example.test/partial.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793200086948,\"lastUsedAt\":1793200086948,\"sourceUrl\":\"https://images.example.test/preset.jpg\",\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1793200026666,\"lastUsedAt\":1793200026666,\"sourceUrl\":null,\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1793200106710,\"lastUsedAt\":1793200106710,\"sourceUrl\":null,\"hasBlob\":true}]; cleared={\"status\":\"cleared\",\"removed\":\"3\",\"text\":\"已清理 3 个本地图片文件，当前壁纸已保留。\"}; currentBlob=true attr=",
-      "at": "2026-10-28T15:08:28.167Z"
+      "detail": "dbBefore=[{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793204559403,\"lastUsedAt\":1793204575550,\"sourceUrl\":\"https://images.example.test/remote.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793204566754,\"lastUsedAt\":1793204575544,\"sourceUrl\":\"https://images.example.test/partial.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1793204562057,\"lastUsedAt\":1793204562057,\"sourceUrl\":\"https://images.example.test/preset.jpg\",\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1793204501387,\"lastUsedAt\":1793204501387,\"sourceUrl\":null,\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1793204581713,\"lastUsedAt\":1793204581713,\"sourceUrl\":null,\"hasBlob\":true}]; cleared={\"status\":\"cleared\",\"removed\":\"3\",\"text\":\"已清理 3 个本地图片文件，当前壁纸已保留。\"}; currentBlob=true attr=",
+      "at": "2026-10-28T16:23:03.164Z"
     },
     {
       "id": "merged.two-tab-sync",
       "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops",
       "status": "pass",
       "detail": "selection={\"kind\":\"remote\",\"url\":\"https://images.example.test/sync.jpg\"} position={\"x\":0,\"y\":0} style=true attr=\"\" storageEvents=9",
-      "at": "2026-10-28T15:08:45.728Z"
+      "at": "2026-10-28T16:23:20.755Z"
     },
     {
       "id": "merged.two-tab-clear",
       "title": "clearing wallpaper in page A clears page B through the same sync path",
       "status": "pass",
       "detail": "style=false attr=null",
-      "at": "2026-10-28T15:08:45.761Z"
+      "at": "2026-10-28T16:23:20.771Z"
     },
     {
       "id": "merged.two-tab-upload-ref",
       "title": "page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref",
       "status": "pass",
-      "detail": "{\"uploadKey\":\"upload-1793200125763-06rcnzq27w\",\"refRows\":2,\"refsAfterAdopt\":[{\"key\":\"dsh-livery.wallpaper.ref.fea79eb0-f525-491a-8dca-50e364b97cce\",\"uploads\":[],\"updatedAt\":1793200091788},{\"key\":\"dsh-livery.wallpaper.ref.245b45c8-f24a-45f7-be7c-42760834cbb1\",\"uploads\":[\"upload-1793200125763-06rcnzq27w\"],\"updatedAt\":1793200125768},{\"key\":\"dsh-livery.wallpaper.ref.03bb480d-d34b-4bf7-8d3a-ea05c0e83bf1\",\"uploads\":[],\"updatedAt\":1793200004759},{\"key\":\"dsh-livery.wallpaper.ref.3cbe1877-dd53-46f2-bfdc-e1a5de2b28c9\",\"uploads\":[\"upload-1793200026666-0qjlsfyhk2\"],\"updatedAt\":1793200026667},{\"key\":\"dsh-livery.wallpaper.ref.54beaf5e-d70c-4c37-a58e-d0eb7593d0c1\",\"uploads\":[\"upload-1793200125763-06rcnzq27w\",\"upload-1793200106708-0353wpdeu4\"],\"updatedAt\":1793200125768}],\"uploadBSelection\":{\"kind\":\"upload\",\"key\":\"upload-1793200125763-06rcnzq27w\"},\"clearProtection\":{\"result\":\"cleared\",\"selectionKept\":true,\"refsStillContain\":true,\"stylePresent\":true}}",
-      "at": "2026-10-28T15:08:45.880Z"
+      "detail": "{\"uploadKey\":\"upload-1793204600773-04zygqzu3x\",\"refRows\":2,\"refsAfterAdopt\":[{\"key\":\"dsh-livery.wallpaper.ref.7b1195eb-7adb-4d52-b247-3f8d75d7b069\",\"uploads\":[],\"updatedAt\":1793204566756},{\"key\":\"dsh-livery.wallpaper.ref.2f007a63-088d-4981-818f-0ff109668cd5\",\"uploads\":[\"upload-1793204600773-04zygqzu3x\",\"upload-1793204581712-08j5py0lzx\"],\"updatedAt\":1793204600780},{\"key\":\"dsh-livery.wallpaper.ref.b3d4fdde-5029-45c5-8861-25164cb87d53\",\"uploads\":[\"upload-1793204501386-0qvypg6llx\"],\"updatedAt\":1793204501388},{\"key\":\"dsh-livery.wallpaper.ref.7fa30ba6-f712-49af-ba82-e730ed0230ab\",\"uploads\":[\"upload-1793204600773-04zygqzu3x\"],\"updatedAt\":1793204600780},{\"key\":\"dsh-livery.wallpaper.ref.54a5584c-7a9a-4e17-ae92-84d259fd841e\",\"uploads\":[],\"updatedAt\":1793204479360}],\"uploadBSelection\":{\"kind\":\"upload\",\"key\":\"upload-1793204600773-04zygqzu3x\"},\"clearProtection\":{\"result\":\"cleared\",\"selectionKept\":true,\"refsStillContain\":true,\"stylePresent\":true}}",
+      "at": "2026-10-28T16:23:20.896Z"
     },
     {
       "id": "perf.catalog-size",
       "title": "catalog JSON response stays within the measured headroom cap (+50% extreme regression tolerated as warning)",
       "status": "pass",
-      "detail": "actual 1313436 bytes; cap 1511424 bytes (10fc2db4ae61c24a0ea2f1f0c7d500490f653e81); within cap",
+      "detail": "actual 1313436 bytes; cap 1511424 bytes (6663485a5f94e8dcb65f44004662ac681cd09e1b); within cap",
       "evidence": {
         "catalogBytes": 1313436,
         "cap": 1511424,
@@ -5717,38 +5717,38 @@
           "method": "raw bytes of GET /livery/api/catalog in the isolated rc.2 Web run"
         }
       },
-      "at": "2026-10-28T15:08:49.995Z"
+      "at": "2026-10-28T16:23:25.080Z"
     },
     {
       "id": "perf.cold-start",
       "title": "cold-start time stays near the measured baseline (warn only unless extreme)",
       "status": "pass",
-      "detail": "actual boot=1833ms fcp=112ms; baseline p50=1118ms p95=1119ms; pass",
+      "detail": "actual boot=1817ms fcp=112ms; baseline p50=1312ms p95=1820ms; pass",
       "evidence": {
         "sample": {
-          "bootMs": 1833,
+          "bootMs": 1817,
           "firstContentfulPaintMs": 112,
-          "firstPaintMs": 28
+          "firstPaintMs": 20
         },
         "baseline": {
           "samplesMs": [
-            1019,
-            1118,
-            1119
+            1820,
+            1312,
+            1112
           ],
-          "p50Ms": 1118,
-          "p95Ms": 1119,
+          "p50Ms": 1312,
+          "p95Ms": 1820,
           "method": "host cold boot ready (dsh web line) with stock/off wallpaper, three serial boots on one isolated home"
         }
       },
-      "at": "2026-10-28T15:08:49.995Z"
+      "at": "2026-10-28T16:23:25.080Z"
     },
     {
       "id": "network.openverse-canary",
       "title": "real Openverse API canary is non-blocking",
       "status": "warn",
-      "detail": "network unavailable/third-party failure: fetch failed",
-      "at": "2026-10-28T15:08:50.321Z"
+      "detail": "network unavailable/third-party failure: This operation was aborted",
+      "at": "2026-10-28T16:23:35.082Z"
     },
     {
       "id": "restore.stock",
@@ -5767,21 +5767,21 @@
           "rgba(0, 0, 0, 0.04)"
         ]
       },
-      "at": "2026-10-28T15:08:51.254Z"
+      "at": "2026-10-28T16:23:36.058Z"
     },
     {
       "id": "restore.no-styles",
       "title": "Restore removes Livery-owned style elements",
       "status": "pass",
       "detail": "0 livery style element(s)",
-      "at": "2026-10-28T15:08:51.254Z"
+      "at": "2026-10-28T16:23:36.058Z"
     },
     {
       "id": "restore.persists",
       "title": "stock restore survives a hard reload",
       "status": "pass",
       "detail": "body attr=null handshake=(absent)",
-      "at": "2026-10-28T15:08:52.331Z"
+      "at": "2026-10-28T16:23:37.147Z"
     },
     {
       "id": "console.no-livery-errors",
@@ -5794,88 +5794,88 @@
         "ownedFailed": [],
         "ownedHttpErrors": []
       },
-      "at": "2026-10-28T15:08:52.389Z"
+      "at": "2026-10-28T16:23:37.201Z"
     },
     {
       "id": "previews.no-404",
       "title": "no 404 responses for /livery/assets/previews/*",
       "status": "pass",
       "detail": "0 404 preview response(s)",
-      "at": "2026-10-28T15:08:52.389Z"
+      "at": "2026-10-28T16:23:37.201Z"
     },
     {
       "id": "lifecycle.sigterm",
       "title": "SIGTERM stops the web service cleanly and closes the port",
       "status": "pass",
-      "detail": "exit=0 signal=null shutdown=83ms portClosed=true forced=false",
-      "at": "2026-10-28T15:08:52.483Z"
+      "detail": "exit=0 signal=null shutdown=106ms portClosed=true forced=false",
+      "at": "2026-10-28T16:23:37.318Z"
     },
     {
       "id": "lifecycle.uninstall",
       "title": "official `dsh plugin remove` uninstalls without residue in the profile manifest",
       "status": "pass",
-      "detail": "exit=0 depPresent=false bundleSelected=false duration=163ms",
+      "detail": "exit=0 depPresent=false bundleSelected=false duration=153ms",
       "evidence": {
-        "stdout": "Packages: -1 - dependencies: - dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz Done in 38ms using pnpm v12.3.4",
+        "stdout": "Packages: -1 - dependencies: - dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz Done in 37ms using pnpm v12.3.4",
         "stderr": ""
       },
-      "at": "2026-10-28T15:08:52.647Z"
+      "at": "2026-10-28T16:23:37.472Z"
     },
     {
       "id": "residue.no-boot-row",
       "title": "after uninstall the boot graph has no plugin row",
       "status": "pass",
       "detail": "70 entries, none for dsh-livery",
-      "at": "2026-10-28T15:08:54.566Z"
+      "at": "2026-10-28T16:23:39.367Z"
     },
     {
       "id": "residue.no-dom",
       "title": "after uninstall + restart body has no Livery attributes or style elements",
       "status": "pass",
       "detail": "data-dsh-livery=null data-dsh-livery-hash=null styles=0",
-      "at": "2026-10-28T15:08:55.291Z"
+      "at": "2026-10-28T16:23:40.131Z"
     },
     {
       "id": "residue.stock-tokens",
       "title": "after uninstall + restart computed tokens equal the stock baseline",
       "status": "pass",
       "detail": "actual=[\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"] stock=[\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-10-28T15:08:55.291Z"
+      "at": "2026-10-28T16:23:40.131Z"
     },
     {
       "id": "residue.no-boot-payload",
       "title": "after uninstall the first-frame handshake global is absent",
       "status": "pass",
       "detail": "window.__DSH_LIVERY_BOOT__=false",
-      "at": "2026-10-28T15:08:55.291Z"
+      "at": "2026-10-28T16:23:40.132Z"
     },
     {
       "id": "residue.catalog-route",
       "title": "after uninstall /livery/api/catalog returns 404",
       "status": "pass",
       "detail": "GET /livery/api/catalog → 404",
-      "at": "2026-10-28T15:08:55.294Z"
+      "at": "2026-10-28T16:23:40.134Z"
     },
     {
       "id": "residue.preview-route",
       "title": "after uninstall /livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/fjord-zh-light.svg returns 404",
       "status": "pass",
       "detail": "GET /livery/assets/previews/sha256:2de1e8f801ffc4c49c65552fe1d4886eff8bf73329ff43fce8217d1d1d0f1bec/fjord-zh-light.svg → 404",
-      "at": "2026-10-28T15:08:55.295Z"
+      "at": "2026-10-28T16:23:40.135Z"
     },
     {
       "id": "residue.plugin-route",
       "title": "after uninstall /plugins/dsh-livery/client.js returns 404",
       "status": "pass",
       "detail": "GET /plugins/dsh-livery/client.js → 404",
-      "at": "2026-10-28T15:08:55.295Z"
+      "at": "2026-10-28T16:23:40.136Z"
     },
     {
       "id": "residue.old-bundle-url",
       "title": "after uninstall the previously served client bundle URL returns 404",
       "status": "pass",
-      "detail": "GET /plugins/??dsh-livery/client.js&rev=e892cd3af825 → 404",
-      "at": "2026-10-28T15:08:55.296Z"
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=60bf336c2ea9 → 404",
+      "at": "2026-10-28T16:23:40.136Z"
     },
     {
       "id": "residue.profile-manifest",
@@ -5887,587 +5887,587 @@
         "after": "# dsh-livery acceptance harness rows (isolated acceptance home — safe to discard)\n# Pin the locale exactly like the user's real web profile does, and skip the\n# first-run welcome notice so settings automation is deterministic.\n- id: locale\n  config:\n    preference: zh\n- id: ui-settings-general\n  name: '@deepseek-ai/dsh-client-ui-settings-general'\n  config:\n    welcomeNoticeVersion: 2026-09-28.1\n- id: livery\n  name: dsh-livery\n  config:\n    skinId: stock\n",
         "staleSettingsRow": false
       },
-      "at": "2026-10-28T15:08:55.353Z"
+      "at": "2026-10-28T16:23:40.191Z"
     },
     {
       "id": "lifecycle.final-stop",
       "title": "final SIGTERM stops the restarted service and closes the port",
       "status": "pass",
       "detail": "exit=0 portClosed=true forced=false",
-      "at": "2026-10-28T15:08:55.427Z"
+      "at": "2026-10-28T16:23:40.281Z"
     }
   ],
   "artifacts": {
     "screenshots": [
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-home.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-home.png",
         "label": "zh/light/home",
         "locale": "zh",
         "mode": "light",
         "state": "home"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-home.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-home.png",
         "label": "zh/light/home",
         "locale": "zh",
         "mode": "light",
         "state": "home"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel.png",
         "label": "zh/light/panel",
         "locale": "zh",
         "mode": "light",
         "state": "panel"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery.png",
         "label": "zh/light/panel-gallery",
         "locale": "zh",
         "mode": "light",
         "state": "panel-gallery"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-preview-en.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-preview-en.png",
         "label": "zh/light/panel-gallery-preview-en",
         "locale": "zh",
         "mode": "light",
         "state": "panel-gallery-preview-en"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-preview-zh.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-preview-zh.png",
         "label": "zh/light/panel-gallery-preview-zh",
         "locale": "zh",
         "mode": "light",
         "state": "panel-gallery-preview-zh"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-search-tag.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-search-tag.png",
         "label": "zh/light/panel-gallery-search-tag",
         "locale": "zh",
         "mode": "light",
         "state": "panel-gallery-search-tag"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-search-empty.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-gallery-search-empty.png",
         "label": "zh/light/panel-gallery-search-empty",
         "locale": "zh",
         "mode": "light",
         "state": "panel-gallery-search-empty"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-previewing.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-previewing.png",
         "label": "zh/light/panel-previewing",
         "locale": "zh",
         "mode": "light",
         "state": "panel-previewing"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied.png",
         "label": "zh/light/panel-applied",
         "locale": "zh",
         "mode": "light",
         "state": "panel-applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied-preview-en.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied-preview-en.png",
         "label": "zh/light/panel-applied-preview-en",
         "locale": "zh",
         "mode": "light",
         "state": "panel-applied-preview-en"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied-after-reload.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-applied-after-reload.png",
         "label": "zh/light/panel-applied-after-reload",
         "locale": "zh",
         "mode": "light",
         "state": "panel-applied-after-reload"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-applied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-applied.png",
         "label": "zh/dark/applied",
         "locale": "zh",
         "mode": "dark",
         "state": "applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-forced-colors.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-forced-colors.png",
         "label": "zh/light/forced-colors",
         "locale": "zh",
         "mode": "light",
         "state": "forced-colors"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/en-light-panel-applied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/en-light-panel-applied.png",
         "label": "en/light/panel-applied",
         "locale": "en",
         "mode": "light",
         "state": "panel-applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/en-light-panel-gallery.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/en-light-panel-gallery.png",
         "label": "en/light/panel-gallery",
         "locale": "en",
         "mode": "light",
         "state": "panel-gallery"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-selfcheck.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-selfcheck.png",
         "label": "zh/light/selfcheck",
         "locale": "zh",
         "mode": "light",
         "state": "selfcheck"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-diagnostics-copied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-diagnostics-copied.png",
         "label": "zh/light/panel-diagnostics-copied",
         "locale": "zh",
         "mode": "light",
         "state": "panel-diagnostics-copied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-after-ready.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-after-ready.png",
         "label": "zh/light/applied-after-ready",
         "locale": "zh",
         "mode": "light",
         "state": "applied-after-ready"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-1023.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-1023.png",
         "label": "zh/light/applied-1023",
         "locale": "zh",
         "mode": "light",
         "state": "applied-1023"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-767.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-applied-767.png",
         "label": "zh/light/applied-767",
         "locale": "zh",
         "mode": "light",
         "state": "applied-767"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-style-1440.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-style-1440.png",
         "label": "zh/light/layout-style-1440",
         "locale": "zh",
         "mode": "light",
         "state": "layout-style-1440"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-style-1024.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-style-1024.png",
         "label": "zh/light/layout-style-1024",
         "locale": "zh",
         "mode": "light",
         "state": "layout-style-1024"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-wallpaper-1440.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-wallpaper-1440.png",
         "label": "zh/light/layout-wallpaper-1440",
         "locale": "zh",
         "mode": "light",
         "state": "layout-wallpaper-1440"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-wallpaper-1024.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-layout-wallpaper-1024.png",
         "label": "zh/light/layout-wallpaper-1024",
         "locale": "zh",
         "mode": "light",
         "state": "layout-wallpaper-1024"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-graphite.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-graphite.png",
         "label": "zh/light/style-graphite",
         "locale": "zh",
         "mode": "light",
         "state": "style-graphite"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-graphite-conversation.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-graphite-conversation.png",
         "label": "zh/light/style-graphite-conversation",
         "locale": "zh",
         "mode": "light",
         "state": "style-graphite-conversation"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-catppuccin.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-catppuccin.png",
         "label": "zh/light/style-catppuccin",
         "locale": "zh",
         "mode": "light",
         "state": "style-catppuccin"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-catppuccin-conversation.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-catppuccin-conversation.png",
         "label": "zh/light/style-catppuccin-conversation",
         "locale": "zh",
         "mode": "light",
         "state": "style-catppuccin-conversation"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-rice-paper.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-rice-paper.png",
         "label": "zh/light/style-rice-paper",
         "locale": "zh",
         "mode": "light",
         "state": "style-rice-paper"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-rice-paper-conversation.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-rice-paper-conversation.png",
         "label": "zh/light/style-rice-paper-conversation",
         "locale": "zh",
         "mode": "light",
         "state": "style-rice-paper-conversation"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-tokyo-night.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-tokyo-night.png",
         "label": "zh/light/style-tokyo-night",
         "locale": "zh",
         "mode": "light",
         "state": "style-tokyo-night"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-tokyo-night-conversation.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-style-tokyo-night-conversation.png",
         "label": "zh/light/style-tokyo-night-conversation",
         "locale": "zh",
         "mode": "light",
         "state": "style-tokyo-night-conversation"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-auto.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-auto.png",
         "label": "zh/light/wallpaper-online-auto",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-online-auto"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-search.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-search.png",
         "label": "zh/light/wallpaper-online-search",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-online-search"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-retry.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-retry.png",
         "label": "zh/light/wallpaper-online-retry",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-online-retry"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-applied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-online-applied.png",
         "label": "zh/light/wallpaper-online-applied",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-online-applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-builtin.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-builtin.png",
         "label": "zh/light/wallpaper-builtin",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-builtin"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-atmosphere.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-atmosphere.png",
         "label": "zh/light/wallpaper-atmosphere",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-atmosphere"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-blurred.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-blurred.png",
         "label": "zh/light/wallpaper-blurred",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-blurred"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-frost.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-frost.png",
         "label": "zh/light/wallpaper-frost",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-frost"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-persisted.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-persisted.png",
         "label": "zh/light/wallpaper-persisted",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-persisted"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-upload.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-upload.png",
         "label": "zh/light/wallpaper-upload",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-upload"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-upload-persisted.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-upload-persisted.png",
         "label": "zh/light/wallpaper-upload-persisted",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-upload-persisted"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-custom-url.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-custom-url.png",
         "label": "zh/light/wallpaper-custom-url",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-custom-url"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-1024x768.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-1024x768.png",
         "label": "zh/light/wallpaper-resize-1024x768",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-resize-1024x768"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-1920x1080.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-1920x1080.png",
         "label": "zh/light/wallpaper-resize-1920x1080",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-resize-1920x1080"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-900x1300.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-resize-900x1300.png",
         "label": "zh/light/wallpaper-resize-900x1300",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-resize-900x1300"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-atmosphere-conversation.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-atmosphere-conversation.png",
         "label": "zh/light/wallpaper-atmosphere-conversation",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-atmosphere-conversation"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png",
         "label": "zh/light/wallpaper-plugin-atmosphere-0",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-plugin-atmosphere-0"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png",
         "label": "zh/light/wallpaper-plugin-atmosphere-60",
         "locale": "zh",
         "mode": "light",
         "state": "wallpaper-plugin-atmosphere-60"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-off.png",
         "label": "zh/light/visual-1440-light-off",
         "locale": "zh",
         "mode": "light",
         "state": "visual-1440-light-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1440-light-on.png",
         "label": "zh/light/visual-1440-light-on",
         "locale": "zh",
         "mode": "light",
         "state": "visual-1440-light-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-on.png",
         "label": "zh/dark/visual-1440-dark-on",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-1440-dark-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1440-dark-off.png",
         "label": "zh/dark/visual-1440-dark-off",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-1440-dark-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-off.png",
         "label": "zh/light/visual-1024-light-off",
         "locale": "zh",
         "mode": "light",
         "state": "visual-1024-light-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-1024-light-on.png",
         "label": "zh/light/visual-1024-light-on",
         "locale": "zh",
         "mode": "light",
         "state": "visual-1024-light-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-on.png",
         "label": "zh/dark/visual-1024-dark-on",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-1024-dark-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-1024-dark-off.png",
         "label": "zh/dark/visual-1024-dark-off",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-1024-dark-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-off.png",
         "label": "zh/light/visual-767-light-off",
         "locale": "zh",
         "mode": "light",
         "state": "visual-767-light-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-767-light-on.png",
         "label": "zh/light/visual-767-light-on",
         "locale": "zh",
         "mode": "light",
         "state": "visual-767-light-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-on.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-on.png",
         "label": "zh/dark/visual-767-dark-on",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-767-dark-on"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-off.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-dark-visual-767-dark-off.png",
         "label": "zh/dark/visual-767-dark-off",
         "locale": "zh",
         "mode": "dark",
         "state": "visual-767-dark-off"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-0.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-0.png",
         "label": "zh/light/visual-frost-0",
         "locale": "zh",
         "mode": "light",
         "state": "visual-frost-0"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-35.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-35.png",
         "label": "zh/light/visual-frost-35",
         "locale": "zh",
         "mode": "light",
         "state": "visual-frost-35"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-80.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-frost-80.png",
         "label": "zh/light/visual-frost-80",
         "locale": "zh",
         "mode": "light",
         "state": "visual-frost-80"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-0.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-0.png",
         "label": "zh/light/visual-atmosphere-0",
         "locale": "zh",
         "mode": "light",
         "state": "visual-atmosphere-0"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-30.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-30.png",
         "label": "zh/light/visual-atmosphere-30",
         "locale": "zh",
         "mode": "light",
         "state": "visual-atmosphere-30"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-60.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-atmosphere-60.png",
         "label": "zh/light/visual-atmosphere-60",
         "locale": "zh",
         "mode": "light",
         "state": "visual-atmosphere-60"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-forced-colors.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-forced-colors.png",
         "label": "zh/light/visual-forced-colors",
         "locale": "zh",
         "mode": "light",
         "state": "visual-forced-colors"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-reduced-transparency.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-reduced-transparency.png",
         "label": "zh/light/visual-reduced-transparency",
         "locale": "zh",
         "mode": "light",
         "state": "visual-reduced-transparency"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-keyboard-selected.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-visual-keyboard-selected.png",
         "label": "zh/light/visual-keyboard-selected",
         "locale": "zh",
         "mode": "light",
         "state": "visual-keyboard-selected"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-position-top-left.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-position-top-left.png",
         "label": "zh/light/merged-position-top-left",
         "locale": "zh",
         "mode": "light",
         "state": "merged-position-top-left"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-position-bottom-right.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-position-bottom-right.png",
         "label": "zh/light/merged-position-bottom-right",
         "locale": "zh",
         "mode": "light",
         "state": "merged-position-bottom-right"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-diff.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-diff.png",
         "label": "zh/light/merged-preset-diff",
         "locale": "zh",
         "mode": "light",
         "state": "merged-preset-diff"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-applied.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-applied.png",
         "label": "zh/light/merged-preset-applied",
         "locale": "zh",
         "mode": "light",
         "state": "merged-preset-applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-error.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-error.png",
         "label": "zh/light/merged-preset-error",
         "locale": "zh",
         "mode": "light",
         "state": "merged-preset-error"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-partial-fault.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-partial-fault.png",
         "label": "zh/light/merged-preset-partial-fault",
         "locale": "zh",
         "mode": "light",
         "state": "merged-preset-partial-fault"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-partial-recovered.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-merged-preset-partial-recovered.png",
         "label": "zh/light/merged-preset-partial-recovered",
         "locale": "zh",
         "mode": "light",
         "state": "merged-preset-partial-recovered"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-stock.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-panel-stock.png",
         "label": "zh/light/panel-stock",
         "locale": "zh",
         "mode": "light",
         "state": "panel-stock"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-stock-after-reload.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-stock-after-reload.png",
         "label": "zh/light/stock-after-reload",
         "locale": "zh",
         "mode": "light",
         "state": "stock-after-reload"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-stock-post-uninstall.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/screens/0.2.1-rc.4-web-chrome/zh-light-stock-post-uninstall.png",
         "label": "zh/light/stock-post-uninstall",
         "locale": "zh",
         "mode": "light",
@@ -6475,56 +6475,66 @@
       }
     ],
     "filmstrip": {
-      "dir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip",
+      "dir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip",
       "frames": [
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-000.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-000.png",
           "index": 0,
-          "t": 17
+          "t": 18
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-001.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-001.png",
           "index": 1,
-          "t": 34
+          "t": 31
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-002.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-002.png",
           "index": 2,
-          "t": 119
+          "t": 120
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-003.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-003.png",
           "index": 3,
-          "t": 136
+          "t": 132
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-004.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-004.png",
           "index": 4,
-          "t": 152
+          "t": 145
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-005.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-005.png",
           "index": 5,
-          "t": 179
+          "t": 162
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-006.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-006.png",
           "index": 6,
-          "t": 190
+          "t": 185
         },
         {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-007.png",
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-007.png",
           "index": 7,
-          "t": 229
+          "t": 195
+        },
+        {
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-008.png",
+          "index": 8,
+          "t": 212
+        },
+        {
+          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-009.png",
+          "index": 9,
+          "t": 235
         }
       ],
-      "manifest": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-manifest.json"
+      "manifest": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/filmstrip/0.2.1-rc.4-web-chrome/zh-light-firstpaint-manifest.json"
     },
-    "consoleJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/console.json",
-    "timingsJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/timings.json",
-    "htmlDir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/html",
-    "probeJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/probe.json",
-    "reportMarkdown": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r6-final/web-0.2.1-rc.4/report.md"
+    "consoleJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/console.json",
+    "timingsJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/timings.json",
+    "htmlDir": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/html",
+    "probeJson": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/probe.json",
+    "reportMarkdown": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/pkg-0.1.3-r7-final/web-0.2.1-rc.4/report.md"
   },
   "evidence": {
     "catalog": {
@@ -41968,19 +41978,19 @@
       }
     },
     "firstPaint": {
-      "frames": 8,
+      "frames": 10,
       "paintTimings": {
-        "timeOrigin": 1793199987515.4,
-        "responseStart": 2.5,
+        "timeOrigin": 1793204461754,
+        "responseStart": 2.199999988079071,
         "domContentLoaded": 23.80000001192093,
-        "load": 113.09999999403954,
-        "firstPaint": 28,
+        "load": 111.19999998807907,
+        "firstPaint": 20,
         "firstContentfulPaint": 112,
-        "duration": 113.09999999403954
+        "duration": 111.19999998807907
       },
       "samples": [
         {
-          "t": 8,
+          "t": 2,
           "htmlLang": "en",
           "themeSource": "system",
           "dark": false,
@@ -41992,7 +42002,19 @@
           "liveryStyles": 1
         },
         {
-          "t": 25,
+          "t": 18,
+          "htmlLang": "en",
+          "themeSource": "system",
+          "dark": false,
+          "attr": "fjord",
+          "hash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
+          "tokenBg": "#f0f3f6",
+          "bg": "rgb(240, 243, 246)",
+          "bootStyle": true,
+          "liveryStyles": 1
+        },
+        {
+          "t": 35,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42004,7 +42026,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 92,
+          "t": 102,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42016,7 +42038,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 108,
+          "t": 118,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42028,7 +42050,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 125,
+          "t": 135,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42040,7 +42062,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 142,
+          "t": 152,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42052,7 +42074,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 158,
+          "t": 168,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42064,7 +42086,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 175,
+          "t": 185,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42076,7 +42098,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 192,
+          "t": 202,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42088,7 +42110,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 208,
+          "t": 218,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42100,7 +42122,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 225,
+          "t": 235,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42112,7 +42134,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 242,
+          "t": 252,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42124,7 +42146,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 258,
+          "t": 268,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42136,7 +42158,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 275,
+          "t": 285,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42148,7 +42170,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 292,
+          "t": 302,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42160,7 +42182,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 308,
+          "t": 318,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42172,7 +42194,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 325,
+          "t": 335,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42184,7 +42206,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 342,
+          "t": 352,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42196,19 +42218,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 358,
-          "htmlLang": "zh-CN",
-          "themeSource": "system",
-          "dark": false,
-          "attr": "fjord",
-          "hash": "sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e",
-          "tokenBg": "#f0f3f6",
-          "bg": "rgb(240, 243, 246)",
-          "bootStyle": false,
-          "liveryStyles": 1
-        },
-        {
-          "t": 375,
+          "t": 368,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -42231,49 +42241,49 @@
         "stopped": true,
         "exitCode": 0,
         "signal": null,
-        "shutdownMs": 83,
+        "shutdownMs": 106,
         "forceKilled": false,
-        "port": 52654,
+        "port": 62930,
         "portClosed": true,
-        "portClosedWaitedMs": 0,
+        "portClosedWaitedMs": 1,
         "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
-        "logTail": "dsh web: http://127.0.0.1:52654/?token=<redacted>\n"
+        "logTail": "dsh web: http://127.0.0.1:62930/?token=<redacted>\n"
       },
       "uninstall": {
         "phase": "uninstall",
         "command": "<tmp> plugin --profile web remove dsh-livery",
-        "startedAt": "2026-10-28T15:08:52.647Z",
+        "startedAt": "2026-10-28T16:23:37.472Z",
         "exitCode": 0,
         "signal": null,
         "timedOut": false,
-        "durationMs": 163,
-        "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz\n\nDone in 38ms using pnpm v12.3.4\n",
+        "durationMs": 153,
+        "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/dsh-livery-0.1.3.tgz\n\nDone in 37ms using pnpm v12.3.4\n",
         "stderr": "",
         "dependencyPresent": false,
         "bundleSelected": false
       },
       "postUninstallBoot": {
-        "url": "http://127.0.0.1:53299/?token=<redacted>",
-        "baseUrl": "http://127.0.0.1:53299",
-        "port": 53299,
-        "readyMs": 1530
+        "url": "http://127.0.0.1:63487/?token=<redacted>",
+        "baseUrl": "http://127.0.0.1:63487",
+        "port": 63487,
+        "readyMs": 1516
       },
       "stopAfterResidue": {
         "stopped": true,
         "exitCode": 0,
         "signal": null,
-        "shutdownMs": 74,
+        "shutdownMs": 90,
         "forceKilled": false,
-        "port": 53299,
+        "port": 63487,
         "portClosed": true,
         "portClosedWaitedMs": 0,
         "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web-post-uninstall.log",
-        "logTail": "dsh web: http://127.0.0.1:53299/?token=<redacted>\n"
+        "logTail": "dsh web: http://127.0.0.1:63487/?token=<redacted>\n"
       }
     },
     "profile": {
       "state": {
-        "profileDir": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r6-final/web-rc4-home/profiles/web",
+        "profileDir": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/r7-final/web-rc4-home/profiles/web",
         "exists": true,
         "dependencies": {},
         "bundles": [
@@ -42284,11 +42294,11 @@
       },
       "pluginManagerLogs": [
         {
-          "operation": "operation-ErdYOZ",
+          "operation": "operation-2xhzAs",
           "pnpmLogTail": ""
         },
         {
-          "operation": "operation-FheHp8",
+          "operation": "operation-YfnPvM",
           "pnpmLogTail": ""
         }
       ]
