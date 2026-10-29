@@ -32,7 +32,7 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).not.toMatch(/(^|[},])\s*(?:html|body|\*)\s*[{,]/m)
   })
 
-  it('ships the responsive two-column card layout system', () => {
+  it('ships the responsive workbench/source-card layout system', () => {
     expect(CLIENT_CSS).toMatch(/\.wallpaper-workbench\{display:grid;grid-template-columns:minmax\(0,1\.9fr\) minmax\(320px,1fr\)/)
     expect(CLIENT_CSS).toMatch(/@container livery-studio \(max-width: 959px\)/)
     expect(CLIENT_CSS).toMatch(/\.livery-ui-card\{display:flex;flex-direction:column;gap:var\(--lw-gap-card\);min-width:0;padding:18px 20px/)
@@ -51,7 +51,8 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain('.livery-diag{')
     expect(CLIENT_CSS).toMatch(/@media \(prefers-reduced-transparency: reduce\),\(forced-colors: active\)\{\.livery-ui-card/)
     expect(CLIENT_CSS).toContain('.wallpaper-file-input{')
-    expect(CLIENT_CSS).toContain('.wallpaper-rail{order:-1}')
+    expect(CLIENT_CSS).not.toContain('order:-1')
+    expect(CLIENT_CSS).not.toMatch(/\.wallpaper-rail|\.livery-rail/)
     // Effect sliders are bounded inside the rail card, never viewport-wide.
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effects-card \.wallpaper-effect input\{max-width:none\}/)
     expect(CLIENT_CSS).toMatch(/\.wallpaper-effect output\{flex:0 0 54px/)

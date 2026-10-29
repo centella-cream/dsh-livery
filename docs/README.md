@@ -1,6 +1,6 @@
 # Documentation
 
-**Current release: `0.1.3` (2026-10-27).** The authoritative support policy is
+**Current release: `0.1.4` (2026-10-29).** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -39,7 +39,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**当前版本：`0.1.3`（2026-10-27）。** 支持策略以
+**当前版本：`0.1.4`（2026-10-27）。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 

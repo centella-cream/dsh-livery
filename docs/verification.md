@@ -1,13 +1,13 @@
 # Verification
 
-**Release `0.1.3` — release candidate.** The exact accepted artifact, sha256,
+**Release `0.1.4` — release candidate.** The exact accepted artifact, sha256,
 byte size and commit are recorded in the three committed evidence files at
-`contracts/dsh/evidence/0.1.3/`; the publication workflow downloads the same bytes
+`contracts/dsh/evidence/0.1.4/`; the publication workflow downloads the same bytes
 from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub
 Release. `0.1.2` evidence is retained unchanged under
 `contracts/dsh/evidence/` for the prior release.
 
-**Release scope for 0.1.3 (limited release):**
+**Release scope for 0.1.4 (limited release):**
 
 | Host | Profile / platform | Certified runtime | Status |
 |---|---|---|---|
@@ -33,9 +33,9 @@ The candidate artifact is the exact tarball named in the committed evidence file
 
 Evidence:
 
-- `contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json`
-- `contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json`
+- `contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json`
+- `contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json`
+- `contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json`
 
 Each file records the exact sha256, byte size, commit, exact browser/runtime
 versions, scope and per-run results. Evidence schema v2 also binds a sanitized
@@ -103,7 +103,7 @@ Electron app, the official rc.3 plugin manager and an isolated app
   non-stock value can be inherited on reinstall. This is documented in the
   README/SUPPORT uninstall notes and is not counted as "zero residue".
 - All host surfaces using `--dsw-alias-bg-layer-2` remain opaque under frost
-  (not only Modal). This is an accepted 0.1.3 product boundary; plugin cards keep
+  (not only Modal). This is an accepted 0.1.4 product boundary; plugin cards keep
   the glass effect through `--dsh-livery-card-surface`.
 
 ## Reproduce

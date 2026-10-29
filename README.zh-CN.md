@@ -10,7 +10,7 @@
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.3 有限发布。**
+> **发布状态：0.1.4 有限发布。**
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1，以及
 > DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。
@@ -109,19 +109,19 @@ Desktop 认证覆盖插件安装、启动、渲染器、设置/画廊、持久�
 
 ## 安装
 
-已发布包：[`dsh-livery@0.1.3`](https://www.npmjs.com/package/dsh-livery)。
+已发布包：[`dsh-livery@0.1.4`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile（CLI）
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.3
+dsh plugin --profile web add dsh-livery@0.1.4
 dsh web                                 # 打开命令输出的地址
 ```
 
 ### Desktop 应用
 
 Desktop 应用通过插件管理器安装：**Settings → Plugins → Install by package name**，
-输入 `dsh-livery@0.1.3`。0.2.1-rc.3 Desktop 运行时会被本版本接受，插件可安装并在
+输入 `dsh-livery@0.1.4`。0.2.1-rc.3 Desktop 运行时会被本版本接受，插件可安装并在
 Electron 渲染器中运行。macOS 原生窗口装饰、红绿灯/leading、vibrancy、Dock/rightbar 和
 系统级 DPI 属于宿主所有，不在插件认证范围内。
 
@@ -131,11 +131,11 @@ Desktop 插件管理器会执行 minimum-release-age / 供应链校验；刚发�
 即使包本身有效。需要立即安装时，先在本地拉取精确 npm tarball，再从文件安装：
 
 ```bash
-npm pack dsh-livery@0.1.3 --pack-destination "$HOME/Downloads"
-shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.3.tgz"
+npm pack dsh-livery@0.1.4 --pack-destination "$HOME/Downloads"
+shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.4.tgz"
 # 与 GitHub Release / npm 制品哈希核对后再安装
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.3.tgz"
+  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.4.tgz"
 ```
 
 安装后重启 Desktop 应用。`npm pack` 只是下载已发布 tarball，不会绕过包校验；本地文件路径会绕过
@@ -195,21 +195,21 @@ pnpm adapter:check
 浏览器验收（需要本地 DSH 安装、系统 Chrome 和打包后的 tgz）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.3.tgz
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.3.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.3.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.4.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.4.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.4.tgz      # 薄封装
 ```
 
 ## 验收
 
-0.1.3 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**，
+0.1.4 有限发布：Web `0.2.1-rc.2` 隔离全量运行和真实 profile 克隆均通过、**0 失败**，
 最新 Web `0.2.1-rc.4` 隔离运行也通过、**0 失败**（Chrome 156.0.8078.48，Node 22.23.1）；
 Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收（Node 24.21.0）。精确计数和报告
 哈希见已提交的 evidence。仓库门禁包括 `tsc`、
 完整测试套件、对比度 / token / CSS 审计、loader ABI 和打包检查。精确产物绑定到
-`contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json`、
-`contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json` 与
-`contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json`。详细说明和已知限制见
+`contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json`、
+`contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json` 与
+`contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json`。详细说明和已知限制见
 [docs/verification.md](docs/verification.md)。
 
 ## 参与

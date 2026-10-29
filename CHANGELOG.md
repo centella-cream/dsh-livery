@@ -7,10 +7,11 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.1.4] — 待发布
+## [0.1.4] — 2026-10-29
 
 ### Changed
 
+- 显式将 client gzip 预算从 56 KiB 调整为 60 KiB，用于容纳新的 Studio 布局/容器查询；实际 57.9 KiB，已在构建与验收门禁中同步。
 - 重构视觉风格与壁纸页面的信息层级，采用当前工作区、内容选择区和次要管理区三层布局。
 - 当前视觉风格改为大幅 16:10 预览，并将预览应用、取消和恢复默认操作合并到当前风格卡。
 - 风格画廊改为全宽 4 列布局，搜索、分类、更多标签和预览语言压缩为两行以内工具栏。

@@ -130,7 +130,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(web.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(web.certifiedRuntimeVersions).toEqual(['22.23.1'])
     expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
-    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json'])
+    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json'])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
     expect(web.profiles.web.chrome).toBe('passed')
@@ -145,7 +145,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     expect(desktop.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.3', npmVersion: '0.2.1-rc.3' })
-    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json'])
+    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json'])
     expect(supportedProfiles(desktop)).toEqual(['desktop.macos'])
     expect(notSupportedProfiles(desktop)).toEqual(['desktop.win32', 'web.chrome', 'web.edge'])
     expect(desktop.profiles.desktop.macos).toBe('passed')
@@ -160,7 +160,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(preview.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(preview.certifiedRuntimeVersions).toEqual(['22.23.1'])
     expect(preview.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.4', npmVersion: '0.2.1-rc.4' })
-    expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json'])
+    expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json'])
     expect(supportedProfiles(preview)).toEqual(['web.chrome'])
     expect(preview.profiles.web.chrome).toBe('passed')
     expect(preview.profiles.desktop.macos).toBe('not-supported')
@@ -414,7 +414,7 @@ describe('generated shipped registry', () => {
       files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.1.3')
+    expect(pkg.version).toBe('0.1.4')
     expect(pkg.engines?.dsh).toBe('0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')

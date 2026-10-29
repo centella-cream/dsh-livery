@@ -1,6 +1,6 @@
 # Design references: the 24-style set
 
-> **Status (0.1.3):** current attribution record for the 24 shipped styles.
+> **Status (0.1.4):** current attribution record for the 24 shipped styles.
 
 The set keeps the 10 original ids (retuned for the new style system) and
 adds 14: 12 palettes inspired by open-source themes plus 2 original

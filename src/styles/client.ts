@@ -76,6 +76,7 @@ export const CLIENT_CSS = `
 .livery-panel{display:flex;flex-direction:column;height:100%;min-height:0}
 .livery-panel__head{display:flex;flex-direction:column;gap:4px;padding:18px 24px 12px;border-block-end:1px solid var(--lw-line)}
 .livery-panel__body{flex:1;min-height:0;overflow:auto;padding:18px 24px 26px;container-type:inline-size;container-name:livery-studio}
+.livery-settings{container-type:inline-size;container-name:livery-studio}
 
 .livery-gallery-groups{display:flex;flex-direction:column;gap:16px}
 .livery-family{display:flex;flex-direction:column;gap:8px}
@@ -94,15 +95,10 @@ export const CLIENT_CSS = `
 .livery-ui-card__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
 .livery-ui-card__title,.livery-gallery-head__title{margin:0;font-size:var(--lw-fs-title);font-weight:600;line-height:var(--lw-lh-title)}
 .livery-ui-card__hint{margin:0;color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh)}
-.livery-layout,.wallpaper-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);align-items:start;gap:20px}
-.livery-main,.livery-rail,.wallpaper-main,.wallpaper-rail{display:flex;flex-direction:column;gap:20px;min-width:0}
-.livery-rail,.wallpaper-rail{gap:18px}
-.livery-layout .livery-summary{border:0;background:transparent;padding:0}
-.livery-layout .livery-actions{padding:0}
 .livery-hero__meta{display:flex;align-items:center;gap:12px;min-width:0}
 .livery-hero__thumb{flex:0 0 96px;width:96px;aspect-ratio:16/10;object-fit:cover;border-radius:8px;border:1px solid color-mix(in srgb,var(--lw-fg) 16%,transparent)}
 .livery-hero__meta .livery-meta{flex:1 1 auto;justify-content:flex-end}
-.livery-layout .livery-check{border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent);border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2));box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 28px -22px rgba(0,0,0,.45);backdrop-filter:blur(14px) saturate(1.08)}
+.livery-secondary .livery-check{border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent);border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2));box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 28px -22px rgba(0,0,0,.45);backdrop-filter:blur(14px) saturate(1.08)}
 .wallpaper-hero__preview{position:relative;width:100%;max-height:360px;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background-color:var(--lw-layer2);background-position:center;background-size:cover;border:1px solid color-mix(in srgb,var(--lw-fg) 12%,transparent)}
 .wallpaper-hero__dim,.wallpaper-hero__atmo{position:absolute;inset:0;pointer-events:none;background-position:center;background-size:cover}
 .wallpaper-hero__dim{background:rgba(0,0,0,1)}
@@ -121,7 +117,7 @@ export const CLIENT_CSS = `
 .wallpaper-swatch[aria-pressed='true']{outline:2px solid var(--lw-brand);outline-offset:2px;box-shadow:0 0 0 4px color-mix(in srgb,var(--lw-brand) 28%,transparent)}
 .wallpaper-subrow{display:flex;flex-direction:column;gap:8px;padding:10px 0;border-block-start:1px solid var(--lw-line)}
 .wallpaper-subrow:first-of-type{padding-block-start:0;border-block-start:0}
-@media (max-width:1099px){.livery-layout,.wallpaper-layout{grid-template-columns:minmax(0,1fr)}.wallpaper-rail{order:-1}.wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-swatches{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:1099px){.wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-swatches{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:639px){.wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}.wallpaper-swatches{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .livery-gallery-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .livery-gallery-head__title{margin:0;font-size:var(--lw-fs-title);font-weight:600;line-height:var(--lw-lh)}
@@ -133,9 +129,8 @@ export const CLIENT_CSS = `
 .wallpaper-hero__empty{display:grid;place-items:center;min-height:180px;aspect-ratio:16/9;border:1px dashed var(--lw-line2);border-radius:10px;color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh);text-align:center}
 .wallpaper-file-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .livery-diag{max-width:100%;max-height:220px;overflow:auto;margin:0;padding:8px;border:1px solid var(--lw-line);border-radius:8px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer));color:var(--lw-2);font-family:var(--lw-mono);font-size:var(--lw-fs-caption);line-height:var(--lw-lh);white-space:pre-wrap;overflow-wrap:anywhere}
-@media (prefers-reduced-transparency: reduce),(forced-colors: active){.livery-ui-card,.livery-layout .livery-check{backdrop-filter:none}}
+@media (prefers-reduced-transparency: reduce),(forced-colors: active){.livery-ui-card,.livery-secondary .livery-check{backdrop-filter:none}}
 .livery-about{display:flex;flex-direction:column;gap:4px}
-.wallpaper-recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
 .wallpaper-recent-item{display:flex;flex-direction:column;gap:3px;min-width:0;padding:0;border:1px solid color-mix(in srgb,var(--lw-fg) 14%,transparent);border-radius:9px;background:color-mix(in srgb,var(--lw-fg) 4%,var(--lw-layer2));color:inherit;font:inherit;font-size:var(--lw-fs-caption);text-align:start;cursor:pointer;overflow:hidden}
 .wallpaper-recent-thumb{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
 .wallpaper-recent-title,.wallpaper-recent-source{display:block;padding:0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -229,7 +224,6 @@ export const CLIENT_CSS = `
   .wallpaper-effects-card .livery-ui-card__hint{display:none}
   .wallpaper-effects-card{padding:10px 14px}
   .wallpaper-effects-card .wallpaper-effects-grid{gap:6px}
-  .wallpaper-effects-card .wallpaper-effect__hint{display:none}
   .livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-local-grid{grid-template-columns:minmax(0,1fr)}

@@ -247,9 +247,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const effectiveAttribution = recentAttribution
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
   const resultPageCount = Math.max(1, Math.ceil(online.results.length / RESULT_PAGE_SIZE))
+  const safeResultPage = Math.min(resultPage, resultPageCount - 1)
   const boundedResults = online.results.slice(
-    resultPage * RESULT_PAGE_SIZE,
-    (resultPage + 1) * RESULT_PAGE_SIZE,
+    safeResultPage * RESULT_PAGE_SIZE,
+    (safeResultPage + 1) * RESULT_PAGE_SIZE,
   )
   useEffect(() => { setResultPage(0) }, [online.results])
   const onSourceTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
@@ -263,10 +264,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     event.preventDefault()
     const tab = SOURCE_TABS[next]!
     setSourceTab(tab)
-    requestAnimationFrame(() => {
-      const element = document.querySelector(`[data-testid="wallpaper-source-tab-${tab}"]`) as HTMLElement | null
-      element?.focus()
-    })
+    requestAnimationFrame(() => { sourceTabRefs.current[tab]?.focus() })
   }
 
   const objectUrlsRef = useRef<Map<string, string>>(new Map())
@@ -274,6 +272,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const remoteCommitTicket = useRef(0)
   const presetApplyStartVersion = useRef<number | undefined>(undefined)
   const presetApplyStartRevision = useRef<number | undefined>(undefined)
+  const sourceTabRefs = useRef<Partial<Record<SourceTab, HTMLButtonElement | null>>>({})
   const rememberObjectUrl = (url: string, objectUrl: string): void => {
     const previous = objectUrlsRef.current.get(url)
     if (previous !== undefined && previous !== objectUrl) {
@@ -1020,6 +1019,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
               aria-selected={sourceTab === tab}
               aria-controls={`wallpaper-source-panel-${tab}`}
               tabIndex={sourceTab === tab ? 0 : -1}
+              ref={element => { sourceTabRefs.current[tab] = element }}
               onClick={() => setSourceTab(tab)}
             >
               {t(SOURCE_TAB_KEYS[tab])}
@@ -1094,20 +1094,20 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                   variant="ghost"
                   size="sm"
                   data-testid="wallpaper-result-prev"
-                  disabled={resultPage === 0}
-                  onClick={() => setResultPage(page => Math.max(0, page - 1))}
+                  disabled={safeResultPage === 0}
+                  onClick={() => setResultPage(Math.max(0, safeResultPage - 1))}
                 >
                   {t('wallpaper.resultPrev')}
                 </Button>
                 <span className="wallpaper-pager__label" data-testid="wallpaper-result-page">
-                  {t('wallpaper.resultPage', { page: resultPage + 1, pages: resultPageCount })}
+                  {t('wallpaper.resultPage', { page: safeResultPage + 1, pages: resultPageCount })}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   data-testid="wallpaper-result-next"
-                  disabled={resultPage >= resultPageCount - 1}
-                  onClick={() => setResultPage(page => Math.min(resultPageCount - 1, page + 1))}
+                  disabled={safeResultPage >= resultPageCount - 1}
+                  onClick={() => setResultPage(Math.min(resultPageCount - 1, safeResultPage + 1))}
                 >
                   {t('wallpaper.resultNext')}
                 </Button>

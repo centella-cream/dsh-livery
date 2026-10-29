@@ -1,6 +1,6 @@
 # Multi-version policy
 
-**Status (0.1.3):** current policy. This page replaces the earlier
+**Status (0.1.4):** current policy. This page replaces the earlier
 compatibility-range/compat-mode proposal, which was removed and is archived
 under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 

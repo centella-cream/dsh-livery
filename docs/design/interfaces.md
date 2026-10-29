@@ -1,6 +1,6 @@
 # Interfaces and architecture
 
-**Status (0.1.3):** current implementation reference. The authoritative support
+**Status (0.1.4):** current implementation reference. The authoritative support
 policy is [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json);
 the exact release evidence is in [`docs/verification.md`](../verification.md).
 Historical interfaces and pre-0.1.0 design notes are under

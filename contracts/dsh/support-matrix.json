@@ -31,7 +31,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json"
+        "contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.2 + Web Profile + exact Chrome 156.0.8078.48; 156.0.8078.48 is the only certified browser version.",
@@ -69,7 +69,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.3/0.2.1-rc.3-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
@@ -105,7 +105,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json"
+        "contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json"
       ],
       "notes": [
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
