@@ -171,7 +171,9 @@ export const CLIENT_CSS = `
 .wallpaper-source-section{display:flex;flex-direction:column;gap:10px;min-width:0}
 .wallpaper-source-section>.livery-ui-card__title{margin:0}
 .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wallpaper-source-panel .wallpaper-swatches{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));max-height:none}
 .wallpaper-source-panel .livery-card{min-width:0}
+.wallpaper-source-panel .livery-thumb__fallback{display:flex;flex-direction:column;justify-content:center;gap:10px;height:100%;padding:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--lw-brand) 12%,transparent),color-mix(in srgb,var(--lw-fg) 8%,transparent))}
 .wallpaper-pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
 .wallpaper-pager__label{color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh-control)}
 .wallpaper-recent-track{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
@@ -215,6 +217,8 @@ export const CLIENT_CSS = `
   .wallpaper-workbench{grid-template-columns:minmax(0,1fr)}
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .livery-hero__layout{grid-template-columns:minmax(0,1fr)}
+  .livery-hero__visual{display:flex;justify-content:center}
+  .livery-hero__preview{max-width:520px}
   .livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .livery-gallery-toolbar{grid-template-columns:minmax(0,1fr)}
@@ -224,7 +228,8 @@ export const CLIENT_CSS = `
 @container livery-studio (max-width: 639px){
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
   .livery-gallery-card .livery-grid{grid-template-columns:minmax(0,1fr)}
-  .wallpaper-source-panel .livery-grid{grid-template-columns:minmax(0,1fr)}
+    .wallpaper-source-panel .livery-grid{display:flex;overflow-x:auto;padding-bottom:8px}
+  .wallpaper-source-panel .livery-card{flex:0 0 260px}
   .wallpaper-source-tabs{flex-wrap:nowrap;overflow-x:auto}
   .wallpaper-source-tab{flex:0 0 auto}
   .livery-gallery-toolbar__filters{flex-wrap:nowrap}
