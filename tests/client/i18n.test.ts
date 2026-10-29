@@ -122,6 +122,13 @@ describe('untranslated-key detection', () => {
 })
 
 describe('entry rename — 视觉风格 / Visual Style', () => {
+  it('keeps the style subpage tab distinct from the entry name', () => {
+    expect(zhCN['tab.style']).toBe('风格')
+    expect(enUS['tab.style']).toBe('Styles')
+    expect(zhCN['tab.wallpaper']).toBe('壁纸')
+    expect(enUS['tab.wallpaper']).toBe('Wallpapers')
+  })
+
   it('names the entry consistently in both locales', () => {
     expect(zhCN['panel.label']).toBe('视觉风格')
     expect(enUS['panel.label']).toBe('Visual Style')

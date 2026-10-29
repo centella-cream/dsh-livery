@@ -141,7 +141,7 @@ afterEach(() => {
 })
 
 describe('page tabs', () => {
-  it('renders 视觉风格 / 壁纸 tabs with the style panel selected by default', () => {
+  it('renders 风格 / 壁纸 tabs with the style panel selected by default', () => {
     const html = renderWorkspace()
     expect(html).toContain('data-testid="livery-page-tabs"')
     expect(html).toContain('data-testid="livery-page-tab-style"')

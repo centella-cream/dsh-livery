@@ -31,10 +31,10 @@ English · [中文](README.zh-CN.md)
 
 ![DSH Livery's Visual Style page with a large current-style hero and full-width gallery](docs/assets/hero-en.jpg)
 
-All screenshots come from a real Web profile (the captures show the Chinese UI; Livery follows the DSH host locale). The style montage and the
-wallpaper-coverage image use [dsh-charter](https://github.com/centella-cream/dsh-charter)
-— a separate bilingual session-charter plugin — as an example of another plugin's
-page being styled; the rest show DSH Livery's own UI.
+All screenshots come from a real Web profile (the captures show the Chinese UI;
+Livery follows the DSH host locale). The style montage uses the shipped fixed
+preview scenes; the wallpaper-coverage image shows the wallpaper over the default
+DSH workspace. The rest show DSH Livery's own UI.
 
 ## Features
 
@@ -80,23 +80,20 @@ page being styled; the rest show DSH Livery's own UI.
 
 ## Styles
 
-![Six selected styles over the dsh-charter page](docs/assets/styles-en.jpg)
+![Six selected styles from the shipped fixed preview scenes](docs/assets/styles-en.jpg)
 
 Six of the 24 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
-These captures render on the [dsh-charter](https://github.com/centella-cream/dsh-charter)
-Charter page to show how a complete, real plugin page looks when styled; dsh-charter
-is a separate bilingual project, not the subject of this README.
+These are the shipped fixed preview scenes (not host UI captures); the same
+previews appear in the 0.1.4 full-width gallery.
 
 ## Wallpapers
 
 ![Wallpaper studio: current Aurora wallpaper, effects, and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
 
-![Aurora wallpaper over the dsh-charter Charter page](docs/assets/wallpaper-coverage-en.jpg)
+![Aurora wallpaper over the default DSH workspace](docs/assets/wallpaper-coverage-en.jpg)
 
 The studio page on the left is DSH Livery's own UI. The second capture shows the
-same Aurora wallpaper applied over the
-[dsh-charter](https://github.com/centella-cream/dsh-charter) Charter page, as an
-example of another plugin's surface staying covered.
+same Aurora wallpaper applied over the default DSH workspace.
 
 ## Why another skin plugin is different
 

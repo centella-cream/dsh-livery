@@ -36,7 +36,7 @@ export const enUS = {
 
   // Page tabs.
   'tab.label': 'Page tabs',
-  'tab.style': 'Visual styles',
+  'tab.style': 'Styles',
   'tab.wallpaper': 'Wallpapers',
 
   // Wallpaper studio.

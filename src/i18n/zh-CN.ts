@@ -34,7 +34,7 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // Page tabs.
   'tab.label': '页面标签',
-  'tab.style': '视觉风格',
+  'tab.style': '风格',
   'tab.wallpaper': '壁纸',
 
   // Wallpaper studio.

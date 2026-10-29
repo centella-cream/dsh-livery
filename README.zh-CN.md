@@ -27,9 +27,8 @@
 
 ![DSH Livery 的视觉风格页：大幅当前风格 Hero 与全宽画廊](docs/assets/hero-zh.jpg)
 
-所有截图都来自真实 Web Profile（截图显示中文界面；插件会跟随 DSH 宿主语言）。风格合集和壁纸覆盖图使用
-[dsh-charter](https://github.com/centella-cream/dsh-charter)（另一个独立的中英文会话契约插件）
-作为“其他插件页面”的渲染示例；其余截图展示 DSH Livery 自己的界面。
+所有截图都来自真实 Web Profile（截图显示中文界面；插件会跟随 DSH 宿主语言）。风格合集使用随包发布的
+固定预览场景；壁纸覆盖图展示壁纸覆盖在默认 DSH 工作区上的效果；其余截图展示 DSH Livery 自己的界面。
 
 ## 功能
 
@@ -59,21 +58,18 @@
 
 ## 视觉风格
 
-![六套精选风格渲染在 dsh-charter 页面上](docs/assets/styles-zh.jpg)
+![六套精选风格的随包固定预览场景](docs/assets/styles-zh.jpg)
 
-24 套中的六套精选：**青瓷、樱、森野、极夜、玫瑰松、东京夜**。这些截图渲染在
-[dsh-charter](https://github.com/centella-cream/dsh-charter) 的会话契约页上，用来展示一个完整、
-真实的插件页面被套用风格后的效果；dsh-charter 是另一个独立的中英文项目，不是本文档的主角。
+24 套中的六套精选：**青瓷、樱、森野、极夜、玫瑰松、东京夜**。这些是随包发布的固定预览场景
+（不是宿主 UI 截图）；相同的预览也出现在 0.1.4 的全宽风格画廊中。
 
 ## 壁纸
 
 ![壁纸工作室：当前极光壁纸、效果滑杆和可切换的壁纸来源](docs/assets/wallpaper-studio-zh.jpg)
 
-![极光壁纸覆盖在 dsh-charter 会话契约页上](docs/assets/wallpaper-coverage-zh.jpg)
+![极光壁纸覆盖在默认 DSH 工作区上](docs/assets/wallpaper-coverage-zh.jpg)
 
-第一张是 DSH Livery 自己的壁纸工作室。第二张把同一张极光壁纸应用到
-[dsh-charter](https://github.com/centella-cream/dsh-charter) 的会话契约页上，作为“其他插件页面
-也被壁纸覆盖”的示例。
+第一张是 DSH Livery 自己的壁纸工作室。第二张把同一张极光壁纸覆盖在默认 DSH 工作区上。
 
 ## 为什么不是“又一个皮肤”
 
