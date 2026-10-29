@@ -46,6 +46,16 @@ jobs:
             echo "LIVERY_ACCEPTANCE_RUN_ID repository variable is required; tag workflow never rebuilds the candidate" >&2
             exit 1
           }
+      - name: Assert the producer run was built from this exact tag commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID="${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}"
+          PRODUCER_SHA=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq .head_sha)
+          test "$PRODUCER_SHA" = "$GITHUB_SHA" || {
+            echo "producer run $RUN_ID headSha=$PRODUCER_SHA != tag commit $GITHUB_SHA" >&2
+            exit 1
+          }
       - name: Download the EXACT accepted candidate (no rebuild)
         uses: actions/download-artifact@v4
         with:
