@@ -46,7 +46,7 @@ Reports about DeepSeek Harness itself should go to the upstream project.
 
 ## 安全策略（中文）
 
-- 支持版本：`0.1.x` 已发布版本；当前为 `0.1.3`。
+- 支持版本：`0.1.x` 已发布版本；当前为 `0.1.4`。
 - 报告方式：**不要开公开 issue**，请使用 GitHub 私有漏洞报告（Security → Report a
   vulnerability），附上复现步骤、版本、宿主 build 与影响；我们会在 7 天内回复。
 - 范围说明：风格层完全离线，不加载远程字体、脚本或图片；唯一的联网功能是**壁纸工作室**。打开
