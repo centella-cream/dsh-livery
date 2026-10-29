@@ -7,6 +7,7 @@
  * touched. Network requests are user-originated (tab open / explicit clicks).
  */
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { LiveryKey } from '../../i18n/index.js'
 import { STOCK_ID } from '../../core/types.js'
@@ -85,6 +86,16 @@ const UPLOAD_PROBLEM_KEYS: Record<UploadProblem, LiveryKey> = {
   size: 'wallpaper.uploadError.size',
   empty: 'wallpaper.uploadError.empty',
 }
+const SOURCE_TABS = ['online', 'builtin', 'recent', 'local'] as const
+type SourceTab = typeof SOURCE_TABS[number]
+const RESULT_PAGE_SIZE = 6
+const SOURCE_TAB_KEYS: Record<SourceTab, LiveryKey> = {
+  online: 'wallpaper.sourceOnline',
+  builtin: 'wallpaper.sourceBuiltin',
+  recent: 'wallpaper.sourceRecent',
+  local: 'wallpaper.sourceLocal',
+}
+
 const EFFECT_ROWS: readonly { id: keyof WallpaperEffects; label: LiveryKey; format: LiveryKey }[] = [
   { id: 'blur', label: 'wallpaper.blur', format: 'wallpaper.px' },
   { id: 'dim', label: 'wallpaper.dim', format: 'wallpaper.percent' },
@@ -196,6 +207,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [sourceTab, setSourceTab] = useState<SourceTab>('online')
+  const [resultPage, setResultPage] = useState(0)
+  const [manageOpen, setManageOpen] = useState(false)
   const [online, setOnline] = useState<OnlineState>(IDLE_ONLINE)
   const [attribution, setAttribution] = useState<Attribution | undefined>(() => readStoredAttribution())
   useEffect(() => {
@@ -232,6 +246,29 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   })()
   const effectiveAttribution = recentAttribution
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
+  const resultPageCount = Math.max(1, Math.ceil(online.results.length / RESULT_PAGE_SIZE))
+  const boundedResults = online.results.slice(
+    resultPage * RESULT_PAGE_SIZE,
+    (resultPage + 1) * RESULT_PAGE_SIZE,
+  )
+  useEffect(() => { setResultPage(0) }, [online.results])
+  const onSourceTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
+    const index = SOURCE_TABS.indexOf(sourceTab)
+    let next: number | undefined
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % SOURCE_TABS.length
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + SOURCE_TABS.length) % SOURCE_TABS.length
+    else if (event.key === 'Home') next = 0
+    else if (event.key === 'End') next = SOURCE_TABS.length - 1
+    if (next === undefined) return
+    event.preventDefault()
+    const tab = SOURCE_TABS[next]!
+    setSourceTab(tab)
+    requestAnimationFrame(() => {
+      const element = document.querySelector(`[data-testid="wallpaper-source-tab-${tab}"]`) as HTMLElement | null
+      element?.focus()
+    })
+  }
+
   const objectUrlsRef = useRef<Map<string, string>>(new Map())
   const pendingUploadDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const remoteCommitTicket = useRef(0)
@@ -856,8 +893,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
 
   return (
     <div data-testid="wallpaper-panel">
-      <div className="wallpaper-layout" data-testid="wallpaper-layout">
-        <div className="wallpaper-main">
+      <div className="wallpaper-workbench" data-testid="wallpaper-workbench">
           <section className="livery-ui-card wallpaper-hero" data-testid="wallpaper-hero">
             <div className="livery-ui-card__head">
               <h3 className="livery-ui-card__title">{t('wallpaper.currentTitle')}</h3>
@@ -902,6 +938,45 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                   )}
                 </>
               )}
+
+          </section>
+          <section className="livery-ui-card" data-testid="wallpaper-effects-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.effects')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="wallpaper-reset"
+                onClick={() => controller?.setEffects(DEFAULT_WALLPAPER_EFFECTS)}
+              >
+                {t('wallpaper.reset')}
+              </Button>
+            </div>
+            <div className="wallpaper-effects-grid" data-testid="wallpaper-effects-grid">
+              {EFFECT_ROWS.map(row => {
+                const bounds = WALLPAPER_EFFECT_BOUNDS[row.id]
+                const value = state.effects[row.id]
+                return (
+                  <label key={row.id} className="wallpaper-effect">
+                    <span>{t(row.label)}</span>
+                    <span className="wallpaper-effect__control">
+                      <input
+                        type="range"
+                        data-testid={`wallpaper-${row.id}`}
+                        min={bounds.min}
+                        max={bounds.max}
+                        step={bounds.step}
+                        value={value}
+                        onChange={event => controller?.setEffects({ [row.id]: Number(event.target.value) })}
+                      />
+                      <output>{t(row.format, { value })}</output>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            <p className="livery-ui-card__hint">{t('wallpaper.frostHint')}</p>
+            <p className="livery-ui-card__hint">{t('wallpaper.atmosphereHint')}</p>
             {canReposition && (
               <fieldset className="wallpaper-position" data-testid="wallpaper-position">
                 <legend className="livery-ui-card__title">{t('wallpaper.positionTitle')}</legend>
@@ -924,8 +999,42 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
               </fieldset>
             )}
           </section>
+      </div>
 
-          <section className="livery-ui-card" data-testid="wallpaper-online-card">
+      <section className="livery-ui-card wallpaper-source-card" data-testid="wallpaper-source-card">
+        <div className="livery-ui-card__head">
+          <div>
+            <h3 className="livery-ui-card__title">{t('wallpaper.sourceTitle')}</h3>
+            <p className="livery-ui-card__hint">{t('wallpaper.sourceHint')}</p>
+          </div>
+        </div>
+        <div className="wallpaper-source-tabs" role="tablist" aria-label={t('wallpaper.sourceTitle')} onKeyDown={onSourceTabKeyDown}>
+          {SOURCE_TABS.map(tab => (
+            <button
+              key={tab}
+              type="button"
+              id={`wallpaper-source-tab-${tab}`}
+              role="tab"
+              className="wallpaper-source-tab"
+              data-testid={`wallpaper-source-tab-${tab}`}
+              aria-selected={sourceTab === tab}
+              aria-controls={`wallpaper-source-panel-${tab}`}
+              tabIndex={sourceTab === tab ? 0 : -1}
+              onClick={() => setSourceTab(tab)}
+            >
+              {t(SOURCE_TAB_KEYS[tab])}
+            </button>
+          ))}
+        </div>
+        <div
+          id="wallpaper-source-panel-online"
+          role="tabpanel"
+          aria-labelledby="wallpaper-source-tab-online"
+          className="wallpaper-source-panel"
+          data-testid="wallpaper-source-panel-online"
+          hidden={sourceTab !== 'online'}
+        >
+          <section className="wallpaper-source-section" data-testid="wallpaper-online-card">
             <h3 className="livery-ui-card__title">{t('wallpaper.onlineTitle')}</h3>
             <p className="livery-ui-card__hint">{t('wallpaper.onlineHint')}</p>
             <div className={SEARCH}>
@@ -952,7 +1061,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
             )}
             {online.results.length > 0 && (
               <div className={GRID} role="listbox" aria-label={t('wallpaper.resultsLabel')}>
-                {online.results.map(result => (
+                {boundedResults.map(result => (
                   <button
                     key={`${result.source}:${result.id}`}
                     type="button"
@@ -979,13 +1088,78 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                 ))}
               </div>
             )}
+            {online.results.length > RESULT_PAGE_SIZE && (
+              <div className="wallpaper-pager" data-testid="wallpaper-results-pager">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="wallpaper-result-prev"
+                  disabled={resultPage === 0}
+                  onClick={() => setResultPage(page => Math.max(0, page - 1))}
+                >
+                  {t('wallpaper.resultPrev')}
+                </Button>
+                <span className="wallpaper-pager__label" data-testid="wallpaper-result-page">
+                  {t('wallpaper.resultPage', { page: resultPage + 1, pages: resultPageCount })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="wallpaper-result-next"
+                  disabled={resultPage >= resultPageCount - 1}
+                  onClick={() => setResultPage(page => Math.min(resultPageCount - 1, page + 1))}
+                >
+                  {t('wallpaper.resultNext')}
+                </Button>
+              </div>
+            )}
             {effectiveAttribution !== undefined && effectiveAttribution.context === 'online' && attributionLine !== undefined && (
               <p className="livery-ui-card__hint" data-testid="wallpaper-attribution">{attributionLine}</p>
             )}
           </section>
-
-          {recent.length > 0 && (
-            <section className="livery-ui-card" data-testid="wallpaper-recent-card">
+        </div>
+        <div
+          id="wallpaper-source-panel-builtin"
+          role="tabpanel"
+          aria-labelledby="wallpaper-source-tab-builtin"
+          className="wallpaper-source-panel"
+          data-testid="wallpaper-source-panel-builtin"
+          hidden={sourceTab !== 'builtin'}
+        >
+          <p className="livery-ui-card__hint">{t('wallpaper.builtinHint')}</p>
+                        <section className="wallpaper-source-section" data-testid="wallpaper-builtins-card">
+            <div className="livery-ui-card__head">
+              <h3 className="livery-ui-card__title">{t('wallpaper.builtinTitle')}</h3>
+            </div>
+            <div className="wallpaper-swatches">
+              {BUILTIN_WALLPAPER_IDS.map(id => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`${CARD} wallpaper-swatch`}
+                  data-testid="wallpaper-builtin"
+                  data-wallpaper-id={id}
+                  aria-pressed={selectedBuiltin === id}
+                  aria-label={t(BUILTIN_KEYS[id])}
+                  style={{ backgroundImage: BUILTIN_WALLPAPERS[id] }}
+                  onClick={() => selectBuiltin(id)}
+                >
+                  <span className={NAME}>{t(BUILTIN_KEYS[id])}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+        <div
+          id="wallpaper-source-panel-recent"
+          role="tabpanel"
+          aria-labelledby="wallpaper-source-tab-recent"
+          className="wallpaper-source-panel"
+          data-testid="wallpaper-source-panel-recent"
+          hidden={sourceTab !== 'recent'}
+        >
+          {recent.length > 0
+            ? <section className="wallpaper-source-section wallpaper-recent-section" data-testid="wallpaper-recent-card">
               <div className="livery-ui-card__head">
                 <h3 className="livery-ui-card__title">{t('wallpaper.recentTitle')}</h3>
                 <Button variant="ghost" size="sm" data-testid="wallpaper-recent-clear" onClick={clearRecent}>
@@ -993,7 +1167,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                 </Button>
               </div>
               <p className="livery-ui-card__hint">{t('wallpaper.recentHint')}</p>
-              <div className="wallpaper-recent-grid">
+              <div className="wallpaper-recent-track">
                 {recent.map(entry => (
                   <button
                     key={entry.url}
@@ -1014,12 +1188,22 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                 ))}
               </div>
             </section>
-          )}
-
-          <section className="livery-ui-card" data-testid="wallpaper-custom-card">
+            : <p className="livery-ui-card__hint" data-testid="wallpaper-recent-empty">{t('wallpaper.recentEmpty')}</p>}
+        </div>
+        <div
+          id="wallpaper-source-panel-local"
+          role="tabpanel"
+          aria-labelledby="wallpaper-source-tab-local"
+          className="wallpaper-source-panel"
+          data-testid="wallpaper-source-panel-local"
+          hidden={sourceTab !== 'local'}
+        >
+          <p className="livery-ui-card__hint">{t('wallpaper.localHint')}</p>
+                        <section className="wallpaper-source-section" data-testid="wallpaper-custom-card">
             <div className="livery-ui-card__head">
               <h3 className="livery-ui-card__title">{t('wallpaper.uploadTitle')}</h3>
             </div>
+            <div className="wallpaper-local-grid">
             <div className="wallpaper-subrow">
               <p className="livery-ui-card__hint">{t('wallpaper.uploadHint')}</p>
               <div className={SEARCH}>
@@ -1108,62 +1292,23 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                 </div>
               )}
             </div>
+            </div>
           </section>
-
-          <WallpaperDataClear
-            t={t}
-            onBeforeClear={() => {
-              remoteCommitTicket.current += 1
-              cacheCancellation.current.cancel()
-            }}
-            onCleared={() => {
-              setRecent([])
-              releaseAllObjectUrls()
-            }}
-          />
         </div>
+      </section>
 
-        <aside className="wallpaper-rail">
-          <section className="livery-ui-card" data-testid="wallpaper-effects-card">
-            <div className="livery-ui-card__head">
-              <h3 className="livery-ui-card__title">{t('wallpaper.effects')}</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="wallpaper-reset"
-                onClick={() => controller?.setEffects(DEFAULT_WALLPAPER_EFFECTS)}
-              >
-                {t('wallpaper.reset')}
-              </Button>
-            </div>
-            <div className="wallpaper-effects-grid" data-testid="wallpaper-effects-grid">
-              {EFFECT_ROWS.map(row => {
-                const bounds = WALLPAPER_EFFECT_BOUNDS[row.id]
-                const value = state.effects[row.id]
-                return (
-                  <label key={row.id} className="wallpaper-effect">
-                    <span>{t(row.label)}</span>
-                    <span className="wallpaper-effect__control">
-                      <input
-                        type="range"
-                        data-testid={`wallpaper-${row.id}`}
-                        min={bounds.min}
-                        max={bounds.max}
-                        step={bounds.step}
-                        value={value}
-                        onChange={event => controller?.setEffects({ [row.id]: Number(event.target.value) })}
-                      />
-                      <output>{t(row.format, { value })}</output>
-                    </span>
-                  </label>
-                )
-              })}
-            </div>
-            <p className="livery-ui-card__hint">{t('wallpaper.frostHint')}</p>
-            <p className="livery-ui-card__hint">{t('wallpaper.atmosphereHint')}</p>
-          </section>
-
-          <PresetCard
+      <details
+        className="livery-ui-card wallpaper-manage"
+        data-testid="wallpaper-manage"
+        open={manageOpen}
+        onToggle={event => setManageOpen(event.currentTarget.open)}
+      >
+        <summary className="wallpaper-manage__toggle" data-testid="wallpaper-manage-toggle">
+          <span>{t('wallpaper.manageTitle')}</span>
+          <span className="livery-ui-card__hint">{t('wallpaper.manageHint')}</span>
+        </summary>
+        <div className="wallpaper-manage__body">
+                    <PresetCard
             t={t}
             currentStyleId={snapshot.effectiveId ?? snapshot.confirmedId ?? STOCK_ID}
             currentWallpaper={{ selection: state.selection, effects: state.effects, position: state.position }}
@@ -1176,37 +1321,28 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
               const livery = snapshot.catalog?.liveries.find(candidate => candidate.id === id)
               return livery === undefined ? id : localizedName(livery, snapshot.locale)
             }}
-            onApplyResult={onPresetApplied}
+            onApplyResult={(result, preset) => {
+              onPresetApplied(result, preset)
+              if (result.status !== 'applied') setManageOpen(true)
+            }}
             onApplyStart={() => {
               presetApplyStartVersion.current = controller?.getSelectionVersion()
               presetApplyStartRevision.current = controller?.getSnapshot().revision
             }}
           />
-
-          <section className="livery-ui-card" data-testid="wallpaper-builtins-card">
-            <div className="livery-ui-card__head">
-              <h3 className="livery-ui-card__title">{t('wallpaper.builtinTitle')}</h3>
-            </div>
-            <div className="wallpaper-swatches">
-              {BUILTIN_WALLPAPER_IDS.map(id => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`${CARD} wallpaper-swatch`}
-                  data-testid="wallpaper-builtin"
-                  data-wallpaper-id={id}
-                  aria-pressed={selectedBuiltin === id}
-                  aria-label={t(BUILTIN_KEYS[id])}
-                  style={{ backgroundImage: BUILTIN_WALLPAPERS[id] }}
-                  onClick={() => selectBuiltin(id)}
-                >
-                  <span className={NAME}>{t(BUILTIN_KEYS[id])}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        </aside>
-      </div>
+                    <WallpaperDataClear
+            t={t}
+            onBeforeClear={() => {
+              remoteCommitTicket.current += 1
+              cacheCancellation.current.cancel()
+            }}
+            onCleared={() => {
+              setRecent([])
+              releaseAllObjectUrls()
+            }}
+          />
+        </div>
+      </details>
     </div>
   )
 }

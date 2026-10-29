@@ -162,10 +162,8 @@ function SkinCard({
         <span className="livery-card__name">{name}</span>
         {description.length > 0 && <span className="livery-card__desc">{description}</span>}
         <span className="livery-card__meta">
-          <Tag tone="outline">{t('card.light')}</Tag>
-          <Tag tone="outline">{t('card.dark')}</Tag>
           {applicable
-            ? livery.meta.tags.map(tag => (
+            ? livery.meta.tags.slice(0, 3).map(tag => (
               <Tag key={tag} tone="quiet">{tagLabel(tag, labelById)}</Tag>
             ))
             : <Tag tone="danger">{t('card.unavailable')}</Tag>}
@@ -272,8 +270,9 @@ export function Gallery({
 
   return (
     <>
-      <div className="livery-toolbar">
-        <div className="livery-search">
+      <div className="livery-gallery-toolbar" data-testid="livery-gallery-toolbar">
+        <div className="livery-toolbar">
+        <div className="livery-search livery-gallery-toolbar__search">
           <Input
             data-testid="livery-search"
             type="search"
@@ -295,7 +294,7 @@ export function Gallery({
           )}
         </div>
 
-        <div className="livery-filters" role="group" aria-label={t('filter.familyLabel')}>
+        <div className="livery-filters livery-gallery-toolbar__filters" role="group" aria-label={t('filter.familyLabel')}>
           <button
             type="button"
             className="livery-chip"
@@ -334,7 +333,7 @@ export function Gallery({
         {moreFiltersOpen && (
           <div
             id="livery-more-tags"
-            className="livery-filters"
+            className="livery-filters livery-gallery-toolbar__tags"
             role="group"
             aria-label={t('filter.label')}
           >
@@ -357,7 +356,7 @@ export function Gallery({
       </div>
 
       <div
-        className="livery-filters livery-locale-tab"
+        className="livery-gallery-toolbar__locale livery-filters livery-locale-tab"
         role="group"
         aria-label={t('gallery.previewLanguage')}
         title={t('gallery.previewLanguageHint')}
@@ -380,6 +379,7 @@ export function Gallery({
                 : t('gallery.localeEn')}
           </button>
         ))}
+      </div>
       </div>
 
       <div className="livery-gallery-head">

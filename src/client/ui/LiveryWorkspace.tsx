@@ -206,85 +206,95 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
       )}
 
       {!loading && !mismatch && (
-        <div className="livery-layout" data-testid="livery-layout">
-          <div className="livery-main">
-            <section className="livery-ui-card livery-hero" data-testid="livery-current-card">
+        <div className="livery-studio" data-testid="livery-layout">
+            <section className="livery-ui-card livery-hero livery-hero--large" data-testid="livery-current-card">
               <div className="livery-ui-card__head">
-                <h3 className="livery-ui-card__title">{t('layout.currentStyle')}</h3>
-                <div className="livery-hero__meta">
-                  {shownLivery !== undefined && snapshot.catalog !== undefined && (
-                    <img
-                      className="livery-hero__thumb"
-                      data-testid="livery-hero-thumb"
-                      src={previewUrl(snapshot.catalog.previewsBase, shownLivery.id, previewLocale, snapshot.themeMode)}
-                      alt=""
-                      decoding="async"
-                    />
-                  )}
-                  <div className="livery-meta">
-                  <Tag tone="neutral">{t('current.modes')}</Tag>
-                  {previewing && (
-                    <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>
-                  )}
+                <div>
+                  <h3 className="livery-ui-card__title">{t('layout.currentStyle')}</h3>
+                  <p className="livery-ui-card__hint">{t('gallery.modesNote')}</p>
+                </div>
+                <div className="livery-actions">
+                  {previewing && <Tag tone="warning">{t('current.previewing', { name: shownName })}</Tag>}
                   {degraded && <Tag tone="warning">{t('current.degraded')}</Tag>}
-                  {snapshot.invalidSkinId !== undefined && (
-                    <Tag tone="danger">{t('current.incompatible')}</Tag>
-                  )}
-                  </div>
+                  {snapshot.invalidSkinId !== undefined && <Tag tone="danger">{t('current.incompatible')}</Tag>}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="livery-restore"
+                    disabled={busy || isStock(snapshot.confirmedId) || !canWrite}
+                    onClick={() => setConfirmRestore(true)}
+                  >
+                    {t('action.restoreStock')}
+                  </Button>
                 </div>
               </div>
-              <div className="livery-summary" data-testid="livery-current">
-                <div className="livery-summary__body">
-                  <span className="livery-summary__kicker">{t('current.title')}</span>
-                  <span className="livery-summary__name">{shownName}</span>
-                  <span className="livery-summary__desc">{shownDescription}</span>
-                  <div className="livery-meta">
-                    <span className="livery-meta__label">{t('current.idLabel')}</span>
-                    <code className="livery-id">{shownId ?? t('current.stockName')}</code>
-                    {shownLivery?.meta.tags.map(tag => (
-                      <Tag key={tag} tone="quiet">{tag}</Tag>
-                    ))}
+              <div className="livery-hero__layout">
+                <div className="livery-hero__visual">
+                  {shownLivery !== undefined && snapshot.catalog !== undefined
+                    ? (
+                      <img
+                        className="livery-hero__preview"
+                        data-testid="livery-hero-thumb"
+                        src={previewUrl(snapshot.catalog.previewsBase, shownLivery.id, previewLocale, snapshot.themeMode)}
+                        alt=""
+                        decoding="async"
+                      />
+                    )
+                    : <div className="livery-hero__preview livery-hero__preview--empty" data-testid="livery-hero-empty">{t('current.stockName')}</div>}
+                </div>
+                <div className="livery-hero__body">
+                  <div className="livery-summary" data-testid="livery-current">
+                    <div className="livery-summary__body">
+                      <span className="livery-summary__kicker">{t('current.title')}</span>
+                      <span className="livery-summary__name">{shownName}</span>
+                      <span className="livery-summary__desc">{shownDescription}</span>
+                      <div className="livery-meta">
+                        <span className="livery-meta__label">{t('current.idLabel')}</span>
+                        <code className="livery-id">{shownId ?? t('current.stockName')}</code>
+                        {shownLivery?.meta.tags.map(tag => (
+                          <Tag key={tag} tone="quiet">{tag}</Tag>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+
+                  {previewing && (
+                    <div className="livery-previewbar" data-testid="livery-preview">
+                      <div className="livery-previewbar__copy">
+                        <span className="livery-previewbar__title">
+                          {t('preview.title', { name: shownName })}
+                        </span>
+                        <span className="livery-previewbar__body">{t('preview.body')}</span>
+                      </div>
+                      <div className="livery-previewbar__actions">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          data-testid="livery-apply"
+                          disabled={busy || !canWrite}
+                          onClick={() => { void applyPreview() }}
+                        >
+                          {busy ? t('write.applying') : t('preview.apply')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="livery-cancel"
+                          disabled={busy}
+                          onClick={() => runtime.cancelPreview()}
+                        >
+                          {t('preview.cancel')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {busy && !previewing && (
+                    <div className="livery-notice" role="status">{t('write.applying')}</div>
+                  )}
                 </div>
               </div>
             </section>
-
-            {previewing && (
-              <section className="livery-ui-card" data-testid="livery-preview-card">
-                <div className="livery-previewbar" data-testid="livery-preview">
-                  <div className="livery-previewbar__copy">
-                    <span className="livery-previewbar__title">
-                      {t('preview.title', { name: shownName })}
-                    </span>
-                    <span className="livery-previewbar__body">{t('preview.body')}</span>
-                  </div>
-                  <div className="livery-previewbar__actions">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      data-testid="livery-apply"
-                      disabled={busy || !canWrite}
-                      onClick={() => { void applyPreview() }}
-                    >
-                      {busy ? t('write.applying') : t('preview.apply')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      data-testid="livery-cancel"
-                      disabled={busy}
-                      onClick={() => runtime.cancelPreview()}
-                    >
-                      {t('preview.cancel')}
-                    </Button>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {busy && !previewing && (
-              <div className="livery-notice" role="status">{t('write.applying')}</div>
-            )}
 
             {snapshot.writeFailure !== undefined && (
               <div className="livery-notice livery-notice--error" data-testid="livery-error" role="alert">
@@ -374,33 +384,14 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
                 <span className="livery-empty__title">{t('state.catalogEmpty')}</span>
               </div>
             )}
-          </div>
 
-          <aside className="livery-rail">
-            <section className="livery-ui-card" data-testid="livery-actions-card">
-              <div className="livery-ui-card__head">
-                <h3 className="livery-ui-card__title">{t('layout.actions')}</h3>
-              </div>
-              <div className="livery-actions">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="livery-restore"
-                  disabled={busy || isStock(snapshot.confirmedId) || !canWrite}
-                  onClick={() => setConfirmRestore(true)}
-                >
-                  {t('action.restoreStock')}
-                </Button>
-              </div>
-            </section>
-
+          <div className="livery-secondary" data-testid="livery-secondary">
             <SelfCheck
               t={t}
               snapshot={snapshot}
               onCopyResult={onCopyResult}
               copyFailed={copyFailed}
             />
-
             <footer className="livery-about" aria-label={t('about.title')}>
               <span>
                 {t('about.plugin', { version: snapshot.identity.pluginVersion })}
@@ -409,7 +400,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
               </span>
               <span className="livery-about__note">{t('about.note')}</span>
             </footer>
-          </aside>
+          </div>
         </div>
       )}
           </div>
