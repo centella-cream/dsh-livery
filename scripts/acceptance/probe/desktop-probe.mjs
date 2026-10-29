@@ -90,6 +90,25 @@ import { labelsFor } from './labels.mjs'
 
 const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
 
+async function selectDesktopWallpaperSource(page, tab) {
+  const locator = page.locator(`[data-testid="wallpaper-source-tab-${tab}"]`)
+  if ((await locator.count().catch(() => 0)) > 0) {
+    await locator.click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForSelector(`[data-testid="wallpaper-source-panel-${tab}"]:not([hidden])`, { timeout: 8_000 }).catch(() => {})
+    await page.waitForTimeout(200)
+  }
+}
+
+async function openDesktopWallpaperManage(page) {
+  const manage = page.locator('[data-testid="wallpaper-manage"]')
+  if ((await manage.count().catch(() => 0)) === 0) return false
+  if ((await manage.getAttribute('open').catch(() => null)) === null) {
+    await page.locator('[data-testid="wallpaper-manage-toggle"]').click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForTimeout(250)
+  }
+  return (await manage.getAttribute('open').catch(() => null)) !== null
+}
+
 const DEFAULT_APP = '/Applications/DeepSeek Harness.app/Contents/Resources'
 const TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw-alias-border-l1']
 const PAGE_LABELS = labelsFor('zh')
@@ -540,6 +559,7 @@ async function main() {
     )
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await selectDesktopWallpaperSource(page, 'builtin')
     const desktopWallpaperInitial = await readWallpaperState(page)
     await page.locator('[data-testid="wallpaper-builtin"][data-wallpaper-id="aurora"]').click({ timeout: 8_000 })
     await page.waitForFunction(() => {
@@ -561,6 +581,7 @@ async function main() {
       `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
     )
     // ---------- merged 0.1.4: focal position, reduced transparency, floating surfaces ----------
+    await selectDesktopWallpaperSource(page, 'local')
     await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/desktop.jpg')
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
@@ -832,6 +853,7 @@ async function main() {
     await openLiveryDetailed(page, { labels: PAGE_LABELS, locale: 'zh' })
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await openDesktopWallpaperManage(page)
     await page.locator('[data-testid="preset-export"]').click({ timeout: 8_000 }).catch(() => {})
     const desktopExportVisible = await page.waitForSelector('[data-testid="preset-export-result"]', { timeout: 8_000 }).then(() => true).catch(() => false)
     const desktopPreset = {
@@ -928,6 +950,8 @@ async function main() {
       `migrated=${JSON.stringify(desktopMigrated)}; corrupt=${JSON.stringify(desktopCorrupt)}`,
     )
     // Clear local data in the real renderer; current wallpaper must stay.
+    await selectDesktopWallpaperSource(page, 'local')
+    await openDesktopWallpaperManage(page)
     await page.locator('[data-testid="wallpaper-upload"]').setInputFiles({ name: 'desktop-upload.png', mimeType: 'image/png', buffer: TINY_PNG }).catch(() => {})
     await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
     await page.keyboard.press('Escape').catch(() => {})
