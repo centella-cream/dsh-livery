@@ -218,17 +218,26 @@ export const CLIENT_CSS = `
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .livery-hero__layout{grid-template-columns:minmax(0,1fr)}
   .livery-hero__visual{display:flex;justify-content:center}
-  .livery-hero__preview{max-width:520px}
+  .livery-hero__preview{max-width:320px}
+  .livery-hero__layout{gap:14px}
+  .livery-hero__body{gap:12px}
+  .livery-hero .livery-ui-card__head{gap:2px}
+  .wallpaper-workbench{gap:12px}
+  .wallpaper-hero{padding:14px 16px}
+  .wallpaper-hero__preview{max-height:240px}
+  .wallpaper-hero__empty{aspect-ratio:auto;max-height:120px}
+  .wallpaper-effects-card .livery-ui-card__hint{display:none}
+  .wallpaper-effects-card{padding:10px 14px}
+  .wallpaper-effects-card .wallpaper-effects-grid{gap:6px}
+  .wallpaper-effects-card .wallpaper-effect__hint{display:none}
   .livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .livery-gallery-toolbar{grid-template-columns:minmax(0,1fr)}
-  .livery-gallery-toolbar__locale{grid-column:1;grid-row:auto}
   .wallpaper-local-grid{grid-template-columns:minmax(0,1fr)}
 }
 @container livery-studio (max-width: 639px){
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
   .livery-gallery-card .livery-grid{grid-template-columns:minmax(0,1fr)}
-    .wallpaper-source-panel .livery-grid{display:flex;overflow-x:auto;padding-bottom:8px}
+  .wallpaper-source-panel .livery-grid{display:flex;overflow-x:auto;padding-bottom:8px}
   .wallpaper-source-panel .livery-card{flex:0 0 260px}
   .wallpaper-source-tabs{flex-wrap:nowrap;overflow-x:auto}
   .wallpaper-source-tab{flex:0 0 auto}

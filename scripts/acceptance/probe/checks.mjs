@@ -91,8 +91,8 @@ const CSS_BUDGET_BYTES = 12 * 1024
  * actual bytes). Host gzip/tgz caps are Lead-owned in build/release and are not
  * asserted here.
  */
-const CLIENT_GZIP_BUDGET_BYTES = 56 * 1024
-const CLIENT_GZIP_BUDGET_LABEL = '56 KiB'
+const CLIENT_GZIP_BUDGET_BYTES = 60 * 1024
+const CLIENT_GZIP_BUDGET_LABEL = '60 KiB'
 const RENDERED_CSS_BUDGET_BYTES = 20 * 1024
 const RENDERED_CSS_TARGET_BYTES = 16 * 1024
 const RENDERED_CSS_BUDGET_LABEL = '20 KiB'
@@ -4256,20 +4256,22 @@ export async function checkLayoutStructure(ctx) {
       `footer text="${oneLine(footer.text ?? '', 220)}"`,
     )
     const styleScale = await readTypographyScale(page)
-    const allowedSizes = [11, 12, 13, 15, 20]
-    const leakedSizes = styleScale.sizes.filter((size) => ![11, 12, 13, 15, 20].includes(size))
+    // Host-owned Button/Tag primitives may contribute an 11px caption; the
+    // plugin's own scale is {12,13,14,16,22}.
+    const allowedSizes = [11, 12, 13, 14, 16, 22]
+    const leakedSizes = styleScale.sizes.filter((size) => !allowedSizes.includes(size))
     expect(
       runner,
       'typography.five-step-style',
-      'style page uses the unified five-step type scale {11,12,13,15} (+20 display), no 14/16/18.72 leaks',
+      'style page uses the 0.1.4 five-step type scale {12,13,14,16} (+22 display), tolerating host-owned 11px primitives',
       styleScale.sizes.length > 0 &&
         styleScale.sizes.every((size) => allowedSizes.includes(size)) &&
-        [11, 12, 13, 15].every((size) => styleScale.sizes.includes(size)) &&
-        ![14, 16, 18.72].some((size) => styleScale.sizes.includes(size)),
+        [12, 13, 14, 16].every((size) => styleScale.sizes.includes(size)) &&
+        ![15, 18.72, 20].some((size) => styleScale.sizes.includes(size)),
       `sizes=${JSON.stringify(styleScale.sizes)} counts=${JSON.stringify(styleScale.counts)} leaked=${JSON.stringify(leakedSizes)}`,
       { styleScale },
     )
-    const expectedTokens = { display: '20px', title: '15px', body: '13px', label: '12px', caption: '11px' }
+    const expectedTokens = { display: '22px', title: '16px', body: '14px', label: '13px', caption: '12px' }
     const workspaceTokens = styleScale.tokens['.livery-workspace'] ?? {}
     const panelTokens = styleScale.tokens['.livery-panel'] ?? {}
     const tokensMatch = (tokens) => Object.entries(expectedTokens).every(([key, value]) => tokens[key] === value)

@@ -121,7 +121,8 @@ try {
       if (body !== null) body.scrollTop = 0
     }).catch(() => {})
     await sleep(200)
-    await page.screenshot({ path: path.join(outDir, 'screens', '1440-light-style-preview-bar.png'), animations: 'disabled' })
+    await page.screenshot({ path: path.join(outDir, 'screens', '1440-light-style-preview-bar.png'), animations: 'disabled' });
+    metrics.screenshots.push({ file: path.relative(process.cwd(), path.join(outDir, 'screens', '1440-light-style-preview-bar.png')) })
     await page.locator('[data-testid="livery-apply"]').click({ timeout: 8_000 }).catch(() => {})
     await page.waitForFunction(() => document.body.getAttribute('data-dsh-livery') === 'tokyo-night', undefined, { timeout: 20_000 }).catch(() => {})
     await sleep(500)
@@ -150,6 +151,17 @@ try {
       await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 10_000 }).catch(() => {})
     }
     await sleep(350)
+  }
+
+  const scrollPanelTo = async (selector) => {
+    await page.evaluate((sel) => {
+      const target = document.querySelector(sel)
+      const body = document.querySelector('.livery-panel__body')
+      if (target === null || body === null) return
+      const bodyTop = body.getBoundingClientRect().top
+      body.scrollTop += target.getBoundingClientRect().top - bodyTop - 12
+    }, selector).catch(() => {})
+    await sleep(300)
   }
 
   const scrollTop = async () => {
@@ -300,6 +312,7 @@ try {
           if (!styleMetrics.footerAfterGallery) recordIssue('medium', 'style-footer-order', 'Footer does not follow the gallery in document order.')
         }
         if (styleMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-style-overflow`, 'Style page has horizontal document overflow.')
+        if (styleMetrics.toolbarRows > 2) recordIssue('medium', `style-toolbar-rows-${viewport.width}`, `Style toolbar renders ${styleMetrics.toolbarRows} rows at ${viewport.width}px (expected ≤2).`)
         if (viewport.width < 1440 && !styleMetrics.galleryVisibleInFirstViewport) recordIssue('medium', `style-gallery-below-fold-${viewport.width}`, `Style gallery starts at ${styleMetrics.galleryTop}px, below the ${viewport.height}px first viewport; the large hero consumes the whole first screen.`)
         await showWallpaper()
         const wallpaperMetrics = await collectWallpaperMetrics()
@@ -372,22 +385,14 @@ try {
     await page.setViewportSize({ width, height: width === 1024 ? 800 : 900 })
     await page.emulateMedia({ colorScheme: 'light' })
     await showStyle()
-    await page.evaluate(() => {
-      const gallery = document.querySelector('[data-testid="livery-gallery-card"]')
-      const body = document.querySelector('.livery-panel__body')
-      if (gallery !== null && body !== null) body.scrollTop = gallery.getBoundingClientRect().top + body.scrollTop - 12
-    }).catch(() => {})
-    await sleep(300)
+    await scrollPanelTo('[data-testid="livery-gallery-card"]')
     await page.screenshot({ path: path.join(outDir, 'screens', `${width}-light-style-gallery-toolbar.png`), animations: 'disabled' })
+    metrics.screenshots.push({ file: path.relative(process.cwd(), path.join(outDir, 'screens', `${width}-light-style-gallery-toolbar.png`)), width })
     await showWallpaper()
     await page.locator('[data-testid="wallpaper-source-tab-online"]').click({ timeout: 8_000 }).catch(() => {})
-    await page.evaluate(() => {
-      const source = document.querySelector('[data-testid="wallpaper-source-card"]')
-      const body = document.querySelector('.livery-panel__body')
-      if (source !== null && body !== null) body.scrollTop = source.getBoundingClientRect().top + body.scrollTop - 12
-    }).catch(() => {})
-    await sleep(300)
+    await scrollPanelTo('[data-testid="wallpaper-source-card"]')
     await page.screenshot({ path: path.join(outDir, 'screens', `${width}-light-wallpaper-source-tabs.png`), animations: 'disabled' })
+    metrics.screenshots.push({ file: path.relative(process.cwd(), path.join(outDir, 'screens', `${width}-light-wallpaper-source-tabs.png`)), width })
   }
 } catch (error) {
   metrics.fatal = String(error?.stack ?? error).slice(0, 4000)
