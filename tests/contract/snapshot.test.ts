@@ -159,7 +159,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(preview.distributionChannel).toBe('next')
     expect(preview.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(preview.certifiedRuntimeVersions).toEqual(['22.23.1'])
-    expect(preview.upstream).toEqual({ githubTag: null, npmVersion: '0.2.1-rc.4' })
+    expect(preview.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.4', npmVersion: '0.2.1-rc.4' })
     expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.3/0.2.1-rc.4-web-chrome.json'])
     expect(supportedProfiles(preview)).toEqual(['web.chrome'])
     expect(preview.profiles.web.chrome).toBe('passed')
@@ -203,7 +203,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(validateMatrix(missingArrays).some((problem) => problem.includes('at least one exact certifiedBrowserVersions'))).toBe(true)
   })
 
-  it('requires stable claims to have an upstream tag and a non-next channel; preview may be tagless', async () => {
+  it('requires stable claims to have an upstream tag and a non-next channel; preview may be tagged', async () => {
     const matrix = await readFormalMatrix(workspace)
     const taglessStable: SupportMatrix = {
       ...matrix,
@@ -236,7 +236,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(validateMatrix(mismatched).some((problem) => problem.includes('must equal the host version'))).toBe(true)
     const previewEntry = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
     expect(previewEntry.claimTier).toBe('preview')
-    expect(previewEntry.upstream.githubTag).toBeNull()
+    expect(previewEntry.upstream.githubTag).toBe('dsh-v0.2.1-rc.4')
     expect(validateMatrix(matrix)).toEqual([])
   })
 

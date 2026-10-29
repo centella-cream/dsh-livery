@@ -113,7 +113,7 @@ The supported scope is deliberately narrow:
 | Host | Profile / platform | Runtime | Status |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 156.0.8078.48 | Node 22.23.1 | **Stable certified** (npm `latest`) |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48 | Node 22.23.1 | **Next-channel preview** (npm `next`; no GitHub tag yet) |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48 | Node 22.23.1 | **Next-channel preview** (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node 24.21.0 · Chromium 152.0.7977.130 | **Stable certified** renderer surface (GitHub-tagged) |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 

@@ -24,7 +24,7 @@ real host acceptance, not inferred from semver.
 |---|---|---|
 | `0.2.1-rc.2` | npm `latest` + official GitHub release | Stable certified (Web) |
 | `0.2.1-rc.3` | GitHub-tagged Desktop app | Stable certified (Desktop/macOS renderer) |
-| `0.2.1-rc.4` | npm `next` package; no matching GitHub tag yet | Next-channel preview (Web) |
+| `0.2.1-rc.4` | npm `next` package + GitHub prerelease tag (commit 504a01a…) | Next-channel preview (Web) |
 
 Matrix entries also carry the exact certification fields:
 

@@ -50,7 +50,7 @@ describe('0.1.3 release parameterization', () => {
     expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
     expect(preview.claimTier).toBe('preview')
     expect(preview.distributionChannel).toBe('next')
-    expect(preview.upstream.githubTag).toBeNull()
+    expect(preview.upstream.githubTag).toBe('dsh-v0.2.1-rc.4')
     expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     for (const entry of matrix.entries) {

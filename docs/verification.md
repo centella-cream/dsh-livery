@@ -12,14 +12,14 @@ Release. `0.1.2` evidence is retained unchanged under
 | Host | Profile / platform | Certified runtime | Status |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (npm `latest`) |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; no GitHub tag yet) |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node `24.21.0` (Chromium `152.0.7977.130`) | Stable certified renderer surface (GitHub-tagged) |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install and
 fails closed at runtime. Stable claims require both an official GitHub tag/release
 and the signed npm tarball; `0.2.1-rc.4` is verified against the signed npm `next`
-tarball but has no upstream GitHub tag yet, so it is a preview compatibility claim,
+tarball and has an upstream GitHub prerelease tag (commit 504a01a…) but npm remains on the next channel, so it is a preview compatibility claim,
 not a channel-stability promise. The Desktop certification covers plugin
 installation, boot, the Electron renderer, settings/gallery, persistence and the
 restart handshake; native macOS window chrome, traffic lights/leading, vibrancy,

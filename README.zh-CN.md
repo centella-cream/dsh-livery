@@ -91,7 +91,7 @@
 | 宿主 | Profile / 平台 | 运行时 | 状态 |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile，Chrome 156.0.8078.48 | Node 22.23.1 | **稳定认证**（npm `latest`） |
-| DSH `0.2.1-rc.4` | Web Profile，Chrome 156.0.8078.48 | Node 22.23.1 | **next 通道预览**（npm `next`；尚无 GitHub tag） |
+| DSH `0.2.1-rc.4` | Web Profile，Chrome 156.0.8078.48 | Node 22.23.1 | **next 通道预览**（npm `next`；已有 GitHub prerelease tag） |
 | DSH `0.2.1-rc.3` | Desktop 应用，macOS | Electron/Node 24.21.0 · Chromium 152.0.7977.130 | **稳定认证**渲染器表面（GitHub 已 tag） |
 | Desktop Windows、Web Edge、其他 DSH 版本 | — | — | 不支持、不保证 |
 

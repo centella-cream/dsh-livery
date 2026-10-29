@@ -235,6 +235,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const objectUrlsRef = useRef<Map<string, string>>(new Map())
   const pendingUploadDeletes = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const remoteCommitTicket = useRef(0)
+  const presetApplyStartVersion = useRef<number | undefined>(undefined)
+  const presetApplyStartRevision = useRef<number | undefined>(undefined)
   const rememberObjectUrl = (url: string, objectUrl: string): void => {
     const previous = objectUrlsRef.current.get(url)
     if (previous !== undefined && previous !== objectUrl) {
@@ -775,6 +777,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller
     if (active === undefined) return false
+    const startVersion = presetApplyStartVersion.current
+    const startRevision = presetApplyStartRevision.current
+    if (startVersion !== undefined && active.getSelectionVersion() !== startVersion) return false
+    if (startRevision !== undefined && active.getSnapshot().revision !== startRevision) return false
     const selectionVersion = active.getSelectionVersion()
     let blob: Blob | undefined
     if (target.selection?.kind === 'remote') {
@@ -1166,6 +1172,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
               return livery === undefined ? id : localizedName(livery, snapshot.locale)
             }}
             onApplyResult={onPresetApplied}
+            onApplyStart={() => {
+              presetApplyStartVersion.current = controller?.getSelectionVersion()
+              presetApplyStartRevision.current = controller?.getSnapshot().revision
+            }}
           />
 
           <section className="livery-ui-card" data-testid="wallpaper-builtins-card">

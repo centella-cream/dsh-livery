@@ -175,6 +175,29 @@ describe('upload controller lifecycle', () => {
   })
 })
 
+describe('session-only selections', () => {
+  it('keeps effects/position changes in memory and does not persist a non-recoverable upload', () => {
+    vi.useFakeTimers()
+    const storage = new MemoryStorage()
+    storage.setItem(WALLPAPER_STORAGE_KEY, JSON.stringify({
+      schemaVersion: 2, revision: 1, selection: { kind: 'builtin', id: 'mist' },
+      effects: DEFAULT_WALLPAPER_EFFECTS, position: { x: 50, y: 50 },
+    }))
+    const controller = createWallpaperController({ storage, document: new FakeDocument() as never, images: new FakeImages(), saveDelayMs: 200 })
+    controller.start()
+    controller.setState({ selection: { kind: 'upload', key: 'upload-session-only' } }, { persist: false })
+    controller.setEffects({ blur: 20 })
+    controller.setPosition({ x: 0, y: 100 })
+    vi.advanceTimersByTime(500)
+    const stored = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
+    expect(stored.selection).toEqual({ kind: 'builtin', id: 'mist' })
+    expect(controller.flushState()).toBe(false)
+    expect(controller.getSnapshot().selection).toEqual({ kind: 'upload', key: 'upload-session-only' })
+    expect(controller.getDurableSelection()).toEqual({ kind: 'builtin', id: 'mist' })
+    controller.dispose()
+  })
+})
+
 describe('persistence safety', () => {
   it('reports a failed localStorage write instead of pretending it was saved', () => {
     const storage = new MemoryStorage()

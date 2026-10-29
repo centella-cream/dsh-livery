@@ -101,6 +101,8 @@ export interface PresetCardProps {
    * toast/refresh/attribution hook; a partial result keeps the style applied).
    */
   readonly onApplyResult?: ((result: PresetApplyResult, preset: LiveryPreset) => void) | undefined
+  /** Invoked when an apply/retry starts, before the style write. */
+  readonly onApplyStart?: (() => void) | undefined
   /** Test/deep-link seam: start with a loaded preset. */
   readonly initialPreset?: LiveryPreset | undefined
   /** Test/deep-link seam: start with a visible error region. */
@@ -297,6 +299,7 @@ export function PresetCard({
   styleLabel,
   writeClipboard,
   onApplyResult,
+  onApplyStart,
   initialPreset,
   initialError,
 }: PresetCardProps): JSX.Element {
@@ -445,6 +448,7 @@ export function PresetCard({
     const ticket = ++operationId.current
     setApplying(true)
     setError(undefined)
+    onApplyStart?.()
     const result = await applyPreset(targetPreset, { applyStyle, applyWallpaper: applyWallpaperWhileMounted })
     // A newer operation or a different imported preset must not receive this
     // operation's result, and this operation must not clear/overwrite it.
@@ -466,6 +470,7 @@ export function PresetCard({
     if (preset === undefined || applying) return
     setApplying(true)
     setError(undefined)
+    onApplyStart?.()
     const ok = await applyPresetWallpaper(preset, { applyWallpaper: applyWallpaperWhileMounted })
     if (!mounted.current) return
     setApplying(false)

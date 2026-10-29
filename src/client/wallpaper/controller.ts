@@ -224,7 +224,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const sourceId = options.sourceId ?? createTabSourceId()
   const publishSourceId = options.sourceId !== undefined
   const publishRefs = (): void => {
-    writeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId, [selection, durableSelection])
+    writeWallpaperRefs(storage as unknown as { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem(key: string): void } | undefined, sourceId, [selectionPersistable ? selection : undefined, durableSelection])
   }
   const eventTarget = options.eventTarget ?? (typeof window === 'undefined'
     ? undefined
@@ -257,6 +257,8 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let snapshot: WallpaperState = { selection, effects, position, revision }
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
+  /** Whether the current selection itself is recoverable from IndexedDB. */
+  let selectionPersistable = true
   /** Whether the current in-memory state may be written to localStorage. */
   let persistable = true
   let started = false
@@ -389,6 +391,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     revision = stored.state.revision
     durableSelection = stored.state.selection
     winnerSourceId = stored.sourceId
+    selectionPersistable = true
     persistable = true
     publishRefs()
   }
@@ -520,7 +523,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     winnerSourceId = sourceId
     if (selectionChanged || stateOptions.blob !== undefined) replaceLocalImageUrl(stateOptions.blob)
     apply()
-    persistable = stateOptions.persist !== false
+    if (selectionChanged) selectionPersistable = stateOptions.persist !== false
+    else if (stateOptions.persist === false) selectionPersistable = false
+    persistable = selectionPersistable
     if (!persistable) {
       cancelPendingSave()
     } else {
