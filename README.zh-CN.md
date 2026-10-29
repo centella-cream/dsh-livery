@@ -65,11 +65,11 @@
 
 ## 壁纸
 
-![壁纸工作室：当前极光壁纸、效果滑杆和可切换的壁纸来源](docs/assets/wallpaper-studio-zh.jpg)
+![在线 Picsum 壁纸、焦点位置和可切换的壁纸来源页签](docs/assets/wallpaper-studio-zh.jpg)
 
 ![极光壁纸覆盖在默认 DSH 工作区上](docs/assets/wallpaper-coverage-zh.jpg)
 
-第一张是 DSH Livery 自己的壁纸工作室。第二张把同一张极光壁纸覆盖在默认 DSH 工作区上。
+第一张是在 DSH Livery 壁纸工作室中选择的在线 Picsum 壁纸，包含焦点位置和在线来源页签；第二张把同一张壁纸覆盖在默认 DSH 工作区上。
 
 ## 为什么不是“又一个皮肤”
 

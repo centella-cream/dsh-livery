@@ -88,12 +88,13 @@ previews appear in the 0.1.4 full-width gallery.
 
 ## Wallpapers
 
-![Wallpaper studio: current Aurora wallpaper, effects, and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
+![Online Picsum wallpaper with focal position and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
 
 ![Aurora wallpaper over the default DSH workspace](docs/assets/wallpaper-coverage-en.jpg)
 
-The studio page on the left is DSH Livery's own UI. The second capture shows the
-same Aurora wallpaper applied over the default DSH workspace.
+The first capture shows an online Picsum wallpaper picked in DSH Livery's own
+studio, including focal position and the online source tabs. The second capture
+shows the same wallpaper applied over the default DSH workspace.
 
 ## Why another skin plugin is different
 
