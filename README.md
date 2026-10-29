@@ -119,13 +119,13 @@ The supported scope is deliberately narrow:
 
 There is no compatibility mode. A different DSH version is rejected at install time
 and fails closed at runtime. Stable support is claimed only for host releases that
-have both an official GitHub tag/release and the matching signed npm package
-(currently `0.2.1-rc.2` and `0.2.1-rc.3`). The `0.2.1-rc.4` adapter was verified
-against the signed official npm tarball from the `next` channel; because upstream
-has not tagged it on GitHub, it is shipped as preview compatibility and may be
-removed or re-certified if upstream withdraws or promotes it. This is how the
-project follows upstream without silently claiming stability for prerelease-only
-builds.
+have a **non-prerelease official GitHub release** and the matching signed package
+on npm's `latest` channel (currently `0.2.1-rc.2` and `0.2.1-rc.3`). The
+`0.2.1-rc.4` adapter was verified against the signed official npm tarball from the
+`next` channel. Upstream now has a GitHub **prerelease** tag
+`dsh-v0.2.1-rc.4`, but the GitHub release is not a formal release and the npm
+dist-tag is still `next`, so it remains preview compatibility and may be removed
+or re-certified if upstream withdraws or promotes it.
 
 The Desktop certification covers plugin install, boot, renderer, settings/gallery,
 persistence and the first-frame handshake; native macOS window chrome, traffic

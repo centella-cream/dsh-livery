@@ -471,6 +471,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     effects = external.state.effects
     position = external.state.position
     revision = external.state.revision
+    // External state came from localStorage and is recoverable by definition.
+    selectionPersistable = true
+    persistable = true
     // The adopted record now defines the winning (revision, sourceId) identity
     // for this tab, so a later same-revision delivery only wins if it is greater.
     winnerSourceId = external.sourceId

@@ -41,7 +41,7 @@ A `stable` claim is invalid without an upstream GitHub tag and must not use the
 `verifiedBrowsers` is generated from these exact versions; acceptance fails if
 the observed Chrome version is not in `certifiedBrowserVersions`.
 
-Stable support requires **both** an official GitHub tag/release and the matching
+Stable support requires a **non-prerelease** official GitHub release and the matching
 signed npm package. A version that exists only on npm's `next` channel cannot be
 called stable; it may be withdrawn or changed before promotion. Preview support
 is still real acceptance work: it must bind the exact signed npm tarball, extract

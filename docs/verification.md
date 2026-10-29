@@ -17,8 +17,8 @@ Release. `0.1.2` evidence is retained unchanged under
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install and
-fails closed at runtime. Stable claims require both an official GitHub tag/release
-and the signed npm tarball; `0.2.1-rc.4` is verified against the signed npm `next`
+fails closed at runtime. Stable claims require a non-prerelease official GitHub
+release and the matching signed npm tarball on `latest`; `0.2.1-rc.4` is verified against the signed npm `next`
 tarball and has an upstream GitHub prerelease tag (commit 504a01a…) but npm remains on the next channel, so it is a preview compatibility claim,
 not a channel-stability promise. The Desktop certification covers plugin
 installation, boot, the Electron renderer, settings/gallery, persistence and the

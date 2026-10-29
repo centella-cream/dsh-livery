@@ -96,10 +96,11 @@
 | Desktop Windows、Web Edge、其他 DSH 版本 | — | — | 不支持、不保证 |
 
 没有兼容模式。其他 DSH 版本会在安装时被拒绝，运行时 fail closed。稳定支持只授予以官方
-GitHub tag/release + 对应签名 npm 包同时存在的宿主版本（当前是 `0.2.1-rc.2` 与
-`0.2.1-rc.3`）。`0.2.1-rc.4` adapter 是针对官方 npm `next` 通道签名 tarball 实测验证的；
-由于上游尚未在 GitHub 打 tag，它作为预览兼容性发布，若上游撤回或正式晋升，会重新认证或移除。
-这样既避免新版本安装不兼容，也不会把仅有预发布 npm 包的版本误称为稳定版本。
+**非 prerelease 的官方 GitHub release** + 对应签名 npm 包位于 `latest` 通道（当前是
+`0.2.1-rc.2` 与 `0.2.1-rc.3`）。`0.2.1-rc.4` adapter 是针对官方 npm `next` 通道签名
+tarball 实测验证的。上游现在已有 GitHub **prerelease** tag `dsh-v0.2.1-rc.4`，但该
+GitHub release 不是正式 release，且 npm dist-tag 仍为 `next`，因此它保持预览兼容性，
+若上游撤回或正式晋升，会重新认证或移除。
 
 Desktop 认证覆盖插件安装、启动、渲染器、设置/画廊、持久化和首帧握手；macOS 原生窗口装饰、
 红绿灯/leading、vibrancy、Dock/rightbar 和系统级 DPI 属于宿主所有，不在插件认证范围内。

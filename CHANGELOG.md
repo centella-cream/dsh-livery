@@ -206,8 +206,9 @@ packaging; they are folded into the `0.1.0` entry.
   manifest.
 - The formal matrix now distinguishes `claimTier` (`stable`/`preview`),
   `distributionChannel`, exact `certifiedBrowserVersions`,
-  `certifiedRuntimeVersions` and upstream provenance. `0.2.1-rc.4` remains a
-  next-channel preview until upstream publishes a matching GitHub tag.
+  `certifiedRuntimeVersions` and upstream provenance. `0.2.1-rc.4` has an
+  upstream GitHub prerelease tag and npm `next` package, but remains a preview
+  until the GitHub release is non-prerelease and the npm channel is `latest`.
 - The npm package carries only the current documentation tree and shipped
   contracts; historical archive material and the proposed matrix are no longer
   packaged. The 0.1.2 evidence and CHANGELOG entry remain unchanged.

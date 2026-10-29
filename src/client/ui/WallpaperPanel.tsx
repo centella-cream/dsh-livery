@@ -309,6 +309,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
 
   const selectWallpaper = (selection: WallpaperSelection, blob?: Blob, persist = true): void => {
     cacheCancellation.current.cancel()
+    if (selection?.kind !== 'upload') setUploadSessionOnly(false)
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.setState(
       { selection },
@@ -322,6 +323,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   }
   const clearWallpaper = (): void => {
     cacheCancellation.current.cancel()
+    setUploadSessionOnly(false)
     const previous = controller?.getSnapshot().selection
     commitSelection(uploadTickets.current, () => controller?.clear())
     const persisted = controller?.flushState() === true
@@ -777,11 +779,12 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller
     if (active === undefined) return false
-    const startVersion = presetApplyStartVersion.current
-    const startRevision = presetApplyStartRevision.current
-    if (startVersion !== undefined && active.getSelectionVersion() !== startVersion) return false
-    if (startRevision !== undefined && active.getSnapshot().revision !== startRevision) return false
+    const applyStartVersion = presetApplyStartVersion.current
+    const applyStartRevision = presetApplyStartRevision.current
+    if (applyStartVersion !== undefined && active.getSelectionVersion() !== applyStartVersion) return false
+    if (applyStartRevision !== undefined && active.getSnapshot().revision !== applyStartRevision) return false
     const selectionVersion = active.getSelectionVersion()
+    const startRevision = active.getSnapshot().revision
     let blob: Blob | undefined
     if (target.selection?.kind === 'remote') {
       const result = await cacheRemoteImage(target.selection.url, {
@@ -792,7 +795,9 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
         signal: cacheCancellation.current.reset(),
         deferPrune: true,
       })
-      if (!mounted.current || !result.ok || active.getSelectionVersion() !== selectionVersion) return false
+      if (!mounted.current || !result.ok
+        || active.getSelectionVersion() !== selectionVersion
+        || active.getSnapshot().revision !== startRevision) return false
       blob = result.record.blob
       rememberBlob(target.selection.url, blob)
     }

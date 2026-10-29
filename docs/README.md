@@ -10,7 +10,7 @@
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Next-channel preview (npm `next`; GitHub prerelease tag exists) |
 
-Stable claims require both an official GitHub tag/release and the signed npm
+Stable claims require a non-prerelease official GitHub release and the signed npm
 package. A version that exists only on npm's `next` channel is documented as
 preview compatibility, never as a stability promise. DSH Desktop Windows, Web
 Edge and any other DSH build are not supported.
@@ -49,7 +49,7 @@ not be cited as current support or behavior.
 | DSH `0.2.1-rc.3` | Desktop 应用、macOS、Electron/Node 24.21.0、Chromium 152.0.7977.130 | 稳定认证渲染器表面（GitHub 已 tag） |
 | DSH `0.2.1-rc.4` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | next 通道预览（npm `next`；已有 GitHub prerelease tag） |
 
-“稳定”要求官方 GitHub tag/release 与签名 npm 包同时存在；只有 npm `next`
+“稳定”要求非 prerelease 的官方 GitHub release 与签名 npm 包同时存在；只有 npm `next`
 通道的版本只作为预览兼容性记录，不承诺稳定性。DSH Desktop Windows、Web Edge
 及其他 DSH 版本不在支持范围内。
 
