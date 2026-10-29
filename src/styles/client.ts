@@ -216,7 +216,7 @@ export const CLIENT_CSS = `
   .livery-hero .livery-ui-card__head{gap:2px}
   .wallpaper-workbench{gap:12px}
   .wallpaper-hero{padding:14px 16px}
-  .wallpaper-hero__preview{max-height:240px}
+  .wallpaper-hero__preview{max-height:150px}
   .wallpaper-hero__empty{aspect-ratio:auto;max-height:120px}
   .wallpaper-effects-card .livery-ui-card__hint{display:none}
   .wallpaper-effects-card{padding:10px 14px}
