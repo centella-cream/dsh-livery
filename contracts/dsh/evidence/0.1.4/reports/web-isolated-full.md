@@ -1,6 +1,6 @@
 # Acceptance evidence — DSH Livery on DSH 0.2.1-rc.2 (installed-package)
 
-Run `2026-10-29T12-31-47-472Z-isolated` · isolated DSH_HOME · **273 passed / 0 failed / 5 skipped / 2 warnings** · RESULT: PASS
+Run `2026-10-29T13-06-58-555Z-isolated` · isolated DSH_HOME · **273 passed / 0 failed / 5 skipped / 2 warnings** · RESULT: PASS
 
 **Scope (explicit):** this run covers DSH 0.2.1-rc.2 + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by separate real-Electron desktop evidence; Windows and Web Edge are not-supported and not claimed.
 
@@ -8,8 +8,8 @@ Run `2026-10-29T12-31-47-472Z-isolated` · isolated DSH_HOME · **273 passed / 0
 
 | item | value |
 |---|---|
-| date | 2026-10-29T12:35:16.540Z |
-| run commit | 43fb34f67a899a359c85c6e53b97aacb7e1b9a9d |
+| date | 2026-10-29T13:10:22.656Z |
+| run commit | b61a6458ec58f262d2727878b3c6243264aed5ae |
 | DSH | 0.2.1-rc.2 |
 | Node | v22.23.1 |
 | OS | darwin 27.0.0 (arm64) |
@@ -20,7 +20,7 @@ Run `2026-10-29T12-31-47-472Z-isolated` · isolated DSH_HOME · **273 passed / 0
 | upstream | dsh-v0.2.1-rc.2 / npm 0.2.1-rc.2 |
 | playwright-core | 1.63.0 |
 | target package | dsh-livery@0.1.4 (`file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz`) |
-| tarball sha256 | 934e2ae82f878671715d821894c6cf4e3a4995de4a2fec499b51ffa1b1b1cd82 |
+| tarball sha256 | 25abf46acb929151e30f7def82502de4b40f39f3d1214b14f78d2df028cbfea8 |
 | browser | headless Chrome, viewport 1440×900 |
 
 ## Host identity & certification
@@ -41,10 +41,10 @@ Certified-adapter match: ✅ yes · catalog profile sha256:3f9ec1f47ed6…
 ## Boot
 
 ```text
-dsh web: http://127.0.0.1:51818/?token=<redacted>
+dsh web: http://127.0.0.1:58586/?token=<redacted>
 ```
 
-- boot ready: 1.3 s; install via official profile package manager: 158 ms
+- boot ready: 3.2 s; install via official profile package manager: 608 ms
 
 ## docs/design/implementation-plan.md §20 coverage (Web profile)
 
@@ -91,29 +91,29 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | dsh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz → exit 0 in 158ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-livery"] |
-| `lifecycle.profile-initialized` | isolated profile initialized from the shipped web template | ✅ pass | home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/014-evidence/final4-rc2-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/014-evidence/final4-rc2-home/profiles/web; initialized=true; sha256=934e2ae82f878671715d821894c6cf4e3a4995de4a2fec499b51ffa1b1b1cd82 |
-| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 1313ms on port 51818; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log |
+| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | dsh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz → exit 0 in 608ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-livery"] |
+| `lifecycle.profile-initialized` | isolated profile initialized from the shipped web template | ✅ pass | home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/014-evidence/final5-rc2-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/014-evidence/final5-rc2-home/profiles/web; initialized=true; sha256=25abf46acb929151e30f7def82502de4b40f39f3d1214b14f78d2df028cbfea8 |
+| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 3239ms on port 58586; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log |
 | `lifecycle.boot-warnings` | boot log has no skipped-bundle or compatibility warnings | ✅ pass | no skipped/incompatible/warning lines in the boot log |
-| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=122ms portClosed=true forced=false |
-| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=166ms |
+| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=167ms portClosed=true forced=false |
+| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=242ms |
 | `lifecycle.final-stop` | final SIGTERM stops the restarted service and closes the port | ✅ pass | exit=0 portClosed=true forced=false |
 
 ### Boot graph & handshake
 
 | check | title | result | detail |
 |---|---|---|---|
-| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:51818/; navigation 152ms |
-| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=1cb8ba13ee77 |
+| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:58586/; navigation 304ms |
+| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=8129c5aa2fb3 |
 
 ### Client bundle route
 
 | check | title | result | detail |
 |---|---|---|---|
-| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=1cb8ba13ee77 → 200 text/javascript; charset=utf-8 (227341 bytes) |
+| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=8129c5aa2fb3 → 200 text/javascript; charset=utf-8 (227341 bytes) |
 | `bundle.requires-rev` | plugin client bundle requires its graph rev | ✅ pass | GET graph URL without rev → 404 |
 | `bundle.canonical-route` | bare /plugins/<pkg>/client.js?rev= route (doc-comment form) | ⚠️ warn | GET /plugins/dsh-livery/client.js?rev=<graph rev> → 404; this DSH build serves only the graph-encoded URL (verified deviation from the doc comment) |
-| `bundle.gzip-budget` | client bundle gzip stays within the final 60 KiB performance budget (host peers excluded) | ✅ pass | 57944 bytes gzip / 227341 bytes raw (budget 61440 B / 60 KiB) |
+| `bundle.gzip-budget` | client bundle gzip stays within the final 60 KiB performance budget (host peers excluded) | ✅ pass | 57945 bytes gzip / 227341 bytes raw (budget 61440 B / 60 KiB) |
 
 ### First-frame handshake
 
@@ -139,7 +139,7 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 | `trust.no-cookie-401` | browser trust: no cookie 401 | ✅ pass | GET / without cookie → 401 |
 | `trust.wrong-token-rejected` | browser trust: wrong token rejected | ✅ pass | GET /?token=<redacted> → 401 |
 | `trust.token-exchange-303` | browser trust: token exchange 303 | ✅ pass | GET /?token=<redacted> token> → 303 |
-| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Sat, 28 Nov 2026 12:31:50 GMT; HttpOnly; SameSite=Strict |
+| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Sat, 28 Nov 2026 13:07:04 GMT; HttpOnly; SameSite=Strict |
 | `trust.cookie-200` | browser trust: cookie 200 | ✅ pass | GET / with cookie → 200 |
 | `trust.bad-host-index-refused` | browser trust: bad host index refused | ✅ pass | GET / Host: evil.example (cookie from 127.0.0.1) → 401 (refused; cookie authority mismatch) |
 | `trust.bad-host-api-403` | browser trust: bad host api 403 | ✅ pass | GET /api/__dsh_acceptance_probe__ Host: evil.example → 403 |
@@ -349,9 +349,9 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 45/46 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {"t":35,"htmlLang":"en","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
+| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 47/49 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {"t":39,"htmlLang":"en","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:cc8551943e49cb05426880b8f0afcffd46ada58e88ce03915bb737608356361e","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
 | `firstpaint.first-colour` | the first painted frame already uses the livery background token | ✅ pass | first sample --dsw-alias-bg-base=#f0f3f6 (canonical rgb(240, 243, 246)) vs livery light rgb(240, 243, 246) |
-| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=32ms fcp=144ms dcl=45ms load=147.90000000596046ms |
+| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=32ms fcp=168ms dcl=48.900000005960464ms load=176.10000002384186ms |
 
 ### Presentation layout & card structure
 
@@ -437,17 +437,17 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 | `wallpaper.persistence` | selected wallpaper and effects persist across a hard reload | ✅ pass | global layer attr=true; builtin=aurora; sliders={"blur":12,"dim":40,"frost":55,"atmosphere":60}; stored={"schemaVersion":2,"revision":16,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":5 |
 | `wallpaper.tab-reload` | the wallpaper tab survives a hard reload (sessionStorage mirror) | ✅ pass | reopened=true; wallpaper tab auto-selected after reload=true; overlay=true |
 | `wallpaper.upload-accept` | upload input accepts the documented image MIME set | ✅ pass | accept="image/jpeg,image/png,image/webp,image/avif" |
-| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1793277177591-0opalzhp5o"},"effects":{"blur":12,"dim":40,"frost"; error="" |
+| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1793279295304-0rt4wvt047"},"effects":{"blur":12,"dim":40,"frost"; error="" |
 | `wallpaper.upload-invalid-type` | a non-image upload is rejected with a validation message | ✅ pass | error="不支持的图片格式。" |
 | `wallpaper.upload-invalid-size` | an upload above the 10 MiB cap is rejected with a validation message | ✅ pass | error="图片超过 10 MiB。" |
-| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1793277177591-0opalzhp5o"},"effects":{"blur" |
+| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1793279295304-0rt4wvt047"},"effects":{"blur" |
 | `wallpaper.url-validation` | non-https / javascript / data URLs are rejected with a validation message | ✅ pass | http://insecure.test/a.j rejected=true; javascript:alert(1) rejected=true; data:image/svg+xml,<svg/ rejected=true |
 | `wallpaper.url-accepted` | https custom image URLs are accepted and applied through the owned layer | ✅ pass | blob=true fetchOk=true rawInStyle=false; attr=; error="" (custom URLs surface no attribution line by design) |
 | `wallpaper.remote-failure` | failed remote cache (network/status/MIME/redirect) keeps the previous selection/storage, records no history/raw CSS, and never requests a private/insecure redirect target | ✅ pass | [{"label":"network/status failure","url":"https://images.example.test/broken.jpg","errorVisible":true,"oldSelectionPreserved":true,"oldStylePreserved":true,"rawInStyle":false,"history":false},{"label":"non-image MIME failure","url":"https://images.example.test/mime.jpg","errorVisible":true,"oldSelectionPreserved":true,"oldStylePreserved":true,"rawInStyle":false,"history":false},{"label":"private-h |
 | `wallpaper.adaptive-cover` | both wallpaper layers stay background-size:cover across 1024×768 / 1920×1080 / 900×1300 | ✅ pass | 1024x768: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2; 1920x1080: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2; 900x1300: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2 |
 | `wallpaper.atmosphere-conversation` | the atmosphere overlay stays present over the host conversation page | ✅ pass | attr=; overlay={"present":true,"id":"dsh-livery-wallpaper-overlay","className":"dsh-livery-wallpaper-overlay","ariaHidden":"true","zIndex":"90","pointerEvents":"none","opacity":"0.6","mixBlendMode":"soft-light","backgroundSize":"cover, cover, cover","backgroundImage":"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140 |
 | `wallpaper.overlay-plugin` | atmosphere layer stays present and below floating UI over the third-party "插件" panel; opaque-page visual coverage is not claimed | ✅ pass | third-party="插件"; atmo0 overlay=false; atmo60 overlay=true z=90 opacity=0.6; measured pixel delta={"avg":12.67,"grid":15.22,"score":27.89}; perceptible=true (informational only; no visual-coverage claim) |
-| `wallpaper.clear` | clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key) | ✅ pass | stylePresent=false; attribute=null; overlay=false; stored={"schemaVersion":2,"revision":23,"selection":{"kind":"none"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"78b34573-e040-466f-84e7-cb585b37d268"} |
+| `wallpaper.clear` | clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key) | ✅ pass | stylePresent=false; attribute=null; overlay=false; stored={"schemaVersion":2,"revision":23,"selection":{"kind":"none"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"610e4170-af10-450b-adae-74c9b65d8c44"} |
 | `wallpaper.tab-restore` | returning to the 视觉风格 tab restores the gallery and the wallpaper layer stays cleared | ✅ pass | style selected=true; stylePanel=true; wallpaperPanel=false |
 
 ### recent
@@ -489,21 +489,21 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 | `merged.position-builtin-hidden` | built-in wallpaper hides the focal-position control | ✅ pass | group={"present":false} attr= |
 | `merged.preset-export` | preset export produces schema-v1 JSON with style/wallpaper/effects/position and no executable data | ✅ pass | bytes=289; preset={"schemaVersion":1,"createdWith":"dsh-livery/0.1.4","styleId":"tokyo-night","wallpaper":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":35,"atmosphere":60},"position":{"x":50,"y":50}} |
 | `merged.preset-import-diff` | valid preset import shows a diff with the changed style/wallpaper/effects/position | ✅ pass | preset={"card":true,"exportButton":true,"importFile":true,"diff":true,"diffRows":4,"apply":true,"cancel":true,"exportStatus":"","importStatus":"已载入由 dsh-livery/0.1.4 创建的预设。","applyStatus":"","error":null} diffRows=4 |
-| `merged.preset-apply-atomic` | preset apply switches style + wallpaper + effects + position together from one confirmed action | ✅ pass | applyStatus="预设已应用。关闭提示" stored={"schemaVersion":2,"revision":52,"selection":{"kind":"remote","url":"https://images.example.test/preset.jpg"},"effects":{"blur":14,"dim":30,"frost":45,"atmosphere":25},"position":{"x":100,"y":100},"sourceId":"78b34573-e0 |
+| `merged.preset-apply-atomic` | preset apply switches style + wallpaper + effects + position together from one confirmed action | ✅ pass | applyStatus="预设已应用。关闭提示" stored={"schemaVersion":2,"revision":52,"selection":{"kind":"remote","url":"https://images.example.test/preset.jpg"},"effects":{"blur":14,"dim":30,"frost":45,"atmosphere":25},"position":{"x":100,"y":100},"sourceId":"610e4170-af |
 | `merged.preset-invalid-rejected` | invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage | ✅ pass | [{"name":"unknown-field","error":{"id":"preset-error","kind":"import","code":"unknown-field","text":"预设包含不支持的字段（css）。关闭提示","importAriaInvalid":"true","importDescribedBy":"preset-error","importErrorMessage":"preset-error","retryWallpaper":false}},{"name":"bad-url","error":{"id":"preset-error","kind":"import","code":"wallpaper-url","text":"预设壁纸不是有效的 https 图片地址。关闭提示","importAriaInvalid":"true","impor |
 | `merged.preset-partial-failure` | injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution | ✅ pass | styleApplied=true; error={"id":"preset-error","kind":"apply","code":"wallpaper","text":"视觉风格已应用，但本设备未能更改壁纸。可重试壁纸，或关闭提示保留新风格。重试壁纸关闭提示","importAriaInvalid":null,"importDescribedBy":null,"importErrorMessage":null,"retryWallpaper":true}; noFalseSuccess=true; hasRetry=true; recoveredSelection={"kind":"remote","url":"https://images.example.test/partial.jpg"}; attrib="Partial Preset · Tester · CC0 · http |
-| `merged.state-migration-v1` | legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored | ✅ pass | visible={"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":35,"atmosphere":60} style=true attr=""; persisted={"schemaVersion":2,"revision":1,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":60,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"3146f983-a4e5-42eb-9b56-834a220ad541"} style=true attr=""; corruptStyle=true corruptAttr="" corruptStored={no |
-| `merged.clear-local-data` | clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache | ✅ pass | dbBefore=[{"kind":"remote","size":70,"createdAt":1793277237740,"lastUsedAt":1793277254331,"sourceUrl":"https://images.example.test/remote.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1793277245573,"lastUsedAt":1793277254326,"sourceUrl":"https://images.example.test/partial.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1793277240905,"lastUsedAt":1793277240905,"sourceUrl" |
+| `merged.state-migration-v1` | legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored | ✅ pass | visible={"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":35,"atmosphere":60} style=true attr=""; persisted={"schemaVersion":2,"revision":1,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":60,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"a38291dc-f281-4e60-b517-196eb57008dd"} style=true attr=""; corruptStyle=true corruptAttr="" corruptStored={no |
+| `merged.clear-local-data` | clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache | ✅ pass | dbBefore=[{"kind":"remote","size":70,"createdAt":1793279357021,"lastUsedAt":1793279365992,"sourceUrl":"https://images.example.test/remote.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1793279365137,"lastUsedAt":1793279365979,"sourceUrl":"https://images.example.test/partial.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1793279360381,"lastUsedAt":1793279360381,"sourceUrl" |
 | `merged.two-tab-sync` | a second real page in the same profile applies wallpaper/position changes through storage events without reload loops | ✅ pass | selection={"kind":"remote","url":"https://images.example.test/sync.jpg"} position={"x":0,"y":0} style=true attr="" storageEvents=9 |
 | `merged.two-tab-clear` | clearing wallpaper in page A clears page B through the same sync path | ✅ pass | style=false attr=null |
-| `merged.two-tab-upload-ref` | page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref | ✅ pass | {"uploadKey":"upload-1793277296545-0qfzdi68ig","refRows":2,"refsAfterAdopt":[{"key":"dsh-livery.wallpaper.ref.78b34573-e040-466f-84e7-cb585b37d268","uploads":[],"updatedAt":1793277245575},{"key":"dsh-livery.wallpaper.ref.3146f983-a4e5-42eb-9b56-834a220ad541","uploads":["upload-1793277296545-0qfzdi68ig"],"updatedAt":1793277296552},{"key":"dsh-livery.wallpaper.ref.f94cfc36-24fc-4e74-90b0-4bf99fced35 |
+| `merged.two-tab-upload-ref` | page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref | ✅ pass | {"uploadKey":"upload-1793279400588-0fviq55jbz","refRows":2,"refsAfterAdopt":[{"key":"dsh-livery.wallpaper.ref.ec4b5bfb-3f07-4aad-93f2-02b8ccd40a7f","uploads":["upload-1793279295304-0rt4wvt047"],"updatedAt":1793279295305},{"key":"dsh-livery.wallpaper.ref.30438558-ec21-42d6-8b7d-a95de3117f21","uploads":["upload-1793279400588-0fviq55jbz","upload-1793279388868-0s64772ky4"],"updatedAt":1793279400591},{ |
 
 ### perf
 
 | check | title | result | detail |
 |---|---|---|---|
 | `perf.catalog-size` | catalog JSON response stays within the measured headroom cap (+50% extreme regression tolerated as warning) | ✅ pass | actual 1313436 bytes; cap 1511424 bytes (cd5d1943772b58d0f9cf01ee66adeb59b05b71e2); within cap |
-| `perf.cold-start` | cold-start time stays near the measured baseline (warn only unless extreme) | ✅ pass | actual boot=1313ms fcp=144ms; baseline p50=1919ms p95=2021ms; pass |
+| `perf.cold-start` | cold-start time stays near the measured baseline (warn only unless extreme) | ✅ pass | actual boot=3239ms fcp=168ms; baseline p50=1919ms p95=2021ms; pass |
 
 ### network
 
@@ -536,7 +536,7 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 | `residue.catalog-route` | after uninstall /livery/api/catalog returns 404 | ✅ pass | GET /livery/api/catalog → 404 |
 | `residue.preview-route` | after uninstall /livery/assets/previews/sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8/fjord-zh-light.svg returns 404 | ✅ pass | GET /livery/assets/previews/sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8/fjord-zh-light.svg → 404 |
 | `residue.plugin-route` | after uninstall /plugins/dsh-livery/client.js returns 404 | ✅ pass | GET /plugins/dsh-livery/client.js → 404 |
-| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=1cb8ba13ee77 → 404 |
+| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=8129c5aa2fb3 → 404 |
 | `residue.profile-manifest` | uninstall removes dependency/bundle selection; any stale settings row is documented (not silently ignored) | ✅ pass | profile dependency removed; patch liveryRows=1 skinId=stock |
 
 ## Screenshots
@@ -633,16 +633,16 @@ dsh web: http://127.0.0.1:51818/?token=<redacted>
 - probe: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/probe.json`
 - console/network: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/console.json`
 - timings: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/timings.json`
-- filmstrip frames: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/filmstrip` (11 frames)
+- filmstrip frames: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/filmstrip` (10 frames)
 - HTML snapshots: `artifacts/acceptance/0.1.4-evidence/web-0.2.1-rc.2/html`
 
 ## Lifecycle
 
 | step | result |
 |---|---|
-| SIGTERM stop before uninstall | exit 0, port closed: true, 122 ms |
-| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 166 ms |
-| fresh boot after uninstall | ready in 1.7 s, port 52165 |
+| SIGTERM stop before uninstall | exit 0, port closed: true, 167 ms |
+| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 242 ms |
+| fresh boot after uninstall | ready in 3.1 s, port 60496 |
 | residue sweep (boot graph / DOM / routes / tokens) | see residue checks above |
 | final SIGTERM | exit 0, port closed: true |
 
@@ -695,13 +695,13 @@ First paint timings:
 
 ```json
 {
-  "timeOrigin": 1793277133973.6,
-  "responseStart": 4.199999988079071,
-  "domContentLoaded": 45,
-  "load": 147.90000000596046,
+  "timeOrigin": 1793279250717.4,
+  "responseStart": 2.9000000059604645,
+  "domContentLoaded": 48.900000005960464,
+  "load": 176.10000002384186,
   "firstPaint": 32,
-  "firstContentfulPaint": 144,
-  "duration": 147.90000000596046
+  "firstContentfulPaint": 168,
+  "duration": 176.10000002384186
 }
 ```
 
@@ -713,44 +713,44 @@ Lifecycle:
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 122,
+    "shutdownMs": 167,
     "forceKilled": false,
-    "port": 51818,
+    "port": 58586,
     "portClosed": true,
-    "portClosedWaitedMs": 0,
+    "portClosedWaitedMs": 1,
     "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
-    "logTail": "dsh web: http://127.0.0.1:51818/?token=<redacted>"
+    "logTail": "dsh web: http://127.0.0.1:58586/?token=<redacted>"
   },
   "uninstall": {
     "phase": "uninstall",
     "command": "dsh plugin --profile web remove dsh-livery",
-    "startedAt": "2026-10-29T12:35:13.489Z",
+    "startedAt": "2026-10-29T13:10:17.855Z",
     "exitCode": 0,
     "signal": null,
     "timedOut": false,
-    "durationMs": 166,
-    "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz\n\nDone in 38ms using pnpm v12.3.4\n",
+    "durationMs": 242,
+    "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.4-acceptance.tgz\n\nDone in 50ms using pnpm v12.3.4\n",
     "stderr": "",
     "dependencyPresent": false,
     "bundleSelected": false
   },
   "postUninstallBoot": {
-    "url": "http://127.0.0.1:52165/?token=<redacted>",
-    "baseUrl": "http://127.0.0.1:52165",
-    "port": 52165,
-    "readyMs": 1718
+    "url": "http://127.0.0.1:60496/?token=<redacted>",
+    "baseUrl": "http://127.0.0.1:60496",
+    "port": 60496,
+    "readyMs": 3135
   },
   "stopAfterResidue": {
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 95,
+    "shutdownMs": 144,
     "forceKilled": false,
-    "port": 52165,
+    "port": 60496,
     "portClosed": true,
     "portClosedWaitedMs": 0,
     "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web-post-uninstall.log",
-    "logTail": "dsh web: http://127.0.0.1:52165/?token=<redacted>"
+    "logTail": "dsh web: http://127.0.0.1:60496/?token=<redacted>"
   }
 }
 ```
