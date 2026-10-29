@@ -3112,6 +3112,17 @@ export async function checkWallpaperStudio(ctx) {
     await page.route('https://api.openverse.org/**', (route) => {
       openverseRequests.push(route.request().url())
       if (openverseMode === 'ok') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(openverseFixture) })
+      if (openverseMode === 'oversized') {
+        // > WALLPAPER_JSON_MAX_BYTES (2 MiB) with a lying small Content-Length,
+        // so the product must cancel the streaming reader instead of trusting
+        // the declared size or materializing the whole body.
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          headers: { 'content-length': '1024', 'cache-control': 'no-store' },
+          body: Buffer.alloc(2 * 1024 * 1024 + 8192, 0x20),
+        })
+      }
       return route.fulfill({ status: 500, contentType: 'text/plain', body: 'openverse unavailable' })
     })
     await installPicsumRedirectMock(page, {
@@ -3170,9 +3181,20 @@ export async function checkWallpaperStudio(ctx) {
 
     // ---- search-first online card (round 11): one auto Picsum batch, explicit actions, no slider refetch ----
     const onlineAuto = await readWallpaperState(page)
-    const loadedThumbs = await page
-      .evaluate(() => [...document.querySelectorAll('[data-testid="wallpaper-online-card"] [data-testid="wallpaper-result"] img')].filter((img) => img.complete && img.naturalWidth > 0).length)
-      .catch(() => 0)
+    const thumbnailState = await page
+      .evaluate(() => {
+        const card = document.querySelector('[data-testid="wallpaper-online-card"]')
+        const results = card === null ? [] : [...card.querySelectorAll('[data-testid="wallpaper-result"]')]
+        const images = results.flatMap((result) => [...result.querySelectorAll('img')])
+        const fallbacks = results.flatMap((result) => [...result.querySelectorAll('.livery-thumb__fallback')])
+        return {
+          results: results.length,
+          resultImages: images.length,
+          loadedImages: images.filter((image) => image.complete && image.naturalWidth > 0).length,
+          fallbackSpans: fallbacks.length,
+        }
+      })
+      .catch(() => ({ results: 0, resultImages: 0, loadedImages: 0, fallbackSpans: 0 }))
     const mainOrder = onlineAuto.mainCardOrder ?? []
     expect(
       runner,
@@ -3205,8 +3227,15 @@ export async function checkWallpaperStudio(ctx) {
       runner,
       'wallpaper.online-auto-random',
       'opening the wallpaper tab auto-loads exactly one Picsum random batch (mockable)',
-      picsumListRequests.length === 1 && onlineAuto.results.length >= 2 && onlineAuto.results.every((result) => result.url?.startsWith('https://picsum.photos/')) && loadedThumbs > 0 && openverseRequests.length === 0,
-      `picsum list requests=${picsumListRequests.length}; openverse requests=${openverseRequests.length}; results=${onlineAuto.results.length}; loaded thumbs=${loadedThumbs}; status=${onlineAuto.status}`,
+      picsumListRequests.length === 1 && onlineAuto.results.length >= 2 && onlineAuto.results.every((result) => result.url?.startsWith('https://picsum.photos/')) && thumbnailState.resultImages === 0 && thumbnailState.fallbackSpans >= onlineAuto.results.length && openverseRequests.length === 0,
+      `picsum list requests=${picsumListRequests.length}; openverse requests=${openverseRequests.length}; results=${onlineAuto.results.length}; thumb imgs=${thumbnailState.resultImages}; fallbacks=${thumbnailState.fallbackSpans}; status=${onlineAuto.status}`,
+    )
+    expect(
+      runner,
+      'wallpaper.online-thumbnails',
+      'online result cards never request remote thumbnails directly; they render a local fallback span',
+      thumbnailState.resultImages === 0 && thumbnailState.fallbackSpans >= onlineAuto.results.length,
+      `resultImages=${thumbnailState.resultImages}; loadedImages=${thumbnailState.loadedImages}; fallbackSpans=${thumbnailState.fallbackSpans}; results=${onlineAuto.results.length}`,
     )
     await capture(page, ctx, { state: 'wallpaper-online-auto', mode: 'light' })
     const picsumBeforeSliders = picsumListRequests.length
@@ -3237,6 +3266,22 @@ export async function checkWallpaperStudio(ctx) {
       `openverse requests=${openverseRequests.length}; results=${JSON.stringify(searched.results.map((result) => result.url))}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 100)}"`,
     )
     await capture(page, ctx, { state: 'wallpaper-online-search', mode: 'light' })
+    // Streaming JSON cap: a >2 MiB Openverse body with a lying small
+    // Content-Length must fail without exposing results.
+    openverseMode = 'oversized'
+    const oversizedBefore = openverseRequests.length
+    await page.locator('[data-testid="wallpaper-search"]').fill('oversized')
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') === 'error', undefined, { timeout: 20_000 }).catch(() => {})
+    const oversizedState = await readWallpaperState(page)
+    expect(
+      runner,
+      'wallpaper.online-json-cap',
+      'streaming search JSON over the 2 MiB cap fails the request (reader cancelled) instead of surfacing results',
+      openverseRequests.length === oversizedBefore + 1 && oversizedState.status === 'error',
+      `openverse ${oversizedBefore}→${openverseRequests.length}; status=${oversizedState.status}; results=${oversizedState.results.length}`,
+    )
+    openverseMode = 'ok'
     // Random and 换一批/refresh re-fetch the active source.
     const beforeRandom = picsumListRequests.length
     await page.locator('[data-testid="wallpaper-random"]').click({ timeout: 8_000 })
@@ -3780,6 +3825,15 @@ export async function checkWallpaperStudio(ctx) {
       { url: 'https://images.example.test/redirect-private.jpg', label: 'private-host redirect rejection' },
       { url: 'https://images.example.test/redirect-http.jpg', label: 'non-https final redirect rejection' },
     ]
+    const fixturePort = getPicsumFixturePort()
+    const privateTargetPrefix = `https://127.0.0.1:${fixturePort}/`
+    const insecureTargetPrefix = `http://127.0.0.1:${fixturePort}/`
+    const redirectedRequests = []
+    const redirectRequestListener = (request) => {
+      const url = request.url()
+      if (url.startsWith(privateTargetPrefix) || url.startsWith(insecureTargetPrefix)) redirectedRequests.push(url)
+    }
+    page.on('request', redirectRequestListener)
     const failureEvidence = []
     for (const failure of failureCases) {
       await page.locator('[data-testid="wallpaper-url"]').fill(failure.url)
@@ -3800,12 +3854,14 @@ export async function checkWallpaperStudio(ctx) {
         history,
       })
     }
+    page.off('request', redirectRequestListener)
     expect(
       runner,
       'wallpaper.remote-failure',
-      'failed remote cache (network/status or non-image MIME) keeps the previous selection/storage and never records history or raw-URL CSS',
-      failureEvidence.every((entry) => entry.errorVisible && entry.oldSelectionPreserved && entry.oldStylePreserved && !entry.rawInStyle && entry.history === false),
-      JSON.stringify(failureEvidence),
+      'failed remote cache (network/status/MIME/redirect) keeps the previous selection/storage, records no history/raw CSS, and never requests a private/insecure redirect target',
+      failureEvidence.every((entry) => entry.errorVisible && entry.oldSelectionPreserved && entry.oldStylePreserved && !entry.rawInStyle && entry.history === false) &&
+        redirectedRequests.length === 0,
+      `${JSON.stringify(failureEvidence)}; redirectedTargetRequests=${JSON.stringify(redirectedRequests)}`,
     )
 
     // ---- recent history: third entry, re-apply, cache failure, clear ----
