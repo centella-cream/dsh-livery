@@ -92,10 +92,61 @@ try {
   await openLiveryDetailed(page, { locale: 'zh' })
   await page.waitForSelector('[data-testid="livery-section"]', { timeout: 20_000 })
 
+  // First-run/API-key overlays can re-appear after the studio opens in a fresh
+  // isolated profile. Dismiss them again, assert the mask is gone, and use the
+  // same recovery path if a card click is still intercepted.
+  const overlayState = () => page.evaluate(() => {
+    const dialogs = [...document.querySelectorAll('[role="dialog"], [class*="modal-mask"], [class*="onboarding"], [data-testid*="mask"]')]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect()
+        const style = getComputedStyle(element)
+        return rect.width > 20 && rect.height > 20 && style.visibility !== 'hidden' && style.display !== 'none' && Number(style.opacity) !== 0
+      })
+    return dialogs.map((element) => ({ tag: element.tagName, className: String(element.className), text: (element.textContent ?? '').trim().slice(0, 120) }))
+  })
+  const clearStudioMask = async () => {
+    for (let round = 0; round < 8; round += 1) {
+      await dismissFirstRunDialogs(page).catch(() => {})
+      const overlays = await overlayState().catch(() => [])
+      if (overlays.length === 0) return []
+      // Explicit close/skip buttons first; then Escape; never click through the mask.
+      for (const label of ['关闭', '稍后配置', '跳过', '继续', '取消', 'Close', 'Skip', 'Later', 'Continue', 'Cancel', 'Dismiss']) {
+        const button = page.getByRole('button', { name: label, exact: false }).last()
+        if ((await button.count().catch(() => 0)) > 0) {
+          await button.click({ timeout: 3_000 }).catch(() => {})
+          await sleep(250)
+          break
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {})
+      await sleep(350)
+    }
+    return overlayState().catch(() => [])
+  }
+  const masksAfterOpen = await clearStudioMask()
+  metrics.maskAfterOpen = masksAfterOpen
+  if (masksAfterOpen.length > 0) {
+    recordIssue('high', 'first-run-mask', `Mask/dialog still visible after studio open: ${JSON.stringify(masksAfterOpen)}`)
+  }
+
   // Apply a livery so the new large hero preview is representative.
   const card = page.locator('[data-testid="livery-card"][data-livery-id="tokyo-night"]').first()
   if ((await card.count()) > 0) {
-    await card.click({ timeout: 8_000 })
+    try {
+      await card.click({ timeout: 8_000 })
+    } catch {
+      // Card click blocked by a late overlay: retry dismissal, Escape, and the close button.
+      await clearStudioMask()
+      await page.keyboard.press('Escape').catch(() => {})
+      await page.getByRole('button', { name: /关闭|Close/ }).last().click({ timeout: 3_000 }).catch(() => {})
+      await clearStudioMask()
+      await card.click({ timeout: 8_000 }).catch(async () => {
+        await page.keyboard.press('Escape').catch(() => {})
+        await page.getByRole('button', { name: /关闭|Close/ }).last().click({ timeout: 3_000 }).catch(() => {})
+        await clearStudioMask()
+        await card.click({ timeout: 8_000 })
+      })
+    }
     await page.waitForSelector('[data-testid="livery-preview"]', { timeout: 10_000 }).catch(() => {})
     // Prove the preview bar + actions live inside the hero before applying.
     const previewMetrics = await page.evaluate(() => {

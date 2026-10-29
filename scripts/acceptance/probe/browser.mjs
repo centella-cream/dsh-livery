@@ -1204,9 +1204,10 @@ export async function readLayoutStructure(page, which) {
             },
         styleFlags: {
           largeHero: currentCard !== null && currentCard.classList.contains('livery-hero--large'),
+          restoreInsideHero: contains(currentCard, document.querySelector('[data-testid="livery-restore"]')),
           actionsInsideHero: contains(currentCard, document.querySelector('[data-testid="livery-restore"]')) &&
-            contains(currentCard, document.querySelector('[data-testid="livery-apply"]')) &&
-            contains(currentCard, document.querySelector('[data-testid="livery-cancel"]')),
+            (document.querySelector('[data-testid="livery-apply"]') === null || contains(currentCard, document.querySelector('[data-testid="livery-apply"]'))) &&
+            (document.querySelector('[data-testid="livery-cancel"]') === null || contains(currentCard, document.querySelector('[data-testid="livery-cancel"]'))),
           actionsCardPresent: document.querySelector('[data-testid="livery-actions-card"]') !== null,
           railPresent: document.querySelector('.livery-rail') !== null,
           galleryAfterHero: currentCard !== null && galleryCard !== null &&

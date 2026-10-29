@@ -2847,6 +2847,9 @@ export async function checkStyleContrast(ctx) {
       // Applied styles are measured with the conversation exposed (composer is a
       // host node the style must reshape), so every iteration re-opens the panel.
       await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale }).catch(() => {})
+      const styleTab = page.locator('[data-testid="livery-page-tab-style"]')
+      if ((await styleTab.count()) > 0) await styleTab.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="livery-current-card"]', { timeout: 10_000 }).catch(() => {})
       const measurement = await measureOneStyle(ctx, candidate, { previewOnly, uiLabels })
       if (measurement) measurements.push(measurement)
     }
@@ -3171,6 +3174,7 @@ export async function checkWallpaperStudio(ctx) {
     await reopenLivery()
     await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
     await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await selectWallpaperSource(page, 'online')
     // Exactly one automatic Picsum random batch on wallpaper-tab mount.
     await page.waitForSelector('[data-testid="wallpaper-online-card"]', { timeout: 10_000 })
     await page.waitForFunction(() => {
@@ -3205,7 +3209,7 @@ export async function checkWallpaperStudio(ctx) {
     const onlineAuto = await readWallpaperState(page)
     const thumbnailState = await page
       .evaluate(() => {
-        const card = document.querySelector('[data-testid="wallpaper-online-card"]')
+        const card = document.querySelector('[data-testid="wallpaper-source-card"]')
         const results = card === null ? [] : [...card.querySelectorAll('[data-testid="wallpaper-result"]')]
         const images = results.flatMap((result) => [...result.querySelectorAll('img')])
         const fallbacks = results.flatMap((result) => [...result.querySelectorAll('.livery-thumb__fallback')])
@@ -3221,12 +3225,13 @@ export async function checkWallpaperStudio(ctx) {
     expect(
       runner,
       'wallpaper.library-removed',
-      'curated library/category UI is removed; one search-first online card directly follows the hero',
+      'curated library/category UI is removed; the workbench is hero → effects → single source card',
       onlineAuto.onlineCardPresent === true &&
         onlineAuto.libraryElementCount === 0 &&
         onlineAuto.categoryChipCount === 0 &&
-        mainOrder.indexOf('wallpaper-hero') >= 0 &&
-        mainOrder.indexOf('wallpaper-online-card') === mainOrder.indexOf('wallpaper-hero') + 1,
+        mainOrder[0] === 'wallpaper-hero' &&
+        mainOrder[1] === 'wallpaper-effects-card' &&
+        mainOrder.includes('wallpaper-source-card'),
       `onlineCard=${onlineAuto.onlineCardPresent}; libraryElements=${onlineAuto.libraryElementCount}; categoryChips=${onlineAuto.categoryChipCount}; mainCardOrder=${JSON.stringify(mainOrder)}`,
     )
     const onlineCardText = await page.locator('[data-testid="wallpaper-online-card"]').innerText().catch(() => '')
@@ -3930,6 +3935,7 @@ export async function checkWallpaperStudio(ctx) {
     const brokenUrl = 'https://images.example.test/broken.jpg'
     const beforeBroken = await readWallpaperState(page)
     const beforeBrokenStored = await readStoredWallpaper(page)
+    await selectWallpaperSource(page, 'local')
     await page.locator('[data-testid="wallpaper-url"]').fill(brokenUrl)
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="wallpaper-url-error"]', { timeout: 12_000 }).catch(() => {})
@@ -3956,6 +3962,7 @@ export async function checkWallpaperStudio(ctx) {
     await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 }).catch(() => {})
     await sleep(300)
     // Clear: card disappears, localStorage key removed, remote cache keys deleted.
+    await selectWallpaperSource(page, 'recent')
     const keysBeforeClear = await readIndexedDbKeys(page)
     const remoteKeysBefore = keysBeforeClear.filter((key) => String(key).startsWith('remote-')).length
     await page.locator('[data-testid="wallpaper-recent-clear"]').click({ timeout: 8_000 })
@@ -4144,6 +4151,11 @@ export async function checkWallpaperStudio(ctx) {
  * sliders, hero previews/thumbs and horizontal-overflow checks. Presentation
  * only — behaviour is covered by the other groups.
  */
+function hasVisibleSurface(card) {
+  return Boolean(card && card.visible && card.borderWidth && card.borderWidth !== '0px' &&
+    (card.backgroundColor !== 'rgba(0, 0, 0, 0)' || card.backdropFilter !== 'none' || card.boxShadow !== 'none'))
+}
+
 async function scrollPanelTop(page) {
   await page.evaluate(() => {
     window.scrollTo(0, 0)
@@ -4211,7 +4223,7 @@ export async function checkLayoutStructure(ctx) {
     const styleFlags = styleWide.styleFlags ?? {}
     expectSafe('layout.style-wide-hero', 'style page uses the large no-rail hero with actions inside the current-style card',
       styleWide.layout.present === true && styleFlags.largeHero === true && styleFlags.actionsCardPresent === false &&
-        styleFlags.railPresent === false && styleFlags.actionsInsideHero === true,
+        styleFlags.railPresent === false && (styleFlags.restoreInsideHero === true || styleFlags.actionsInsideHero === true),
       `layout=${JSON.stringify(styleWide.layout)}; flags=${JSON.stringify(styleFlags)}`)
     expectSafe('layout.style-wide-hero-preview', 'style hero shows a loaded 16:10 preview image',
       styleWide.heroThumb?.present === true && styleWide.heroThumb.visible === true &&
@@ -4268,7 +4280,7 @@ export async function checkLayoutStructure(ctx) {
           styleNarrow.overflow.horizontal === false,
           `scrollWidth=${styleNarrow.overflow.scrollWidth} clientWidth=${styleNarrow.overflow.clientWidth}`)
         expectSafe(`layout.style-${width}-hero`, `style hero stays no-rail with actions inside at ${width}px`,
-          flags.railPresent === false && flags.actionsCardPresent === false && flags.actionsInsideHero === true,
+          flags.railPresent === false && flags.actionsCardPresent === false && (flags.restoreInsideHero === true || flags.actionsInsideHero === true),
           JSON.stringify(flags))
         expectSafe(`layout.style-${width}-gallery`, `style gallery is visible after the hero at ${width}px`,
           flags.galleryAfterHero === true && flags.secondaryAfterGallery === true,
@@ -4298,8 +4310,9 @@ export async function checkLayoutStructure(ctx) {
         wallFlags.workbench === true && wallFlags.oldLayoutPresent === false && wallFlags.railPresent === false && wallFlags.sourceCard === true,
       `layout=${JSON.stringify(wallpaperWide.layout)}; flags=${JSON.stringify(wallFlags)}`)
     expectSafe('layout.wallpaper-order', 'wallpaper DOM order is hero → effects → source → managed data',
-      wallFlags.workbenchChildren?.slice(0, 3).join(',') === 'wallpaper-hero,wallpaper-effects-card,wallpaper-source-card' &&
-        wallFlags.domOrder?.map((row) => row.testid).join(',') === 'wallpaper-hero,wallpaper-effects-card,wallpaper-source-card,wallpaper-manage',
+      wallFlags.workbenchChildren?.slice(0, 2).join(',') === 'wallpaper-hero,wallpaper-effects-card' &&
+        wallFlags.domOrder?.map((row) => row.testid).join(',') === 'wallpaper-hero,wallpaper-effects-card,wallpaper-source-card,wallpaper-manage' &&
+        wallFlags.domOrder.every((row) => typeof row.top === 'number'),
       `children=${JSON.stringify(wallFlags.workbenchChildren)}; order=${JSON.stringify(wallFlags.domOrder)}`)
     expectSafe('layout.wallpaper-cards', 'wallpaper hero/effects/source/manage cards are visible and surfaced',
       (wallpaperWide.wallpaperCards ?? []).length === 4 &&
@@ -4449,7 +4462,7 @@ export async function checkVisualMatrix(ctx) {
     }))
   const readCardBoxes = () =>
     page.evaluate(() => {
-      const ids = ['wallpaper-effects-card', 'wallpaper-builtins-card', 'wallpaper-online-card', 'wallpaper-custom-card']
+      const ids = ['wallpaper-hero', 'wallpaper-effects-card', 'wallpaper-source-card', 'wallpaper-manage']
       const out = {}
       for (const id of ids) {
         const el = document.querySelector(`[data-testid="${id}"]`)
@@ -4497,6 +4510,7 @@ export async function checkVisualMatrix(ctx) {
     await sleep(180)
   }
   const selectBuiltin = async () => {
+    await selectWallpaperSource(page, 'builtin')
     const first = page.locator('[data-testid="wallpaper-builtin"]').first()
     if ((await first.count()) > 0) await first.click({ timeout: 6_000 }).catch(() => {})
     await page
@@ -4568,13 +4582,12 @@ export async function checkVisualMatrix(ctx) {
     expect(
       runner,
       'visual.narrow-card-order',
-      'at 767px the effects/built-ins rail renders before online/upload cards',
-      Boolean(narrowBoxes['wallpaper-effects-card']?.visible) &&
-        Boolean(narrowBoxes['wallpaper-builtins-card']?.visible) &&
-        Boolean(narrowBoxes['wallpaper-online-card']?.visible) &&
-        Boolean(narrowBoxes['wallpaper-custom-card']?.visible) &&
-        narrowBoxes['wallpaper-effects-card'].top < narrowBoxes['wallpaper-online-card'].top - 8 &&
-        narrowBoxes['wallpaper-builtins-card'].top < narrowBoxes['wallpaper-custom-card'].top - 8,
+      'at 767px the hero/effects workbench renders before the single source card; tab panels stay mounted but hidden',
+      Boolean(narrowBoxes['wallpaper-hero']?.visible) &&
+        Boolean(narrowBoxes['wallpaper-effects-card']?.visible) &&
+        Boolean(narrowBoxes['wallpaper-source-card']?.visible) &&
+        narrowBoxes['wallpaper-hero'].top < narrowBoxes['wallpaper-effects-card'].top - 8 &&
+        narrowBoxes['wallpaper-effects-card'].top < narrowBoxes['wallpaper-source-card'].top - 8,
       JSON.stringify(narrowBoxes),
       { boxes: narrowBoxes },
     )
@@ -4711,6 +4724,7 @@ export async function checkVisualMatrix(ctx) {
     // ---------- keyboard focus + selected state ----------
     await clearWallpaper()
     await setTheme('light')
+    await selectWallpaperSource(page, 'builtin')
     const firstBuiltin = page.locator('[data-testid="wallpaper-builtin"]').first()
     await firstBuiltin.focus()
     // Return focus through the keyboard so the browser applies :focus-visible.
@@ -4921,6 +4935,7 @@ async function openWallpaperPanelForMerged(ctx) {
   }
   await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 12_000 })
   await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-builtin"]').length === 24, undefined, { timeout: 12_000 }).catch(() => {})
+  await selectWallpaperSource(page, 'local')
 }
 
 /**
@@ -4994,6 +5009,7 @@ export async function checkMergedFeatures(ctx) {
       `keyboard=${JSON.stringify(keyboardPosition.position)} group=${JSON.stringify(keyboardPosition.positionGroup)}`,
     )
     // Built-in wallpaper hides the position control (built-ins stay centered).
+    await selectWallpaperSource(page, 'builtin')
     await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 6_000 })
     await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-position"]') === null, undefined, { timeout: 8_000 }).catch(() => {})
     const builtinPosition = await readMergedWallpaper(page)
@@ -5006,6 +5022,8 @@ export async function checkMergedFeatures(ctx) {
     )
 
     // ---------- preset export ----------
+    await selectWallpaperSource(page, 'local')
+    await ensureWallpaperManageOpen(page)
     await page.evaluate(() => {
       window.__CLIPBOARD_CAPTURED__ = null
       const clipboard = navigator.clipboard
@@ -5248,6 +5266,8 @@ export async function checkMergedFeatures(ctx) {
     await page.keyboard.press('Escape').catch(() => {})
     await dismissFirstRunDialogs(page).catch(() => {})
     await page.locator('[data-testid="preset-dismiss"]').click({ timeout: 4_000 }).catch(() => {})
+    await selectWallpaperSource(page, 'local')
+    await ensureWallpaperManageOpen(page)
     await page.locator('[data-testid="wallpaper-upload"]').setInputFiles({ name: 'upload.png', mimeType: 'image/png', buffer: tinyPng })
     await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
     await sleep(400)
@@ -5334,6 +5354,7 @@ export async function checkMergedFeatures(ctx) {
             await tab.waitFor({ state: 'visible', timeout: 10_000 })
             await tab.click({ timeout: 8_000 })
             await pageB.waitForSelector('[data-testid="wallpaper-panel"]', { state: 'visible', timeout: 12_000 })
+            await selectWallpaperSource(pageB, 'local')
             return
           } catch (error) {
             lastError = error
@@ -5354,6 +5375,7 @@ export async function checkMergedFeatures(ctx) {
         window.__STORAGE_EVENTS__ = 0
         window.addEventListener('storage', () => { window.__STORAGE_EVENTS__ += 1 })
       })
+      await selectWallpaperSource(page, 'local')
       await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/sync.jpg')
       await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
       const syncLayerA = await waitForCacheOnlyLayer(page, 'https://images.example.test/sync.jpg')
@@ -5454,6 +5476,7 @@ export async function checkMergedFeatures(ctx) {
         const refRows = refsAfterAdopt.filter((row) => row.uploads.includes(uploadKey))
         const uploadB = await readStoredWallpaper(pageB)
         let clearProtection = null
+        await ensureWallpaperManageOpen(pageB)
         const clearButton = pageB.locator('[data-testid="wallpaper-clear-local-data"]')
         if ((await clearButton.count()) > 0) {
           await clearButton.scrollIntoViewIfNeeded().catch(() => {})
