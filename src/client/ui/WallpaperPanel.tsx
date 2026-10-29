@@ -38,7 +38,7 @@ import type { RecentWallpaperEntry } from '../wallpaper/history.js'
 import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote, pruneRemoteCache } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
-import { isLocalOrPrivateHost, safeRemoteImageUrl } from '../wallpaper/host-safety.js'
+import { isLocalOrPrivateHost } from '../wallpaper/host-safety.js'
 import type { LiveryPreset, PresetApplyResult, PresetAttribution, PresetWallpaperTarget } from '../wallpaper/preset.js'
 import { readRecentFromStorageEvent } from '../wallpaper/sync.js'
 import { commitSelection, createAsyncTicket } from '../wallpaper/async-ticket.js'
@@ -56,7 +56,6 @@ import { createAutoRandomLoader } from './online-auto.js'
 const GRID = 'livery-grid'
 const CARD = 'livery-card'
 const THUMB = 'livery-thumb'
-const THUMB_IMG = 'livery-thumb__img'
 const NAME = 'livery-card__name'
 const SEARCH = 'livery-search'
 
@@ -306,13 +305,16 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     pendingUploadDeletes.current.set(key, timer)
   }
 
-  const selectWallpaper = (selection: WallpaperSelection, blob?: Blob): void => {
+  const selectWallpaper = (selection: WallpaperSelection, blob?: Blob, persist = true): void => {
     cacheCancellation.current.cancel()
     const previous = controller?.getSnapshot().selection
-    commitSelection(uploadTickets.current, () => controller?.setSelection(selection, blob))
+    commitSelection(uploadTickets.current, () => controller?.setState(
+      { selection },
+      { ...(blob === undefined ? {} : { blob }), persist },
+    ))
     // Only delete the old upload after the NEW state is confirmed written to
-    // localStorage. A failed write must leave the old blob recoverable.
-    const persisted = controller?.flushState() === true
+    // localStorage. A session-only selection must never displace the durable one.
+    const persisted = persist && controller?.flushState() === true
     const obsolete = persisted ? obsoleteUploadKey(previous, selection) : undefined
     scheduleUploadDelete(obsolete, 'previous upload')
   }
@@ -702,8 +704,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       setUploadProblem(undefined)
       setUploadSessionOnly(sessionOnly)
       setAttribution(undefined)
-      selectWallpaper({ kind: 'upload', key }, file)
-      if (controller !== undefined && controller.flushState() !== true) {
+      selectWallpaper({ kind: 'upload', key }, file, !sessionOnly)
+      if (!sessionOnly && controller !== undefined && controller.flushState() !== true) {
         // The state is not recoverable after a failed write: roll the in-memory
         // selection back and remove the new blob instead of persisting a ghost.
         controller.setState({ selection: previous }, { flush: true })
@@ -956,10 +958,8 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     data-wallpaper-url={result.url}
                     onClick={() => selectResult(result)}
                   >
-                    <span className={THUMB}>
-                      {safeRemoteImageUrl(result.thumbnail) !== undefined && (
-                        <img className={THUMB_IMG} src={safeRemoteImageUrl(result.thumbnail)} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-                      )}
+                    <span className={THUMB} aria-hidden="true">
+                      <span className="livery-thumb__fallback" />
                     </span>
                     <span className="livery-card__body">
                       <span className={NAME}>{result.title}</span>

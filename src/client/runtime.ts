@@ -394,7 +394,14 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     }
     if (isStock(id)) {
       if (isStock(this.snapshot.confirmedId) && isStock(this.snapshot.effectiveId)) return { ok: true }
-      return this.styleOutcome(await this.restoreStock())
+      const accepted = await this.restoreStock()
+      if (!accepted) return this.styleOutcome(false)
+      // A newer host configuration may have superseded the stock write; only
+      // report success when stock is actually the final confirmed/effective state.
+      if (!isStock(this.snapshot.confirmedId) || !isStock(this.snapshot.effectiveId)) {
+        return { ok: false, failure: 'refused' }
+      }
+      return { ok: true }
     }
     const catalog = this.snapshot.catalog
     if (catalog === undefined) return { ok: false, failure: 'unavailable' }

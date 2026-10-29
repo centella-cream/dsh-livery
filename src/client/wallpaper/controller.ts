@@ -78,6 +78,8 @@ export interface WallpaperStateOptions {
   readonly revision?: number | undefined
   /** Persist immediately instead of waiting for the debounce window. */
   readonly flush?: boolean | undefined
+  /** Set false for a session-only upload whose blob was not stored. */
+  readonly persist?: boolean | undefined
 }
 
 /** localStorage subset used for persistence (injectable in tests). */
@@ -255,6 +257,8 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   let snapshot: WallpaperState = { selection, effects, position, revision }
   let saveTimer: ReturnType<typeof setTimeout> | undefined
   let savePending = false
+  /** Whether the current in-memory state may be written to localStorage. */
+  let persistable = true
   let started = false
   let disposed = false
   let localImageUrl: string | undefined
@@ -348,7 +352,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   }
 
   const flushState = (): boolean => {
-    if (disposed || !started) return false
+    if (disposed || !started || !persistable) return false
     if (saveTimer !== undefined) {
       clearTimeout(saveTimer)
       saveTimer = undefined
@@ -385,6 +389,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     revision = stored.state.revision
     durableSelection = stored.state.selection
     winnerSourceId = stored.sourceId
+    persistable = true
     publishRefs()
   }
 
@@ -515,8 +520,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     winnerSourceId = sourceId
     if (selectionChanged || stateOptions.blob !== undefined) replaceLocalImageUrl(stateOptions.blob)
     apply()
-    scheduleSave()
-    if (stateOptions.flush === true) flushSave()
+    persistable = stateOptions.persist !== false
+    if (!persistable) {
+      cancelPendingSave()
+    } else {
+      scheduleSave()
+      if (stateOptions.flush === true) flushSave()
+    }
     publishRefs()
     notify()
     return snapshot

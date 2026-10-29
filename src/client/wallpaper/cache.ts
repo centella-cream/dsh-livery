@@ -371,6 +371,8 @@ export async function cacheRemoteImage(
   // The key is known before the download starts, so a newer same-URL operation
   // supersedes this one immediately (even while this one is mid-flight).
   const key = deps.key ?? remoteCacheKey(check.url)
+  const initialHost = new URL(check.url).hostname.toLowerCase()
+  const picsumRedirectAllowed = initialHost === 'picsum.photos' || initialHost.endsWith('.picsum.photos')
   const operationToken = beginRemoteOperation(key)
   const controller = typeof AbortController === 'undefined' ? undefined : new AbortController()
   let cancelledExternally = false
@@ -393,9 +395,9 @@ export async function cacheRemoteImage(
       method: 'GET',
       cache: 'force-cache',
       credentials: 'omit',
-      // Follow the browser's bounded (20-hop) redirect chain; the final
-      // response URL is validated below, and credentials remain omitted.
-      redirect: 'follow',
+      // Only the known Picsum CDN path may redirect. Custom/Openverse URLs fail
+      // closed on any redirect so they can never trigger a private-network hop.
+      redirect: picsumRedirectAllowed ? 'follow' : 'error',
       ...(controller === undefined ? {} : { signal: controller.signal }),
     })
     if (!response.ok) return { ok: false, reason: 'network' }
@@ -406,6 +408,12 @@ export async function cacheRemoteImage(
       try { finalUrl = new URL(response.url) } catch { return { ok: false, reason: 'invalid' } }
       if (finalUrl.protocol !== 'https:' || isLocalOrPrivateHost(finalUrl.hostname)) {
         return { ok: false, reason: 'invalid' }
+      }
+      if (picsumRedirectAllowed) {
+        const finalHost = finalUrl.hostname.toLowerCase()
+        if (finalHost !== 'picsum.photos' && !finalHost.endsWith('.picsum.photos')) {
+          return { ok: false, reason: 'invalid' }
+        }
       }
     }
     const type = (response.headers.get('content-type') ?? '').toLowerCase()

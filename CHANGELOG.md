@@ -46,6 +46,16 @@ packaging; they are folded into the `0.1.0` entry.
   new `acceptance-artifact.yml` workflow (same expected sha), validates manifest
   sha/bytes/version before use, and checks `LIVERY_ACCEPTANCE_RUN_ID` before
   downloading; it has `actions: read` and never rebuilds the candidate.
+- Stock restore now verifies the final confirmed/effective style after the write;
+  a newer host style superseding the stock write returns `refused` instead of a
+  false success. Added a runtime regression test.
+- Custom/Openverse image downloads use `redirect:'error'`; only Picsum's known
+  CDN host may follow redirects, with final URL host revalidation. Search-result
+  thumbnails no longer issue direct remote `<img>` requests.
+- Search JSON is consumed through a streaming 2 MiB cap (reader cancelled on
+  overflow), not materialized in full before checking size.
+- Session-only uploads (IndexedDB put failed) use a non-persistable controller
+  transition: the unreadable upload key is not written to localStorage.
 - Runtime observation serial is now the primary supersession signal for same-id
   updates even when the host omits revisions; same-target notifications roll
   forward normally instead of being silently treated as self echoes. `applyStyle`

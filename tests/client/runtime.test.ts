@@ -595,6 +595,19 @@ describe('write reconciliation with newer config revisions', () => {
     expect(snapshot.notes).toContain('newer host configuration superseded the in-flight settings write')
   })
 
+  it('refuses a stock apply whose write was superseded by a newer host style', async () => {
+    const form = new DeferredForm({ status: 'ready', value: { skinId: 'fjord' }, revision: 1, writable: true, mode: 'host' })
+    const harness = createHarness({ form })
+    harness.runtime.start()
+    await flush()
+    const apply = harness.runtime.applyStyle('stock')
+    await flush()
+    form.update({ value: { skinId: 'midnight' }, revision: 7 })
+    form.resolveWrite?.(true)
+    expect(await apply).toEqual({ ok: false, failure: 'refused' })
+    expect(harness.runtime.getSnapshot().confirmedId).toBe('midnight')
+  })
+
   it('lets a same-id host update without revision supersede an in-flight write', async () => {
     const { runtime, form } = await settlePreview()
     const commit = runtime.commitPreview()

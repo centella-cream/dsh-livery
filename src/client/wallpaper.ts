@@ -744,6 +744,49 @@ export type WallpaperFetchOutcome =
 
 /** Timeout for one wallpaper network request. */
 export const WALLPAPER_FETCH_TIMEOUT_MS = 8000
+/** Maximum JSON response bytes materialized for a search/random listing. */
+export const WALLPAPER_JSON_MAX_BYTES = 2 * 1024 * 1024
+
+/**
+ * Read and parse a JSON response with a streaming byte cap. The body is never
+ * fully materialized when it exceeds the cap; the reader is cancelled.
+ * @param response - fetch response.
+ * @returns parsed JSON, or undefined when the cap is exceeded.
+ */
+async function readCappedJson(response: Response): Promise<unknown> {
+  const max = WALLPAPER_JSON_MAX_BYTES
+  const body = response.body
+  if (body === null || typeof body.getReader !== 'function') {
+    const text = await response.text()
+    if (new TextEncoder().encode(text).length > max) return undefined
+    return JSON.parse(text)
+  }
+  const reader = body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (value === undefined) continue
+      total += value.byteLength
+      if (total > max) {
+        await reader.cancel().catch(() => undefined)
+        return undefined
+      }
+      chunks.push(value)
+    }
+  } catch {
+    return undefined
+  }
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return JSON.parse(new TextDecoder().decode(bytes))
+}
 
 /**
  * Run one user-initiated wallpaper network request.
@@ -778,13 +821,9 @@ export async function requestWallpaperResults(
     })
     if (!response.ok) return { ok: false, reason: 'error' }
     const declared = Number(response.headers.get('content-length') ?? '')
-    const maxJsonBytes = 2 * 1024 * 1024
-    if (Number.isFinite(declared) && declared > maxJsonBytes) return { ok: false, reason: 'error' }
-    const text = await response.text()
-    if (typeof TextEncoder !== 'undefined' && new TextEncoder().encode(text).length > maxJsonBytes) {
-      return { ok: false, reason: 'error' }
-    }
-    const json: unknown = JSON.parse(text)
+    if (Number.isFinite(declared) && declared > WALLPAPER_JSON_MAX_BYTES) return { ok: false, reason: 'error' }
+    const json = await readCappedJson(response)
+    if (json === undefined) return { ok: false, reason: 'error' }
     const results = request.source === 'openverse'
       ? parseOpenverseResults(json)
       : parsePicsumResults(json)
