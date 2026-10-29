@@ -33,8 +33,7 @@ English · [中文](README.zh-CN.md)
 
 All screenshots come from a real Web profile (the captures show the Chinese UI;
 Livery follows the DSH host locale). The style montage uses the shipped fixed
-preview scenes; the wallpaper-coverage image shows the wallpaper over the default
-DSH workspace. The rest show DSH Livery's own UI.
+preview scenes; the rest show DSH Livery's own UI and real online wallpaper loads.
 
 ## Features
 
@@ -90,11 +89,9 @@ previews appear in the 0.1.4 full-width gallery.
 
 ![Online Picsum wallpaper with focal position and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
 
-![Aurora wallpaper over the default DSH workspace](docs/assets/wallpaper-coverage-en.jpg)
 
-The first capture shows an online Picsum wallpaper picked in DSH Livery's own
-studio, including focal position and the online source tabs. The second capture
-shows the same wallpaper applied over the default DSH workspace.
+Captured in DSH Livery's own wallpaper studio: a real online Picsum #48 image
+loaded from the Online tab, with focal position and the four source tabs visible.
 
 ## Why another skin plugin is different
 
