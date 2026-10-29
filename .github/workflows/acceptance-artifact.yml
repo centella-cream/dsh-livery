@@ -56,3 +56,4 @@ jobs:
           path: |
             .tmp/*.tgz
             .tmp/release-manifest.json
+          include-hidden-files: true

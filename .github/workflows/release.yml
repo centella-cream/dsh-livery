@@ -82,6 +82,7 @@ jobs:
           path: |
             .tmp/accepted-candidate.tgz
             .tmp/release-manifest.json
+          include-hidden-files: true
 
   release-gates:
     needs: candidate
