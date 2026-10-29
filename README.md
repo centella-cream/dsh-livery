@@ -29,9 +29,9 @@ host theme takeover.
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery's Visual Style page](docs/assets/hero-en.jpg)
+![DSH Livery's Visual Style page with a large current-style hero and full-width gallery](docs/assets/hero-en.jpg)
 
-All screenshots come from a real Web profile. The style montage and the
+All screenshots come from a real Web profile (the captures show the Chinese UI; Livery follows the DSH host locale). The style montage and the
 wallpaper-coverage image use [dsh-charter](https://github.com/centella-cream/dsh-charter)
 — a separate bilingual session-charter plugin — as an example of another plugin's
 page being styled; the rest show DSH Livery's own UI.
@@ -45,10 +45,11 @@ page being styled; the rest show DSH Livery's own UI.
   includes 10 original designs, 12 palettes inspired by permissively licensed
   projects (MIT/Apache-2.0; see [NOTICE](NOTICE.md)), and 2 original Chinese designs
   (Celadon 青瓷, Cinnabar 朱砂).
-- **Wallpaper studio.** 24 built-in CSS wallpapers and an **online wallpapers** card.
-  Opening the wallpaper tab loads one random Picsum batch automatically; search
-  Openverse (CC0/PDM), draw another random batch, or load the next one. Local image
-  upload (stored in IndexedDB) and https URLs are also supported. Effects: blur
+- **Wallpaper studio.** 24 built-in CSS wallpapers plus one **Choose wallpaper**
+  area with Online, Built-in, Recent, and Local & link source tabs. Opening the
+  wallpaper tab loads one random Picsum batch automatically; search Openverse
+  (CC0/PDM), draw another random batch, or load the next one. Local image upload
+  (stored in IndexedDB) and https URLs share the Local & link tab. Effects: blur
   0–24 px, dim 0–70 %, frost 0–100 %, and a global atmosphere overlay. The
   atmosphere layer is intentionally below all floating UI (menus, tooltips,
   dialogs, toasts), so it adds page tint only where the page layering permits it;
@@ -62,14 +63,16 @@ page being styled; the rest show DSH Livery's own UI.
   blobs, CSS, tokens, fonts, local paths or history. Remote/upload wallpapers gain
   a keyboard-operable focal position, wallpaper choices sync live between tabs in
   the same Web Profile, and a local-data cleanup action reports what was removed.
-- **Card-based studio with one type scale.** Both pages use responsive cards. The
-  style page pairs a current-style card with a gallery card and an Actions /
-  Self-check rail; the wallpaper page has a preview, a search-first online card, a
-  custom upload/URL card, and a side rail with compact bounded effect sliders and the
-  24-swatch grid. One five-step type scale is shared across every module.
+- **Workbench-first studio with one type scale.** The style page opens with a large
+  current-style hero (preview, apply/cancel and restore actions) followed by a
+  full-width gallery with a two-row toolbar. The wallpaper page pairs a current
+  wallpaper preview with a compact effects card, then one tabbed source-picker card;
+  presets and local-data cleanup live in a collapsed management area. One five-step
+  type scale (22/16/14/13/12 px) and container-query layout are shared across modules.
 - **Style gallery.** Six families (Calm / Nature / Light / Retro / Vivid / Dark);
-  primary filters first, full tag set under "More filters". A preview-language tab
-  switches thumbnails between Follow DSH, Chinese and English.
+  a single-row search/category toolbar, full tag set under "More filters", and a
+  preview-language control that switches thumbnails between Follow DSH, Chinese and
+  English. Style cards use a consistent 16:10 preview without repeated light/dark chips.
 - **Sidebar entry.** A left-sidebar plugin panel (**Visual Style**, with a second
   **Wallpapers** tab), next to Plugins / Automation / Context.
 - **Missing features are reported.** Missing host capabilities and unverified modes
@@ -86,7 +89,7 @@ is a separate bilingual project, not the subject of this README.
 
 ## Wallpapers
 
-![Wallpaper studio: Aurora, Tokyo Night style, tuned blur/frost/atmosphere](docs/assets/wallpaper-studio-en.jpg)
+![Wallpaper studio: current Aurora wallpaper, effects, and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
 
 ![Aurora wallpaper over the dsh-charter Charter page](docs/assets/wallpaper-coverage-en.jpg)
 
