@@ -12,10 +12,10 @@
  *
  * Usage (repeat --run per formal target; clone is supplementary, never listed):
  *   node scripts/acceptance/evidence.mjs \
- *     --evidence contracts/dsh/evidence/0.1.3/0.2.1-rc.2-web-chrome.json \
- *     --probes-dir contracts/dsh/evidence/0.1.3/probes \
- *     --reports-dir contracts/dsh/evidence/0.1.3/reports \
- *     --tgz dsh-livery-0.1.3.tgz --package-version 0.1.3 \
+ *     --evidence contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json \
+ *     --probes-dir contracts/dsh/evidence/0.1.4/probes \
+ *     --reports-dir contracts/dsh/evidence/0.1.4/reports \
+ *     --tgz dsh-livery-0.1.4.tgz --package-version 0.1.4 \
  *     --run web-isolated-full:0.2.1-rc.2:dsh-0.2.1-rc.2-r1:<probe>:<report>
  */
 
@@ -73,8 +73,8 @@ const fail = (message) => {
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex')
 
 const evidencePath = flag('--evidence')
-const probesDir = flag('--probes-dir') ?? 'contracts/dsh/evidence/0.1.3/probes'
-const reportsDir = flag('--reports-dir') ?? 'contracts/dsh/evidence/0.1.3/reports'
+const probesDir = flag('--probes-dir') ?? 'contracts/dsh/evidence/0.1.4/probes'
+const reportsDir = flag('--reports-dir') ?? 'contracts/dsh/evidence/0.1.4/reports'
 const tgzPath = flag('--tgz')
 const packageVersion = flag('--package-version')
 const commitArg = flag('--commit')

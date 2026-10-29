@@ -90,14 +90,11 @@ export const CLIENT_CSS = `
 .wallpaper-dropzone{display:flex;align-items:center;justify-content:center;padding:12px;border:1px dashed var(--lw-line2);border-radius:10px;color:var(--lw-2);font-size:var(--lw-fs-label);text-align:center;cursor:pointer}
 .wallpaper-dropzone--over{border-color:var(--lw-brand)}
 
-/* Card system + two-column studio layouts (hero / main modules / side rail). */
+/* Card system + Studio workbench/source-card layouts. */
 .livery-ui-card{display:flex;flex-direction:column;gap:var(--lw-gap-card);min-width:0;padding:18px 20px;border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent);border-radius:var(--lw-radius-card);background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2));box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 28px -22px rgba(0,0,0,.45);backdrop-filter:blur(14px) saturate(1.08)}
 .livery-ui-card__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
 .livery-ui-card__title,.livery-gallery-head__title{margin:0;font-size:var(--lw-fs-title);font-weight:600;line-height:var(--lw-lh-title)}
 .livery-ui-card__hint{margin:0;color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh)}
-.livery-hero__meta{display:flex;align-items:center;gap:12px;min-width:0}
-.livery-hero__thumb{flex:0 0 96px;width:96px;aspect-ratio:16/10;object-fit:cover;border-radius:8px;border:1px solid color-mix(in srgb,var(--lw-fg) 16%,transparent)}
-.livery-hero__meta .livery-meta{flex:1 1 auto;justify-content:flex-end}
 .livery-secondary .livery-check{border:1px solid color-mix(in srgb,var(--lw-fg) 20%,transparent);border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--lw-fg) 5%,var(--lw-layer2));box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 28px -22px rgba(0,0,0,.45);backdrop-filter:blur(14px) saturate(1.08)}
 .wallpaper-hero__preview{position:relative;width:100%;max-height:360px;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background-color:var(--lw-layer2);background-position:center;background-size:cover;border:1px solid color-mix(in srgb,var(--lw-fg) 12%,transparent)}
 .wallpaper-hero__dim,.wallpaper-hero__atmo{position:absolute;inset:0;pointer-events:none;background-position:center;background-size:cover}

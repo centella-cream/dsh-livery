@@ -1,7 +1,7 @@
 /**
  * UI copy the acceptance harness uses for accessible-name queries.
  *
- * These strings are the frozen settings-page copy of dsh-livery 0.1.3 for the
+ * These strings are the frozen settings-page copy of dsh-livery 0.1.4 for the
  * zh and en locales (from the client contract). The DOM selectors prefer the
  * stable `data-testid` hooks; these labels are the human-facing fallback and
  * the assertion vocabulary for the copy itself.

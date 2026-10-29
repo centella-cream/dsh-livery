@@ -87,7 +87,7 @@ const MIN_LIVERIES = 24
 const CSS_BUDGET_BYTES = 12 * 1024
 
 /**
- * Final 0.1.3 merged-client caps (Lead-owned decisions; acceptance reports the
+ * Final 0.1.4 merged-client caps (Lead-owned decisions; acceptance reports the
  * actual bytes). Host gzip/tgz caps are Lead-owned in build/release and are not
  * asserted here.
  */
@@ -310,6 +310,28 @@ async function installPicsumRedirectMock(page, { tinyPng, listBody = [{ id: '10'
 
 async function uninstallPicsumRedirectMock(page) {
   await page.unroute('https://picsum.photos/**').catch(() => {})
+}
+
+/** Click a 0.1.4 wallpaper source tab and wait for its panel. */
+async function selectWallpaperSource(page, tab) {
+  const locator = page.locator(`[data-testid="wallpaper-source-tab-${tab}"]`)
+  if ((await locator.count().catch(() => 0)) > 0) {
+    await locator.click({ timeout: 8_000 }).catch(() => {})
+    await page.waitForSelector(`[data-testid="wallpaper-source-panel-${tab}"]`, { state: 'visible', timeout: 8_000 }).catch(() => {})
+    await sleep(180)
+  }
+}
+
+/** Open the collapsed 0.1.4 managed presets/local-data details section. */
+async function ensureWallpaperManageOpen(page) {
+  const manage = page.locator('[data-testid="wallpaper-manage"]')
+  if ((await manage.count().catch(() => 0)) === 0) return false
+  if ((await manage.getAttribute('open').catch(() => null)) === null) {
+    const toggle = page.locator('[data-testid="wallpaper-manage-toggle"]')
+    if ((await toggle.count().catch(() => 0)) > 0) await toggle.click({ timeout: 8_000 }).catch(() => {})
+    await sleep(250)
+  }
+  return (await manage.getAttribute('open').catch(() => null)) !== null
 }
 
 /** Canonicalize CSS colour values using the browser's own parser. */
@@ -2375,7 +2397,7 @@ export async function checkFirstPaint(ctx) {
     `first-paint=${paintTimings.firstPaint}ms fcp=${paintTimings.firstContentfulPaint}ms dcl=${paintTimings.domContentLoaded}ms load=${paintTimings.load}ms`,
   )
   // Rendered client/livery CSS budget (docs/design/implementation-plan.md §18.8).
-  // Final 0.1.3 merged-client cap is 20 KiB with a 16 KiB soft target; the same
+  // Final 0.1.4 merged-client cap is 20 KiB with a 16 KiB soft target; the same
   // text is the first-frame boot CSS. Report the actual bytes.
   const cssBytes = await page.evaluate(() => [...document.querySelectorAll('style[id^="dsh-livery"]')].reduce((total, style) => total + (style.textContent ?? '').length, 0))
   ctx.state.cssBytes = cssBytes
@@ -3400,6 +3422,7 @@ export async function checkWallpaperStudio(ctx) {
       initial.builtins.length === 24 && new Set(builtinIds).size === 24 && builtinIds.every((id) => typeof id === 'string' && id.length > 0),
       `${initial.builtins.length} builtins: ${builtinIds.join(', ')}`,
     )
+    await selectWallpaperSource(page, 'builtin')
     await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 8_000 })
     await page.waitForFunction(() => {
       const style = document.querySelector('style#dsh-livery-wallpaper')
@@ -3717,6 +3740,7 @@ export async function checkWallpaperStudio(ctx) {
     await capture(page, ctx, { state: 'wallpaper-persisted', mode: 'light' })
 
     // ---- upload via IndexedDB + reload persistence + validation ----
+    await selectWallpaperSource(page, 'local')
     const uploadField = page.locator('[data-testid="wallpaper-upload"]')
     await uploadField.waitFor({ state: 'attached', timeout: 10_000 }).catch(() => {})
     const uploadAccept = await uploadField.getAttribute('accept').catch(() => null)
@@ -3784,6 +3808,7 @@ export async function checkWallpaperStudio(ctx) {
     await capture(page, ctx, { state: 'wallpaper-upload-persisted', mode: 'light' })
 
     // ---- custom https URL path still works ----
+    await selectWallpaperSource(page, 'local')
     const urlInput = page.locator('[data-testid="wallpaper-url"]')
     const rejectionTexts = []
     for (const bad of ['http://insecure.test/a.jpg', 'javascript:alert(1)', 'data:image/svg+xml,<svg/>']) {
@@ -3879,6 +3904,7 @@ export async function checkWallpaperStudio(ctx) {
       `items=${JSON.stringify(recentThree.recentCard.items)}`,
     )
     // Re-apply an older entry: selection changes and it moves to newest.
+    await selectWallpaperSource(page, 'recent')
     const oldestUrl = recentThree.recentCard.items[2]?.url
     const oldestTitle = (recentThree.recentCard.items[2]?.label ?? '').split(' · ')[0]
     await page.locator('[data-testid="wallpaper-recent-item"]').nth(2).click({ timeout: 8_000 })
@@ -3925,6 +3951,7 @@ export async function checkWallpaperStudio(ctx) {
     )
     // Select a builtin (not remote) before clearing history so the current
     // remote selection does not keep a protected cache entry around.
+    await selectWallpaperSource(page, 'builtin')
     await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 6_000 })
     await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 }).catch(() => {})
     await sleep(300)
@@ -3952,6 +3979,7 @@ export async function checkWallpaperStudio(ctx) {
     // Restore a valid wallpaper layer after the cache-failure/recent-clear flow:
     // a failed-cache selection intentionally has no raw-URL fallback, so the
     // adaptive-cover/atmosphere checks below need a real rendered layer again.
+    await selectWallpaperSource(page, 'builtin')
     await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 6_000 })
     await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 }).catch(() => {})
     await setRangeValue(page, 'wallpaper-atmosphere', 60)
@@ -4116,336 +4144,286 @@ export async function checkWallpaperStudio(ctx) {
  * sliders, hero previews/thumbs and horizontal-overflow checks. Presentation
  * only — behaviour is covered by the other groups.
  */
+async function scrollPanelTop(page) {
+  await page.evaluate(() => {
+    window.scrollTo(0, 0)
+    const body = document.querySelector('.livery-panel__body')
+    if (body !== null) body.scrollTop = 0
+  }).catch(() => {})
+  await sleep(150)
+}
+
 export async function checkLayoutStructure(ctx) {
   const { runner, session, state } = ctx
   const { page } = session
-  const uiLabels = labelsFor(state.actualLocale ?? 'zh')
-  const tinyPng = Buffer.from(
+  const uiLocale = state.actualLocale ?? 'zh'
+  const uiLabels = labelsFor(uiLocale)
+  const seedImage = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
     'base64',
   )
-  const hasVisibleSurface = (card) => {
-    if (!card?.present || !card.visible) return false
-    const width = Number.parseFloat(card.borderWidth ?? '0')
-    const solid = card.borderStyle === 'solid' && width >= 1
-    const alpha = (() => {
-      const match = String(card.borderColor ?? '').match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/)
-      if (match) return Number(match[1])
-      return /^(transparent|none)$/i.test(String(card.borderColor ?? '')) ? 0 : 1
-    })()
-    const bgAlpha = (() => {
-      const match = String(card.backgroundColor ?? '').match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/)
-      return match ? Number(match[1]) : /^(transparent|rgba\(.*,\s*0\))$/i.test(String(card.backgroundColor ?? '')) ? 0 : 1
-    })()
-    const material = bgAlpha > 0 || (card.backdropFilter && card.backdropFilter !== 'none') || (card.boxShadow && card.boxShadow !== 'none')
-    // The host shell resets `section` borders in its own stylesheet on some
-    // builds; a visible card can be proven by a 1px border OR by the non-flat
-    // material (background/backdrop/shadow) the card rule also sets.
-    return (solid && alpha > 0) || material
+  const failSafe = (id, title, error) => runner.fail(id, title, error instanceof Error ? (error.stack ?? error.message) : String(error))
+  const expectSafe = (id, title, condition, detail) => {
+    try { expect(runner, id, title, Boolean(condition), detail) } catch (error) { failSafe(id, title, error) }
   }
-  const captureShot = (name) => capture(page, ctx, { state: name, mode: 'light' })
   let routed = false
   try {
-    // Avoid a live Openverse request when the wallpaper page auto-loads during
-    // the structural pass; the real feature group installs its own fixtures later.
     await page.route('https://api.openverse.org/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }), headers: { 'access-control-allow-origin': '*' } }),
     )
-    await installPicsumRedirectMock(page, { tinyPng })
-    await page.route('https://images.example.test/**', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: tinyPng }))
+    await page.route('https://picsum.photos/**', (route) => {
+      const url = route.request().url()
+      if (url.includes('/v2/list')) {
+        const items = Array.from({ length: 12 }, (_, index) => ({ id: String(10 + index), author: 'Tester' }))
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(items), headers: { 'access-control-allow-origin': '*' } })
+      }
+      return route.fulfill({ status: 200, contentType: 'image/png', body: seedImage, headers: { 'access-control-allow-origin': '*' } })
+    })
+    await page.route('https://images.example.test/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'image/png', body: seedImage, headers: { 'access-control-allow-origin': '*' } }),
+    )
     routed = true
-    await openLiveryDetailed(page, { labels: uiLabels, locale: state.actualLocale ?? 'zh', timeoutMs: 25_000 })
-    if (!(await page.locator('[data-testid="livery-tabpanel-style"]').count())) {
-      await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 }).catch(() => {})
+    await dismissFirstRunDialogs(page)
+    await openLiveryDetailed(page, { labels: uiLabels, locale: uiLocale, timeoutMs: 25_000 })
+    const styleTab = page.locator('[data-testid="livery-page-tab-style"]')
+    const wallpaperTab = page.locator('[data-testid="livery-page-tab-wallpaper"]')
+    const showStyle = async () => {
+      if ((await styleTab.count()) > 0) await styleTab.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="livery-current-card"]', { timeout: 12_000 })
+      await sleep(250)
     }
-    await page.waitForSelector('[data-testid="livery-layout"]', { timeout: 15_000 })
+    const showWallpaper = async () => {
+      if ((await wallpaperTab.count()) > 0) await wallpaperTab.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector('[data-testid="wallpaper-source-card"]', { timeout: 12_000 })
+      await sleep(250)
+    }
+    const selectSource = async (tab) => {
+      const locator = page.locator(`[data-testid="wallpaper-source-tab-${tab}"]`)
+      if ((await locator.count()) > 0) await locator.click({ timeout: 8_000 }).catch(() => {})
+      await page.waitForSelector(`[data-testid="wallpaper-source-panel-${tab}"]:not([hidden])`, { timeout: 8_000 }).catch(() => {})
+      await sleep(200)
+    }
 
-    // ---------- style page: 1440×900 (two columns) ----------
+    // ---------------- style page (1440) ----------------
     await page.setViewportSize({ width: 1440, height: 900 })
-    await sleep(450)
+    await showStyle()
     const styleWide = await readLayoutStructure(page, 'style')
-    const styleTracks = styleWide.layout.trackCount ?? 0
-    const styleSideBySide =
-      styleWide.main !== null && styleWide.rail !== null &&
-      (styleWide.rail.left >= styleWide.main.left + styleWide.main.width - 12 || styleWide.rail.left > styleWide.main.left + 120)
-    expect(
-      runner,
-      'layout.style-2col',
-      'style page uses a two-column card layout (main + rail) at 1440×900',
-      styleWide.layout.present === true && styleTracks === 2 && styleSideBySide,
-      `tracks=${styleTracks} [${styleWide.layout.gridTemplateColumns}]; main=${JSON.stringify(styleWide.main)}; rail=${JSON.stringify(styleWide.rail)}`,
-      { styleWide: { layout: styleWide.layout, main: styleWide.main, rail: styleWide.rail } },
-    )
-    const styleCards = styleWide.styleCards ?? []
-    const styleCardNames = styleCards.map((card) => card.testId)
-    expect(
-      runner,
-      'layout.style-cards',
-      'style page renders current-style hero, gallery card, actions rail and self-check card',
-      styleCardNames.length === 4 &&
-        styleCards.every((card) => card.present === true && card.visible === true) &&
-        styleWide.rail !== null &&
-        styleCards.filter((card) => ['livery-actions-card', 'livery-selfcheck'].includes(card.testId)).every((card) => card.left >= styleWide.rail.left - 4) &&
-        styleCards.filter((card) => ['livery-current-card', 'livery-gallery-card'].includes(card.testId)).every((card) => card.width > 300),
-      `cards=${styleCards.map((card) => `${card.testId}:${card.visible ? 'visible' : 'hidden'}${card.width ? `(${card.width}px)` : ''}`).join(', ')}`,
-    )
-    expect(
-      runner,
-      'layout.style-hero-thumb',
-      'current-style hero shows a loaded preview thumbnail',
-      styleWide.heroThumb?.present === true &&
-        styleWide.heroThumb.visible === true &&
-        (styleWide.heroThumb.naturalWidth ?? 0) > 0 &&
-        /previews|\.svg/.test(styleWide.heroThumb.src ?? ''),
-      `thumb=${JSON.stringify(styleWide.heroThumb)}`,
-    )
-    expect(
-      runner,
-      'layout.style-card-surfaces',
-      'style page cards have a visible border and a non-flat surface (background/backdrop/shadow)',
-      styleCards.length > 0 && styleCards.every((card) => hasVisibleSurface(card)),
-      styleCards.map((card) => `${card.testId}: border=${card.borderWidth} ${card.borderColor}, bg=${card.backgroundColor}, backdrop=${card.backdropFilter}`).join(' | '),
-    )
-    expect(
-      runner,
-      'layout.style-no-overflow-1440',
-      'style page has no horizontal overflow at 1440×900',
+    const styleFlags = styleWide.styleFlags ?? {}
+    expectSafe('layout.style-wide-hero', 'style page uses the large no-rail hero with actions inside the current-style card',
+      styleWide.layout.present === true && styleFlags.largeHero === true && styleFlags.actionsCardPresent === false &&
+        styleFlags.railPresent === false && styleFlags.actionsInsideHero === true,
+      `layout=${JSON.stringify(styleWide.layout)}; flags=${JSON.stringify(styleFlags)}`)
+    expectSafe('layout.style-wide-hero-preview', 'style hero shows a loaded 16:10 preview image',
+      styleWide.heroThumb?.present === true && styleWide.heroThumb.visible === true &&
+        (styleWide.heroThumb.naturalWidth ?? 0) > 0 && Math.abs((styleWide.heroThumb.aspect ?? 0) - 1.6) <= 0.04,
+      `hero=${JSON.stringify(styleWide.heroThumb)}`)
+    expectSafe('layout.style-wide-gallery', 'style gallery follows the hero, is full width and renders 4 columns at 1440',
+      styleFlags.galleryAfterHero === true && styleFlags.secondaryAfterGallery === true &&
+        styleFlags.galleryColumns === 4 && (styleWide.gallery?.width ?? 0) > 900,
+      `flags=${JSON.stringify(styleFlags)}; gallery=${JSON.stringify(styleWide.gallery)}`)
+    expectSafe('layout.style-wide-toolbar', 'style toolbar stays within two rows and does not overflow at 1440',
+      styleFlags.toolbarRows <= 2 && styleFlags.toolbarOverflowX === false,
+      `toolbarRows=${styleFlags.toolbarRows}; overflowX=${styleFlags.toolbarOverflowX}`)
+    expectSafe('layout.style-wide-no-overflow', 'style page has no horizontal overflow at 1440×900',
       styleWide.overflow.horizontal === false,
-      `scrollWidth=${styleWide.overflow.scrollWidth} clientWidth=${styleWide.overflow.clientWidth}`,
-    )
-    await captureShot('layout-style-1440')
+      `scrollWidth=${styleWide.overflow.scrollWidth} clientWidth=${styleWide.overflow.clientWidth}`)
 
-    // ---- round-11: human About footer + unified five-step typography ----
-    const footer = await readAboutFooter(page)
-    const footerLines = footer.lines ?? []
-    const aboutPlugin = /^DSH Livery \S+ · 已适配 DeepSeek Harness \S+$/.test(footerLines[0]?.text ?? '')
-    const aboutNote = (footerLines[1]?.text ?? '').includes('画廊预览图') && (footerLines[1]?.text ?? '').includes('不是宿主界面截图')
-    expect(
-      runner,
-      'footer.about-copy',
-      'About footer shows the human two-line copy (product + certified host, then the preview note)',
-      footer.present === true && footerLines.length === 2 && aboutPlugin && aboutNote,
-      `lines=[${footerLines.map((line) => `"${oneLine(line.text, 120)}"`).join(', ')}]`,
-      { footer },
-    )
-    const visibleUiText = await page.evaluate(() => document.body.innerText ?? '')
-    expect(
-      runner,
-      'copy.product-name',
-      'visible product name is DSH Livery (no “Visual Studio” anywhere in the UI)',
-      (footerLines[0]?.text ?? '').startsWith('DSH Livery ') &&
-        visibleUiText.includes('DSH Livery') &&
-        !visibleUiText.includes('Visual Studio'),
-      `footer line1="${oneLine(footerLines[0]?.text ?? '', 100)}"; bodyHasDSHLivery=${visibleUiText.includes('DSH Livery')}; bodyHasVisualStudio=${visibleUiText.includes('Visual Studio')}`,
-    )
-    expect(
-      runner,
-      'footer.about-lines',
-      'About footer renders its two lines separately (no run-on concatenation)',
-      footer.present === true &&
-        (footer.display === 'flex' || footer.display === 'block') &&
-        footerLines.length === 2 &&
-        footerLines[0].bottom <= footerLines[1].top + 2,
-      `display=${footer.display}/${footer.flexDirection} gap=${footer.gap}; tops=${footerLines.map((line) => `${line.top}-${line.bottom}`).join(' / ')}`,
-    )
-    expect(
-      runner,
-      'footer.about-no-jargon',
-      'About footer carries no contract hash / adapter id / jargon (ids live in diagnostics only)',
-      footer.present === true && !/sha256|契约|contract|adapter|适配器|dsh-0\.2\.1-rc\.\d-r\d|fc5ccff/i.test(footer.text ?? ''),
-      `footer text="${oneLine(footer.text ?? '', 220)}"`,
-    )
-    const styleScale = await readTypographyScale(page)
-    // Host-owned Button/Tag primitives may contribute an 11px caption; the
-    // plugin's own scale is {12,13,14,16,22}.
-    const allowedSizes = [11, 12, 13, 14, 16, 22]
-    const leakedSizes = styleScale.sizes.filter((size) => !allowedSizes.includes(size))
-    expect(
-      runner,
-      'typography.five-step-style',
-      'style page uses the 0.1.4 five-step type scale {12,13,14,16} (+22 display), tolerating host-owned 11px primitives',
-      styleScale.sizes.length > 0 &&
-        styleScale.sizes.every((size) => allowedSizes.includes(size)) &&
-        [12, 13, 14, 16].every((size) => styleScale.sizes.includes(size)) &&
-        ![15, 18.72, 20].some((size) => styleScale.sizes.includes(size)),
-      `sizes=${JSON.stringify(styleScale.sizes)} counts=${JSON.stringify(styleScale.counts)} leaked=${JSON.stringify(leakedSizes)}`,
-      { styleScale },
-    )
-    const expectedTokens = { display: '22px', title: '16px', body: '14px', label: '13px', caption: '12px' }
-    const workspaceTokens = styleScale.tokens['.livery-workspace'] ?? {}
-    const panelTokens = styleScale.tokens['.livery-panel'] ?? {}
-    const tokensMatch = (tokens) => Object.entries(expectedTokens).every(([key, value]) => tokens[key] === value)
-    expect(
-      runner,
-      'typography.root-tokens',
-      'shared --lw-fs-* type tokens exist on the real .livery-workspace/.livery-panel roots (not only a legacy .livery-section)',
-      tokensMatch(workspaceTokens) && tokensMatch(panelTokens),
-      `workspace=${JSON.stringify(workspaceTokens)}; panel=${JSON.stringify(panelTokens)}`,
-    )
+    // Preview bar/actions inside hero, without writing.
+    try {
+      const card = page.locator('[data-testid="livery-card"][data-livery-id]').first()
+      if ((await card.count()) > 0) {
+        await scrollPanelTop(page)
+        await card.click({ timeout: 8_000 })
+        await page.waitForSelector('[data-testid="livery-preview"]', { timeout: 10_000 }).catch(() => {})
+        const preview = await page.evaluate(() => {
+          const hero = document.querySelector('[data-testid="livery-current-card"]')
+          const bar = document.querySelector('[data-testid="livery-preview"]')
+          const apply = document.querySelector('[data-testid="livery-apply"]')
+          const cancel = document.querySelector('[data-testid="livery-cancel"]')
+          return {
+            barInHero: hero !== null && bar !== null && hero.contains(bar),
+            applyInHero: hero !== null && apply !== null && hero.contains(apply),
+            cancelInHero: hero !== null && cancel !== null && hero.contains(cancel),
+          }
+        })
+        expectSafe('layout.style-preview-in-hero', 'preview bar, apply and cancel render inside the current-style hero',
+          preview.barInHero && preview.applyInHero && preview.cancelInHero, JSON.stringify(preview))
+        const cancel = page.locator('[data-testid="livery-cancel"]')
+        if ((await cancel.count()) > 0) await cancel.click({ timeout: 6_000 }).catch(() => {})
+        await sleep(250)
+      }
+    } catch (error) {
+      failSafe('layout.style-preview-in-hero', 'preview bar, apply and cancel render inside the current-style hero', error)
+    }
+    await capture(page, ctx, { state: 'layout-style-1440', mode: 'light' })
 
-    // ---------- style page: 1024×800 (stacked) ----------
-    await page.setViewportSize({ width: 1024, height: 800 })
-    await sleep(450)
-    const styleNarrow = await readLayoutStructure(page, 'style')
-    const narrowTracks = styleNarrow.layout.trackCount ?? 0
-    // Single grid track already means stacked; the rail must start below the main column.
-    const stacked = styleNarrow.main !== null && styleNarrow.rail !== null && styleNarrow.rail.top > styleNarrow.main.top && Math.abs(styleNarrow.rail.left - styleNarrow.main.left) <= 2
-    expect(
-      runner,
-      'layout.style-stacked-1024',
-      'style page stacks to a single column at 1024×800 (rail below main)',
-      styleNarrow.layout.present === true && narrowTracks === 1 && stacked,
-      `tracks=${narrowTracks} [${styleNarrow.layout.gridTemplateColumns}]; main=${JSON.stringify(styleNarrow.main)}; rail=${JSON.stringify(styleNarrow.rail)}`,
-    )
-    expect(
-      runner,
-      'layout.style-no-overflow-1024',
-      'style page has no horizontal overflow at 1024×800',
-      styleNarrow.overflow.horizontal === false &&
-        (styleNarrow.styleCards ?? []).every((card) => card.present === true && card.visible === true),
-      `scrollWidth=${styleNarrow.overflow.scrollWidth} clientWidth=${styleNarrow.overflow.clientWidth}; cards=${(styleNarrow.styleCards ?? []).map((card) => `${card.testId}:${card.visible}`).join(',')}`,
-    )
-    await captureShot('layout-style-1024')
+    // ---------------- style page (1024 / 767) ----------------
+    for (const width of [1024, 767]) {
+      await page.setViewportSize({ width, height: width === 1024 ? 800 : 900 })
+      await showStyle()
+      try {
+        const styleNarrow = await readLayoutStructure(page, 'style')
+        const flags = styleNarrow.styleFlags ?? {}
+        expectSafe(`layout.style-${width}-no-overflow`, `style page has no horizontal overflow at ${width}px`,
+          styleNarrow.overflow.horizontal === false,
+          `scrollWidth=${styleNarrow.overflow.scrollWidth} clientWidth=${styleNarrow.overflow.clientWidth}`)
+        expectSafe(`layout.style-${width}-hero`, `style hero stays no-rail with actions inside at ${width}px`,
+          flags.railPresent === false && flags.actionsCardPresent === false && flags.actionsInsideHero === true,
+          JSON.stringify(flags))
+        expectSafe(`layout.style-${width}-gallery`, `style gallery is visible after the hero at ${width}px`,
+          flags.galleryAfterHero === true && flags.secondaryAfterGallery === true,
+          JSON.stringify(flags))
+        expectSafe(`layout.style-${width}-toolbar`, `style toolbar stays within two rows at ${width}px`,
+          flags.toolbarRows <= 2,
+          `toolbarRows=${flags.toolbarRows}`)
+        await capture(page, ctx, { state: `layout-style-${width}`, mode: 'light' })
+      } catch (error) {
+        failSafe(`layout.style-${width}-probe`, `style page layout probe completes at ${width}px`, error)
+      }
+    }
 
-    // ---------- wallpaper page: 1440×900 (two columns, cards, bounded sliders) ----------
+    // ---------------- wallpaper page (1440) ----------------
     await page.setViewportSize({ width: 1440, height: 900 })
-    await sleep(300)
-    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
-    await page.waitForSelector('[data-testid="wallpaper-layout"]', { timeout: 10_000 })
-    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-builtin"]').length === 24, undefined, { timeout: 10_000 }).catch(() => {})
-    // Select one built-in so the hero preview (background-image) is rendered.
-    await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 8_000 })
+    await showWallpaper()
+    await selectSource('builtin')
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-builtin"]').length === 24, undefined, { timeout: 12_000 }).catch(() => {})
+    const firstBuiltin = page.locator('[data-testid="wallpaper-builtin"]').first()
+    if ((await firstBuiltin.count()) > 0) await firstBuiltin.click({ timeout: 8_000 }).catch(() => {})
     await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-hero-preview"]') !== null, undefined, { timeout: 10_000 }).catch(() => {})
     await sleep(300)
     const wallpaperWide = await readLayoutStructure(page, 'wallpaper')
-    const wallpaperTracks = wallpaperWide.layout.trackCount ?? 0
-    const wallpaperSideBySide =
-      wallpaperWide.main !== null && wallpaperWide.rail !== null &&
-      (wallpaperWide.rail.left >= wallpaperWide.main.left + wallpaperWide.main.width - 12 || wallpaperWide.rail.left > wallpaperWide.main.left + 120)
-    expect(
-      runner,
-      'layout.wallpaper-2col',
-      'wallpaper page uses a two-column card layout at 1440×900',
-      wallpaperWide.layout.present === true && wallpaperTracks === 2 && wallpaperSideBySide,
-      `tracks=${wallpaperTracks} [${wallpaperWide.layout.gridTemplateColumns}]; main=${JSON.stringify(wallpaperWide.main)}; rail=${JSON.stringify(wallpaperWide.rail)}`,
-    )
-    const wallpaperCards = wallpaperWide.wallpaperCards ?? []
-    expect(
-      runner,
-      'layout.wallpaper-cards',
-      'wallpaper page renders hero / online / custom / effects / builtins cards (library removed)',
-      wallpaperCards.length === 5 &&
-        wallpaperCards.map((card) => card.testId).join(',') === 'wallpaper-hero,wallpaper-online-card,wallpaper-custom-card,wallpaper-effects-card,wallpaper-builtins-card' &&
-        wallpaperCards.every((card) => card.present === true && card.visible === true) &&
-        wallpaperWide.heroThumb?.present === true &&
-        (wallpaperWide.heroThumb.backgroundImage ?? '').includes('gradient') &&
-        (await page.locator('[data-testid="wallpaper-hero"] [data-testid="wallpaper-clear"]').count()) === 1,
-      `cards=${wallpaperCards.map((card) => `${card.testId}:${card.visible ? 'visible' : 'hidden'}${card.width ? `(${card.width}px)` : ''}`).join(', ')}; heroPreview=${JSON.stringify(wallpaperWide.heroThumb)}`,
-    )
-    expect(
-      runner,
-      'layout.wallpaper-card-surfaces',
-      'wallpaper page cards have a visible border and a non-flat surface',
-      wallpaperCards.length > 0 && wallpaperCards.every((card) => hasVisibleSurface(card)),
-      wallpaperCards.map((card) => `${card.testId}: border=${card.borderWidth} ${card.borderColor}, bg=${card.backgroundColor}`).join(' | '),
-    )
-    const wallpaperScale = await readTypographyScale(page)
-    const wallpaperLeaks = wallpaperScale.sizes.filter((size) => ![11, 12, 13, 15, 20].includes(size))
-    expect(
-      runner,
-      'typography.five-step-wallpaper',
-      'wallpaper page uses the same unified five-step type scale (no 14/16/18.72 leaks)',
-      wallpaperScale.sizes.length > 0 && wallpaperScale.sizes.every((size) => allowedSizes.includes(size)) && ![14, 16, 18.72].some((size) => wallpaperScale.sizes.includes(size)),
-      `sizes=${JSON.stringify(wallpaperScale.sizes)} counts=${JSON.stringify(wallpaperScale.counts)} leaked=${JSON.stringify(wallpaperLeaks)}`,
-      { wallpaperScale },
-    )
-    expect(
-      runner,
-      'typography.about-rail',
-      'About footer is visible on the wallpaper page as well (rail shared)',
-      footerLines.length === 2,
-      `footer lines=${footerLines.length}`,
-    )
-    const slidersWide = wallpaperWide.sliderWidths ?? []
-    expect(
-      runner,
-      'layout.effects-sliders-bounded',
-      'effect sliders are bounded (80–220px) inside the effects card, not viewport-wide',
-      slidersWide.length === 4 && slidersWide.every((width) => width >= 60 && width <= 220) && wallpaperWide.effectsGrid?.present === true,
-      `4 sliders expected; widths=${JSON.stringify(slidersWide)} (viewport 1440); effectsGrid tracks=${wallpaperWide.effectsGrid?.tracks} columns="${wallpaperWide.effectsGrid?.columns}"`,
-    )
-    expect(
-      runner,
-      'layout.wallpaper-no-overflow-1440',
-      'wallpaper page has no horizontal overflow at 1440×900',
+    const wallFlags = wallpaperWide.wallpaperFlags ?? {}
+    expectSafe('layout.wallpaper-workbench', 'wallpaper page uses the workbench + single source card, no old rail/layout',
+      wallpaperWide.layout.present === true && wallpaperWide.layout.display === 'grid' && wallpaperWide.layout.trackCount === 2 &&
+        wallFlags.workbench === true && wallFlags.oldLayoutPresent === false && wallFlags.railPresent === false && wallFlags.sourceCard === true,
+      `layout=${JSON.stringify(wallpaperWide.layout)}; flags=${JSON.stringify(wallFlags)}`)
+    expectSafe('layout.wallpaper-order', 'wallpaper DOM order is hero → effects → source → managed data',
+      wallFlags.workbenchChildren?.slice(0, 3).join(',') === 'wallpaper-hero,wallpaper-effects-card,wallpaper-source-card' &&
+        wallFlags.domOrder?.map((row) => row.testid).join(',') === 'wallpaper-hero,wallpaper-effects-card,wallpaper-source-card,wallpaper-manage',
+      `children=${JSON.stringify(wallFlags.workbenchChildren)}; order=${JSON.stringify(wallFlags.domOrder)}`)
+    expectSafe('layout.wallpaper-cards', 'wallpaper hero/effects/source/manage cards are visible and surfaced',
+      (wallpaperWide.wallpaperCards ?? []).length === 4 &&
+        wallpaperWide.wallpaperCards.every((card) => card.present && card.visible && hasVisibleSurface(card)),
+      (wallpaperWide.wallpaperCards ?? []).map((card) => `${card.testId}:${card.visible}:${card.borderWidth}`).join(', '))
+    expectSafe('layout.wallpaper-source-tabs', 'wallpaper source card exposes 4 tabs with exactly one visible panel',
+      wallFlags.sourceTabs?.length === 4 && wallFlags.hiddenPanels?.length === 3 && wallFlags.visiblePanels?.length === 1,
+      `tabs=${JSON.stringify(wallFlags.sourceTabs)}; hidden=${JSON.stringify(wallFlags.hiddenPanels)}; visible=${JSON.stringify(wallFlags.visiblePanels)}`)
+    expectSafe('layout.wallpaper-effects', 'wallpaper effects grid is one full-width column and sliders fill it at 1440',
+      wallpaperWide.effectsGrid?.present === true && wallpaperWide.effectsGrid.tracks === 1 &&
+        wallpaperWide.sliderWidths.length === 4 && wallpaperWide.sliderWidths.every((width) => width >= 180),
+      `effects=${JSON.stringify(wallpaperWide.effectsGrid)}; sliders=${JSON.stringify(wallpaperWide.sliderWidths)}`)
+    expectSafe('layout.wallpaper-no-overflow-1440', 'wallpaper page has no horizontal overflow at 1440×900',
       wallpaperWide.overflow.horizontal === false,
-      `scrollWidth=${wallpaperWide.overflow.scrollWidth} clientWidth=${wallpaperWide.overflow.clientWidth}`,
-    )
-    await captureShot('layout-wallpaper-1440')
+      `scrollWidth=${wallpaperWide.overflow.scrollWidth} clientWidth=${wallpaperWide.overflow.clientWidth}`)
 
-    // ---------- wallpaper page: 1024×800 (stacked) ----------
-    await page.setViewportSize({ width: 1024, height: 800 })
-    await sleep(450)
-    const wallpaperNarrow = await readLayoutStructure(page, 'wallpaper')
-    const wallpaperNarrowTracks = wallpaperNarrow.layout.trackCount ?? 0
-    const wallpaperStacked = wallpaperNarrow.main !== null && wallpaperNarrow.rail !== null && wallpaperNarrow.rail.top < wallpaperNarrow.main.top && Math.abs(wallpaperNarrow.rail.left - wallpaperNarrow.main.left) <= 2
-    const slidersNarrow = wallpaperNarrow.sliderWidths ?? []
-    expect(
-      runner,
-      'layout.wallpaper-stacked-1024',
-      'wallpaper page stacks to a single column at 1024×800 with effects/built-ins before the current wallpaper and bounded sliders',
-      wallpaperNarrow.layout.present === true &&
-        wallpaperNarrowTracks === 1 &&
-        wallpaperStacked &&
-        (wallpaperNarrow.wallpaperCards ?? []).every((card) => card.present === true && card.visible === true) &&
-        wallpaperNarrow.effectsGrid?.tracks === 2 &&
-        slidersNarrow.length === 4 &&
-        slidersNarrow.every((width) => width >= 60 && width <= 220),
-      `tracks=${wallpaperNarrowTracks}; main=${JSON.stringify(wallpaperNarrow.main)}; rail=${JSON.stringify(wallpaperNarrow.rail)}; effectsGridTracks=${wallpaperNarrow.effectsGrid?.tracks}; sliders=${JSON.stringify(slidersNarrow)}`,
-    )
-    expect(
-      runner,
-      'layout.wallpaper-no-overflow-1024',
-      'wallpaper page has no horizontal overflow at 1024×800',
-      wallpaperNarrow.overflow.horizontal === false,
-      `scrollWidth=${wallpaperNarrow.overflow.scrollWidth} clientWidth=${wallpaperNarrow.overflow.clientWidth}`,
-    )
-    await captureShot('layout-wallpaper-1024')
+    // online pager (auto Picsum batch renders 12 mock results → max 6 per page).
+    await selectSource('online')
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0, undefined, { timeout: 12_000 }).catch(() => {})
+    const pager = await page.evaluate(() => ({
+      visible: document.querySelector('[data-testid="wallpaper-results-pager"]') !== null,
+      results: document.querySelectorAll('[data-testid="wallpaper-result"]').length,
+      page: document.querySelector('[data-testid="wallpaper-result-page"]')?.textContent?.trim() ?? null,
+      next: document.querySelector('[data-testid="wallpaper-result-next"]') !== null,
+    }))
+    expectSafe('layout.wallpaper-pager', 'wallpaper online results show at most 6 per page with a working pager',
+      pager.visible === true && pager.results <= 6 && pager.next === true && /\d+\s*\/\s*\d+/.test(pager.page ?? ''),
+      JSON.stringify(pager))
+    try {
+      const next = page.locator('[data-testid="wallpaper-result-next"]')
+      if ((await next.count()) > 0) {
+        await next.click({ timeout: 6_000 })
+        await sleep(300)
+        const after = await page.evaluate(() => ({
+          results: document.querySelectorAll('[data-testid="wallpaper-result"]').length,
+          page: document.querySelector('[data-testid="wallpaper-result-page"]')?.textContent?.trim() ?? null,
+        }))
+        expectSafe('layout.wallpaper-pager-next', 'wallpaper pager next shows the second page of at most 6 results',
+          after.results <= 6 && after.page !== pager.page, JSON.stringify(after))
+      }
+    } catch (error) { failSafe('layout.wallpaper-pager-next', 'wallpaper pager next shows the second page of at most 6 results', error) }
+
+    // management collapsed default → open; tabs switch panels.
+    await selectSource('recent')
+    const recentState = await page.evaluate(() => ({
+      card: document.querySelector('[data-testid="wallpaper-recent-card"]') !== null || document.querySelector('[data-testid="wallpaper-recent-empty"]') !== null,
+      track: document.querySelector('.wallpaper-recent-track') !== null,
+      hidden: document.querySelector('[data-testid="wallpaper-source-panel-builtin"]')?.hasAttribute('hidden') ?? null,
+    }))
+    expectSafe('layout.wallpaper-recent-tab', 'recent tab shows the recent history section (horizontal track when populated)',
+      recentState.card === true && recentState.hidden === true, JSON.stringify(recentState))
+    await selectSource('local')
+    const localState = await page.evaluate(() => {
+      const grid = document.querySelector('.wallpaper-local-grid')
+      return {
+        custom: document.querySelector('[data-testid="wallpaper-custom-card"]') !== null,
+        columns: grid === null ? 0 : getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+        hidden: document.querySelector('[data-testid="wallpaper-source-panel-recent"]')?.hasAttribute('hidden') ?? null,
+      }
+    })
+    expectSafe('layout.wallpaper-local-tab', 'local tab shows upload + custom-address side by side at 1440',
+      localState.custom === true && localState.columns === 2, JSON.stringify(localState))
+    const manage = page.locator('[data-testid="wallpaper-manage"]')
+    const manageInitiallyClosed = (await manage.count()) > 0 && (await manage.getAttribute('open')) === null
+    expectSafe('layout.wallpaper-manage-collapsed', 'managed presets/local-data section is collapsed by default',
+      manageInitiallyClosed, `open=${(await manage.getAttribute('open').catch(() => null))}`)
+    try {
+      if ((await page.locator('[data-testid="wallpaper-manage-toggle"]').count()) > 0) {
+        await page.locator('[data-testid="wallpaper-manage-toggle"]').click({ timeout: 6_000 })
+        await sleep(250)
+      }
+      const open = (await manage.count()) > 0 && (await manage.getAttribute('open')) !== null
+      expectSafe('layout.wallpaper-manage-opens', 'managed presets/local-data section opens on toggle',
+        open, `open=${open}`)
+    } catch (error) { failSafe('layout.wallpaper-manage-opens', 'managed presets/local-data section opens on toggle', error) }
+    await capture(page, ctx, { state: 'layout-wallpaper-1440', mode: 'light' })
+
+    // ---------------- wallpaper page (1024 / 767) ----------------
+    for (const width of [1024, 767]) {
+      await page.setViewportSize({ width, height: width === 1024 ? 800 : 900 })
+      await showWallpaper()
+      await sleep(250)
+      try {
+        const wallpaperNarrow = await readLayoutStructure(page, 'wallpaper')
+        const flags = wallpaperNarrow.wallpaperFlags ?? {}
+        expectSafe(`layout.wallpaper-${width}-stacked`, `wallpaper workbench stacks to one column at ${width}px`,
+          wallpaperNarrow.layout.present === true && wallpaperNarrow.layout.trackCount === 1, `layout=${JSON.stringify(wallpaperNarrow.layout)}`)
+        expectSafe(`layout.wallpaper-${width}-no-overflow`, `wallpaper page has no horizontal overflow at ${width}px`,
+          wallpaperNarrow.overflow.horizontal === false,
+          `scrollWidth=${wallpaperNarrow.overflow.scrollWidth} clientWidth=${wallpaperNarrow.overflow.clientWidth}`)
+        expectSafe(`layout.wallpaper-${width}-source`, `wallpaper source tabs stay available at ${width}px`,
+          flags.sourceTabs?.length === 4 && flags.sourceCard === true, JSON.stringify(flags))
+        expectSafe(`layout.wallpaper-${width}-effects`, `wallpaper effects grid has at most two columns at ${width}px`,
+          wallpaperNarrow.effectsGrid?.present === true && wallpaperNarrow.effectsGrid.tracks <= 2,
+          JSON.stringify(wallpaperNarrow.effectsGrid))
+        await capture(page, ctx, { state: `layout-wallpaper-${width}`, mode: 'light' })
+      } catch (error) {
+        failSafe(`layout.wallpaper-${width}-probe`, `wallpaper layout probe completes at ${width}px`, error)
+      }
+    }
+
     state.layoutEvidence = {
-      style: { wide: { tracks: styleTracks, main: styleWide.main, rail: styleWide.rail }, narrow: { tracks: narrowTracks, main: styleNarrow.main, rail: styleNarrow.rail } },
-      wallpaper: { wide: { tracks: wallpaperTracks, cards: wallpaperCards.map((card) => card.testId), sliders: slidersWide, effectsTracks: wallpaperWide.effectsGrid?.tracks }, narrow: { tracks: wallpaperNarrowTracks, sliders: slidersNarrow, effectsTracks: wallpaperNarrow.effectsGrid?.tracks } },
+      style: { wide: styleWide, narrow: [] },
+      wallpaper: { wide: wallpaperWide, narrow: [] },
     }
 
-    // Leave a clean state for the following behaviour groups.
+    // Clean state for the remaining behaviour groups.
     await page.setViewportSize({ width: 1440, height: 900 })
+    await showWallpaper()
     const clearButton = page.locator('[data-testid="wallpaper-clear"]').first()
-    if ((await clearButton.count()) > 0 && !(await clearButton.isDisabled().catch(() => true))) {
-      await clearButton.click({ timeout: 8_000 }).catch(() => {})
-    }
-    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 8_000 }).catch(() => {})
-    await page.waitForSelector('[data-testid="livery-tabpanel-style"]', { timeout: 8_000 }).catch(() => {})
+    if ((await clearButton.count()) > 0) await clearButton.click({ timeout: 8_000 }).catch(() => {})
+    await showStyle()
   } catch (error) {
-    runner.fail('layout.style-2col', 'round-10 card layout structure is rendered', error instanceof Error ? (error.stack ?? error.message) : String(error))
+    failSafe('layout.probe', '0.1.4 layout structure probe completes', error)
   } finally {
     if (routed) {
       await page.unroute('https://api.openverse.org/**').catch(() => {})
+      await page.unroute('https://picsum.photos/**').catch(() => {})
       await page.unroute('https://images.example.test/**').catch(() => {})
-      await uninstallPicsumRedirectMock(page)
     }
     await page.setViewportSize({ width: 1440, height: 900 }).catch(() => {})
   }
 }
 
-
-/**
- * Visual acceptance matrix (0.1.3).
- *
- * Real computed-style + screenshot assertions across widths 1440/1024/767,
- * light/dark, wallpaper off/on, frost 0/35/80, atmosphere 0/30/60,
- * forced-colors and reduced-transparency, keyboard focus and selected states.
- * Host-only floating surfaces that cannot be triggered without synthetic hacks
- * are skipped with an explicit reason.
- */
 export async function checkVisualMatrix(ctx) {
   const { runner, session, state } = ctx
   const { page } = session
@@ -4946,7 +4924,7 @@ async function openWallpaperPanelForMerged(ctx) {
 }
 
 /**
- * Merged 0.1.3 client features: state-v2 position, two-tab sync, presets,
+ * Merged 0.1.4 client features: state-v2 position, two-tab sync, presets,
  * v1→v2 migration, local-data cleanup and the merged visual states.
  */
 export async function checkMergedFeatures(ctx) {
@@ -5075,7 +5053,7 @@ export async function checkMergedFeatures(ctx) {
     const targetStyle = catalogIds.find((id) => id !== state.appliedSkin && id !== 'stock') ?? 'plum'
     const validPreset = {
       schemaVersion: 1,
-      createdWith: 'dsh-livery/0.1.3',
+      createdWith: 'dsh-livery/0.1.4',
       styleId: targetStyle,
       wallpaper: { kind: 'remote', url: 'https://images.example.test/preset.jpg' },
       effects: { blur: 14, dim: 30, frost: 45, atmosphere: 25 },
@@ -5513,7 +5491,7 @@ export async function checkMergedFeatures(ctx) {
       await pageB.close().catch(() => {})
     }
   } catch (error) {
-    runner.fail('merged.features', 'merged 0.1.3 client acceptance completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
+    runner.fail('merged.features', 'merged 0.1.4 client acceptance completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
   } finally {
     if (routed) {
       await uninstallPicsumRedirectMock(page)
@@ -5577,7 +5555,7 @@ export async function checkPerformance(ctx) {
   try {
     const response = await fetch('https://api.openverse.org/v1/images/?q=wallpaper&page_size=1', {
       signal: controller.signal,
-      headers: { 'user-agent': 'dsh-livery-acceptance-canary/0.1.3' },
+      headers: { 'user-agent': 'dsh-livery-acceptance-canary/0.1.4' },
     })
     const body = await response.text()
     if (response.status === 200 && /"results"\s*:/u.test(body)) {

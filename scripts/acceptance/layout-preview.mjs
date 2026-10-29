@@ -28,7 +28,7 @@ const flag = (name, fallback = undefined) => {
   const index = argv.indexOf(name)
   return index === -1 ? fallback : argv[index + 1]
 }
-const tgz = path.resolve(flag('--tgz', '.tmp/dsh-livery-0.1.3-layout-preview.tgz'))
+const tgz = path.resolve(flag('--tgz', '.tmp/dsh-livery-0.1.4-acceptance.tgz'))
 const home = path.resolve(flag('--dsh-home', '.tmp/acceptance/layout-preview-home'))
 const outDir = path.resolve(flag('--out', 'artifacts/acceptance/0.1.4-layout-preview'))
 const chromeBinary = path.resolve(flag('--chrome-binary', '.tmp/acceptance/browsers/chrome-156.0.8078.48/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'))

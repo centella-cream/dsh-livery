@@ -183,7 +183,7 @@ async function main() {
     console.log('usage: node scripts/acceptance/probe/desktop-probe.mjs [--tgz path] [--out dir] [--report md] [--dsh-home /tmp/dsh-livery-desktop-runtime] [--profile-mode minimal|clone] [--clone-from dir]')
     return 0
   }
-  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.3.tgz'))
+  const tgz = path.resolve(options.tgz ?? path.join(WORKSPACE_ROOT, 'dsh-livery-0.1.4.tgz'))
   const outDir = path.resolve(options.out ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop'))
   const reportPath = path.resolve(options.report ?? path.join(WORKSPACE_ROOT, 'artifacts/acceptance/desktop-report.md'))
   const uniqueRun = `${process.pid}-${Date.now()}`
@@ -560,7 +560,7 @@ async function main() {
         desktopWallpaper.overlay?.present === true,
       `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
     )
-    // ---------- merged 0.1.3: focal position, reduced transparency, floating surfaces ----------
+    // ---------- merged 0.1.4: focal position, reduced transparency, floating surfaces ----------
     await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/desktop.jpg')
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
@@ -836,7 +836,7 @@ async function main() {
     const desktopExportVisible = await page.waitForSelector('[data-testid="preset-export-result"]', { timeout: 8_000 }).then(() => true).catch(() => false)
     const desktopPreset = {
       schemaVersion: 1,
-      createdWith: 'dsh-livery/0.1.3',
+      createdWith: 'dsh-livery/0.1.4',
       styleId: catalog.liveries.find((livery) => livery.id !== ctx.state.appliedSkin)?.id ?? catalog.liveries[0].id,
       wallpaper: { kind: 'remote', url: 'https://images.example.test/desktop-preset.jpg' },
       effects: { blur: 12, dim: 40, frost: 35, atmosphere: 60 },

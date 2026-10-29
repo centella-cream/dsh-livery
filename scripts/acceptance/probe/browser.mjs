@@ -1054,7 +1054,7 @@ export async function readWallpaperState(page) {
             backgroundImage: overlayStyle.backgroundImage,
           }
         : { present: false },
-      mainCardOrder: [...document.querySelectorAll('.wallpaper-main > [data-testid]')].map((node) => node.getAttribute('data-testid')),
+      mainCardOrder: [...document.querySelectorAll('[data-testid="wallpaper-workbench"] > [data-testid], [data-testid="wallpaper-source-card"]')].map((node) => node.getAttribute('data-testid')),
       libraryElementCount: document.querySelectorAll('[data-testid^="wallpaper-library"]').length,
       categoryChipCount: document.querySelectorAll('[data-testid="wallpaper-category"]').length,
       onlineCardPresent: document.querySelector('[data-testid="wallpaper-online-card"]') !== null,
@@ -1117,10 +1117,11 @@ export async function readLayoutStructure(page, which) {
       if (rect.width <= 0 || rect.height <= 0 || style.visibility === 'hidden' || style.display === 'none') return null
       return { rect, style }
     }
+    const splitTracks = (value) => String(value ?? '').trim().split(/\s+/).filter(Boolean)
     const describeCard = (testId) => {
       const element = document.querySelector(`[data-testid="${testId}"]`)
       const measured = visible(element)
-      if (measured === null) return { present: false, visible: false, testId }
+      if (measured === null) return { present: element !== null, visible: false, testId }
       const { rect, style } = measured
       return {
         present: true,
@@ -1138,68 +1139,163 @@ export async function readLayoutStructure(page, which) {
         boxShadow: style.boxShadow,
       }
     }
-    const splitTracks = (value) => String(value ?? '').trim().split(/\s+/).filter(Boolean)
-    const layout = document.querySelector(target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]')
-    const layoutMeasured = visible(layout)
-    const layoutTracks = layoutMeasured === null ? [] : splitTracks(layoutMeasured.style.gridTemplateColumns)
-    const mainSelector = target === 'wallpaper' ? '.wallpaper-main' : '.livery-main'
-    const railSelector = target === 'wallpaper' ? '.wallpaper-rail' : '.livery-rail'
-    const mainMeasured = visible(document.querySelector(`${target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]'} ${mainSelector}`))
-    const railMeasured = visible(document.querySelector(`${target === 'wallpaper' ? '[data-testid="wallpaper-layout"]' : '[data-testid="livery-layout"]'} ${railSelector}`))
-    const heroThumb = target === 'style'
-      ? document.querySelector('[data-testid="livery-hero-thumb"]')
-      : document.querySelector('[data-testid="wallpaper-hero-preview"]')
-    const heroThumbVisible = visible(heroThumb)
-    const sliderSelector = target === 'wallpaper' ? '[data-testid="wallpaper-effects-card"] input[type="range"]' : null
-    const sliderWidths = sliderSelector === null
-      ? []
-      : [...document.querySelectorAll(sliderSelector)].map((input) => Math.round(input.getBoundingClientRect().width))
-    const wallpaperCards = target === 'wallpaper'
-      ? ['wallpaper-hero', 'wallpaper-online-card', 'wallpaper-custom-card', 'wallpaper-effects-card', 'wallpaper-builtins-card'].map(describeCard)
-      : []
+    const rectOf = (selector) => {
+      const measured = visible(document.querySelector(selector))
+      return measured === null ? null : {
+        left: Math.round(measured.rect.left),
+        top: Math.round(measured.rect.top),
+        width: Math.round(measured.rect.width),
+        height: Math.round(measured.rect.height),
+      }
+    }
+    const overflow = {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      horizontal: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    }
+    if (target === 'style') {
+      const layoutElement = document.querySelector('[data-testid="livery-layout"]')
+      const layoutSurface = visible(layoutElement)
+      const galleryGrid = document.querySelector('[data-testid="livery-gallery"] .livery-grid')
+      const galleryColumns = galleryGrid === null ? [] : getComputedStyle(galleryGrid).gridTemplateColumns.split(' ').filter(Boolean)
+      const toolbar = document.querySelector('[data-testid="livery-gallery-toolbar"]')
+      const toolbarRows = (() => {
+        const parts = ['.livery-gallery-toolbar__search', '.livery-gallery-toolbar__filters', '.livery-gallery-toolbar__tags', '.livery-gallery-toolbar__locale']
+          .map((selector) => document.querySelector(selector))
+          .filter((element) => element !== null && element.getBoundingClientRect().height > 0)
+        return new Set(parts.map((element) => Math.round(element.getBoundingClientRect().top))).size
+      })()
+      const heroThumb = document.querySelector('[data-testid="livery-hero-thumb"]')
+      const heroThumbVisible = visible(heroThumb)
+      const currentCard = document.querySelector('[data-testid="livery-current-card"]')
+      const galleryCard = document.querySelector('[data-testid="livery-gallery-card"]')
+      const secondary = document.querySelector('[data-testid="livery-secondary"]')
+      const contains = (parent, child) => parent !== null && child !== null && parent.contains(child)
+      return {
+        which: target,
+        layout: layoutSurface === null
+          ? { present: false }
+          : {
+              present: true,
+              className: layoutElement.className,
+              display: layoutSurface.style.display,
+              gridTemplateColumns: layoutSurface.style.gridTemplateColumns,
+              tracks: splitTracks(layoutSurface.style.gridTemplateColumns),
+              trackCount: splitTracks(layoutSurface.style.gridTemplateColumns).length,
+              width: Math.round(layoutSurface.rect.width),
+              height: Math.round(layoutSurface.rect.height),
+            },
+        main: null,
+        rail: null,
+        styleCards: ['livery-current-card', 'livery-gallery-card', 'livery-selfcheck'].map(describeCard),
+        wallpaperCards: [],
+        heroThumb: heroThumbVisible === null
+          ? { present: heroThumb !== null, visible: false }
+          : {
+              present: true,
+              visible: true,
+              tag: heroThumb.tagName.toLowerCase(),
+              src: heroThumb.getAttribute('src') ?? '',
+              naturalWidth: heroThumb.naturalWidth ?? null,
+              width: Math.round(heroThumbVisible.rect.width),
+              height: Math.round(heroThumbVisible.rect.height),
+              aspect: Number((heroThumbVisible.rect.width / Math.max(1, heroThumbVisible.rect.height)).toFixed(3)),
+            },
+        styleFlags: {
+          largeHero: currentCard !== null && currentCard.classList.contains('livery-hero--large'),
+          actionsInsideHero: contains(currentCard, document.querySelector('[data-testid="livery-restore"]')) &&
+            contains(currentCard, document.querySelector('[data-testid="livery-apply"]')) &&
+            contains(currentCard, document.querySelector('[data-testid="livery-cancel"]')),
+          actionsCardPresent: document.querySelector('[data-testid="livery-actions-card"]') !== null,
+          railPresent: document.querySelector('.livery-rail') !== null,
+          galleryAfterHero: currentCard !== null && galleryCard !== null &&
+            (currentCard.compareDocumentPosition(galleryCard) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+          secondaryAfterGallery: galleryCard !== null && secondary !== null &&
+            (galleryCard.compareDocumentPosition(secondary) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+          galleryInFirstViewport: galleryGrid !== null && galleryGrid.getBoundingClientRect().top < innerHeight,
+          galleryTop: galleryGrid === null ? null : Math.round(galleryGrid.getBoundingClientRect().top),
+          galleryColumns: galleryColumns.length,
+          toolbarRows,
+          toolbarOverflowX: toolbar !== null && toolbar.scrollWidth > toolbar.clientWidth + 1,
+        },
+        gallery: rectOf('[data-testid="livery-gallery"]'),
+        sliderWidths: [],
+        effectsGrid: { present: false },
+        overflow,
+      }
+    }
+    const layoutElement = document.querySelector('[data-testid="wallpaper-workbench"]')
+    const layoutSurface = visible(layoutElement)
+    const sourceCard = document.querySelector('[data-testid="wallpaper-source-card"]')
+    const sourceTabs = [...document.querySelectorAll('[data-testid^="wallpaper-source-tab-"]')]
+    const sourcePanels = [...document.querySelectorAll('[data-testid^="wallpaper-source-panel-"]')]
     const effectsGrid = document.querySelector('[data-testid="wallpaper-effects-grid"]')
     const effectsGridMeasured = visible(effectsGrid)
+    const heroThumb = document.querySelector('[data-testid="wallpaper-hero-preview"]')
+    const heroThumbVisible = visible(heroThumb)
+    const workbenchChildren = [...(layoutElement?.children ?? [])].map((child) => child.getAttribute('data-testid') ?? child.className)
+    const order = ['wallpaper-hero', 'wallpaper-effects-card', 'wallpaper-source-card', 'wallpaper-manage'].map((testid) => ({ testid, top: describeCard(testid).top ?? null }))
     return {
       which: target,
-      layout: layoutMeasured === null
+      layout: layoutSurface === null
         ? { present: false }
         : {
             present: true,
-            gridTemplateColumns: layoutMeasured.style.gridTemplateColumns,
-            tracks: layoutTracks,
-            trackCount: layoutTracks.length,
-            display: layoutMeasured.style.display,
-            width: Math.round(layoutMeasured.rect.width),
-            height: Math.round(layoutMeasured.rect.height),
+            className: layoutElement.className,
+            display: layoutSurface.style.display,
+            gridTemplateColumns: layoutSurface.style.gridTemplateColumns,
+            tracks: splitTracks(layoutSurface.style.gridTemplateColumns),
+            trackCount: splitTracks(layoutSurface.style.gridTemplateColumns).length,
+            width: Math.round(layoutSurface.rect.width),
+            height: Math.round(layoutSurface.rect.height),
           },
-      main: mainMeasured === null ? null : { left: Math.round(mainMeasured.rect.left), top: Math.round(mainMeasured.rect.top), width: Math.round(mainMeasured.rect.width), height: Math.round(mainMeasured.rect.height) },
-      rail: railMeasured === null ? null : { left: Math.round(railMeasured.rect.left), top: Math.round(railMeasured.rect.top), width: Math.round(railMeasured.rect.width), height: Math.round(railMeasured.rect.height) },
-      styleCards: target === 'style'
-        ? ['livery-current-card', 'livery-gallery-card', 'livery-actions-card', 'livery-selfcheck'].map(describeCard)
-        : [],
-      wallpaperCards,
+      main: null,
+      rail: null,
+      styleCards: [],
+      wallpaperCards: ['wallpaper-hero', 'wallpaper-effects-card', 'wallpaper-source-card', 'wallpaper-manage'].map(describeCard),
       heroThumb: heroThumbVisible === null
-        ? { present: Boolean(heroThumb), visible: false }
+        ? { present: heroThumb !== null, visible: false }
         : {
             present: true,
             visible: true,
             tag: heroThumb.tagName.toLowerCase(),
-            src: heroThumb.getAttribute('src') ?? heroThumb.getAttribute('style') ?? '',
-            naturalWidth: heroThumb.naturalWidth ?? null,
+            src: heroThumb.getAttribute('src') ?? '',
             backgroundImage: heroThumbVisible.style.backgroundImage,
             width: Math.round(heroThumbVisible.rect.width),
             height: Math.round(heroThumbVisible.rect.height),
+            aspect: Number((heroThumbVisible.rect.width / Math.max(1, heroThumbVisible.rect.height)).toFixed(3)),
           },
-      sliderWidths,
+      styleFlags: {},
+      sliderWidths: [...document.querySelectorAll('[data-testid="wallpaper-effects-card"] input[type="range"]')].map((input) => Math.round(input.getBoundingClientRect().width)),
       effectsGrid: effectsGridMeasured === null
         ? { present: false }
         : { present: true, tracks: splitTracks(effectsGridMeasured.style.gridTemplateColumns).length, columns: effectsGridMeasured.style.gridTemplateColumns },
-      overflow: {
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-        bodyScrollWidth: document.body.scrollWidth,
-        horizontal: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      wallpaperFlags: {
+        workbench: layoutElement !== null,
+        oldLayoutPresent: document.querySelector('[data-testid="wallpaper-layout"]') !== null,
+        railPresent: document.querySelector('.wallpaper-rail') !== null,
+        sourceCard: sourceCard !== null,
+        sourceTabs: sourceTabs.map((tab) => ({ testid: tab.getAttribute('data-testid'), selected: tab.getAttribute('aria-selected') === 'true' })),
+        hiddenPanels: sourcePanels.filter((panel) => panel.hasAttribute('hidden')).map((panel) => panel.getAttribute('data-testid')),
+        visiblePanels: sourcePanels.filter((panel) => !panel.hasAttribute('hidden')).map((panel) => panel.getAttribute('data-testid')),
+        workbenchChildren,
+        domOrder: order,
+        effectsColumns: effectsGridMeasured === null ? 0 : splitTracks(effectsGridMeasured.style.gridTemplateColumns).length,
+        positionPresent: document.querySelector('[data-testid="wallpaper-position"]') !== null,
+        positionInsideEffects: (() => {
+          const effects = document.querySelector('[data-testid="wallpaper-effects-card"]')
+          const position = document.querySelector('[data-testid="wallpaper-position"]')
+          return effects === null || position === null ? null : effects.contains(position)
+        })(),
+        managePresent: document.querySelector('[data-testid="wallpaper-manage"]') !== null,
+        manageOpen: document.querySelector('[data-testid="wallpaper-manage"]')?.hasAttribute('open') ?? null,
+        pagerPresent: document.querySelector('[data-testid="wallpaper-results-pager"]') !== null,
+        resultCount: document.querySelectorAll('[data-testid="wallpaper-result"]').length,
+        recentTrack: document.querySelector('.wallpaper-recent-track') !== null,
+        sourceTabsTop: Math.round(document.querySelector('.wallpaper-source-tabs')?.getBoundingClientRect().top ?? Infinity),
       },
+      overflow,
     }
   }, which)
 }
