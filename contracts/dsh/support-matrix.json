@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-27T11:45:00.000Z",
+  "updatedAt": "2026-10-30T11:15:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -111,6 +111,43 @@
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
         "Still a preview claim, not stable: promotion requires a non-prerelease release plus npm latest channel and fresh acceptance. GitHub-tagged 0.2.1-rc.2 (npm latest) and 0.2.1-rc.3 (Desktop) remain the stable claims.",
         "Web Profile + exact Chrome 156.0.8078.48 only; Desktop macOS/Windows and Web Edge are not-supported for this host build; rc.4 Desktop app was not available for certification."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.5",
+      "adapterId": "dsh-0.2.1-rc.5-r1",
+      "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
+      "status": "g6-approved",
+      "profiles": {
+        "desktop": {
+          "macos": "passed",
+          "win32": "not-supported"
+        },
+        "web": {
+          "chrome": "passed",
+          "edge": "not-supported"
+        }
+      },
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "22.23.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.1-rc.5",
+        "npmVersion": "0.2.1-rc.5"
+      },
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "RC.5 Web and Desktop entry adapters verified with quick/full probe runs; formal evidence still pending.",
+        "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5.",
+        "GitHub release dsh-v0.2.1-rc.5 is a prerelease; npm latest/next point at 0.2.1-rc.5. Preview claim."
       ]
     }
   ]

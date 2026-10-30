@@ -13,9 +13,9 @@
  */
 
 /**
- * DSH 0.2.1-rc.2 and the latest 0.2.1-rc.4 on the Web Profile/Chrome, and
- * DSH 0.2.1-rc.3 on the Desktop Profile/macOS (real Electron renderer).
- * All certified adapters share the same 0.1.4 catalog profile.
+ * DSH 0.2.1-rc.2/rc.4 and rc.5 on the Web Profile/Chrome, and DSH
+ * 0.2.1-rc.3/rc.5 on the Desktop Profile/macOS. All certified adapters share the
+ * same catalog profile; rc.5 is served by one profile-agnostic adapter entry.
  * Windows and Web Edge are not-supported and are not claimed.
  */
 export const ACCEPTANCE_SCOPE = Object.freeze({
@@ -50,7 +50,7 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.2',
     adapterId: 'dsh-0.2.1-rc.2-r1',
     contractHash: 'sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d',
-    catalogProfile: 'sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8',
+    catalogProfile: 'sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',
@@ -60,7 +60,7 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.3',
     adapterId: 'dsh-0.2.1-rc.3-r1',
     contractHash: 'sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60',
-    catalogProfile: 'sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8',
+    catalogProfile: 'sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc',
     nodeRange: '^24.21.0',
     platformModules: 11,
     sourceKind: 'packaged-app',
@@ -70,7 +70,17 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.4',
     adapterId: 'dsh-0.2.1-rc.4-r1',
     contractHash: 'sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf',
-    catalogProfile: 'sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8',
+    catalogProfile: 'sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc',
+    nodeRange: '^22.23.1',
+    platformModules: 11,
+    sourceKind: 'installed-package',
+    capabilities: CAPABILITIES_021,
+  }),
+  Object.freeze({
+    hostVersion: '0.2.1-rc.5',
+    adapterId: 'dsh-0.2.1-rc.5-r1',
+    contractHash: 'sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619',
+    catalogProfile: 'sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',

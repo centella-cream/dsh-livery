@@ -70,7 +70,7 @@ describe('compileCatalog — shipped adapters only', () => {
     const groups = groupAdaptersByProfile(ADAPTERS)
     expect(first.profileCount).toBe(groups.length)
     expect(first.adapterCount).toBe(ADAPTERS.length)
-    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4'])
+    expect(ADAPTERS.map((adapter) => adapter.hostVersion)).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
     expect(first.profiles.map((profile) => profile.profile.profileId)).toEqual(groups.map((group) => group.profileId))
     for (const group of groups) {
       const compiled = profileById(group.profileId)
@@ -86,16 +86,18 @@ describe('compileCatalog — shipped adapters only', () => {
     expect(adapterForVersion('0.2.1-rc.2')?.adapterId).toBe('dsh-0.2.1-rc.2-r1')
     expect(adapterForVersion('0.2.1-rc.3')?.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(adapterForVersion('0.2.1-rc.4')?.adapterId).toBe('dsh-0.2.1-rc.4-r1')
+    expect(adapterForVersion('0.2.1-rc.5')?.adapterId).toBe('dsh-0.2.1-rc.5-r1')
     expect(adapterForVersion('0.2.0-rc.2')).toBeUndefined()
-    expect(ADAPTERS).toHaveLength(3)
-    expect(DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.4')
+    expect(ADAPTERS).toHaveLength(4)
+    expect(DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.5')
     // Both shipped adapters point at committed contract snapshots.
     for (const adapter of ADAPTERS) expect(adapter.contractHash).toMatch(/^sha256:[0-9a-f]{64}$/u)
     // 0.2.1-rc.2 and rc.3 share the render-affecting token contract → one profile.
     expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.3')?.catalogProfile)
     expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.4')?.catalogProfile)
+    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.5')?.catalogProfile)
     expect(first.profileCount).toBe(1)
-    expect(first.profiles[0]?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4'])
+    expect(first.profiles[0]?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
     expect(first.profiles[0]?.report.gates.adapterRenderIdentity).toBe(true)
   })
 

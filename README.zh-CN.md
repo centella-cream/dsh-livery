@@ -10,14 +10,15 @@
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.4 有限发布。**
+> **发布状态：0.1.5 开发候选。** `0.1.3` 仍是 npm 最新发布版；`0.1.4` 已打 tag，但发布被 npm 账户安全冻结阻断；`0.1.5` 增加 DSH `0.2.1-rc.5` 的 Web/Desktop 入口支持。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1，以及
 > DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。
 >
-> **next 通道预览：** DSH `0.2.1-rc.4` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1。
-> 官方 npm 包已签名，精确 tarball 已纳入验收 evidence；但上游尚未发布对应的 GitHub
-> tag/release，因此这是兼容性预览，不是对预发布通道的稳定性承诺。
+**预览 / 适配：** DSH `0.2.1-rc.4` 与 `0.2.1-rc.5` + Web Profile + Chrome
+> 156.0.8078.48 + Node 22.23.1；以及 DSH `0.2.1-rc.5` macOS Desktop 应用
+> （Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130）。rc.5 是 GitHub
+> prerelease 且位于 npm latest/next；仍属于预览声明，不是稳定承诺。
 >
 > Desktop Windows、Web Edge 和其他 DSH 版本不在支持范围内；其他 DSH 版本会在安装/运行时
 > 被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝

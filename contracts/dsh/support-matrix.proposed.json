@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-27T08:06:30.352Z",
+  "updatedAt": "2026-10-30T10:54:43.001Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
@@ -90,7 +90,7 @@
       "notes": [
         "Certified on tarball sha256 99fa98c7ee9c08d2eecda3b1c43aa3e51a42d32b373974231d365a8023c00e18 (pre-certification package; a release repack follows the matrix promotion).",
         "Isolated full Web acceptance: 121 pass / 0 fail / 3 expected skips / 1 warning; user Web Profile clone: 121 pass / 0 fail / 3 expected skips / 3 warnings (clone repaired the pre-existing broken dsh-charter tarball reference; one unrelated plugin entry did not activate).",
-        "Contract: adapter dsh-0.2.1-rc.2-r1, contractHash sha256:fc5ccff8\u2026; loader ABI table 11 modules; font ladder via documented host role hooks; catalog profile sha256:060e80ef\u2026 shared byte-identically with 0.2.1-rc.3.",
+        "Contract: adapter dsh-0.2.1-rc.2-r1, contractHash sha256:fc5ccff8…; loader ABI table 11 modules; font ladder via documented host role hooks; catalog profile sha256:060e80ef… shared byte-identically with 0.2.1-rc.3.",
         "G6 not claimed: desktop targets and web/edge pending."
       ]
     },
@@ -134,7 +134,7 @@
       "notes": [
         "Contract certified from the packaged Electron app.asar (DSH 0.2.1-rc.3, Electron 44.7.0, bundled Node 24.21.0); missing type documents supplemented from the same published npm version and recorded in source.prepared.",
         "Official plugin-manager install acceptance in an isolated Desktop DSH_HOME: exit 0 without version exemption, bundle selected, both catalog profiles installed.",
-        "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning \u2014 boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
+        "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning — boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
         "NOT verified / not claimed: actual Electron window rendering, native caption/traffic lights, frame clearance, DPI and vibrancy. desktop.macos stays pending; no G6/release claim.",
         "G6 not claimed."
       ]
@@ -165,6 +165,35 @@
       "upstream": {
         "githubTag": null,
         "npmVersion": "0.2.1-rc.4"
+      },
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "Contract snapshot frozen; waiting for certification evidence."
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.5",
+      "adapterId": "dsh-0.2.1-rc.5-r1",
+      "contractHash": "sha256:9c0b91ae31afa9a88e1fb6e1c3f3f935ff4ea882b914bfef97aa2d1777b1559d",
+      "status": "draft",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "pending"
+        }
+      },
+      "claimTier": "preview",
+      "distributionChannel": "next",
+      "certifiedBrowserVersions": [],
+      "certifiedRuntimeVersions": [],
+      "upstream": {
+        "githubTag": null,
+        "npmVersion": "0.2.1-rc.5"
       },
       "clientTarget": "chrome120",
       "evidence": [],

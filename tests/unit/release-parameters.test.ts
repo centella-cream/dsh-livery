@@ -54,7 +54,11 @@ describe('0.1.3 release parameterization', () => {
     expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     for (const entry of matrix.entries) {
-      expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.4/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
+      if (entry.hostVersion === '0.2.1-rc.5') {
+        expect(entry.evidence).toEqual([])
+      } else {
+        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.4/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
+      }
     }
   })
 
@@ -64,6 +68,7 @@ describe('0.1.3 release parameterization', () => {
     expect(files).toContain('docs/design')
     expect(files).toContain('docs/research/design-table.json')
     expect(files).toContain('contracts/dsh/0.2.1-rc.4')
+    expect(files).toContain('contracts/dsh/0.2.1-rc.5')
     expect(files).not.toContain('docs')
     expect(files).not.toContain('contracts/dsh/support-matrix.proposed.json')
     expect(files).not.toContain('contracts/dsh/0.2.0-rc.2')

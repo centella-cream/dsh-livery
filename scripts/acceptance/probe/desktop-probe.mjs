@@ -387,7 +387,8 @@ async function main() {
       runner,
       'desktop.renderer-launches',
       'real Electron renderer launches under the isolated app runtime',
-      /@deepseek-ai\/dsh-desktop\/0\.2\.1-rc\.3/.test(rendererInfo.userAgent) && rendererInfo.url.startsWith('dsh-app://'),
+      new RegExp(`@deepseek-ai/dsh-desktop/${ctx.config.expectedVersion.replaceAll('.', '\\.')}`).test(rendererInfo.userAgent) &&
+      rendererInfo.url.startsWith('dsh-app://'),
       `url=${rendererInfo.url} title="${rendererInfo.title}" Electron=${environment.electronVersion} Node=${environment.windowElectronNode} Chrome=${environment.chromeVersion} dpr=${rendererInfo.devicePixelRatio} window=${rendererInfo.outer.join('x')}`,
       { userAgent: rendererInfo.userAgent },
     )
@@ -1065,7 +1066,7 @@ async function main() {
       catalogProfile: ctx.config.expectedAdapter?.catalogProfile ?? null,
       sourceKind: 'packaged-app',
       scope: {
-        hostVersion: DESKTOP_SCOPE.hostVersion,
+        hostVersion: ctx.config.expectedVersion ?? DESKTOP_SCOPE.hostVersion,
         profile: DESKTOP_SCOPE.profile,
         platform: DESKTOP_SCOPE.platform,
         browser: 'chrome',

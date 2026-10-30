@@ -7,6 +7,15 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.1.5] — 待发布
+
+### Added
+
+- 适配 DSH `0.2.1-rc.5` 的 Web 与 Desktop 入口：新增冻结契约、正式矩阵条目、adapter 注册和 `engines.dsh` allowlist。
+- Desktop 侧按真实 `DeepSeek Harness 0.2.1-rc.5` macOS 应用（Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130）完成入口验证。
+- 验收探针的 certified-adapter 镜像与 Desktop 运行时身份检查支持 rc.5 动态版本。
+- 版本面升级到 `0.1.5`（package、LIVERY_VERSION、CATALOG_COMPILER_VERSION、生成物与文档）。
+
 ## [0.1.4] — 2026-10-29
 
 ### Changed

@@ -139,7 +139,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8",
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -246,7 +246,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8",
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
     "sourceKind": "packaged-app",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -353,7 +353,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8",
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -361,6 +361,113 @@ export const ADAPTERS: readonly AdapterRecord[] = [
       "dsh-web-frontend/dist/assets/index-BXV-oxvX.js"
     ],
     "capturedAt": "2026-10-27T08:06:30.352Z"
+  },
+  {
+    "hostVersion": "0.2.1-rc.5",
+    "adapterId": "dsh-0.2.1-rc.5-r1",
+    "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
+    "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+    "hostApiHash": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
+    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "tokenHash": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
+    "layoutHash": "sha256:9a206b43972eae44b5361ed1f13cd5bd1dd7b2a611565105667f02040a5dbb23",
+    "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
+    "nodeRange": "^22.23.1",
+    "nodeRangeSource": "target-declares-none; certified on node v22.23.1",
+    "clientTarget": "chrome120",
+    "platformModules": [
+      "react",
+      "react/jsx-runtime",
+      "react-dom",
+      "react-dom/client",
+      "@deepseek-ai/cordis",
+      "zod",
+      "@tanstack/react-virtual",
+      "@deepseek-ai/dsh-client-store",
+      "@deepseek-ai/dsh-client-ui-slots",
+      "@deepseek-ai/dsh-client-ui-primitives",
+      "@deepseek-ai/dsh-client-ui-dockkit"
+    ],
+    "capabilities": {
+      "theme-css": {
+        "id": "theme-css",
+        "available": true,
+        "provenance": "documented",
+        "required": true,
+        "detail": "Host token sheets declare 403 --dsw-* tokens over 176 consumed by shipped packages; scoped overrides on body[data-dsh-livery] win by specificity."
+      },
+      "host-font-family": {
+        "id": "host-font-family",
+        "available": true,
+        "provenance": "documented",
+        "required": true,
+        "detail": "Host design tokens expose --dsw-font-family and the --dsw-font-markdown-* ladder; body-scoped declarations override stock."
+      },
+      "host-font-role-hooks": {
+        "id": "host-font-role-hooks",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "Documented host font role hooks (--dsh-font-family-text, --dsh-font-family-code) are present; themes set the hook, never the composite ladder."
+      },
+      "surface-material": {
+        "id": "surface-material",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "Alias surface, border, elevation and shadow tokens are documented design tokens."
+      },
+      "host-density-tokens": {
+        "id": "host-density-tokens",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "No documented spacing/control token settable at document level; density falls back to host."
+      },
+      "host-transcript-width": {
+        "id": "host-transcript-width",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
+      },
+      "host-message-flow": {
+        "id": "host-message-flow",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
+      },
+      "reduced-transparency": {
+        "id": "reduced-transparency",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      },
+      "forced-colors": {
+        "id": "forced-colors",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      },
+      "reduced-motion": {
+        "id": "reduced-motion",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      }
+    },
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
+    "sourceKind": "installed-package",
+    "sourceEvidence": [
+      "dsh-client-modules/lib/client.js",
+      "dsh-client-modules/lib/index.js",
+      "dsh-web-frontend/dist/assets/index-BXV-oxvX.js"
+    ],
+    "capturedAt": "2026-10-30T10:52:04.930Z"
   }
 ]
 
@@ -381,24 +488,30 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
     "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8"
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
     "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8"
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
-    "catalogProfile": "sha256:3f9ec1f47ed634d4b7be926e23e43278b4d6169e48669a7c3c9bccd06016d2f8"
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
+  },
+  {
+    "hostVersion": "0.2.1-rc.5",
+    "adapterId": "dsh-0.2.1-rc.5-r1",
+    "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
+    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
   }
 ]
 
 /** Exact allowlist of shipped host versions (lite form). */
-export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ["0.2.1-rc.2","0.2.1-rc.3","0.2.1-rc.4"]
+export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ["0.2.1-rc.2","0.2.1-rc.3","0.2.1-rc.4","0.2.1-rc.5"]
 
 /** Registry by exact host version. */
 export const ADAPTER_BY_VERSION: Readonly<Record<string, AdapterRecord>> = Object.fromEntries(

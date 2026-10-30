@@ -11,16 +11,15 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.4 limited release.**
+> **Release status: 0.1.5 development candidate.** `0.1.3` remains the latest npm release; `0.1.4` was tagged but its publish was blocked by an npm account security hold, and `0.1.5` adds DSH `0.2.1-rc.5` Web/Desktop entry support.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1,
 > and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime.
 >
-> **Next-channel preview:** DSH `0.2.1-rc.4` + Web Profile + Chrome 156.0.8078.48 + Node
-> 22.23.1. The official npm package is signed and the exact tarball is in the
-> acceptance evidence, but upstream has not yet published a matching GitHub
-> tag/release; this is compatibility preview, not a stability promise for a
-> pre-release channel.
+**Preview / adaptation:** DSH `0.2.1-rc.4` and `0.2.1-rc.5` + Web Profile + Chrome
+> 156.0.8078.48 + Node 22.23.1, plus DSH `0.2.1-rc.5` Desktop app on macOS (Electron
+> 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130). rc.5 is a GitHub prerelease and
+> npm `latest`/`next`; it remains a preview claim, not a stable promise.
 >
 > Desktop Windows, Web Edge and other DSH builds are outside the supported scope.
 > Other DSH versions are rejected at install/runtime and fail closed. The
