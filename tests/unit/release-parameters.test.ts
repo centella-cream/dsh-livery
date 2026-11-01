@@ -55,9 +55,12 @@ describe('0.1.3 release parameterization', () => {
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     for (const entry of matrix.entries) {
       if (entry.hostVersion === '0.2.1-rc.5') {
-        expect(entry.evidence).toEqual([])
+        expect(entry.evidence).toEqual([
+          'contracts/dsh/evidence/0.1.5/0.2.1-rc.5-web-chrome.json',
+          'contracts/dsh/evidence/0.1.5/0.2.1-rc.5-desktop-macos.json',
+        ])
       } else {
-        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.4/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
+        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.5/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
       }
     }
   })
