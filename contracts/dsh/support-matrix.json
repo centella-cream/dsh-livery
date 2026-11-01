@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-30T11:15:00.000Z",
+  "updatedAt": "2026-11-02T00:00:00.000Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -31,7 +31,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json"
+        "contracts/dsh/evidence/0.1.5/0.2.1-rc.2-web-chrome.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.2 + Web Profile + exact Chrome 156.0.8078.48; 156.0.8078.48 is the only certified browser version.",
@@ -69,7 +69,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.5/0.2.1-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
@@ -105,7 +105,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json"
+        "contracts/dsh/evidence/0.1.5/0.2.1-rc.4-web-chrome.json"
       ],
       "notes": [
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
@@ -117,7 +117,7 @@
       "hostVersion": "0.2.1-rc.5",
       "adapterId": "dsh-0.2.1-rc.5-r1",
       "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
-      "status": "g6-approved",
+      "status": "released",
       "profiles": {
         "desktop": {
           "macos": "passed",
@@ -143,11 +143,14 @@
         "npmVersion": "0.2.1-rc.5"
       },
       "clientTarget": "chrome120",
-      "evidence": [],
+      "evidence": [
+        "contracts/dsh/evidence/0.1.5/0.2.1-rc.5-web-chrome.json",
+        "contracts/dsh/evidence/0.1.5/0.2.1-rc.5-desktop-macos.json"
+      ],
       "notes": [
-        "RC.5 Web and Desktop entry adapters verified with quick/full probe runs; formal evidence still pending.",
-        "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5.",
-        "GitHub release dsh-v0.2.1-rc.5 is a prerelease; npm latest/next point at 0.2.1-rc.5. Preview claim."
+        "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence pending final commit.",
+        "GitHub release dsh-v0.2.1-rc.5 is a prerelease; npm latest/next point at 0.2.1-rc.5. Preview claim.",
+        "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5."
       ]
     }
   ]
