@@ -11,7 +11,7 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.5 development candidate.** `0.1.3` remains the latest npm release; `0.1.4` was tagged but its publish was blocked by an npm account security hold, and `0.1.5` adds DSH `0.2.1-rc.5` Web/Desktop entry support.
+> **Release status: 0.1.5 development candidate.** `0.1.3` remains the latest npm release; `0.1.5` was tagged but its publish was blocked by an npm account security hold, and `0.1.5` adds DSH `0.2.1-rc.5` Web/Desktop entry support.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1,
 > and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime.
@@ -82,7 +82,7 @@ preview scenes; the rest show DSH Livery's own UI and real online wallpaper load
 
 Six of the 24 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
 These are the shipped fixed preview scenes (not host UI captures); the same
-previews appear in the 0.1.4 full-width gallery.
+previews appear in the 0.1.5 full-width gallery.
 
 ## Wallpapers
 
@@ -133,12 +133,12 @@ the plugin's certification surface. The formal matrix lives at
 
 ## Install
 
-Published package: [`dsh-livery@0.1.4`](https://www.npmjs.com/package/dsh-livery).
+Published package: [`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile (CLI)
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.4
+dsh plugin --profile web add dsh-livery@0.1.5
 dsh web                                 # open the URL printed by dsh
 ```
 
@@ -146,7 +146,7 @@ dsh web                                 # open the URL printed by dsh
 
 The Desktop app installs plugins from its plugin manager:
 **Settings → Plugins → Install by package name**, then enter
-`dsh-livery@0.1.4`. The `0.2.1-rc.3` Desktop runtime is accepted by this release;
+`dsh-livery@0.1.5`. The `0.2.1-rc.3` Desktop runtime is accepted by this release;
 the plugin installs and runs in the Electron renderer. Native macOS window chrome,
 traffic lights/leading, vibrancy, Dock/rightbar and OS-level DPI are host-owned and
 outside the plugin's certification surface.
@@ -159,11 +159,11 @@ valid. To install immediately, download the exact npm tarball locally and instal
 that file:
 
 ```bash
-npm pack dsh-livery@0.1.4 --pack-destination "$HOME/Downloads"
-shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.4.tgz"
+npm pack dsh-livery@0.1.5 --pack-destination "$HOME/Downloads"
+shasum -a 256 "$HOME/Downloads/dsh-livery-0.1.5.tgz"
 # Compare this hash with the GitHub Release / npm artifact hash before installing.
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.4.tgz"
+  plugin --profile desktop add "file:$HOME/Downloads/dsh-livery-0.1.5.tgz"
 ```
 
 Then restart the Desktop app. `npm pack` only downloads the published tarball; it
@@ -234,24 +234,26 @@ Generated contracts, stock snapshots and compiled catalogs are committed, so
 Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.4.tgz
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.4.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.4.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.5.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.5.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.5.tgz      # thin wrapper
 ```
 
 ## Verification
 
-For 0.1.4: Web `0.2.1-rc.2` isolated full run, latest Web `0.2.1-rc.4` isolated
-run, and Desktop `0.2.1-rc.3` real Electron install/renderer acceptance all pass (exact certified Chrome build; official
+For 0.1.5: Web `0.2.1-rc.2`, `0.2.1-rc.4`, and `0.2.1-rc.5` isolated full runs,
+plus Desktop `0.2.1-rc.3` and `0.2.1-rc.5` real Electron install/renderer acceptance pass (exact certified Chrome build; official
 Chrome for Testing is used when the system channel has moved past the pinned
 version)
 with **0 failures** on the exact certified runtime matrix (Chrome 156.0.8078.48 / Node 22.23.1 for Web; Electron/Node
 24.21.0 for Desktop). Exact counts and report hashes are in the committed evidence
 files. Repo gates include `tsc`, the full test suite, contrast / token / CSS
 audits, loader ABI and package checks. The exact artifact is bound to
-`contracts/dsh/evidence/0.1.4/0.2.1-rc.2-web-chrome.json`,
-`contracts/dsh/evidence/0.1.4/0.2.1-rc.4-web-chrome.json` and
-`contracts/dsh/evidence/0.1.4/0.2.1-rc.3-desktop-macos.json`. Details and known
+`contracts/dsh/evidence/0.1.5/0.2.1-rc.2-web-chrome.json`,
+`contracts/dsh/evidence/0.1.5/0.2.1-rc.4-web-chrome.json`,
+`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-web-chrome.json`,
+`contracts/dsh/evidence/0.1.5/0.2.1-rc.3-desktop-macos.json` and
+`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-desktop-macos.json`. Details and known
 limitations: [docs/verification.md](docs/verification.md).
 
 ## Contributing
