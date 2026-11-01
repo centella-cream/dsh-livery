@@ -1,6 +1,6 @@
 # Desktop-profile acceptance evidence — DSH Livery on DSH 0.2.1-rc.3 (Electron app runtime)
 
-Run `2026-11-01T16-21-14-990Z-desktop` · **34 passed / 0 failed / 2 skipped / 0 warnings** · RESULT: PASS
+Run `2026-11-01T16-37-23-058Z-desktop` · **34 passed / 0 failed / 2 skipped / 0 warnings** · RESULT: PASS
 
 **Scope (explicit):** this run covers DSH 0.2.1-rc.3 + Desktop Profile + macOS + the real Electron renderer. Web Profile/Chrome on DSH 0.2.1-rc.2 and 0.2.1-rc.4 is covered by separate Web evidence; Windows and Web Edge are not-supported. The native macOS window shell (traffic lights/leading, vibrancy, Dock/rightbar, OS DPI) is host-owned and outside plugin certification scope.
 
@@ -8,7 +8,7 @@ Run `2026-11-01T16-21-14-990Z-desktop` · **34 passed / 0 failed / 2 skipped / 0
 
 | item | value |
 |---|---|
-| date | 2026-11-01T16:21:14.989Z |
+| date | 2026-11-01T16:37:23.057Z |
 | Desktop app runtime | 0.2.1-rc.3 (Electron 44.7.0, Node 24.21.0, Chrome 152.0.7977.130) |
 | app CLI | `<system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh` |
 | renderer URL | dsh-app://app/ (window 1280×820, DPR 2) |
@@ -21,8 +21,8 @@ Run `2026-11-01T16-21-14-990Z-desktop` · **34 passed / 0 failed / 2 skipped / 0
 
 ```text
 <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz
-exit 0 in 7109 ms
-[WARN] The store at <home>/Library/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <tmp> Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.1.5 Done in 321ms using pnpm v11.2
+exit 0 in 3162 ms
+[WARN] The store at <home>/Library/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <tmp> Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.1.5 Done in 234ms using pnpm v11.2
 ```
 
 - profile dependencies: `{"dsh-livery":"file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz"}`
@@ -36,12 +36,12 @@ exit 0 in 7109 ms
 | check | title | result | detail |
 |---|---|---|---|
 | `desktop.certified-runtime` | app-bundled CLI reports a certified host version | ✅ pass | 0.2.1-rc.3 / dsh-0.2.1-rc.3-r1 / sha256:d246181d2613… / 11-module table / packaged-app |
-| `desktop.official-install` | official rc.3 plugin-manager install accepts the package with no version exemption | ✅ pass | <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz → exit 0 in 7109ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-exp |
+| `desktop.official-install` | official rc.3 plugin-manager install accepts the package with no version exemption | ✅ pass | <system-app> Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz → exit 0 in 3162ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/dsh-livery-0.1.5-acceptance.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","@deepseek-ai/dsh-exp |
 | `desktop.preview-profiles-installed` | the shared compiled catalog profile ships (both certified adapters share it) | ✅ pass | 1 preview profile dir(s): sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc |
 | `desktop.engines-enforced` | rc.3 runtime rejects a plugin whose engines.dsh allowlist excludes it (no exemption) | ✅ pass | synthetic 0.2.0-only plugin install → exit 1: [WARN] The store at <home>/Library/pnpm/store/v11 is not used because packages cannot be hard linked from it into this project. Using the store at <tmp> instead. Set storeDir to choose the store. ? Verifying lockfile against supply-chain policies (1 entry)... ✓ Lockfile passes supply-ch |
 | `desktop.cli-refuses-boot` | CLI boot of the desktop composition is refused (Electron-managed profile) | ✅ pass | dsh --profile desktop --no-open → exit 1: error: profile "desktop" is managed exclusively by the Electron application |
 | `desktop.renderer-launches` | real Electron renderer launches under the isolated app runtime | ✅ pass | url=dsh-app://app/ title="DeepSeek Harness" Electron=44.7.0 Node=24.21.0 Chrome=152.0.7977.130 dpr=2 window=1280x820 |
-| `desktop.boot-graph-row` | boot graph lists the dsh-livery client module | ✅ pass | rev=32ddb3b9b00a; entries=74; dsh-livery=true |
+| `desktop.boot-graph-row` | boot graph lists the dsh-livery client module | ✅ pass | rev=2a25939ffb12; entries=74; dsh-livery=true |
 | `desktop.catalog-identity` | desktop catalog route reports the certified rc.3 identity and shared 0.2.1 catalog profile | ✅ pass | 0.2.1-rc.3 / dsh-0.2.1-rc.3-r1 / sha256:d246181d2613… / 11-module table / packaged-app; 24 liveries; previewsBase=/livery/assets/previews/sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc/ |
 | `desktop.stock-start` | stock default boots with no livery attributes or skin styles | ✅ pass | data-dsh-livery=null; skinStyles=0; themeSource=system; lang=zh-CN |
 | `desktop.sidebar-entry` | Livery is registered as a left-sidebar plugin navigation row in the desktop shell | ✅ pass | row #2 label "视觉风格" panellistSlot=true icon=true |
@@ -52,20 +52,20 @@ exit 0 in 7109 ms
 | `desktop.preview-locale-zh` | desktop preview-language tab pins thumbnail URLs back to -zh- | ✅ pass | 24 thumbs; locales=["zh"] |
 | `desktop.gallery-families` | desktop gallery renders page tabs and all six non-empty family sections in display order | ✅ pass | sections=[calm:7, nature:3, light:4, retro:5, vivid:2, dark:3]; expected=[calm:7, nature:3, light:4, retro:5, vivid:2, dark:3] |
 | `desktop.wallpaper` | desktop wallpaper studio applies a built-in CSS layer through the owned stylesheet | ✅ pass | builtins=24; attr=; marker=dsh-livery/wallpaper; selected=aurora |
-| `desktop.position-remote` | desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position | ✅ pass | {"stored":{"schemaVersion":2,"revision":3,"selection":{"kind":"remote","url":"https://images.example.test/desktop.jpg"},"effects":{"blur":8,"dim":25,"frost":35,"atmosphere":30},"position":{"x":0,"y":0},"sourceId":"d192e0c6-65d0-445b-bb2d-f6be447d7919"},"styleHasTopLeft":true,"overlayPosition":"0% 0%","heroPosition":"0% 0%","group":true,"layerBlob":true,"layerRaw":false} |
+| `desktop.position-remote` | desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position | ✅ pass | {"stored":{"schemaVersion":2,"revision":3,"selection":{"kind":"remote","url":"https://images.example.test/desktop.jpg"},"effects":{"blur":8,"dim":25,"frost":35,"atmosphere":30},"position":{"x":0,"y":0},"sourceId":"977d47a6-08ce-4000-976c-c59a263692d9"},"styleHasTopLeft":true,"overlayPosition":"0% 0%","heroPosition":"0% 0%","group":true,"layerBlob":true,"layerRaw":false} |
 | `desktop.reduced-transparency` | desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce | ✅ pass | {"media":true,"backdrop":"none","background":"rgba(0, 0, 0, 0)"} |
 | `desktop.floating-surfaces` | desktop host floating surfaces stay opaque above wallpaper | ✅ pass | {"background":"rgb(255, 255, 255)","alpha":1,"backdrop":"none"} |
 | `desktop.preview` | previewing a different livery updates desktop body attributes and tokens transiently | ✅ pass | body attr null → plum; bg=#f7f2f5 (expected sample rgb(247, 242, 245)) |
 | `desktop.preview-cancel` | cancel restores the confirmed desktop state | ✅ pass | body attr=null |
 | `desktop.apply-persists` | apply writes exactly one livery config mutation into the isolated desktop profile patch | ✅ pass | patch skinId=fjord (before (none)); rows=1 |
-| `desktop.boot-injection` | fresh desktop application launch delivers the certified rc.3 first-frame boot payload for the persisted skin | ✅ pass | boot payload available 1196 ms after launch: accepted hostVersion=0.2.1-rc.3 adapterId=dsh-0.2.1-rc.3-r1 profileKind=desktop skinId=fjord cssHash=sha256:cc8551943e49cb054… |
+| `desktop.boot-injection` | fresh desktop application launch delivers the certified rc.3 first-frame boot payload for the persisted skin | ✅ pass | boot payload available 993 ms after launch: accepted hostVersion=0.2.1-rc.3 adapterId=dsh-0.2.1-rc.3-r1 profileKind=desktop skinId=fjord cssHash=sha256:cc8551943e49cb054… |
 | `desktop.hash-equality` | desktop body hash equals the handshake cssHash and the compiled catalog cssHash | ✅ pass | body=sha256:cc8551943e49cb054… handshake=sha256:cc8551943e49cb054… catalog=sha256:cc8551943e49cb054… |
 | `desktop.theme-light` | desktop light tokens match the compiled catalog values | ✅ pass | actual=["rgb(240, 243, 246)","rgb(27, 39, 51)","rgba(0, 0, 0, 0.04)"] expected=["rgb(240, 243, 246)","rgb(27, 39, 51)","rgba(0, 0, 0, 0.04)"] |
 | `desktop.theme-dark` | desktop follows host dark mode with the livery dark tokens without changing the host preference | ✅ pass | darkAttr="" themeSource=system actual=["rgb(24, 28, 33)","rgb(238, 242, 246)","rgba(255, 255, 255, 0.06)"] expected=["rgb(24, 28, 33)","rgb(238, 242, 246)","rgba(255, 255, 255, 0.06)"] |
 | `desktop.font-role-hooks` | desktop renderer applies the documented 0.2.1 font role hooks (--dsh-font-family-text/-code) | ✅ pass | --dsh-font-family-text="Hiragino Sans GB","PingFang SC","Noto Sans CJK SC","Microsoft YaHei UI",sans-serif; --dsh-font-family-code="SFMono-Regular",Consolas,"Liberation Mono","Noto Sans Mono CJK SC",monospace |
 | `desktop.first-paint-sampling` | first painted desktop frames carry the livery styling | ⏭️ skip | the desktop host injects first-frame rows through its internal boot-ready handshake; Playwright attaches after window creation, so pre-paint rAF frames cannot be sampled on the native startup path. Web-profile filmstrip covers the same renderer code path; boot payload availability is asserted instead. |
 | `desktop.self-check` | self-check shows the rc.3 identity and reports host-font-role-hooks available | ✅ pass | hostVersion shown=true adapter shown=true host-font-role-hooks=true |
-| `desktop.preset-import-apply` | desktop preset export/import/diff/apply works in the real renderer and remote wallpaper stays cache-only | ✅ pass | export=true; diffRows=4; state={"stored":{"schemaVersion":2,"revision":5,"selection":{"kind":"remote","url":"https://images.example.test/desktop-preset.jpg"},"effects":{"blur":12,"dim":40,"frost":35,"atmosphere":60},"position":{"x":0,"y":0},"sourceId":"50d281b0-45f4-4a6e-a5ea-1d2d9baed351"},"styleHasBlob":true,"styleHasRaw":false,"bodyAttribute":"plum","applyStatus":true}; diag={"fetchStatus":200, |
+| `desktop.preset-import-apply` | desktop preset export/import/diff/apply works in the real renderer and remote wallpaper stays cache-only | ✅ pass | export=true; diffRows=4; state={"stored":{"schemaVersion":2,"revision":5,"selection":{"kind":"remote","url":"https://images.example.test/desktop-preset.jpg"},"effects":{"blur":12,"dim":40,"frost":35,"atmosphere":60},"position":{"x":0,"y":0},"sourceId":"204ebc5c-83fe-467f-9828-f7b4b31d253e"},"styleHasBlob":true,"styleHasRaw":false,"bodyAttribute":"plum","applyStatus":true}; diag={"fetchStatus":200, |
 | `desktop.state-migration-v1` | desktop renderer hydrates a legacy v1 flat wallpaper as position 50/50 without clearing, and ignores corrupt records | ✅ pass | migrated={"stored":{"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":35,"atmosphere":60},"style":true,"attr":""}; corrupt={"style":true,"attr":""} |
 | `desktop.clear-local-data` | desktop clear-local-data reports a result and retains the current wallpaper | ✅ pass | {"result":"cleared","style":true,"attr":""} |
 | `desktop.two-window-sync` | two-window cross-tab wallpaper sync in the Desktop renderer | ⏭️ skip | the packaged Electron app exposes a single BrowserWindow in this probe; cross-window storage-event sync is covered by the Web two-tab checks and is reported as a single-window limitation here |
@@ -126,4 +126,4 @@ exit 0 in 7109 ms
 
 _Generated by `scripts/acceptance/probe/desktop-probe.mjs`. Artifacts: `artifacts/acceptance/0.2.1-rc.3-desktop/`._
 
-**Run commit:** `1178c9f552c432b3ec767a2822c16d9235b5a0a2`
+**Run commit:** `70b60c0b8b59f2dc72cca542d351766471266f11`
