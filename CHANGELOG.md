@@ -7,6 +7,24 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.1.6] — 待发布
+
+### Added
+
+- 适配 DSH `0.2.2-rc.1` 的 Web 与 Desktop 入口：新增冻结契约、正式矩阵、adapter 注册、`engines.dsh` allowlist 和验收探针镜像。
+- 支持 0.2.2 的 peer-scoped index injection/rendering 与新的 188-token 契约；新增语义/静态 token 继承边界，保留宿主语义色。
+- 新增 0.2.2 Desktop macOS 真实 Electron 入口验证（Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130）。
+
+### Fixed
+
+- 修复壁纸工作台在中等宽度被压成横条、预览图严重裁切的问题：移除 `max-height` 变形约束，保持 16:9；1024px 使用双列工作台，窄屏改回全宽比例预览。
+- 壁纸来源选择保持单卡四页签；来源入口在常见宽度下不再被异常压缩。
+
+### Changed
+
+- 版本面升级到 `0.1.6`（package、LIVERY_VERSION、CATALOG_COMPILER_VERSION、生成物与文档）。
+- 0.2.2 的多 profile catalog 使 host gzip 与 livery/boot CSS 预算上调；在文档与构建门禁中明确记录，不静默放宽。
+
 ## [0.1.5] — 2026-11-01
 
 ### Added

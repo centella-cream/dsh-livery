@@ -239,7 +239,7 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     },
   )
 
-  it.each(['0.3.0-rc.1', '0.2.1', '0.2.2-rc.1', '0.2.0'])(
+  it.each(['0.3.0-rc.1', '0.2.1', '0.2.3-rc.1', '0.2.0'])(
     'fails closed for readable in-range uncertified version %s (no compat injection)',
     (version) => {
       // Exact released contracts only: a readable version inside the old

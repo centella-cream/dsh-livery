@@ -15,10 +15,10 @@
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1，以及
 > DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。
 >
-**预览 / 适配：** DSH `0.2.1-rc.4` 与 `0.2.1-rc.5` + Web Profile + Chrome
-> 156.0.8078.48 + Node 22.23.1；以及 DSH `0.2.1-rc.5` macOS Desktop 应用
-> （Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130）。rc.5 是 GitHub
-> prerelease 且位于 npm latest/next；仍属于预览声明，不是稳定承诺。
+**预览 / 适配：** DSH `0.2.1-rc.4`、`0.2.1-rc.5` 与 `0.2.2-rc.1` + Web Profile +
+> Chrome 156.0.8078.48；以及 DSH `0.2.1-rc.5`/`0.2.2-rc.1` macOS Desktop 应用
+> （Electron 44.7.0 / Chromium 152.0.7977.130；Desktop Node 24.21.0）。rc.5 与
+> 0.2.2-rc.1 仍属于预览声明，不是稳定承诺。
 >
 > Desktop Windows、Web Edge 和其他 DSH 版本不在支持范围内；其他 DSH 版本会在安装/运行时
 > 被拒绝并回退 stock。发布产物必须与已提交的验收 evidence 绑定；`prepublish-check` 会拒绝

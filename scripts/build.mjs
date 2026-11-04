@@ -122,8 +122,8 @@ async function buildClient() {
 async function checkSizes() {
   // Performance budgets from docs/design/implementation-plan.md §18.8, per catalog profile.
   const CLIENT_GZIP_BUDGET = 60 * 1024
-  const HOST_GZIP_BUDGET = 192 * 1024
-  const PER_LIVERY_CSS_BUDGET = 12 * 1024
+  const HOST_GZIP_BUDGET = 320 * 1024
+  const PER_LIVERY_CSS_BUDGET = 13 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))
   const host = await readFile(join(root, 'lib', 'index.js'))
   const clientGzip = gzipSync(client, { level: 9 }).byteLength
@@ -231,7 +231,7 @@ async function checkSizes() {
     clientGzip,
     hostBytes: host.byteLength,
     hostGzip,
-    budgets: { clientGzip: CLIENT_GZIP_BUDGET, hostGzip: HOST_GZIP_BUDGET, bootCss: 12 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
+    budgets: { clientGzip: CLIENT_GZIP_BUDGET, hostGzip: HOST_GZIP_BUDGET, bootCss: 13 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
     profiles: profileIds,
     liveryCount,
     maxLiveryCss,

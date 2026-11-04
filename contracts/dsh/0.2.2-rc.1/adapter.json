@@ -1,0 +1,37 @@
+{
+  "hostVersion": "0.2.2-rc.1",
+  "adapterId": "dsh-0.2.2-rc.1-r1",
+  "loaderAbi": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+  "hostApiContract": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+  "clientApiContract": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+  "tokenContract": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+  "layoutContract": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+  "profileSchema": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
+  "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
+  "nodeRange": ">=24.9.0",
+  "clientTarget": "chrome120",
+  "verifiedProfiles": [
+    "web",
+    "desktop"
+  ],
+  "verifiedPlatforms": [
+    "web",
+    "darwin"
+  ],
+  "verifiedBrowsers": [
+    {
+      "family": "chrome",
+      "versions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ]
+    },
+    {
+      "family": "chromium",
+      "versions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ]
+    }
+  ]
+}

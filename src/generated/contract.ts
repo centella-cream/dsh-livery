@@ -139,7 +139,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -246,7 +246,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
     "sourceKind": "packaged-app",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -353,7 +353,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -460,7 +460,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc",
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -468,6 +468,113 @@ export const ADAPTERS: readonly AdapterRecord[] = [
       "dsh-web-frontend/dist/assets/index-BXV-oxvX.js"
     ],
     "capturedAt": "2026-10-30T10:52:04.930Z"
+  },
+  {
+    "hostVersion": "0.2.2-rc.1",
+    "adapterId": "dsh-0.2.2-rc.1-r1",
+    "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
+    "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+    "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+    "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+    "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
+    "nodeRange": ">=24.9.0",
+    "nodeRangeSource": "declared",
+    "clientTarget": "chrome120",
+    "platformModules": [
+      "react",
+      "react/jsx-runtime",
+      "react-dom",
+      "react-dom/client",
+      "@deepseek-ai/cordis",
+      "zod",
+      "@tanstack/react-virtual",
+      "@deepseek-ai/dsh-client-store",
+      "@deepseek-ai/dsh-client-ui-slots",
+      "@deepseek-ai/dsh-client-ui-primitives",
+      "@deepseek-ai/dsh-client-ui-dockkit"
+    ],
+    "capabilities": {
+      "theme-css": {
+        "id": "theme-css",
+        "available": true,
+        "provenance": "documented",
+        "required": true,
+        "detail": "Host token sheets declare 414 --dsw-* tokens over 188 consumed by shipped packages; scoped overrides on body[data-dsh-livery] win by specificity."
+      },
+      "host-font-family": {
+        "id": "host-font-family",
+        "available": true,
+        "provenance": "documented",
+        "required": true,
+        "detail": "Host design tokens expose --dsw-font-family and the --dsw-font-markdown-* ladder; body-scoped declarations override stock."
+      },
+      "host-font-role-hooks": {
+        "id": "host-font-role-hooks",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "Documented host font role hooks (--dsh-font-family-text, --dsh-font-family-code) are present; themes set the hook, never the composite ladder."
+      },
+      "surface-material": {
+        "id": "surface-material",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "Alias surface, border, elevation and shadow tokens are documented design tokens."
+      },
+      "host-density-tokens": {
+        "id": "host-density-tokens",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "No documented spacing/control token settable at document level; density falls back to host."
+      },
+      "host-transcript-width": {
+        "id": "host-transcript-width",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
+      },
+      "host-message-flow": {
+        "id": "host-message-flow",
+        "available": false,
+        "provenance": "absent",
+        "required": false,
+        "detail": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
+      },
+      "reduced-transparency": {
+        "id": "reduced-transparency",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      },
+      "forced-colors": {
+        "id": "forced-colors",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      },
+      "reduced-motion": {
+        "id": "reduced-motion",
+        "available": true,
+        "provenance": "documented",
+        "required": false,
+        "detail": "CSS media query supported by the certified browser set."
+      }
+    },
+    "catalogProfile": "sha256:2ead58758a4bf500deab05e957be9e83fb813a43fb5bee881c7161b3f5575f91",
+    "sourceKind": "installed-package",
+    "sourceEvidence": [
+      "dsh-client-modules/lib/client.js",
+      "dsh-client-modules/lib/index.js",
+      "dsh-web-frontend/dist/assets/index-BgUyXZcc.js"
+    ],
+    "capturedAt": "2026-11-04T17:05:13.273Z"
   }
 ]
 
@@ -488,30 +595,36 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
     "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
     "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
   },
   {
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
     "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
-    "catalogProfile": "sha256:ad3dcbc8c2fde827d060ec7382c282c82187eb9240575740cc2ab3ec262d9bdc"
+    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
+  },
+  {
+    "hostVersion": "0.2.2-rc.1",
+    "adapterId": "dsh-0.2.2-rc.1-r1",
+    "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
+    "catalogProfile": "sha256:2ead58758a4bf500deab05e957be9e83fb813a43fb5bee881c7161b3f5575f91"
   }
 ]
 
 /** Exact allowlist of shipped host versions (lite form). */
-export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ["0.2.1-rc.2","0.2.1-rc.3","0.2.1-rc.4","0.2.1-rc.5"]
+export const SUPPORTED_HOST_VERSIONS_LITE: readonly string[] = ["0.2.1-rc.2","0.2.1-rc.3","0.2.1-rc.4","0.2.1-rc.5","0.2.2-rc.1"]
 
 /** Registry by exact host version. */
 export const ADAPTER_BY_VERSION: Readonly<Record<string, AdapterRecord>> = Object.fromEntries(

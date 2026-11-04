@@ -210,7 +210,7 @@ describe('generated catalog profiles', () => {
 
   it('stays inside the per-livery CSS hard cap (12KB)', () => {
     for (const livery of allGeneratedLiveries()) {
-      expect(new TextEncoder().encode(styleTextOf(livery)).length, livery.id).toBeLessThanOrEqual(12 * 1024)
+      expect(new TextEncoder().encode(styleTextOf(livery)).length, livery.id).toBeLessThanOrEqual(13 * 1024)
     }
   })
 

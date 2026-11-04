@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-30T10:54:43.001Z",
+  "updatedAt": "2026-11-04T17:05:16.250Z",
   "entries": [
     {
       "hostVersion": "0.2.0-rc.2",
@@ -194,6 +194,35 @@
       "upstream": {
         "githubTag": null,
         "npmVersion": "0.2.1-rc.5"
+      },
+      "clientTarget": "chrome120",
+      "evidence": [],
+      "notes": [
+        "Contract snapshot frozen; waiting for certification evidence."
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.1",
+      "adapterId": "dsh-0.2.2-rc.1-r1",
+      "contractHash": "sha256:68280534cac2983a345a61c6d578b8836637f27f08aef705bbc8c3aea213dd53",
+      "status": "draft",
+      "profiles": {
+        "desktop": {
+          "macos": "pending",
+          "win32": "pending"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "pending"
+        }
+      },
+      "claimTier": "preview",
+      "distributionChannel": "next",
+      "certifiedBrowserVersions": [],
+      "certifiedRuntimeVersions": [],
+      "upstream": {
+        "githubTag": null,
+        "npmVersion": "0.2.2-rc.1"
       },
       "clientTarget": "chrome120",
       "evidence": [],

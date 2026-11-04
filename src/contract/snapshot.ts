@@ -484,13 +484,26 @@ async function collectHostApi(packagesRoot: string): Promise<HostApiContract> {
   const webServerTypes = 'dsh-host-webserver/lib/types/index.d.ts'
   const settingsTypes = 'dsh-settings/lib/types/index.d.ts'
   const configEditorTypes = 'dsh-config-editor/lib/types/index.d.ts'
+  const webServerText = await readFile(join(packagesRoot, webServerTypes), 'utf8').catch(() => '')
+  // 0.2.2 scopes index injection/rendering to the requesting Peer and widens
+  // route registration to resource routes. Older 0.2.1 builds use the peerless
+  // signatures. The contract records the exact members the live host exports.
+  const peerScoped = webServerText.includes('collectIndexInjections(peer: PeerScope)')
+  const webServerMembers = peerScoped
+    ? [
+        'register(route: WebRoute | WebResourceRoute): () => void',
+        'collectIndexInjections(peer: PeerScope): IndexInjection[]',
+        'renderIndex(html: string, peer: PeerScope): string',
+        'tapIndex(transform: (html: string) => string): () => void',
+      ]
+    : [
+        'register(route: WebRoute): () => void',
+        'collectIndexInjections(): IndexInjection[]',
+        'renderIndex(html: string): string',
+        'tapIndex(transform: (html: string) => string): () => void',
+      ]
   const services = [
-    await verifyMembers(packagesRoot, 'webServer', webServerTypes, [
-      'register(route: WebRoute): () => void',
-      'collectIndexInjections(): IndexInjection[]',
-      'renderIndex(html: string): string',
-      'tapIndex(transform: (html: string) => string): () => void',
-    ]),
+    await verifyMembers(packagesRoot, 'webServer', webServerTypes, webServerMembers),
     await verifyMembers(packagesRoot, 'settings', settingsTypes, [
       'configure(presentation:',
       'describe(options?: SettingsDescribeOptions): SettingsDescriptor[]',
@@ -499,7 +512,9 @@ async function collectHostApi(packagesRoot: string): Promise<HostApiContract> {
     ]),
     await verifyMembers(packagesRoot, 'configEditor', configEditorTypes, ['entries():', 'edit(']),
   ]
-  const eventNeedle = "'webserver/index-inject'(table: IndexInjection[]): void"
+  const eventNeedle = peerScoped
+    ? "'webserver/index-inject'(table: IndexInjection[], peer: PeerScope): void"
+    : "'webserver/index-inject'(table: IndexInjection[]): void"
   if (!(await fileContains(packagesRoot, webServerTypes, eventNeedle))) {
     throw new Error('webserver/index-inject event signature changed')
   }
@@ -1191,7 +1206,7 @@ export async function regenerateGeneratedContracts(workspace: string): Promise<G
 }
 
 /** Detection format of a compiled catalog profile; bump with schema/compiler changes. */
-const CATALOG_COMPILER_VERSION = '0.1.5'
+const CATALOG_COMPILER_VERSION = '0.1.6'
 
 /**
  * Render-affecting contract facts. Two host versions with the same profile can

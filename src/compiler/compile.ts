@@ -43,6 +43,7 @@ import { ADAPTERS } from '../generated/contract.js'
 import { stockForVersion } from '../generated/stock.js'
 import type { StockSnapshot } from '../generated/stock.js'
 import {
+  SIZE_BUDGETS,
   auditLiveryCss,
   auditStyleCoverage,
   buildCatalogReport,
@@ -394,7 +395,7 @@ function compileOne(
     problems.push({
       code: 'css.budget',
       path: `liveries/${manifest.id}`,
-      message: `rendered CSS is ${cssAudit.bytes.total} bytes, above the ${12 * 1024} byte budget`,
+      message: `rendered CSS is ${cssAudit.bytes.total} bytes, above the ${SIZE_BUDGETS.liveryBytes} byte budget`,
     })
   }
   const requiredUnavailable = evaluation.degraded.filter((entry) => entry.fallback === 'none')

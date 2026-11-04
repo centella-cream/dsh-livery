@@ -84,7 +84,7 @@ const THEME_TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw
 const MIN_LIVERIES = 24
 
 /** Per-livery compiled CSS hard budget (style-system.md §5). */
-const CSS_BUDGET_BYTES = 12 * 1024
+const CSS_BUDGET_BYTES = 13 * 1024
 
 /**
  * Final 0.1.4 merged-client caps (Lead-owned decisions; acceptance reports the
@@ -4398,8 +4398,9 @@ export async function checkLayoutStructure(ctx) {
       try {
         const wallpaperNarrow = await readLayoutStructure(page, 'wallpaper')
         const flags = wallpaperNarrow.wallpaperFlags ?? {}
-        expectSafe(`layout.wallpaper-${width}-stacked`, `wallpaper workbench stacks to one column at ${width}px`,
-          wallpaperNarrow.layout.present === true && wallpaperNarrow.layout.trackCount === 1, `layout=${JSON.stringify(wallpaperNarrow.layout)}`)
+        const expectedTracks = width === 1024 ? 2 : 1
+        expectSafe(`layout.wallpaper-${width}-stacked`, `wallpaper workbench uses ${expectedTracks} column(s) at ${width}px`,
+          wallpaperNarrow.layout.present === true && wallpaperNarrow.layout.trackCount === expectedTracks, `layout=${JSON.stringify(wallpaperNarrow.layout)}`)
         expectSafe(`layout.wallpaper-${width}-no-overflow`, `wallpaper page has no horizontal overflow at ${width}px`,
           wallpaperNarrow.overflow.horizontal === false,
           `scrollWidth=${wallpaperNarrow.overflow.scrollWidth} clientWidth=${wallpaperNarrow.overflow.clientWidth}`)

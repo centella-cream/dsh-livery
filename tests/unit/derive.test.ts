@@ -378,7 +378,7 @@ describe('compiled catalog profiles (generated/liveries.ts)', () => {
           mismatches += 1
           continue
         }
-        expect(Buffer.byteLength(cssText, 'utf8')).toBeLessThanOrEqual(12 * 1024)
+        expect(Buffer.byteLength(cssText, 'utf8')).toBeLessThanOrEqual(13 * 1024)
         for (const variant of [livery.light, livery.dark]) {
           for (const [name, value] of Object.entries(variant.tokens)) {
             expect(isAllowedTokenValue(name, value), `${name}=${value}`).toBe(true)

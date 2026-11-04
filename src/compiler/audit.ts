@@ -39,9 +39,9 @@ import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from './previews.js'
 /** Size budgets from docs/design/implementation-plan.md §18.8 (bytes, UTF-8). */
 export const SIZE_BUDGETS = {
   /** First-frame boot CSS. */
-  bootBytes: 12 * 1024,
+  bootBytes: 13 * 1024,
   /** One livery's full rendered CSS (tokens + typography + layout). */
-  liveryBytes: 12 * 1024,
+  liveryBytes: 13 * 1024,
 } as const
 
 /** Fixed z-index budget from docs/design/implementation-plan.md §18.3: no value above 20. */

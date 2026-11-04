@@ -17,14 +17,15 @@ import {
   validateMatrix,
 } from '../../src/contract/matrix.js'
 import { renderGeneratedRegistry, resolveDshInstall, shippedSnapshots } from '../../src/contract/snapshot.js'
+import { adapterForVersion } from '../../src/generated/contract.js'
 import type { AdapterManifest, ContractSnapshot, SupportMatrix } from '../../src/contract/types.js'
 
 const workspace = process.cwd()
 
 /** Every frozen contract snapshot stays on disk for audit/diff. */
-const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5']
+const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1']
 /** Formal support matrix: these host builds are generated/shipped (0.1.3). */
-const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5']
+const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1']
 
 // Optional local verification: set DSH_INSTALL to a matching @deepseek-ai/dsh
 // package root (e.g. `.../node_modules/@deepseek-ai/dsh`). CI skips these checks.
@@ -130,7 +131,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(web.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(web.certifiedRuntimeVersions).toEqual(['22.23.1'])
     expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
-    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.5/0.2.1-rc.2-web-chrome.json'])
+    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.6/0.2.1-rc.2-web-chrome.json'])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
     expect(web.profiles.web.chrome).toBe('passed')
@@ -145,7 +146,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     expect(desktop.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.3', npmVersion: '0.2.1-rc.3' })
-    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.1.5/0.2.1-rc.3-desktop-macos.json'])
+    expect(desktop.evidence).toEqual(['contracts/dsh/evidence/0.1.6/0.2.1-rc.3-desktop-macos.json'])
     expect(supportedProfiles(desktop)).toEqual(['desktop.macos'])
     expect(notSupportedProfiles(desktop)).toEqual(['desktop.win32', 'web.chrome', 'web.edge'])
     expect(desktop.profiles.desktop.macos).toBe('passed')
@@ -160,7 +161,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(preview.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(preview.certifiedRuntimeVersions).toEqual(['22.23.1'])
     expect(preview.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.4', npmVersion: '0.2.1-rc.4' })
-    expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.5/0.2.1-rc.4-web-chrome.json'])
+    expect(preview.evidence).toEqual(['contracts/dsh/evidence/0.1.6/0.2.1-rc.4-web-chrome.json'])
     expect(supportedProfiles(preview)).toEqual(['web.chrome'])
     expect(preview.profiles.web.chrome).toBe('passed')
     expect(preview.profiles.desktop.macos).toBe('not-supported')
@@ -322,6 +323,14 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
           { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
         ],
       },
+      '0.2.2-rc.1': {
+        profiles: ['web', 'desktop'],
+        platforms: ['web', 'darwin'],
+        browsers: [
+          { family: 'chrome', versions: ['156.0.8078.48', '152.0.7977.130'] },
+          { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
+        ],
+      },
     }
     for (const version of SHIPPED_VERSIONS) {
       const contract = await readContract(version)
@@ -362,7 +371,7 @@ describe('generated shipped registry', () => {
     expect(registry.ADAPTER_IDENTITIES.map((identity) => identity.hostVersion)).toEqual(SHIPPED_VERSIONS)
     expect(registry.SUPPORTED_HOST_VERSIONS).toEqual(SHIPPED_VERSIONS)
     expect(registry.SUPPORTED_HOST_VERSIONS_LITE).toEqual(SHIPPED_VERSIONS)
-    expect(registry.DEFAULT_ADAPTER.hostVersion).toBe('0.2.1-rc.5')
+    expect(registry.DEFAULT_ADAPTER.hostVersion).toBe('0.2.2-rc.1')
     expect(registry.adapterForVersion('0.2.1-rc.2')?.adapterId).toBe('dsh-0.2.1-rc.2-r1')
     expect(registry.adapterForVersion('0.2.1-rc.3')?.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(registry.adapterForVersion('0.2.1-rc.4')?.adapterId).toBe('dsh-0.2.1-rc.4-r1')
@@ -396,10 +405,13 @@ describe('generated shipped registry', () => {
 
     // Catalog profile dedupe: both adapters serve ONE generated profile.
     const liveries = await import('../../src/generated/liveries.js')
-    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(1)
-    const profile = liveries.CATALOG_PROFILES[liveries.CATALOG_PROFILE_IDS[0]!]!
-    expect(profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(profile.liveries).toHaveLength(24)
+    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(2)
+    const oldProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.1-rc.2')!.catalogProfile]!
+    const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.1')!.catalogProfile]!
+    expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
+    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.1'])
+    expect(oldProfile.liveries).toHaveLength(24)
+    expect(newestProfile.liveries).toHaveLength(24)
   })
 
   it('is byte-reproducible from the formal matrix + committed snapshots', async () => {
@@ -422,8 +434,8 @@ describe('generated shipped registry', () => {
       files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.1.5')
-    expect(pkg.engines?.dsh).toBe('0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5')
+    expect(pkg.version).toBe('0.1.6')
+    expect(pkg.engines?.dsh).toBe('0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')
     expect(pkg.dsh?.client?.external).toEqual([])
@@ -432,9 +444,11 @@ describe('generated shipped registry', () => {
       '0.2.1-rc.3': 'compatible',
       '0.2.1-rc.4': 'compatible',
       '0.2.1-rc.5': 'compatible',
+      '0.2.2-rc.1': 'compatible',
     })
     expect(pkg.files).toContain('contracts/dsh/0.2.1-rc.4')
     expect(pkg.files).toContain('contracts/dsh/0.2.1-rc.5')
+    expect(pkg.files).toContain('contracts/dsh/0.2.2-rc.1')
     expect(pkg.files).not.toContain('contracts/dsh/0.2.0-rc.2')
   })
 })

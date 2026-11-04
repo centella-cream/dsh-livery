@@ -16,10 +16,10 @@ host theme takeover.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1,
 > and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime.
 >
-**Preview / adaptation:** DSH `0.2.1-rc.4` and `0.2.1-rc.5` + Web Profile + Chrome
-> 156.0.8078.48 + Node 22.23.1, plus DSH `0.2.1-rc.5` Desktop app on macOS (Electron
-> 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130). rc.5 is a GitHub prerelease and
-> npm `latest`/`next`; it remains a preview claim, not a stable promise.
+**Preview / adaptation:** DSH `0.2.1-rc.4`, `0.2.1-rc.5` and `0.2.2-rc.1` + Web
+> Profile + Chrome 156.0.8078.48, plus DSH `0.2.1-rc.5`/`0.2.2-rc.1` Desktop app on
+> macOS (Electron 44.7.0 / Chromium 152.0.7977.130; Node 24.21.0 for Desktop). rc.5
+> and 0.2.2-rc.1 are preview claims, not stable promises.
 >
 > Desktop Windows, Web Edge and other DSH builds are outside the supported scope.
 > Other DSH versions are rejected at install/runtime and fail closed. The

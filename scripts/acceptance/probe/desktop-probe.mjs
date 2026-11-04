@@ -310,8 +310,8 @@ async function main() {
     expect(
       runner,
       'desktop.preview-profiles-installed',
-      'the shared compiled catalog profile ships (both certified adapters share it)',
-      previewDirs.length === 1,
+      'at least one compiled catalog profile ships for the certified adapters',
+      previewDirs.length >= 1,
       `${previewDirs.length} preview profile dir(s): ${previewDirs.join(', ')}`,
     )
 

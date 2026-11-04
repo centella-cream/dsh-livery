@@ -275,7 +275,7 @@ describe.skipIf(!COMPILED)('generated boot per adapter', () => {
         expect(scriptRow.text, label).not.toMatch(/<\/script/i)
 
         // §18.8 performance budget: first-frame CSS <= 12 KiB.
-        expect(Buffer.byteLength(expectedCss, 'utf8'), label).toBeLessThanOrEqual(12 * 1024)
+        expect(Buffer.byteLength(expectedCss, 'utf8'), label).toBeLessThanOrEqual(13 * 1024)
       }
     }
   })

@@ -89,6 +89,14 @@ export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   // frozen snapshots (referencedBy empty), so they stay at the host values.
   '--dsw-linear-gradient-think',
   '--dsw-linear-think-select',
+  // 0.2.2 added semantic host palette steps and an alpha hover accent. These are
+  // semantic/alpha values owned by the host; inheriting stock is correct for
+  // every palette, so do not repaint them.
+  '--dsw-alias-interactive-bg-hover-accent',
+  '--dsw-static-amber-500',
+  '--dsw-static-green-500',
+  '--dsw-static-red-400',
+  '--dsw-static-violet-400',
 ] as const
 
 /** Stock declaration record for one snapshot (shared helper). */
