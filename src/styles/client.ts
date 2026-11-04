@@ -204,10 +204,9 @@ export const CLIENT_CSS = `
 .livery-ui-card{padding:18px 20px}
 .wallpaper-manage.livery-ui-card{padding:0}
 .livery-gallery-head{padding-block:2px}
-@media (max-width: 1099px){.wallpaper-workbench{grid-template-columns:minmax(0,1fr)}.livery-hero__layout{grid-template-columns:minmax(0,1fr)}.livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width: 1099px){.livery-hero__layout{grid-template-columns:minmax(0,1fr)}.livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container livery-studio (max-width: 959px){
-  .wallpaper-workbench{grid-template-columns:minmax(0,1fr)}
-  .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
   .livery-hero__layout{grid-template-columns:minmax(0,1fr)}
   .livery-hero__visual{display:flex;justify-content:center}
   .livery-hero__preview{max-width:320px}
@@ -216,8 +215,8 @@ export const CLIENT_CSS = `
   .livery-hero .livery-ui-card__head{gap:2px}
   .wallpaper-workbench{gap:12px}
   .wallpaper-hero{padding:14px 16px}
-  .wallpaper-hero__preview{max-height:150px}
-  .wallpaper-hero__empty{aspect-ratio:auto;max-height:120px}
+  .wallpaper-hero__preview{max-width:520px;max-height:none;margin-inline:auto}
+  .wallpaper-hero__empty{max-width:520px;max-height:none;margin-inline:auto;aspect-ratio:16/9}
   .wallpaper-effects-card .livery-ui-card__hint{display:none}
   .wallpaper-effects-card{padding:10px 14px}
   .wallpaper-effects-card .wallpaper-effects-grid{gap:6px}
@@ -225,7 +224,10 @@ export const CLIENT_CSS = `
   .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-local-grid{grid-template-columns:minmax(0,1fr)}
 }
+@media (max-width:799px){.wallpaper-workbench{grid-template-columns:minmax(0,1fr)}.wallpaper-hero__preview{max-width:400px}}
 @container livery-studio (max-width: 639px){
+  .wallpaper-workbench{grid-template-columns:minmax(0,1fr)}
+  .wallpaper-hero__preview,.wallpaper-hero__empty{max-width:none}
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
   .livery-gallery-card .livery-grid{grid-template-columns:minmax(0,1fr)}
   .wallpaper-source-panel .livery-grid{display:flex;overflow-x:auto;padding-bottom:8px}
