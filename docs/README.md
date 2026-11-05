@@ -1,6 +1,6 @@
 # Documentation
 
-**Current npm release: `0.1.5` (2026-11-01); `0.1.6` is a development candidate.** The authoritative support policy is
+**Current npm release: `0.1.5` (2026-11-01); `0.1.6` is a release candidate.** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -9,7 +9,7 @@
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Stable certified (npm `latest`) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
-| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; published in 0.1.5 |
+| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.6 |
 | DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview/adaptation in 0.1.6; Web+Desktop acceptance bound |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm
@@ -41,7 +41,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**当前版本：`0.1.5`（2026-11-01）。** 支持策略以
+**npm 最新发布版：`0.1.5`（2026-11-01）；`0.1.6` 为发布候选。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 
