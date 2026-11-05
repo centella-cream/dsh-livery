@@ -63,10 +63,10 @@ export async function loadPlaywright(explicit) {
   )
 }
 
-const PICSUM_FIXTURE_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-  'base64',
-)
+// A real Picsum photo (#1015), loaded through the mock 302 and the local HTTPS
+// redirect fixture. This keeps the online-wallpaper path realistic instead of
+// testing style/visual regressions against a built-in CSS wallpaper.
+const PICSUM_FIXTURE_JPEG = readFileSync(path.join(WORKSPACE_ROOT, 'scripts/acceptance/fixtures/picsum-wallpaper.jpg'))
 let picsumFixture = null
 
 /**
@@ -94,8 +94,8 @@ async function startPicsumFixture() {
     throw new Error(`picsum fixture certificate generation failed: ${error instanceof Error ? error.message : String(error)}`)
   }
   const server = https.createServer({ key: readFileSync(keyPath), cert: readFileSync(certPath) }, (req, res) => {
-    res.writeHead(200, { 'content-type': 'image/png', 'access-control-allow-origin': '*', 'cache-control': 'no-store' })
-    res.end(PICSUM_FIXTURE_PNG)
+    res.writeHead(200, { 'content-type': 'image/jpeg', 'access-control-allow-origin': '*', 'cache-control': 'no-store' })
+    res.end(PICSUM_FIXTURE_JPEG)
   })
   await new Promise((resolve, reject) => {
     server.once('error', reject)

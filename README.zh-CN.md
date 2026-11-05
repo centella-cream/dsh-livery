@@ -26,7 +26,7 @@
 
 [English](README.md) · 中文
 
-![DSH Livery 的视觉风格页：大幅当前风格 Hero 与全宽画廊](docs/assets/hero-zh.jpg)
+![DSH Livery 的视觉风格页：大幅当前风格 Hero、全宽画廊，并应用真实在线 Picsum 壁纸](docs/assets/hero-zh.jpg)
 
 所有截图都来自真实 Web Profile（截图显示中文界面；插件会跟随 DSH 宿主语言）。风格合集使用随包发布的
 固定预览场景；其余截图展示 DSH Livery 自己的界面和真实加载的在线壁纸。
@@ -66,7 +66,7 @@
 
 ## 壁纸
 
-![在线 Picsum 壁纸、焦点位置和可切换的壁纸来源页签](docs/assets/wallpaper-studio-zh.jpg)
+![真实在线 Picsum 壁纸、焦点位置和可切换的壁纸来源页签](docs/assets/wallpaper-studio-zh.jpg)
 
 
 截图来自 DSH Livery 自己的壁纸工作室：从“在线壁纸”页签真实加载的 Picsum #48 图片，包含焦点位置和四个来源页签。

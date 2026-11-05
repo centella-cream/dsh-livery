@@ -28,7 +28,7 @@ host theme takeover.
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery's Visual Style page with a large current-style hero and full-width gallery](docs/assets/hero-en.jpg)
+![DSH Livery's Visual Style page with a large current-style hero, full-width gallery and a real online Picsum wallpaper](docs/assets/hero-en.jpg)
 
 All screenshots come from a real Web profile (the captures show the Chinese UI;
 Livery follows the DSH host locale). The style montage uses the shipped fixed
@@ -86,7 +86,7 @@ previews appear in the 0.1.5 full-width gallery.
 
 ## Wallpapers
 
-![Online Picsum wallpaper with focal position and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
+![Real online Picsum wallpaper with focal position and the tabbed wallpaper source picker](docs/assets/wallpaper-studio-en.jpg)
 
 
 Captured in DSH Livery's own wallpaper studio: a real online Picsum #48 image

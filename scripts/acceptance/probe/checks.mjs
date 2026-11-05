@@ -4510,14 +4510,20 @@ export async function checkVisualMatrix(ctx) {
     await page.waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') === null, undefined, { timeout: 6_000 }).catch(() => {})
     await sleep(180)
   }
-  const selectBuiltin = async () => {
-    await selectWallpaperSource(page, 'builtin')
-    const first = page.locator('[data-testid="wallpaper-builtin"]').first()
-    if ((await first.count()) > 0) await first.click({ timeout: 6_000 }).catch(() => {})
+  const selectOnlineWallpaper = async () => {
+    await selectWallpaperSource(page, 'online')
     await page
-      .waitForFunction(() => document.querySelector('style#dsh-livery-wallpaper') !== null, undefined, { timeout: 8_000 })
+      .waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0, undefined, { timeout: 12_000 })
       .catch(() => {})
-    await sleep(260)
+    const first = page.locator('[data-testid="wallpaper-result"]').first()
+    if ((await first.count()) > 0) await first.click({ timeout: 8_000 }).catch(() => {})
+    await page
+      .waitForFunction(() => {
+        const style = document.querySelector('style#dsh-livery-wallpaper')
+        return style?.textContent?.includes('blob:') ?? false
+      }, undefined, { timeout: 15_000 })
+      .catch(() => {})
+    await sleep(320)
   }
   const setSlider = async (testId, value) => {
     await setRangeValue(page, testId, value)
@@ -4545,7 +4551,7 @@ export async function checkVisualMatrix(ctx) {
       await setTheme('light')
       await clearWallpaper()
       matrixShots.push(await shot(`visual-${width}-light-off`, 'light'))
-      await selectBuiltin()
+      await selectOnlineWallpaper()
       matrixShots.push(await shot(`visual-${width}-light-on`, 'light'))
       await setTheme('dark')
       matrixShots.push(await shot(`visual-${width}-dark-on`, 'dark'))
@@ -4557,7 +4563,7 @@ export async function checkVisualMatrix(ctx) {
     expect(
       runner,
       'visual.matrix-shots',
-      'real screenshots captured for 1440/1024/767 × light/dark × wallpaper off/on',
+      'real screenshots captured for 1440/1024/767 × light/dark × online-wallpaper off/on',
       matrixShots.length === 12 && matrixBytes.every((bytes) => bytes > 1000),
       `frames=${matrixShots.length}; bytes=${JSON.stringify(matrixBytes)}`,
       { frames: matrixShots.map((frame) => frame.path), bytes: matrixBytes },
@@ -4568,7 +4574,7 @@ export async function checkVisualMatrix(ctx) {
     await setTheme('light')
     await clearWallpaper()
     const overflowOff = await readOverflow()
-    await selectBuiltin()
+    await selectOnlineWallpaper()
     const overflowOn = await readOverflow()
     const narrowBoxes = await readCardBoxes()
     const noOverflow = (overflow) => overflow.scrollWidth <= overflow.clientWidth + 1
@@ -4597,7 +4603,7 @@ export async function checkVisualMatrix(ctx) {
     await page.setViewportSize({ width: 1440, height: 900 })
     await setTheme('light')
     await clearWallpaper()
-    await selectBuiltin()
+    await selectOnlineWallpaper()
     const lightSnapshot = await readThemeSnapshot(page)
     const lightSurface = await readCardSurface()
     await setTheme('dark')
