@@ -34,8 +34,9 @@ ticket disagree, ask the Lead before weakening it.
   never "latest stable". It may be withdrawn or changed before promotion. Verify
   the exact signed npm tarball and real host behavior, then document the preview
   boundary in README, matrix notes, CHANGELOG and release notes.
-- `0.2.1-rc.4` is currently preview (npm `next`, no upstream GitHub tag). Do not
-  promote it to stable without a GitHub tag and fresh acceptance.
+- `0.2.1-rc.4`, `0.2.1-rc.5` and `0.2.2-rc.1` are currently preview claims
+  (npm `next`/prerelease channels). Do not promote them to stable without a
+  non-prerelease official release, npm `latest`, and fresh acceptance.
 
 ### Adding a new DSH version
 
