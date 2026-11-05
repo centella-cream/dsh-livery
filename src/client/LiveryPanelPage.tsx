@@ -8,6 +8,7 @@
  * and the `data-testid` contract are identical in both compositions.
  */
 import { useId } from 'react'
+import { LIVERY_VERSION } from '../core/types.js'
 import type { LiveryPanelPageProps } from './platform.js'
 import { LiveryWorkspace } from './ui/LiveryWorkspace.js'
 
@@ -27,7 +28,10 @@ export function LiveryPanelPage({ runtime, t }: LiveryPanelPageProps): JSX.Eleme
       aria-labelledby={headingId}
     >
       <header className="livery-panel__head">
-        <h1 id={headingId} className="livery-panel__title">{t('panel.title')}</h1>
+        <div className="livery-title-row">
+          <h1 id={headingId} className="livery-panel__title">{t('panel.title')}</h1>
+          <span className="livery-version" data-testid="livery-version" title={`dsh-livery v${LIVERY_VERSION}`}>v{LIVERY_VERSION}</span>
+        </div>
         <p className="livery-panel__description">{t('panel.description')}</p>
       </header>
       <div className="livery-panel__body">

@@ -7,6 +7,7 @@
  * table-driven so a failure report points at the exact assertion.
  */
 
+import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import zlib from 'node:zlib'
@@ -79,6 +80,7 @@ import {
 } from './util.mjs'
 
 const THEME_TOKENS = ['--dsw-alias-bg-base', '--dsw-alias-label-primary', '--dsw-alias-border-l1']
+const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')).version
 
 /** Round-5 style system: the catalog ships 24 designs per profile. */
 const MIN_LIVERIES = 24
@@ -1156,6 +1158,22 @@ export async function checkLiveryPanelFlow(ctx) {
   }
   try {
     const structure = await readGalleryStructure(page)
+    const versionBadge = await page.evaluate(() => {
+      const badge = document.querySelector('[data-testid="livery-version"]')
+      const row = badge?.closest('.livery-title-row')
+      return {
+        text: (badge?.textContent ?? '').trim(),
+        inTitleRow: Boolean(row?.querySelector('.livery-panel__title, .livery-title')),
+        title: (row?.querySelector('.livery-panel__title, .livery-title')?.textContent ?? '').trim(),
+      }
+    })
+    expect(
+      runner,
+      'shell.version-badge',
+      'the Visual Style title keeps its adjacent plugin version badge',
+      versionBadge.text === `v${PACKAGE_VERSION}` && versionBadge.inTitleRow === true,
+      `badge="${versionBadge.text}" expected="v${PACKAGE_VERSION}" title="${versionBadge.title}" inTitleRow=${versionBadge.inTitleRow}`,
+    )
     expect(
       runner,
       'gallery.page-tabs',

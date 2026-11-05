@@ -6,6 +6,7 @@
  * feature behaves identically wherever it is mounted.
  */
 import { useId } from 'react'
+import { LIVERY_VERSION } from '../../core/types.js'
 import type { LiverySettingsPageProps } from '../platform.js'
 import { LiveryWorkspace } from './LiveryWorkspace.js'
 
@@ -19,7 +20,10 @@ export function LiverySettingsPage({ runtime, t }: LiverySettingsPageProps): JSX
   return (
     <section className="livery-settings" aria-labelledby={headingId}>
       <header className="livery-head">
-        <h2 id={headingId} className="livery-title">{t('section.title')}</h2>
+        <div className="livery-title-row">
+          <h2 id={headingId} className="livery-title">{t('section.title')}</h2>
+          <span className="livery-version" data-testid="livery-version" title={`dsh-livery v${LIVERY_VERSION}`}>v{LIVERY_VERSION}</span>
+        </div>
         <p className="livery-subtitle">{t('section.subtitle')}</p>
       </header>
       <LiveryWorkspace t={t} runtime={runtime} />
