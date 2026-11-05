@@ -395,10 +395,10 @@ try {
           if (wallpaperMetrics.manageOpen !== false) recordIssue('medium', 'wallpaper-manage-open', 'Management section is not collapsed by default.')
         }
         if (wallpaperMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-wallpaper-overflow`, 'Wallpaper page has horizontal document overflow.')
-        // 1024/767 use a deliberate single-column workbench: the hero and effects
-        // cards align by width, while the source card is reached by normal page
-        // scroll. Only the side-by-side 1440 workbench promises a one-glance
-        // source area, so flag below-fold there.
+        // Documented 0.1.6 policy: only the side-by-side 1440 workbench promises
+        // the source tabs in the first viewport. 1024/767 are deliberately
+        // single-column and scroll to the source card; the remote focal-position
+        // control is retained instead of being hidden to win a fold metric.
         if (viewport.width >= 1200 && wallpaperMetrics.sourceTabsTop >= viewport.height) recordIssue('medium', `wallpaper-source-below-fold-${viewport.width}`, `Wallpaper source tabs start at ${wallpaperMetrics.sourceTabsTop}px, below the ${viewport.height}px first viewport.`)
       }
     }

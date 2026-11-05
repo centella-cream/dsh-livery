@@ -10,7 +10,7 @@
 **DeepSeek Harness 的视觉层插件**：24 套精选风格、带在线搜索和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.5 开发候选。** `0.1.3` 仍是 npm 最新发布版；`0.1.5` 已打 tag，但发布被 npm 账户安全冻结阻断；`0.1.5` 增加 DSH `0.2.1-rc.5` 的 Web/Desktop 入口支持。
+> **发布状态：0.1.6 发布候选。** `0.1.5` 已是 npm 最新发布版且发布成功；`0.1.6` 增加 DSH `0.2.2-rc.1` 的 Web/Desktop 入口支持，以及壁纸工作台布局/对齐修复；尚未发布。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1，以及
 > DSH `0.2.1-rc.3` + macOS Desktop 应用及其 Electron/Node 24 运行时。
@@ -62,7 +62,7 @@
 ![六套精选风格的随包固定预览场景](docs/assets/styles-zh.jpg)
 
 24 套中的六套精选：**青瓷、樱、森野、极夜、玫瑰松、东京夜**。这些是随包发布的固定预览场景
-（不是宿主 UI 截图）；相同的预览也出现在 0.1.5 的全宽风格画廊中。
+（不是宿主 UI 截图）；相同的预览也出现在 0.1.6 的全宽风格画廊中。
 
 ## 壁纸
 
@@ -107,7 +107,7 @@ Desktop 认证覆盖插件安装、启动、渲染器、设置/画廊、持久�
 
 ## 安装
 
-已发布包：[`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery)。
+已发布包：[`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery)。`0.1.6` 在 evidence 与 tag 完成前是本地发布候选；体验时请安装下面的精确本地 tarball。
 
 ### Web Profile（CLI）
 
@@ -193,25 +193,28 @@ pnpm adapter:check
 浏览器验收（需要本地 DSH 安装、系统 Chrome 和打包后的 tgz）：
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.5.tgz
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.5.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.5.tgz      # 薄封装
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.6.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.6.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.6.tgz      # 薄封装
 ```
 
 ## 验收
 
-0.1.5 有限发布：Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5` 隔离全量运行与
-Desktop `0.2.1-rc.3`、`0.2.1-rc.5` 真实 Electron 安装/渲染验收均通过、**0 失败**，
-最新 Web `0.2.1-rc.4` 隔离运行也通过、**0 失败**（Chrome 156.0.8078.48，Node 22.23.1）；
-Desktop `0.2.1-rc.3` 通过真实 Electron 安装/渲染器验收（Node 24.21.0）。精确计数和报告
-哈希见已提交的 evidence。仓库门禁包括 `tsc`、
-完整测试套件、对比度 / token / CSS 审计、loader ABI 和打包检查。精确产物绑定到
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.2-web-chrome.json`、
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.4-web-chrome.json`、
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-web-chrome.json`、
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.3-desktop-macos.json` 与
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-desktop-macos.json`。详细说明和已知限制见
+0.1.6：Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`；Desktop
+`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1` 真实 Electron 安装/渲染验收。每个目标都是
+隔离全量运行，在精确运行时矩阵（Web: Chrome 156.0.8078.48；旧宿主 Node 22.23.1，
+`0.2.2-rc.1` 为 Node 24.22.1；Desktop: Electron/Node 24.21.0）上 **0 失败**。精确计数
+与报告 hash 见提交的 evidence 文件。仓库门禁包括 `tsc`、完整测试、对比度/token/CSS
+审计、loader ABI 和打包检查。精确制品绑定到
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.2-web-chrome.json`、
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.4-web-chrome.json`、
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.5-web-chrome.json`、
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.5-desktop-macos.json`、
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.3-desktop-macos.json`、
+`contracts/dsh/evidence/0.1.6/0.2.2-rc.1-web-chrome.json` 与
+`contracts/dsh/evidence/0.1.6/0.2.2-rc.1-desktop-macos.json`。详细说明和已知限制见
 [docs/verification.md](docs/verification.md)。
+1024/767 工作台刻意使用单列并允许滚动到来源卡片；只有并排的 1440 布局承诺首屏看到来源页签。
 
 ## 参与
 

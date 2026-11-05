@@ -214,7 +214,7 @@ export const CLIENT_CSS = `
   .livery-hero__layout{gap:14px}
   .livery-hero__body{gap:12px}
   .livery-hero .livery-ui-card__head{gap:2px}
-  .wallpaper-workbench{gap:12px}
+  .wallpaper-workbench{gap:6px}
   .wallpaper-hero{padding:14px 16px}
   .wallpaper-hero__preview{max-width:520px;max-height:none;margin-inline:auto}
   .wallpaper-hero__empty{max-width:520px;max-height:none;margin-inline:auto;aspect-ratio:16/9}

@@ -10,7 +10,7 @@
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; published in 0.1.5 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview/adaptation in 0.1.6; acceptance pending |
+| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview/adaptation in 0.1.6; Web+Desktop acceptance bound |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm
 package. A version that exists only on npm's `next` channel is documented as

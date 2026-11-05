@@ -11,7 +11,7 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online search and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.5 development candidate.** `0.1.3` remains the latest npm release; `0.1.5` was tagged but its publish was blocked by an npm account security hold, and `0.1.5` adds DSH `0.2.1-rc.5` Web/Desktop entry support.
+> **Release status: 0.1.6 release candidate.** `0.1.5` is the latest npm release and its publish succeeded. `0.1.6` adds DSH `0.2.2-rc.1` Web/Desktop entry support and the wallpaper workbench layout/alignment fixes; it is not published yet.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1,
 > and DSH `0.2.1-rc.3` + Desktop app on macOS + its Electron/Node 24 runtime.
@@ -82,7 +82,7 @@ preview scenes; the rest show DSH Livery's own UI and real online wallpaper load
 
 Six of the 24 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
 These are the shipped fixed preview scenes (not host UI captures); the same
-previews appear in the 0.1.5 full-width gallery.
+previews appear in the 0.1.6 full-width gallery.
 
 ## Wallpapers
 
@@ -133,7 +133,7 @@ the plugin's certification surface. The formal matrix lives at
 
 ## Install
 
-Published package: [`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery).
+Published package: [`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery). `0.1.6` is a local release candidate until its evidence and tag are finalized; install the exact local tarball below for preview testing.
 
 ### Web Profile (CLI)
 
@@ -234,27 +234,32 @@ Generated contracts, stock snapshots and compiled catalogs are committed, so
 Browser acceptance (needs a local DSH install, system Chrome and a packed tarball):
 
 ```bash
-node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.5.tgz
-node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.5.tgz
-node tests/browser/run.mjs --tgz ./dsh-livery-0.1.5.tgz      # thin wrapper
+node scripts/acceptance/web.mjs --tgz ./dsh-livery-0.1.6.tgz
+node scripts/acceptance/probe/desktop-probe.mjs --tgz ./dsh-livery-0.1.6.tgz
+node tests/browser/run.mjs --tgz ./dsh-livery-0.1.6.tgz      # thin wrapper
 ```
 
 ## Verification
 
-For 0.1.5: Web `0.2.1-rc.2`, `0.2.1-rc.4`, and `0.2.1-rc.5` isolated full runs,
-plus Desktop `0.2.1-rc.3` and `0.2.1-rc.5` real Electron install/renderer acceptance pass (exact certified Chrome build; official
-Chrome for Testing is used when the system channel has moved past the pinned
-version)
-with **0 failures** on the exact certified runtime matrix (Chrome 156.0.8078.48 / Node 22.23.1 for Web; Electron/Node
-24.21.0 for Desktop). Exact counts and report hashes are in the committed evidence
-files. Repo gates include `tsc`, the full test suite, contrast / token / CSS
-audits, loader ABI and package checks. The exact artifact is bound to
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.2-web-chrome.json`,
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.4-web-chrome.json`,
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-web-chrome.json`,
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.3-desktop-macos.json` and
-`contracts/dsh/evidence/0.1.5/0.2.1-rc.5-desktop-macos.json`. Details and known
+For 0.1.6: Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5` and `0.2.2-rc.1`;
+Desktop `0.2.1-rc.3`, `0.2.1-rc.5` and `0.2.2-rc.1` real Electron
+install/renderer acceptance. Every target is an isolated full run with
+**0 failures** on the exact certified runtime matrix (Chrome 156.0.8078.48 /
+Node 22.23.1 for the older Web hosts, Node 24.22.1 for `0.2.2-rc.1` Web;
+Electron/Node 24.21.0 for Desktop). Exact counts and report hashes are in the
+committed evidence files. Repo gates include `tsc`, the full test suite,
+contrast / token / CSS audits, loader ABI and package checks. The exact artifact
+is bound to
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.2-web-chrome.json`,
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.4-web-chrome.json`,
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.5-web-chrome.json`,
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.5-desktop-macos.json`,
+`contracts/dsh/evidence/0.1.6/0.2.1-rc.3-desktop-macos.json`,
+`contracts/dsh/evidence/0.1.6/0.2.2-rc.1-web-chrome.json` and
+`contracts/dsh/evidence/0.1.6/0.2.2-rc.1-desktop-macos.json`. Details and known
 limitations: [docs/verification.md](docs/verification.md).
+The 1024/767 workbench is intentionally single-column and scrolls to the source
+card; only the side-by-side 1440 layout promises the source tabs in one viewport.
 
 ## Contributing
 

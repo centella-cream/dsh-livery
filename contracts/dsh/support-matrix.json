@@ -148,7 +148,7 @@
         "contracts/dsh/evidence/0.1.6/0.2.1-rc.5-desktop-macos.json"
       ],
       "notes": [
-        "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence pending final commit.",
+        "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence is bound for 0.1.6.",
         "GitHub release dsh-v0.2.1-rc.5 is a prerelease; npm latest/next point at 0.2.1-rc.5. Preview claim.",
         "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5."
       ]

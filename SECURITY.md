@@ -6,8 +6,9 @@
 |---|---|
 | `0.1.x` (limited release) | Yes |
 
-The supported scope is DSH `0.2.1-rc.2` + Web Profile + Chrome 156.0.8078.48 + Node 22.23.1,
-and DSH `0.2.1-rc.3` + macOS Desktop app + Electron/Node 24.21.0, as documented in
+The supported scope is DSH `0.2.1-rc.2`/`0.2.1-rc.4`/`0.2.1-rc.5`/`0.2.2-rc.1` + Web Profile
++ Chrome 156.0.8078.48, and DSH `0.2.1-rc.3`/`0.2.1-rc.5`/`0.2.2-rc.1` + macOS Desktop
+app + Electron/Node 24.21.0, as documented in
 [README.md](README.md#host-support-and-version-policy). Desktop Windows, Web Edge and
 other DSH builds are unsupported and receive no guarantee. Other host versions are
 rejected at install time; at runtime, uncertified payloads/contracts fail closed to
@@ -46,7 +47,7 @@ Reports about DeepSeek Harness itself should go to the upstream project.
 
 ## 安全策略（中文）
 
-- 支持版本：`0.1.x` 已发布版本；当前为 `0.1.4`。
+- 支持版本：`0.1.x` 已发布版本；当前候选为 `0.1.6`，npm 最新发布版为 `0.1.5`。
 - 报告方式：**不要开公开 issue**，请使用 GitHub 私有漏洞报告（Security → Report a
   vulnerability），附上复现步骤、版本、宿主 build 与影响；我们会在 7 天内回复。
 - 范围说明：风格层完全离线，不加载远程字体、脚本或图片；唯一的联网功能是**壁纸工作室**。打开
