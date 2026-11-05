@@ -53,10 +53,10 @@ from a self-reported list. The `0.1.2` evidence files are never rewritten.
 
 | Run | Environment | Result |
 |---|---|---|
-| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **274 passed / 0 failed / 4 skipped / 2 warnings** |
-| Web isolated full run | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **274 / 0 / 4 / 2** |
-| Web isolated full run | DSH `0.2.1-rc.5`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **274 / 0 / 4 / 2** |
-| Web isolated full run | DSH `0.2.2-rc.1`, macOS arm64, Node `24.22.1`, Chrome `156.0.8078.48` | **274 / 0 / 4 / 2** |
+| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 passed / 0 failed / 4 skipped / 2 warnings** |
+| Web isolated full run | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
+| Web isolated full run | DSH `0.2.1-rc.5`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
+| Web isolated full run | DSH `0.2.2-rc.1`, macOS arm64, Node `24.22.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
 | Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
 | Desktop app renderer | DSH `0.2.1-rc.5`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
 | Desktop app renderer | DSH `0.2.2-rc.1`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
