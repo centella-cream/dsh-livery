@@ -21,6 +21,7 @@ Edge and any other DSH build are not supported.
 
 - **[Verification](verification.md)** — release scope, exact artifact binding,
   acceptance matrix, known limitations and reproduction commands.
+- **[Wallpaper workbench layout](design/wallpaper-workbench.md)** — versioned 0.1.6 breakpoints, equal-height rules and online-wallpaper visual policy.
 - **[Interfaces and architecture](design/interfaces.md)** — module boundaries,
   frozen host/client handshake, generated artifacts and build outputs.
 - **[Multi-version policy](design/multi-version.md)** — exact allowlist, stable
@@ -50,6 +51,8 @@ not be cited as current support or behavior.
 | DSH `0.2.1-rc.2` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | 稳定认证（npm `latest`） |
 | DSH `0.2.1-rc.3` | Desktop 应用、macOS、Electron/Node 24.21.0、Chromium 152.0.7977.130 | 稳定认证渲染器表面（GitHub 已 tag） |
 | DSH `0.2.1-rc.4` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | next 通道预览（npm `next`；已有 GitHub prerelease tag） |
+| DSH `0.2.1-rc.5` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；0.1.6 重新验收 |
+| DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；0.1.6 适配并通过 Web+Desktop 验收 |
 
 “稳定”要求非 prerelease 的官方 GitHub release 与签名 npm 包同时存在；只有 npm `next`
 通道的版本只作为预览兼容性记录，不承诺稳定性。DSH Desktop Windows、Web Edge
@@ -58,6 +61,7 @@ not be cited as current support or behavior.
 ## 当前文档
 
 - **[验收总结](verification.md)**：发布范围、精确制品绑定、验收矩阵、已知限制与复现命令。
+- **[壁纸工作台布局](design/wallpaper-workbench.md)**：0.1.6 断点、等高规则和在线壁纸视觉策略。
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
 - **[多版本策略](design/multi-version.md)**：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
 - **[风格系统](design/style-system.md)**：24 套风格在调色、字体、形状、材质和字号阶梯上的差异。

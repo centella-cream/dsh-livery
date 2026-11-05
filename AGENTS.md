@@ -154,3 +154,37 @@ versions. Prefer an explicit install failure over an unverified guess.
   moving docs.
 - Never commit secrets, absolute local paths in evidence/reports, browser
   caches, or generated acceptance artifacts.
+
+## 8. Documentation discipline
+
+Documentation is part of the product, not an afterthought.
+
+- **Release docs move with the release.** A version bump, host adaptation,
+  user-visible style/UX change, layout change or new capability must update
+  `README.md`, `README.zh-CN.md`, `SECURITY.md` (when scope changes),
+  `CHANGELOG.md` and `docs/verification.md` in the same change set, before the
+  candidate artifact is frozen. Do not discover stale install/status text during
+  the pre-release audit.
+- **Design-critical changes get a design note.** Add or update
+  `docs/design/<topic>.md` for changes that alter module boundaries, responsive
+  layout rules, host/client contracts, state models, security boundaries or
+  public interaction semantics. The note must name the target version, explain
+  the problem/decision, record exact breakpoints or invariants, and link the
+  acceptance evidence. A small fix does not need a standalone design note, but it
+  still needs a CHANGELOG entry.
+- **CHANGELOG is mandatory.** Every user-visible change and every released doc
+  claim change goes under the target version with an Added/Fixed/Changed entry.
+  A change with no CHANGELOG entry is incomplete.
+- **README is the product front page, not a changelog.** Keep it ordered:
+  release status and stable/preview boundary → what's new → features → styles/
+  wallpaper showcase → exact supported DSH builds → install → verification →
+  docs. Keep version support and capability claims current; move long rationale
+  and historical detail into `docs/design/` or `docs/archive/`.
+- **One docs index.** Every current design/verification document is linked from
+  `docs/README.md`; stale proposals and superseded contracts belong in
+  `docs/archive/` and must say they are historical. Do not leave a second
+  authoritative-looking table in an old README section.
+- **Packaged docs invalidate evidence.** README/SECURITY/CHANGELOG/docs shipped in
+  the npm tarball are artifact bytes. Any post-acceptance change to them requires
+  rebuilding and reaccepting the final candidate on all declared hosts; do not
+  reuse evidence from a candidate with different packaged docs.

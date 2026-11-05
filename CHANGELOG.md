@@ -25,6 +25,9 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Changed
 
+- README/README.zh-CN 基于 0.1.6 重新梳理：发布状态、0.1.6 更新、功能、在线壁纸展示、精确宿主支持矩阵、安装与验收层级化，移除过时的发布冻结段落。
+- 新增 `docs/design/wallpaper-workbench.md`，记录 0.1.6 壁纸工作台断点、等高规则、16:9 预览和在线壁纸验收策略；`docs/README.md` 同步索引。
+- `AGENTS.md` 新增文档纪律：版本适配、样式/布局/能力变化必须同步 README/CHANGELOG；重要设计变更随版本落到 `docs/design/`，小改动仍需 CHANGELOG；随包文档变化必须重建候选并重新验收。
 - 版本面升级到 `0.1.6`（package、LIVERY_VERSION、CATALOG_COMPILER_VERSION、生成物与文档）。
 - 0.2.2 的多 profile catalog 使 host gzip 与 livery/boot CSS 预算上调；在文档与构建门禁中明确记录，不静默放宽。
 
