@@ -4398,8 +4398,8 @@ export async function checkLayoutStructure(ctx) {
       try {
         const wallpaperNarrow = await readLayoutStructure(page, 'wallpaper')
         const flags = wallpaperNarrow.wallpaperFlags ?? {}
-        const expectedTracks = width === 1024 ? 2 : 1
-        expectSafe(`layout.wallpaper-${width}-stacked`, `wallpaper workbench uses ${expectedTracks} column(s) at ${width}px`,
+        const expectedTracks = 1
+        expectSafe(`layout.wallpaper-${width}-stacked`, `wallpaper workbench stacks to one column at ${width}px`,
           wallpaperNarrow.layout.present === true && wallpaperNarrow.layout.trackCount === expectedTracks, `layout=${JSON.stringify(wallpaperNarrow.layout)}`)
         expectSafe(`layout.wallpaper-${width}-no-overflow`, `wallpaper page has no horizontal overflow at ${width}px`,
           wallpaperNarrow.overflow.horizontal === false,

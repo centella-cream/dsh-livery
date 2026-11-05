@@ -395,11 +395,11 @@ try {
           if (wallpaperMetrics.manageOpen !== false) recordIssue('medium', 'wallpaper-manage-open', 'Management section is not collapsed by default.')
         }
         if (wallpaperMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-wallpaper-overflow`, 'Wallpaper page has horizontal document overflow.')
-        // At 767 the remote-wallpaper focal-position control is intentionally
-        // retained; it makes the source card start below the first viewport. The
-        // source must stay reachable by scrolling, so only flag the wider layouts
-        // where the information architecture promises a one-glance workbench.
-        if (viewport.width >= 1024 && wallpaperMetrics.sourceTabsTop >= viewport.height) recordIssue('medium', `wallpaper-source-below-fold-${viewport.width}`, `Wallpaper source tabs start at ${wallpaperMetrics.sourceTabsTop}px, below the ${viewport.height}px first viewport.`)
+        // 1024/767 use a deliberate single-column workbench: the hero and effects
+        // cards align by width, while the source card is reached by normal page
+        // scroll. Only the side-by-side 1440 workbench promises a one-glance
+        // source area, so flag below-fold there.
+        if (viewport.width >= 1200 && wallpaperMetrics.sourceTabsTop >= viewport.height) recordIssue('medium', `wallpaper-source-below-fold-${viewport.width}`, `Wallpaper source tabs start at ${wallpaperMetrics.sourceTabsTop}px, below the ${viewport.height}px first viewport.`)
       }
     }
   }

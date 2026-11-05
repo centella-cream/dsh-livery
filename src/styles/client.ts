@@ -145,9 +145,10 @@ export const CLIENT_CSS = `
 .wallpaper-position__option input:focus-visible+span{outline:2px solid var(--lw-brand);outline-offset:2px}
 
 /* ---- 0.1.4 Studio information architecture ------------------------------ */
-.wallpaper-workbench{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(320px,1fr);align-items:start;gap:var(--lw-gap-page);min-width:0}
+.wallpaper-workbench{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(320px,1fr);align-items:stretch;gap:var(--lw-gap-page);min-width:0}
 .wallpaper-hero,.wallpaper-effects-card{min-width:0}
 .wallpaper-hero__preview{max-height:none;aspect-ratio:16/9}
+.wallpaper-hero__empty{max-height:none;aspect-ratio:16/9}
 .wallpaper-hero__info{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 12px;padding-block-start:2px}
 .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
 .wallpaper-effects-card .wallpaper-effect__control{width:100%}
@@ -204,7 +205,7 @@ export const CLIENT_CSS = `
 .livery-ui-card{padding:18px 20px}
 .wallpaper-manage.livery-ui-card{padding:0}
 .livery-gallery-head{padding-block:2px}
-@media (max-width: 1099px){.livery-hero__layout{grid-template-columns:minmax(0,1fr)}.livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width: 1099px){.wallpaper-workbench{grid-template-columns:minmax(0,1fr)}.wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.livery-hero__layout{grid-template-columns:minmax(0,1fr)}.livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container livery-studio (max-width: 959px){
   .wallpaper-effects-card .wallpaper-effects-grid{grid-template-columns:minmax(0,1fr)}
   .livery-hero__layout{grid-template-columns:minmax(0,1fr)}
@@ -224,7 +225,8 @@ export const CLIENT_CSS = `
   .wallpaper-source-panel .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wallpaper-local-grid{grid-template-columns:minmax(0,1fr)}
 }
-@media (max-width:799px){.wallpaper-workbench{grid-template-columns:minmax(0,1fr)}.wallpaper-hero__preview{max-width:400px}}
+@media (max-width:799px){.wallpaper-hero__preview{max-width:400px}}
+@media (min-width:1100px){.wallpaper-workbench{align-items:stretch}.wallpaper-hero__preview{flex:1 1 auto;min-height:0;aspect-ratio:auto}.wallpaper-hero__empty{flex:1 1 auto;min-height:0;aspect-ratio:auto}}
 @container livery-studio (max-width: 639px){
   .wallpaper-workbench{grid-template-columns:minmax(0,1fr)}
   .wallpaper-hero__preview,.wallpaper-hero__empty{max-width:none}
