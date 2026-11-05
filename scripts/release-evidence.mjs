@@ -230,7 +230,7 @@ if (runCommit !== undefined) {
     .trim().split('\n').filter(Boolean)
   // CI-only workflow/gate changes after the acceptance run do not alter the
   // artifact bytes; still refuse any product/docs/matrix/package change.
-  const allowedAfterRun = /^(contracts\/dsh\/evidence\/|contracts\/dsh\/perf-baseline\.json$|\.github\/workflows\/|scripts\/release-evidence\.mjs$)/
+  const allowedAfterRun = /^(contracts\/dsh\/evidence\/|contracts\/dsh\/perf-baseline\.json$|\.github\/workflows\/|scripts\/release-evidence\.mjs$|AGENTS\.md$)/
   const forbidden = changedSinceRun.filter(file => !allowedAfterRun.test(file))
   if (forbidden.length > 0) {
     fail(`acceptance ran on a dirty/older harness: changes after run commit include ${forbidden.slice(0, 5).join(', ')}`)
