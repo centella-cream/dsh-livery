@@ -18,8 +18,9 @@ host theme takeover.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
-> and DSH `0.2.2-rc.1` Web/Desktop. Windows Desktop, Edge and other DSH builds are
-> unsupported and fail closed.
+> and DSH `0.2.2-rc.1` Web/Desktop. `0.2.2-rc.1` is now npm `latest`, but its GitHub
+> release is still a prerelease, so it remains a preview claim. Windows Desktop,
+> Edge and other DSH builds are unsupported and fail closed.
 
 English · [中文](README.zh-CN.md)
 

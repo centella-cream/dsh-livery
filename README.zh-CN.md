@@ -16,7 +16,7 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
-> Web/Desktop。Windows Desktop、Edge 和其他 DSH 构建不在支持范围内，并会 fail closed。
+> Web/Desktop。`0.2.2-rc.1` 现在是 npm `latest`，但 GitHub release 仍是 prerelease，因此仍是预览声明。Windows Desktop、Edge 和其他 DSH 构建不在支持范围内，并会 fail closed。
 
 [English](README.md) · 中文
 

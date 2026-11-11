@@ -149,7 +149,7 @@
       ],
       "notes": [
         "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence is bound for 0.1.6.",
-        "GitHub release dsh-v0.2.1-rc.5 is a prerelease; npm latest/next point at 0.2.1-rc.5. Preview claim.",
+        "GitHub release dsh-v0.2.1-rc.5 is a prerelease; At 0.1.5/0.1.6 acceptance npm latest was 0.2.1-rc.5; npm latest has since moved to 0.2.2-rc.1. Preview claim.",
         "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5."
       ]
     },
@@ -169,7 +169,7 @@
         }
       },
       "claimTier": "preview",
-      "distributionChannel": "next",
+      "distributionChannel": "latest",
       "certifiedBrowserVersions": [
         "156.0.8078.48",
         "152.0.7977.130"
@@ -188,7 +188,7 @@
         "contracts/dsh/evidence/0.1.7/0.2.2-rc.1-desktop-macos.json"
       ],
       "notes": [
-        "DSH 0.2.2-rc.1 is npm next and a GitHub prerelease; preview claim.",
+        "npm `latest` now points at DSH 0.2.2-rc.1, but the official GitHub release is still a prerelease; this remains a preview claim, not a stable claim.",
         "0.2.2 API: peer-scoped index injection/rendering, 188 consumed tokens, new layout/token contracts.",
         "Single adapter record serves Web and Desktop entry profiles for 0.2.2-rc.1."
       ]

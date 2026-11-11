@@ -151,6 +151,12 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(notSupportedProfiles(desktop)).toEqual(['desktop.win32', 'web.chrome', 'web.edge'])
     expect(desktop.profiles.desktop.macos).toBe('passed')
 
+    // 0.2.2-rc.1: npm latest since upstream promotion, but still a prerelease.
+    const latestPreview = matrix.entries.find((entry) => entry.hostVersion === '0.2.2-rc.1')!
+    expect(latestPreview.claimTier).toBe('preview')
+    expect(latestPreview.distributionChannel).toBe('latest')
+    expect(latestPreview.upstream).toEqual({ githubTag: 'dsh-v0.2.2-rc.1', npmVersion: '0.2.2-rc.1' })
+
     // 0.2.1-rc.4: next-channel preview, no upstream GitHub tag.
     const preview = matrix.entries.find((entry) => entry.hostVersion === '0.2.1-rc.4')!
     expect(preview.adapterId).toBe('dsh-0.2.1-rc.4-r1')
