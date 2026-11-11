@@ -49,6 +49,15 @@ thumbnail cannot load, the card remains usable and the title/skeleton are shown.
 The 0.1.7 acceptance check `wallpaper.online-thumbnails` asserts both the image
 count and successful natural-size load count, in addition to the fallback.
 
+## Host plugin surfaces
+
+All host plugin pages inherit the livery layer ladder. Livery adds a small
+hue-preserving lift to `--dsw-alias-bg-layer-1/2/3` so cards, tables and overlays
+remain visible above the page base, and rebinds the framework Tailwind palette
+variables used by data-heavy plugins (e.g. `dsh-context` charts) to the active
+livery tokens. This is one implementation for every plugin surface, not a
+per-page selector override.
+
 ## Sidebar surface
 
 The host left navigation uses `--dsw-specific-sidebar-fill`. Wallpaper frost

@@ -432,6 +432,22 @@ function deriveVariant(
   // Re-apply explicit overrides last so they always win over style/metric tokens.
   for (const [name, value] of Object.entries(overrides)) full[name] = value
 
+  // 5b. Host plugin surfaces use the same layer ladder as the style page, but
+  // the stock light theme resolves layers 1/2/3 to one white step. Give every
+  // livery a small, hue-preserving elevation ramp so plugin cards, tables and
+  // overlays remain visibly layered on top of the page base instead of
+  // dissolving into it. Explicit manifest overrides still win.
+  const white = parseColor('#ffffff')
+  const lift = (value: string | undefined, amount: number): string | undefined =>
+    value === undefined ? undefined : formatHex(mixOklab(parseColor(value), white, amount))
+  const layer1Source = full['--dsw-alias-bg-layer-1'] ?? full['--dsw-alias-bg-base'] ?? seeds.surface
+  const layer1 = overridden.has('--dsw-alias-bg-layer-1') ? layer1Source : lift(layer1Source, mode === 'light' ? 0.06 : 0.10)
+  if (layer1 !== undefined) full['--dsw-alias-bg-layer-1'] = layer1
+  const layer2 = overridden.has('--dsw-alias-bg-layer-2') ? full['--dsw-alias-bg-layer-2'] : lift(layer1, mode === 'light' ? 0.06 : 0.09)
+  if (layer2 !== undefined) full['--dsw-alias-bg-layer-2'] = layer2
+  const layer3 = overridden.has('--dsw-alias-bg-layer-3') ? full['--dsw-alias-bg-layer-3'] : lift(layer2, mode === 'light' ? 0.055 : 0.08)
+  if (layer3 !== undefined) full['--dsw-alias-bg-layer-3'] = layer3
+
   // 6. Bounded WCAG repair pass over the foreground tokens of the audit matrix.
   let contrast: readonly ContrastEntry[] = []
   for (let pass = 0; pass < 6; pass += 1) {
