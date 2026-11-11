@@ -38,6 +38,9 @@ showcase uses a real online Picsum wallpaper, not a built-in default.
 - **Included from 0.1.6:** DSH `0.2.2-rc.1` Web/Desktop support, equal-height 1440
   workbench cards, single-column 1024/767 layout, the `v0.1.7` title badge and
   online-wallpaper-first visual/README verification.
+- **One surface system across DSH plugins.** Host plugin pages such as Trajectory,
+  Context and Agent Team inherit the same livery layer elevation and palette tokens;
+  third-party data views use the same accent instead of stock chart colours.
 - **Documentation discipline.** Design-critical changes carry a versioned design
   note under `docs/design/`; README, SECURITY, support matrix and CHANGELOG are
   updated as one release set.
