@@ -11,10 +11,10 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.7 release candidate.** `0.1.6` is the latest npm release
-> and includes DSH `0.2.2-rc.1` Web/Desktop support and the workbench layout work.
-> `0.1.7` is a small hotfix candidate that restores online-wallpaper result
-> thumbnails. It is not published yet.
+> **Release status: 0.1.7 — current npm release.** `0.1.7` restores online-wallpaper
+> result thumbnails and unifies the surface/palette implementation across DSH plugin
+> pages (Trajectory, Context, Agent Team and the built-in studio). `0.1.6` adds the
+> DSH `0.2.2-rc.1` Web/Desktop adaptation and workbench layout work.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
@@ -80,6 +80,15 @@ A real online Picsum photo loaded from the Online tab, with focal position and t
 four source tabs. Opening the tab loads one random batch; search, randomise, page
 or switch source explicitly. Wallpaper choices stay local.
 
+## Every DSH plugin page
+
+![Context insight page using the same livery surfaces and chart palette](docs/assets/plugin-surfaces-en.jpg)
+
+The Trajectory, Context, Agent Team and built-in studio pages share one
+implementation: the livery layer ladder gives cards/tables/overlays a visible
+elevation above the page base, and third-party chart palette variables resolve to
+the active livery tokens. No per-plugin selectors or hashed host classes.
+
 ## Supported DSH builds
 
 `engines.dsh` is the exact allowlist:
@@ -105,45 +114,34 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.1.6`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.1.7`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.6
+dsh plugin --profile web add dsh-livery@0.1.7
 dsh web
 ```
 
 ### Desktop app
 
 Open **Settings → Plugins → Install by package name** and enter
-`dsh-livery@0.1.6`, or use the app-bundled CLI:
+`dsh-livery@0.1.7`, or use the app-bundled CLI:
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.6
+  plugin --profile desktop add dsh-livery@0.1.7
 ```
 
 If the registry age window rejects a fresh release, download the exact tarball,
 verify its sha256 against the release, and install that file instead. Never install
 an unverified tarball.
 
-### 0.1.7 candidate
-
-`0.1.7` is not on npm yet. Test the exact candidate locally:
-
-```bash
-dsh plugin --profile web add "file:./dsh-livery-0.1.7.tgz"
-```
-
-Exact sha256, bytes and run identity are in
-`contracts/dsh/evidence/0.1.7/`.
-
 ## Verification
 
-Full isolated acceptance passed on the exact candidate for Web `0.2.1-rc.2`,
-`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1` and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`,
-`0.2.2-rc.1`, with **0 failures**. The 0.1.7 evidence files are under
+Full isolated acceptance passed on the exact release artifact for Web `0.2.1-rc.2`,
+`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1` with **275 passed / 0 failed each**, and
+Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1` with **34 / 0 each**. The 0.1.7 evidence files are under
 `contracts/dsh/evidence/0.1.7/`, and the scope,
 counts and limitations are in [docs/verification.md](docs/verification.md).
 

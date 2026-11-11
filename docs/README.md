@@ -1,6 +1,6 @@
 # Documentation
 
-**Current npm release: `0.1.6` (2026-11-05); `0.1.7` is a release candidate.** The authoritative support policy is
+**Current npm release: `0.1.7` (2026-11-11).** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -42,7 +42,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**npm 最新发布版：`0.1.6`（2026-11-05）；`0.1.7` 为发布候选。** 支持策略以
+**npm 最新发布版：`0.1.7`（2026-11-11）。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 

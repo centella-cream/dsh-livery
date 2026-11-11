@@ -10,9 +10,9 @@
 DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.7 发布候选。** `0.1.6` 已是 npm 最新发布版，包含 DSH `0.2.2-rc.1`
-> Web/Desktop 支持与壁纸工作台布局调整；`0.1.7` 是恢复在线壁纸结果缩略图的小型热修复
-> 候选，尚未发布。
+> **发布状态：0.1.7 — 当前 npm 发布版。** `0.1.7` 恢复在线壁纸结果缩略图，并统一
+> DSH 插件页面（轨迹、上下文、编队及内置工作室）的 surface 与调色实现。`0.1.6` 引入
+> DSH `0.2.2-rc.1` Web/Desktop 适配与壁纸工作台布局调整。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
@@ -64,6 +64,13 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 从“在线壁纸”加载的真实 Picsum 图片，包含焦点位置和四个来源页签。打开页签会加载一批
 随机图片；搜索、随机、翻页或切换来源都由你主动触发。壁纸选择保存在本地。
 
+## 所有 DSH 插件页面
+
+![上下文洞察页使用同一套 livery surface 与图表调色](docs/assets/plugin-surfaces-zh.jpg)
+
+轨迹、上下文、编队和内置工作室共用同一套实现：livery 层级让卡片/表格/浮层在页面底色上
+保持可见层级，第三方图表调色变量映射到当前风格 token；不写任何逐插件选择器或宿主 hashed class。
+
 ## 支持的 DSH 版本
 
 `engines.dsh` 精确 allowlist：
@@ -88,42 +95,32 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.1.6`](https://www.npmjs.com/package/dsh-livery)。
+npm 最新发布版：[`dsh-livery@0.1.7`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.6
+dsh plugin --profile web add dsh-livery@0.1.7
 dsh web
 ```
 
 ### Desktop app
 
-打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.6`；或使用 app 自带 CLI：
+打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.7`；或使用 app 自带 CLI：
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.6
+  plugin --profile desktop add dsh-livery@0.1.7
 ```
 
 如果新版本被 registry age window 拒绝：下载精确 tarball，核对 release sha256 后用本地
 文件安装。不要安装未校验的 tarball。
 
-### 0.1.7 候选
-
-`0.1.7` 尚未发布到 npm，本地体验精确候选：
-
-```bash
-dsh plugin --profile web add "file:./dsh-livery-0.1.7.tgz"
-```
-
-精确 sha256、字节数和运行身份见
-`contracts/dsh/evidence/0.1.7/`。
-
 ## 验收
 
-精确候选已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1` 与 Desktop
-`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1` 的隔离全量验收，**0 失败**。0.1.7 evidence
+正式发布制品已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`
+（各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`
+（各 34 通过 / 0 失败）的隔离全量验收。0.1.7 evidence
 位于 `contracts/dsh/evidence/0.1.7/`，范围、计数和已知
 限制见 [docs/verification.md](docs/verification.md)。
 

@@ -1,13 +1,13 @@
 # Verification
 
-**Release `0.1.7` — release candidate.** The exact accepted artifact, sha256,
+**Release `0.1.7` — current npm release.** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at
 `contracts/dsh/evidence/0.1.7/`; the publication workflow downloads the same bytes
 from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub
 Release. `0.1.2` evidence is retained unchanged under
 `contracts/dsh/evidence/` for the prior release.
 
-**Release scope for 0.1.7 (release candidate):**
+**Release scope for 0.1.7 (released):**
 
 | Host | Profile / platform | Certified runtime | Status |
 |---|---|---|---|
