@@ -368,6 +368,7 @@ describe('wallpaper stylesheet builder', () => {
     // Dialog/modal panels use --dsw-alias-bg-layer-2; making it translucent
     // would leak the underlying page through the Settings overlay.
     expect(WALLPAPER_SURFACE_TOKENS).not.toContain('--dsw-alias-bg-layer-2')
+    expect(WALLPAPER_SURFACE_TOKENS).toContain('--dsw-specific-sidebar-fill')
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'dusk' },
       effects: { ...DEFAULT_WALLPAPER_EFFECTS, frost: 60 },

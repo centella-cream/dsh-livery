@@ -12,6 +12,7 @@ packaging; they are folded into the `0.1.0` entry.
 ### Fixed
 
 - 恢复在线壁纸结果缩略图：Online 结果卡重新渲染图源 thumbnail 图片，加载中/失败时保留本地骨架回退。此前只渲染骨架，正常检索结果看起来像空白，但点击后壁纸仍能生效。
+- 修复壁纸在左侧导航栏边缘被截断：将 `--dsw-specific-sidebar-fill` 纳入壁纸 frost surface 集合，侧栏随壁纸一起透出；不写宿主 hashed class。
 - 更新验收：`wallpaper.online-thumbnails` 现在要求结果卡图片数量、成功加载数量和 fallback 同时成立；在线壁纸验收直接覆盖缩略图渲染。
 
 ### Changed

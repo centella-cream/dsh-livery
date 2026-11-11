@@ -49,6 +49,14 @@ thumbnail cannot load, the card remains usable and the title/skeleton are shown.
 The 0.1.7 acceptance check `wallpaper.online-thumbnails` asserts both the image
 count and successful natural-size load count, in addition to the fallback.
 
+## Sidebar surface
+
+The host left navigation uses `--dsw-specific-sidebar-fill`. Wallpaper frost
+includes that token in the same active-livery surface override set, so the image
+continues behind the navigation instead of stopping at an opaque sidebar edge.
+The host remains the painter; Livery only provides the translucent color-mix value
+when wallpaper is active and never targets host hashed classes.
+
 ## Visual verification
 
 - `scripts/acceptance/layout-preview.mjs` measures card boxes, source-tab position,

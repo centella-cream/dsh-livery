@@ -329,6 +329,9 @@ export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-alias-scrollbar-bg-l1',
   '--dsw-alias-scrollbar-bg-l2',
   '--dsw-alias-turn-trigger-bg',
+  // The left navigation is a host surface too; frost it with the same active
+  // livery semantics so the wallpaper is not cut off at the sidebar edge.
+  '--dsw-specific-sidebar-fill',
 ]
 
 /** Livery token maps needed for surface translucency (absent for stock/hydrating). */
