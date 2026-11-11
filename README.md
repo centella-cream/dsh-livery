@@ -82,7 +82,7 @@ or switch source explicitly. Wallpaper choices stay local.
 
 ## Every DSH plugin page
 
-![Context insight page using the same livery surfaces and chart palette](docs/assets/plugin-surfaces-en.jpg)
+![Context insight page using the same livery surfaces and chart palette](docs/assets/plugin-surfaces.jpg)
 
 The Trajectory, Context, Agent Team and built-in studio pages share one
 implementation: the livery layer ladder gives cards/tables/overlays a visible

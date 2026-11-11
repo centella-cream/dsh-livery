@@ -66,7 +66,7 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 
 ## 所有 DSH 插件页面
 
-![上下文洞察页使用同一套 livery surface 与图表调色](docs/assets/plugin-surfaces-zh.jpg)
+![上下文洞察页使用同一套 livery surface 与图表调色](docs/assets/plugin-surfaces.jpg)
 
 轨迹、上下文、编队和内置工作室共用同一套实现：livery 层级让卡片/表格/浮层在页面底色上
 保持可见层级，第三方图表调色变量映射到当前风格 token；不写任何逐插件选择器或宿主 hashed class。
