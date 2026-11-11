@@ -1,3 +1,24 @@
+/** One online result thumbnail; a failed remote image falls back to the skeleton. */
+function ResultThumbnail({ src }: { readonly src: string }): JSX.Element {
+  const [failed, setFailed] = useState(false)
+  return (
+    <span className={THUMB}>
+      <span className="livery-thumb__fallback" aria-hidden="true" />
+      {!failed && (
+        <img
+          className="livery-thumb__img"
+          data-testid="wallpaper-result-thumb"
+          src={src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
+  )
+}
+
 /**
  * Wallpaper studio panel: online random/search wallpapers, 24 built-in CSS
  * wallpapers, effect sliders, uploaded images and a custom https URL.
@@ -1078,9 +1099,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     data-wallpaper-url={result.url}
                     onClick={() => selectResult(result)}
                   >
-                    <span className={THUMB} aria-hidden="true">
-                      <span className="livery-thumb__fallback" />
-                    </span>
+                    <ResultThumbnail src={result.thumbnail} />
                     <span className="livery-card__body">
                       <span className={NAME}>{result.title}</span>
                     </span>

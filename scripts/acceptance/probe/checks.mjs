@@ -3225,6 +3225,12 @@ export async function checkWallpaperStudio(ctx) {
 
     // ---- search-first online card (round 11): one auto Picsum batch, explicit actions, no slider refetch ----
     const onlineAuto = await readWallpaperState(page)
+    await page
+      .waitForFunction(() => {
+        const images = [...document.querySelectorAll('[data-testid="wallpaper-result-thumb"]')]
+        return images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0)
+      }, undefined, { timeout: 12_000 })
+      .catch(() => {})
     const thumbnailState = await page
       .evaluate(() => {
         const card = document.querySelector('[data-testid="wallpaper-source-card"]')
@@ -3272,14 +3278,14 @@ export async function checkWallpaperStudio(ctx) {
       runner,
       'wallpaper.online-auto-random',
       'opening the wallpaper tab auto-loads exactly one Picsum random batch (mockable)',
-      picsumListRequests.length === 1 && onlineAuto.results.length >= 2 && onlineAuto.results.every((result) => result.url?.startsWith('https://picsum.photos/')) && thumbnailState.resultImages === 0 && thumbnailState.fallbackSpans >= onlineAuto.results.length && openverseRequests.length === 0,
+      picsumListRequests.length === 1 && onlineAuto.results.length >= 2 && onlineAuto.results.every((result) => result.url?.startsWith('https://picsum.photos/')) && thumbnailState.resultImages >= onlineAuto.results.length && thumbnailState.loadedImages >= onlineAuto.results.length && thumbnailState.fallbackSpans >= onlineAuto.results.length && openverseRequests.length === 0,
       `picsum list requests=${picsumListRequests.length}; openverse requests=${openverseRequests.length}; results=${onlineAuto.results.length}; thumb imgs=${thumbnailState.resultImages}; fallbacks=${thumbnailState.fallbackSpans}; status=${onlineAuto.status}`,
     )
     expect(
       runner,
       'wallpaper.online-thumbnails',
-      'online result cards never request remote thumbnails directly; they render a local fallback span',
-      thumbnailState.resultImages === 0 && thumbnailState.fallbackSpans >= onlineAuto.results.length,
+      'online result cards render the provider thumbnail image with a visible skeleton fallback',
+      thumbnailState.resultImages >= onlineAuto.results.length && thumbnailState.loadedImages >= onlineAuto.results.length && thumbnailState.fallbackSpans >= onlineAuto.results.length,
       `resultImages=${thumbnailState.resultImages}; loadedImages=${thumbnailState.loadedImages}; fallbackSpans=${thumbnailState.fallbackSpans}; results=${onlineAuto.results.length}`,
     )
     await capture(page, ctx, { state: 'wallpaper-online-auto', mode: 'light' })

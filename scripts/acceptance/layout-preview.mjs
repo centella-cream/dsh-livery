@@ -395,7 +395,7 @@ try {
           if (wallpaperMetrics.manageOpen !== false) recordIssue('medium', 'wallpaper-manage-open', 'Management section is not collapsed by default.')
         }
         if (wallpaperMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-wallpaper-overflow`, 'Wallpaper page has horizontal document overflow.')
-        // Documented 0.1.6 policy: only the side-by-side 1440 workbench promises
+        // Documented 0.1.7 policy: only the side-by-side 1440 workbench promises
         // the source tabs in the first viewport. 1024/767 are deliberately
         // single-column and scroll to the source card; the remote focal-position
         // control is retained instead of being hidden to win a fold metric.

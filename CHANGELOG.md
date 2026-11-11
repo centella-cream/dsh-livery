@@ -7,7 +7,19 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.1.6] — 待发布
+## [0.1.7] — 待发布
+
+### Fixed
+
+- 恢复在线壁纸结果缩略图：Online 结果卡重新渲染图源 thumbnail 图片，加载中/失败时保留本地骨架回退。此前只渲染骨架，正常检索结果看起来像空白，但点击后壁纸仍能生效。
+- 更新验收：`wallpaper.online-thumbnails` 现在要求结果卡图片数量、成功加载数量和 fallback 同时成立；在线壁纸验收直接覆盖缩略图渲染。
+
+### Changed
+
+- 版本面升级到 `0.1.7`（package、LIVERY_VERSION、CATALOG_COMPILER_VERSION、生成物与文档）。
+- 在线壁纸说明补充：打开 Online 页签会加载图源缩略图；网络行为与来源页签一致，仍无后台请求或遥测。
+
+## [0.1.6] — 2026-11-05
 
 ### Added
 

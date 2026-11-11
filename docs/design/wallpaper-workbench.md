@@ -1,6 +1,6 @@
-# Wallpaper workbench layout (0.1.6)
+# Wallpaper workbench layout (0.1.7)
 
-Status: current for DSH Livery `0.1.6`. This note is versioned with the release so
+Status: current for DSH Livery `0.1.7`. This note is versioned with the release so
 the layout decision and its acceptance boundary stay reviewable after later changes.
 
 ## Problem
@@ -39,24 +39,34 @@ Rules:
    grid stretch and the card's flex column, so future copy changes do not reopen
    the mismatch.
 
+## Online result thumbnails
+
+The Online tab renders each provider result's `thumbnail` as an `<img>` inside the
+result card, with the local skeleton underneath while loading and if the image
+fails. Opening the tab already requests one Picsum list batch; thumbnail requests
+are made only for those returned results and are not background polling. If a
+thumbnail cannot load, the card remains usable and the title/skeleton are shown.
+The 0.1.7 acceptance check `wallpaper.online-thumbnails` asserts both the image
+count and successful natural-size load count, in addition to the fallback.
+
 ## Visual verification
 
 - `scripts/acceptance/layout-preview.mjs` measures card boxes, source-tab position,
   horizontal overflow, effects columns and preview geometry at 1440/1024/767 in
   light/dark and wallpaper-off/on states.
-- The 0.1.6 matrix applies a **real online Picsum wallpaper** through the Online
+- The 0.1.7 matrix applies a **real online Picsum wallpaper** through the Online
   path (mock 302 + final URL revalidation + blob cache), never the built-in Aurora
   default. Per-livery style and README showcase captures use the same online path.
 - Layout preview is expected to report 0 high / 0 medium on the accepted candidate.
 - Browser acceptance still asserts no horizontal overflow, one source card with
   four tabs, and one-column workbench behavior at 1024/767. The release evidence
-  for 0.1.6 binds these runs to the artifact.
+  for 0.1.7 binds these runs to the artifact.
 
 ## Related evidence
 
-- `contracts/dsh/evidence/0.1.6/` — seven host evidence files.
+- `contracts/dsh/evidence/0.1.7/` — seven host evidence files.
 - `docs/verification.md` — scope, counts, known limitations.
-- `CHANGELOG.md` — 0.1.6 change record.
+- `CHANGELOG.md` — 0.1.7 change record.
 
 Any future change to these breakpoints, card order or preview behavior is a
 user-visible design change: update this note, README, CHANGELOG and the acceptance

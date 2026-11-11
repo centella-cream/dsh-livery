@@ -169,6 +169,7 @@ export const CLIENT_CSS = `
 .wallpaper-source-panel .wallpaper-swatches{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));max-height:none}
 .wallpaper-source-panel .livery-card{min-width:0}
 .wallpaper-source-panel .livery-thumb__fallback{display:flex;flex-direction:column;justify-content:center;gap:10px;height:100%;padding:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--lw-brand) 12%,transparent),color-mix(in srgb,var(--lw-fg) 8%,transparent))}
+.wallpaper-source-panel .livery-thumb__img{position:absolute;inset:0;z-index:1}
 .wallpaper-pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
 .wallpaper-pager__label{color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh-control)}
 .wallpaper-recent-track{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}

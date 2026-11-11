@@ -1,21 +1,21 @@
 # Verification
 
-**Release `0.1.6` — release candidate.** The exact accepted artifact, sha256,
+**Release `0.1.7` — release candidate.** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at
-`contracts/dsh/evidence/0.1.6/`; the publication workflow downloads the same bytes
+`contracts/dsh/evidence/0.1.7/`; the publication workflow downloads the same bytes
 from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub
 Release. `0.1.2` evidence is retained unchanged under
 `contracts/dsh/evidence/` for the prior release.
 
-**Release scope for 0.1.6 (release candidate):**
+**Release scope for 0.1.7 (release candidate):**
 
 | Host | Profile / platform | Certified runtime | Status |
 |---|---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (npm `latest`) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node `24.21.0` (Chromium `152.0.7977.130`) | Stable certified renderer surface (GitHub-tagged) |
-| DSH `0.2.1-rc.5` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; reaccepted in 0.1.6 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `24.22.1` / `24.21.0` | Preview/adaptation in 0.1.6; Web+Desktop acceptance bound |
+| DSH `0.2.1-rc.5` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; reaccepted in 0.1.7 |
+| DSH `0.2.2-rc.1` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `24.22.1` / `24.21.0` | Preview/adaptation in 0.1.7; Web+Desktop acceptance bound |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 There is no compatibility mode. A different DSH version is rejected at install and
@@ -35,13 +35,13 @@ The candidate artifact is the exact tarball named in the committed evidence file
 
 Evidence:
 
-- `contracts/dsh/evidence/0.1.6/0.2.1-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.1.6/0.2.1-rc.4-web-chrome.json`
-- `contracts/dsh/evidence/0.1.6/0.2.1-rc.5-web-chrome.json`
-- `contracts/dsh/evidence/0.1.6/0.2.1-rc.5-desktop-macos.json`
-- `contracts/dsh/evidence/0.1.6/0.2.1-rc.3-desktop-macos.json`
-- `contracts/dsh/evidence/0.1.6/0.2.2-rc.1-web-chrome.json`
-- `contracts/dsh/evidence/0.1.6/0.2.2-rc.1-desktop-macos.json`
+- `contracts/dsh/evidence/0.1.7/0.2.1-rc.2-web-chrome.json`
+- `contracts/dsh/evidence/0.1.7/0.2.1-rc.4-web-chrome.json`
+- `contracts/dsh/evidence/0.1.7/0.2.1-rc.5-web-chrome.json`
+- `contracts/dsh/evidence/0.1.7/0.2.1-rc.5-desktop-macos.json`
+- `contracts/dsh/evidence/0.1.7/0.2.1-rc.3-desktop-macos.json`
+- `contracts/dsh/evidence/0.1.7/0.2.2-rc.1-web-chrome.json`
+- `contracts/dsh/evidence/0.1.7/0.2.2-rc.1-desktop-macos.json`
 
 Each file records the exact sha256, byte size, commit, exact browser/runtime
 versions, scope and per-run results. Evidence schema v2 also binds a sanitized

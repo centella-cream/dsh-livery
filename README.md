@@ -11,10 +11,10 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.6 release candidate.** `0.1.5` is the latest npm release
-> and its publish succeeded. `0.1.6` adds DSH `0.2.2-rc.1` Web/Desktop support and
-> reworks the wallpaper workbench layout and alignment. It is not published yet;
-> the exact artifact is bound to seven acceptance evidence files.
+> **Release status: 0.1.7 release candidate.** `0.1.6` is the latest npm release
+> and includes DSH `0.2.2-rc.1` Web/Desktop support and the workbench layout work.
+> `0.1.7` is a small hotfix candidate that restores online-wallpaper result
+> thumbnails. It is not published yet.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
@@ -28,17 +28,16 @@ English · [中文](README.zh-CN.md)
 Screenshots use the Chinese UI; Livery follows the DSH host locale. The style
 showcase uses a real online Picsum wallpaper, not a built-in default.
 
-## What's new in 0.1.6
+## What's new in 0.1.7
 
-- **DSH 0.2.2-rc.1 support.** Web and Desktop entries share one frozen adapter and
-  catalog profile for 0.2.2's peer-scoped index injection and 188-token contract.
-- **Wallpaper workbench layout.** At 1440 the current-wallpaper and effects cards
-  have equal height and aligned bottoms. At 1024/767 the workbench is a single
-  aligned column; the 16:9 preview no longer collapses into a horizontal strip.
-- **Online-wallpaper-first verification.** Style/layout acceptance, frost,
-  atmosphere, matrix screenshots and README showcases now use a real online Picsum
-  photo instead of the built-in Aurora wallpaper.
-- **Documentation discipline.** Design-critical changes now carry a versioned design
+- **Online result thumbnails are back.** The Online tab now renders each provider
+  thumbnail as an image, with the local skeleton visible while loading and as the
+  fallback if the image fails. Previously only the skeleton was rendered, so a
+  healthy list looked blank until a card was clicked.
+- **Included from 0.1.6:** DSH `0.2.2-rc.1` Web/Desktop support, equal-height 1440
+  workbench cards, single-column 1024/767 layout, the `v0.1.7` title badge and
+  online-wallpaper-first visual/README verification.
+- **Documentation discipline.** Design-critical changes carry a versioned design
   note under `docs/design/`; README, SECURITY, support matrix and CHANGELOG are
   updated as one release set.
 
@@ -102,46 +101,46 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.1.6`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.5
+dsh plugin --profile web add dsh-livery@0.1.6
 dsh web
 ```
 
 ### Desktop app
 
 Open **Settings → Plugins → Install by package name** and enter
-`dsh-livery@0.1.5`, or use the app-bundled CLI:
+`dsh-livery@0.1.6`, or use the app-bundled CLI:
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.5
+  plugin --profile desktop add dsh-livery@0.1.6
 ```
 
 If the registry age window rejects a fresh release, download the exact tarball,
 verify its sha256 against the release, and install that file instead. Never install
 an unverified tarball.
 
-### 0.1.6 candidate
+### 0.1.7 candidate
 
-`0.1.6` is not on npm yet. Test the exact candidate locally:
+`0.1.7` is not on npm yet. Test the exact candidate locally:
 
 ```bash
-dsh plugin --profile web add "file:./dsh-livery-0.1.6.tgz"
+dsh plugin --profile web add "file:./dsh-livery-0.1.7.tgz"
 ```
 
 Exact sha256, bytes and run identity are in
-`contracts/dsh/evidence/0.1.6/`.
+`contracts/dsh/evidence/0.1.7/`.
 
 ## Verification
 
 Full isolated acceptance passed on the exact candidate for Web `0.2.1-rc.2`,
 `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1` and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`,
-`0.2.2-rc.1`, with **0 failures**. The 0.1.6 evidence files are under
-`contracts/dsh/evidence/0.1.6/`, and the scope,
+`0.2.2-rc.1`, with **0 failures**. The 0.1.7 evidence files are under
+`contracts/dsh/evidence/0.1.7/`, and the scope,
 counts and limitations are in [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,

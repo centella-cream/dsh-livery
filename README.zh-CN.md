@@ -10,9 +10,9 @@
 DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.6 发布候选。** `0.1.5` 已是 npm 最新发布版且发布成功；`0.1.6` 增加
-> DSH `0.2.2-rc.1` 的 Web/Desktop 支持，并重做壁纸工作台的布局与对齐。尚未发布；精确
-> 制品已绑定 7 份验收 evidence。
+> **发布状态：0.1.7 发布候选。** `0.1.6` 已是 npm 最新发布版，包含 DSH `0.2.2-rc.1`
+> Web/Desktop 支持与壁纸工作台布局调整；`0.1.7` 是恢复在线壁纸结果缩略图的小型热修复
+> 候选，尚未发布。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
@@ -24,14 +24,12 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 
 截图为中文界面；Livery 跟随 DSH 宿主语言。样式展示使用真实在线 Picsum 壁纸，而不是内置默认壁纸。
 
-## 0.1.6 更新
+## 0.1.7 更新
 
-- **支持 DSH 0.2.2-rc.1。** Web 与 Desktop 入口共用一份冻结 adapter 和 catalog profile，
-  适配 0.2.2 的 peer-scoped index injection 与 188-token 契约。
-- **壁纸工作台布局调整。** 1440 下当前壁纸卡和效果卡等高、底边对齐；1024/767 使用单列
-  对齐布局；16:9 预览不再被压成横条。
-- **在线壁纸优先的验收。** 样式/布局验收、frost、atmosphere、矩阵截图和 README 展示都
-  改用真实在线 Picsum 图片，不再使用内置 Aurora 壁纸。
+- **在线结果缩略图恢复。** Online 页签现在会渲染图源缩略图；加载中显示本地骨架，失败时
+  保留骨架作为回退。此前只渲染骨架，列表正常时看起来也是空白，直到点击后才生效。
+- **继承 0.1.6：** DSH `0.2.2-rc.1` Web/Desktop 支持、1440 等高工作台、1024/767 单列布局、
+  `v0.1.7` 标题标识，以及在线壁纸优先的视觉/README 验收。
 - **文档纪律。** 重要设计变更随版本写入 `docs/design/`；README、SECURITY、支持矩阵和
   CHANGELOG 作为同一发布集同步更新。
 
@@ -88,43 +86,43 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.1.5`](https://www.npmjs.com/package/dsh-livery)。
+npm 最新发布版：[`dsh-livery@0.1.6`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.5
+dsh plugin --profile web add dsh-livery@0.1.6
 dsh web
 ```
 
 ### Desktop app
 
-打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.5`；或使用 app 自带 CLI：
+打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.6`；或使用 app 自带 CLI：
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.5
+  plugin --profile desktop add dsh-livery@0.1.6
 ```
 
 如果新版本被 registry age window 拒绝：下载精确 tarball，核对 release sha256 后用本地
 文件安装。不要安装未校验的 tarball。
 
-### 0.1.6 候选
+### 0.1.7 候选
 
-`0.1.6` 尚未发布到 npm，本地体验精确候选：
+`0.1.7` 尚未发布到 npm，本地体验精确候选：
 
 ```bash
-dsh plugin --profile web add "file:./dsh-livery-0.1.6.tgz"
+dsh plugin --profile web add "file:./dsh-livery-0.1.7.tgz"
 ```
 
 精确 sha256、字节数和运行身份见
-`contracts/dsh/evidence/0.1.6/`。
+`contracts/dsh/evidence/0.1.7/`。
 
 ## 验收
 
 精确候选已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1` 与 Desktop
-`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1` 的隔离全量验收，**0 失败**。0.1.6 evidence
-位于 `contracts/dsh/evidence/0.1.6/`，范围、计数和已知
+`0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1` 的隔离全量验收，**0 失败**。0.1.7 evidence
+位于 `contracts/dsh/evidence/0.1.7/`，范围、计数和已知
 限制见 [docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release

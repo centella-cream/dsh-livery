@@ -31,8 +31,8 @@ small first-frame payload. It is designed to:
 - **work offline for styles:** no remote fonts or scripts, and no network requests
   for visual styles or previews;
 - **keep the wallpaper studio as its only networked feature:** opening the wallpaper
-  tab loads one random batch from `picsum.photos`, and explicit search/random/next-batch
-  actions call `api.openverse.org` (CC0/PDM search; only the query leaves the
+  tab loads one random batch from `picsum.photos`, renders the returned thumbnails
+  from that provider, and explicit search/random/next-batch actions call `api.openverse.org` (CC0/PDM search; only the query leaves the
   browser) or `picsum.photos`. You can also use an image from a validated https URL
   or upload a local file; uploads are stored in the browser's IndexedDB and never
   uploaded. There is no telemetry, no background request and no API key. Wallpaper
@@ -47,11 +47,11 @@ Reports about DeepSeek Harness itself should go to the upstream project.
 
 ## 安全策略（中文）
 
-- 支持版本：`0.1.x` 已发布版本；当前候选为 `0.1.6`，npm 最新发布版为 `0.1.5`。
+- 支持版本：`0.1.x` 已发布版本；当前候选为 `0.1.7`，npm 最新发布版为 `0.1.6`。
 - 报告方式：**不要开公开 issue**，请使用 GitHub 私有漏洞报告（Security → Report a
   vulnerability），附上复现步骤、版本、宿主 build 与影响；我们会在 7 天内回复。
 - 范围说明：风格层完全离线，不加载远程字体、脚本或图片；唯一的联网功能是**壁纸工作室**。打开
-  壁纸标签页时，它会自动从 `picsum.photos` 加载一批随机壁纸，主动搜索、随机或换一批时会调用
+  壁纸标签页时，它会自动从 `picsum.photos` 加载一批随机壁纸及其缩略图，主动搜索、随机或换一批时会调用
   `api.openverse.org`（CC0/PDM 搜索，只发送搜索词）或 `picsum.photos`。也可以使用校验过的
   https 图片 URL 或上传本地文件；上传内容保存在浏览器 IndexedDB 中，不会上传。没有遥测、
   后台请求或 API key；壁纸选择和效果保存在浏览器 `localStorage`，写入 profile 的仍然只有

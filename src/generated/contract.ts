@@ -139,7 +139,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -246,7 +246,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
     "sourceKind": "packaged-app",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -353,7 +353,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -460,7 +460,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed",
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -567,7 +567,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:2ead58758a4bf500deab05e957be9e83fb813a43fb5bee881c7161b3f5575f91",
+    "catalogProfile": "sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -595,31 +595,31 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
     "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
     "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d"
   },
   {
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
     "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
-    "catalogProfile": "sha256:6a11274b286da8f2da933161259ee54d4fa1e708ad3ee6b548f3f191582fa5ed"
+    "catalogProfile": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d"
   },
   {
     "hostVersion": "0.2.2-rc.1",
     "adapterId": "dsh-0.2.2-rc.1-r1",
     "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
-    "catalogProfile": "sha256:2ead58758a4bf500deab05e957be9e83fb813a43fb5bee881c7161b3f5575f91"
+    "catalogProfile": "sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a"
   }
 ]
 
