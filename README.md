@@ -40,6 +40,10 @@ showcase uses a real online Picsum wallpaper, not a built-in default.
   `contracts/dsh/catalog-profile-overrides.json` lets token-contract-compatible
   builds reuse a certified profile. DSH `0.2.2-rc.2` reuses the rc.1 profile, so
   the host bundle does not grow by a full catalog per release.
+- **Hot update follows without an app restart.** DSH HMR replaces the client
+  module and the new build no longer rejects the previous build's boot payload;
+  it re-fetches the live catalog, retries across the recomposition window, and
+  reapplies the saved skin. Cold start remains the acceptance target.
 - **DSH `0.2.2-rc.2` adaptation.** Frozen contract, `preview` / npm `next` claim,
   real Electron Desktop acceptance. See [compatibility architecture](docs/design/compatibility.md).
 

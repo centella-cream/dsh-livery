@@ -45,3 +45,24 @@ host bundle grow by roughly 150 KiB gzip per version.
   rc.1 catalog profile.
 - Web `0.2.2-rc.2`: quick acceptance passes; full 0.1.8 evidence pending.
 - All older certified hosts remain in the test matrix.
+
+## Hot update (HMR)
+
+DSH base enables `dsh-hmr` when the launcher provides `profileContext`; direct
+Plugin Manager operations and profile manifest changes recompose running plugins
+and replace modules whose files under the profile changed. Livery keeps this path
+safe:
+
+- every client contribution is owned by `ctx.effect` and disposed in reverse
+  order; the presenter owns a cross-module DOM lease so a replaced copy cannot
+  write after its owner is gone;
+- style elements are reference-counted/shared across a hot replacement, and a
+  stale host boot style is removed by the new confirmed apply;
+- a new client build accepts the previous build's boot payload when the adapter
+  identity is unchanged, reports `plugin version changed by HMR`, and re-fetches
+  the catalog instead of failing closed;
+- the catalog fetch retries briefly across the recomposition window;
+- saved skin/wallpaper state is host-backed, so the new instance reapplies it.
+
+Cold start remains the acceptance target; HMR is a convenience path and is covered
+by the client handshake/runtime tests and a Web 0.1.7→0.1.8 smoke run.

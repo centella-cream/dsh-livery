@@ -107,10 +107,10 @@ describe('checkBoot — certified adapter whitelist', () => {
     expect(check.reasons.join(' ')).toContain('catalog profile mismatch')
   })
 
-  it('fails closed on a plugin version mismatch', () => {
+  it('accepts an older boot payload after HMR and reports it as a warning', () => {
     const check = checkBoot(makeBootPayload({ pluginVersion: '9.9.9' }), ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('mismatch')
-    expect(check.reasons.join(' ')).toContain('plugin version mismatch')
+    expect(check.kind).toBe('valid')
+    expect(check.reasons.join(' ')).toContain('plugin version changed by HMR')
   })
 
   it('fails closed on an entry id mismatch', () => {

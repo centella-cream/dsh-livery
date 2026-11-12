@@ -19,6 +19,9 @@ packaging; they are folded into the `0.1.0` entry.
 ### Fixed
 
 - DSH Desktop `0.2.2-rc.2` 更新后插件被 exact allowlist 拒绝的问题。
+- 热更新握手：client 新版本看到旧版本 boot payload 时不再按 plugin-version mismatch fail closed；adapter identity 一致时标记为 HMR 警告，重新拉取 live catalog 并恢复已保存皮肤。
+- HMR recomposition 期间 catalog 路由短暂不可用时增加有限重试，避免 Web/Desktop 页面落到 “视觉风格暂时无法加载”。
+
 
 ## [0.1.7] — 2026-11-11
 

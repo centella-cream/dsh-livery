@@ -136,8 +136,14 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
     }
   }
   const reasons: string[] = []
+  const warnings: string[] = []
   if (payload.pluginVersion !== LIVERY_VERSION) {
-    reasons.push(`plugin version mismatch: host=${payload.pluginVersion} build=${LIVERY_VERSION}`)
+    // HMR replaces only the client module first. The new build sees the boot
+    // payload produced by the previous plugin build; the adapter identity is
+    // still the same build of this plugin, so re-fetch the live catalog and
+    // re-apply rather than fail closed to stock. A real host mismatch still
+    // fails through adapter/entry/catalog-profile checks below.
+    warnings.push(`plugin version changed by HMR: boot=${payload.pluginVersion} build=${LIVERY_VERSION}`)
   }
   if (payload.entryId !== ENTRY_ID) {
     reasons.push(`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`)
@@ -156,7 +162,7 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
       reasons: ['host gate did not accept first-frame injection'],
     }
   }
-  return { kind: 'valid', payload, adapter, reasons: [] }
+  return { kind: 'valid', payload, adapter, reasons: warnings }
 }
 
 /**

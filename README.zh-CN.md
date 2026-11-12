@@ -32,6 +32,9 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 - **共享 catalog profile。** 新增经 review 的
   `contracts/dsh/catalog-profile-overrides.json`；token 契约兼容的版本复用 certified
   profile。DSH `0.2.2-rc.2` 复用 rc.1 profile，host bundle 不再为每个 rc 增加整套 catalog。
+- **热更新跟随，无需退出 App。** DSH HMR 替换 client 模块后，新版本不再拒绝旧版本的
+  boot payload；会重新拉取 live catalog、在 recomposition 窗口内重试，并恢复已保存皮肤。
+  冷启动仍是验收基准。
 - **DSH `0.2.2-rc.2` 适配。** 冻结契约、npm `next` / preview 声明，并完成真实 Electron
   Desktop 验收。详见 [兼容架构](docs/design/compatibility.md)。
 

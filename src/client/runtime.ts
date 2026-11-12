@@ -20,7 +20,7 @@ import type {
   CompiledLivery,
   LiveryCatalog,
 } from '../core/types.js'
-import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, STOCK_ID } from '../core/types.js'
+import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, LIVERY_VERSION, STOCK_ID } from '../core/types.js'
 import type { BootCheck } from './handshake.js'
 import { normalizeLocale } from './handshake.js'
 import {
@@ -603,10 +603,26 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const generation = ++this.generation
     this.patch({ catalogStatus: 'loading' })
     let catalog: LiveryCatalog | undefined
-    try {
-      catalog = await this.deps.fetchCatalog()
-    } catch {
-      catalog = undefined
+    // DSH HMR recomposes the Host while the renderer keeps running. During that
+    // window the catalog route can briefly return 404/close; a valid first-frame
+    // handshake is proof the host is certified, so retry before declaring the
+    // visual layer offline. This is what lets Web and Desktop follow a hot
+    // update without the user pressing Retry.
+    // Only a boot payload produced by an older plugin build proves a live HMR
+    // replacement; a normal first load with a current payload must not hide an
+    // unavailable route behind retries.
+    const hotReloaded = this.deps.boot.kind === 'valid'
+      && this.deps.boot.payload?.pluginVersion !== undefined
+      && this.deps.boot.payload.pluginVersion !== LIVERY_VERSION
+    const attempts = hotReloaded ? 4 : 1
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        catalog = await this.deps.fetchCatalog()
+      } catch {
+        catalog = undefined
+      }
+      if (catalog !== undefined || this.disposed || generation !== this.generation) break
+      if (attempt + 1 < attempts) await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)))
     }
     if (this.disposed || generation !== this.generation) return
     this.catalogSettled = true

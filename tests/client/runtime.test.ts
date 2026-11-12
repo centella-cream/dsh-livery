@@ -115,6 +115,24 @@ function seedHostFirstFrame(doc: FakeDocument, id: string, hash: string): void {
   doc.body.setAttribute('data-dsh-livery-hash', hash)
 }
 
+describe('hot-update recovery', () => {
+  it('retries the catalog when a valid boot payload came from an older plugin build', async () => {
+    const catalog = makeCatalog()
+    const harness = createHarness({
+      boot: validBoot({ pluginVersion: '0.1.7', cssHash: expectedHash(catalog, 'fjord') }),
+      catalog: undefined,
+    })
+    harness.runtime.start()
+    await new Promise(resolve => setTimeout(resolve, 80))
+    harness.setCatalog(catalog)
+    await new Promise(resolve => setTimeout(resolve, 700))
+    expect(harness.fetchCalls()).toBeGreaterThan(1)
+    expect(harness.runtime.getSnapshot().catalogStatus).toBe('ready')
+    expect(harness.runtime.getSnapshot().effectiveId).toBe('fjord')
+    expect(harness.presenter.count('applyConfirmed')).toBe(1)
+  })
+})
+
 describe('first settle', () => {
   it('adopts an identical host first frame with zero CSS text writes', async () => {
     const catalog = makeCatalog()
