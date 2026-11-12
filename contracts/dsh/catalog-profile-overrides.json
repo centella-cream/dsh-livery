@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "note": "Deliberate catalog-profile reuse for API-compatible host builds whose token contract only adds or renames unused tokens. The shared profile is the newest certified profile for the same render family; overrides are reviewed with a contract diff and must keep the same loaderAbi/hostApi/clientApi/layout semantics.",
+  "overrides": [
+    {
+      "hostVersion": "0.2.2-rc.2",
+      "catalogProfile": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed",
+      "reason": "0.2.2-rc.2 loader/host/client API hashes match rc.1; token contract adds 17 tokens (205 consumed) and layout hash changes behind rc.1-compatible slots. Shared rc.1 catalog is safe because every livery token is emitted as a concrete value and unknown/new tokens inherit stock."
+    }
+  ]
+}

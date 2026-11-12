@@ -54,18 +54,23 @@ describe('0.1.3 release parameterization', () => {
     expect(desktop.certifiedBrowserVersions).toEqual(['152.0.7977.130'])
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     for (const entry of matrix.entries) {
-      if (entry.hostVersion === '0.2.2-rc.1') {
+      if (entry.hostVersion === '0.2.2-rc.2') {
         expect(entry.evidence).toEqual([
-          'contracts/dsh/evidence/0.1.7/0.2.2-rc.1-web-chrome.json',
-          'contracts/dsh/evidence/0.1.7/0.2.2-rc.1-desktop-macos.json',
+          'contracts/dsh/evidence/0.1.8/0.2.2-rc.2-web-chrome.json',
+          'contracts/dsh/evidence/0.1.8/0.2.2-rc.2-desktop-macos.json',
+        ])
+      } else if (entry.hostVersion === '0.2.2-rc.1') {
+        expect(entry.evidence).toEqual([
+          'contracts/dsh/evidence/0.1.8/0.2.2-rc.1-web-chrome.json',
+          'contracts/dsh/evidence/0.1.8/0.2.2-rc.1-desktop-macos.json',
         ])
       } else if (entry.hostVersion === '0.2.1-rc.5') {
         expect(entry.evidence).toEqual([
-          'contracts/dsh/evidence/0.1.7/0.2.1-rc.5-web-chrome.json',
-          'contracts/dsh/evidence/0.1.7/0.2.1-rc.5-desktop-macos.json',
+          'contracts/dsh/evidence/0.1.8/0.2.1-rc.5-web-chrome.json',
+          'contracts/dsh/evidence/0.1.8/0.2.1-rc.5-desktop-macos.json',
         ])
       } else {
-        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.7/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
+        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.8/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
       }
     }
   })
@@ -78,6 +83,7 @@ describe('0.1.3 release parameterization', () => {
     expect(files).toContain('contracts/dsh/0.2.1-rc.4')
     expect(files).toContain('contracts/dsh/0.2.1-rc.5')
     expect(files).toContain('contracts/dsh/0.2.2-rc.1')
+    expect(files).toContain('contracts/dsh/0.2.2-rc.2')
     expect(files).not.toContain('docs')
     expect(files).not.toContain('contracts/dsh/support-matrix.proposed.json')
     expect(files).not.toContain('contracts/dsh/0.2.0-rc.2')

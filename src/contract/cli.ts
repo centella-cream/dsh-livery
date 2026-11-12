@@ -127,9 +127,16 @@ async function loadCommittedMatrix(workspace: string): Promise<SupportMatrix> {
   return readFormalMatrix(workspace)
 }
 
-/** Exact `engines.dsh` allowlist for the generated adapter set. */
+/**
+ * Compatibility range for `engines.dsh`: every certified adapter must satisfy it,
+ * and the next 0.3 line must not. Certified exact builds remain the evidence and
+ * matrix authority; the range only lets the runtime compatibility fallback load
+ * on compatible 0.2.x builds.
+ */
 function expectedEngineRange(versions: readonly string[]): string {
-  return versions.join(' || ')
+  const minimum = versions[0]
+  if (minimum === undefined) throw new Error('no shipped versions')
+  return `>=${minimum} <0.3.0`
 }
 
 /* ------------------------------------------------------------------ *
@@ -273,7 +280,7 @@ async function commandAdapterCheck(context: CliContext, parsed: ParsedArgs): Pro
   const expectedRange = expectedEngineRange(shippedVersions)
   const pkg = await readJson<{ engines?: { dsh?: string } }>(join(context.cwd, 'package.json'))
   if (pkg.engines?.dsh !== expectedRange) {
-    problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
+    problems.push(`package.json engines.dsh must be the 0.2 compatibility range "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
   }
   const generatedVersions = shipped.map((snapshot) => snapshot.hostVersion)
   if (JSON.stringify(generatedVersions) !== JSON.stringify(shippedVersions)) {

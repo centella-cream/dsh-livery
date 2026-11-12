@@ -226,6 +226,15 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     expect(state.diagnostics.join('\n')).toContain('gate.version-unknown')
   })
 
+  it('maps a same-family future rc to the newest certified adapter in compatibility mode', () => {
+    const state = computeBootState({ ...unresolvedInput('0.2.3-rc.1'), skinId: 'fjord' })
+    expect(state.gate.accepted).toBe(true)
+    expect(state.accepted).toBe(true)
+    expect(state.rows).toHaveLength(3)
+    expect(state.payload.adapterId).toBe('dsh-0.2.2-rc.2-r1')
+    expect(state.diagnostics.join('\n')).toContain('gate.compatibility-fallback')
+  })
+
   it.each(['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1', 'not-a-version'])(
     'rejects out-of-range version %s with zero rows',
     (version) => {
@@ -239,11 +248,11 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     },
   )
 
-  it.each(['0.3.0-rc.1', '0.2.1', '0.2.3-rc.1', '0.2.0'])(
+  it.each(['0.3.0-rc.1', '0.2.1', '0.2.0'])(
     'fails closed for readable in-range uncertified version %s (no compat injection)',
     (version) => {
-      // Exact released contracts only: a readable version inside the old
-      // compatibility range must NOT be served a different build's contract.
+      // 0.2.2+ same-family versions use the newest certified adapter; older
+      // 0.2.1 and out-of-family builds still fail closed.
       const state = computeBootState({ ...unresolvedInput(version), skinId: 'fjord' })
       expect(state.gate.accepted, version).toBe(false)
       expect(state.accepted, version).toBe(false)

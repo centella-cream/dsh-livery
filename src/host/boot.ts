@@ -38,6 +38,7 @@ import {
 } from '../core/types.js'
 import { findLivery, renderBootCssFromCatalog } from '../core/catalog.js'
 import {
+  ADAPTERS,
   SUPPORTED_HOST_VERSIONS,
   adapterForVersion,
   type AdapterRecord,
@@ -154,7 +155,28 @@ function normalizeObservedVersion(version: string | null | undefined): string | 
 export function resolveAdapterForVersion(
   observedHostVersion: string | null,
 ): AdapterRecord | undefined {
-  return adapterForVersion(observedHostVersion ?? undefined)
+  const version = observedHostVersion ?? undefined
+  const exact = adapterForVersion(version)
+  if (exact !== undefined || version === undefined) return exact
+  // Compatibility mode: a patch/prerelease bump in the same 0.2 contract family
+  // reuses the newest certified adapter and its shared catalog profile. This is
+  // intentionally bounded to the 0.2 major line; 0.3+ still requires a fresh
+  // contract and certification. The probe/evidence path remains exact-version.
+  const compatibility = /^0\.(\d+)\.(\d+)(?:-[0-9A-Za-z.-]+)?$/u.exec(version)
+  if (compatibility === null) return undefined
+  const minor = Number(compatibility[1])
+  const patch = Number(compatibility[2])
+  if (minor !== 2 || patch < 2) return undefined
+  const sameFamily = ADAPTERS
+    .filter((adapter) => adapter.hostVersion.startsWith('0.2.'))
+    .sort((a, b) => (a.hostVersion < b.hostVersion ? -1 : a.hostVersion > b.hostVersion ? 1 : 0))
+  return sameFamily.at(-1)
+}
+
+/** Whether the observed version is newer than the exact adapter but in the supported family. */
+export function isCompatibilityFallback(observedHostVersion: string | null, adapter: AdapterRecord): boolean {
+  return observedHostVersion !== null && observedHostVersion !== adapter.hostVersion
+    && adapterForVersion(observedHostVersion) === undefined
 }
 
 /**
@@ -385,7 +407,16 @@ export function computeBootState(input: BootStateInput): BootState {
     activeSkinId: requestedSkinId,
     renderError,
   }
-  const diagnostics = buildDiagnostics(gate, capabilities)
+  const compatibilityFallback = input.adapter === undefined
+    && observedHostVersion !== null
+    && adapter !== undefined
+    && adapterForVersion(observedHostVersion) === undefined
+  const diagnostics = [
+    ...buildDiagnostics(gate, capabilities),
+    ...(compatibilityFallback
+      ? [`gate.compatibility-fallback: observed DSH ${observedHostVersion} is not exact-certified; using the newest 0.2 adapter ${adapter.adapterId} in compatible-preview mode`]
+      : []),
+  ]
 
   const payload: BootPayload = {
     pluginVersion: LIVERY_VERSION,

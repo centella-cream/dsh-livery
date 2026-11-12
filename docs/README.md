@@ -63,6 +63,7 @@ not be cited as current support or behavior.
 - **[验收总结](verification.md)**：发布范围、精确制品绑定、验收矩阵、已知限制与复现命令。
 - **[壁纸工作台布局](design/wallpaper-workbench.md)**：0.1.7 断点、等高规则和在线壁纸视觉策略。
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
+- **[兼容架构](design/compatibility.md)** — API 兼容回退、共享 catalog profile 与 exact evidence 边界。
 - **[多版本策略](design/multi-version.md)**：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
 - **[风格系统](design/style-system.md)**：24 套风格在调色、字体、形状、材质和字号阶梯上的差异。
 - **[设计参考](research/design-references.md)**：配色归属与机器可读的 [24 套风格表](research/design-table.json)。

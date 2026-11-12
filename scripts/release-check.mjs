@@ -56,18 +56,18 @@ if (packageJson.name !== rootPackage.name || packageJson.version !== rootPackage
 }
 // Narrow compatibility: engines.dsh must be the exact formal-matrix shipped set.
 const formalMatrix = JSON.parse(readFileSync(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
-const shippedAllowlist = formalMatrix.entries
+const shippedVersions = formalMatrix.entries
   .filter(entry => entry.status === 'g6-approved' || entry.status === 'released')
   .map(entry => entry.hostVersion)
   .sort()
-  .join(' || ')
+const shippedAllowlist = shippedVersions.length > 0 ? `>=${shippedVersions[0]} <0.3.0` : ''
 if (shippedAllowlist === '') {
   console.error('release-check: formal support matrix has no g6-approved/released adapter')
   process.exit(1)
 }
 if (packageJson.engines?.dsh !== shippedAllowlist) {
   console.error(
-    `release-check: engines.dsh must be the exact shipped allowlist "${shippedAllowlist}", got "${String(packageJson.engines?.dsh)}"`,
+    `release-check: engines.dsh must be the 0.2 compatibility range "${shippedAllowlist}", got "${String(packageJson.engines?.dsh)}"`,
   )
   process.exit(1)
 }

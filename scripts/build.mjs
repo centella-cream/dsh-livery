@@ -171,13 +171,13 @@ async function checkSizes() {
   try {
     const pkgForBuild = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
     const matrixForBuild = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
-    const expectedEngines = matrixForBuild.entries
+    const shippedVersions = matrixForBuild.entries
       .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
       .map((entry) => entry.hostVersion)
       .sort()
-      .join(' || ')
+    const expectedEngines = shippedVersions.length > 0 ? `>=${shippedVersions[0]} <0.3.0` : ''
     if (pkgForBuild.engines?.dsh !== expectedEngines) {
-      problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedEngines}", got "${String(pkgForBuild.engines?.dsh)}"`)
+      problems.push(`package.json engines.dsh must be the 0.2 compatibility range "${expectedEngines}", got "${String(pkgForBuild.engines?.dsh)}"`)
     }
   } catch (error) {
     problems.push(`cannot validate narrow engines allowlist: ${error.message}`)

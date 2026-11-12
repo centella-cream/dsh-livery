@@ -7,6 +7,19 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.1.8] — 待发布
+
+### Changed
+
+- 兼容架构重构：新增 API 兼容的运行时回退（0.2.2+ 同系列版本复用最新 certified adapter，`engines.dsh` 改到 `>=0.2.1-rc.2 <0.3.0`），不再为每个 rc 版本新增完整 catalog profile。
+- 新增 `contracts/dsh/catalog-profile-overrides.json`：经 review 的跨 token-contract profile 复用；DSH 0.2.2-rc.2 复用 rc.1 profile，host bundle 不再随每个 rc 线性增长。
+- 新增 DSH 0.2.2-rc.2 adapter/契约与验收：Web/Desktop 入口 preview；隔离验收通过后进入发布链。
+- 兼容模式不再静默：诊断输出 `gate.compatibility-fallback`，exact evidence/claim 仍绑定精确版本。
+
+### Fixed
+
+- DSH Desktop `0.2.2-rc.2` 更新后插件被 exact allowlist 拒绝的问题。
+
 ## [0.1.7] — 2026-11-11
 
 ### Fixed

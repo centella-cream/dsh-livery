@@ -135,12 +135,21 @@ export async function readThemeSheets(packagesRoot: string): Promise<CssSheet[]>
   const file = join(packagesRoot, 'dsh-client-ui-theme', 'lib', 'client.js')
   const text = await readFile(file, 'utf8')
   const sheets: CssSheet[] = []
-  const pattern = /var ([A-Za-z0-9_]+)_css_default = ("(?:[^"\\]|\\.)*");/g
+  // rc.2 moved the same theme sheets into minified `var <name>_css_default=`
+  // template literals; older builds use JSON double-quoted literals.
+  const pattern = /var\s+([A-Za-z0-9_]+)_css_default\s*=\s*("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`);/g
+  const decodeTemplate = (literal: string): string => literal
+    .replace(/\\`/g, '`')
+    .replace(/\\\\/g, '\\')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\t/g, '\t')
   for (const match of text.matchAll(pattern)) {
     const name = match[1]
     const literal = match[2]
     if (name === undefined || literal === undefined) continue
-    sheets.push({ name, css: JSON.parse(literal) as string })
+    const css = literal.startsWith('"') ? JSON.parse(literal) as string : decodeTemplate(literal.slice(1, -1))
+    sheets.push({ name, css })
   }
   if (sheets.length === 0) throw new Error(`no inline CSS sheets found in ${file}`)
   return sheets
@@ -582,7 +591,7 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   }
   const localeMatch = /LOCALE_IDS\s*=\s*\[([^\]]*)\]/u.exec(localeText)
   if (localeMatch === null) throw new Error('built-in locale id list (LOCALE_IDS) not found')
-  const localeIds = [...localeMatch[1]!.matchAll(/["']([a-z-]+)["']/gu)].map((match) => match[1]!)
+  const localeIds = [...localeMatch[1]!.matchAll(/["'`]([a-z-]+)["'`]/gu)].map((match) => match[1]!)
   if (localeIds.length !== 2 || !localeIds.includes('zh') || !localeIds.includes('en')) {
     throw new Error(`unexpected built-in locale ids: ${localeIds.join(',')}`)
   }
@@ -942,7 +951,7 @@ export interface GeneratedAdapterRecord {
  * Build the shipped adapter record for one frozen contract snapshot.
  * Deterministic and version-independent; the renderer only serializes this.
  */
-export function adapterRecordFrom(snapshot: ContractSnapshot): GeneratedAdapterRecord {
+export function adapterRecordFrom(snapshot: ContractSnapshot, catalogProfileOverride?: string): GeneratedAdapterRecord {
   return {
     hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
@@ -958,7 +967,8 @@ export function adapterRecordFrom(snapshot: ContractSnapshot): GeneratedAdapterR
     clientTarget: snapshot.source.clientTarget,
     platformModules: snapshot.loaderAbi.platformModules.modules,
     capabilities: buildCapabilityMap(snapshot),
-    catalogProfile: catalogProfileId(snapshot),
+    catalogProfile: catalogProfileOverride ?? catalogProfileId(snapshot),
+    ...(catalogProfileOverride === undefined ? {} : { sharedProfile: true }),
     sourceKind: snapshot.source.kind,
     sourceEvidence: snapshot.loaderAbi.evidence.map((file) => file.path),
     capturedAt: snapshot.capturedAt,
@@ -1196,17 +1206,18 @@ export async function regenerateGeneratedContracts(workspace: string): Promise<G
   // contracts become runtime adapters. Historical snapshots remain on disk for
   // audit/diff but never reach the generated registry or stock table.
   const snapshots = await shippedSnapshots(workspace)
+  const overrides = await readCatalogProfileOverrides(workspace)
   const generatedDir = join(workspace, 'src', 'generated')
   await mkdir(generatedDir, { recursive: true })
   const contractPath = join(generatedDir, 'contract.ts')
   const stockPath = join(generatedDir, 'stock.ts')
-  await writeFile(contractPath, renderGeneratedRegistry(snapshots))
+  await writeFile(contractPath, renderGeneratedRegistry(snapshots, overrides))
   await writeFile(stockPath, renderGeneratedStockRegistry(snapshots))
   return { contractPath, stockPath, versions: snapshots.map((snapshot) => snapshot.hostVersion) }
 }
 
 /** Detection format of a compiled catalog profile; bump with schema/compiler changes. */
-const CATALOG_COMPILER_VERSION = '0.1.7'
+const CATALOG_COMPILER_VERSION = '0.1.8'
 
 /**
  * Render-affecting contract facts. Two host versions with the same profile can
@@ -1233,8 +1244,24 @@ export function catalogProfileId(snapshot: ContractSnapshot): string {
   })
 }
 
-export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]): string {
-  const adapters = snapshots.map(adapterRecordFrom)
+export async function readCatalogProfileOverrides(workspace: string): Promise<ReadonlyMap<string, string>> {
+  const path = join(workspace, 'contracts', 'dsh', 'catalog-profile-overrides.json')
+  if (!existsSync(path)) return new Map()
+  const document = JSON.parse(await readFile(path, 'utf8')) as { overrides?: Array<{ hostVersion?: unknown; catalogProfile?: unknown }> }
+  const overrides = new Map<string, string>()
+  for (const entry of document.overrides ?? []) {
+    if (typeof entry.hostVersion === 'string' && typeof entry.catalogProfile === 'string') {
+      overrides.set(entry.hostVersion, entry.catalogProfile)
+    }
+  }
+  return overrides
+}
+
+export function renderGeneratedRegistry(
+  snapshots: readonly ContractSnapshot[],
+  catalogProfileOverrides: ReadonlyMap<string, string> = new Map(),
+): string {
+  const adapters = snapshots.map((snapshot) => adapterRecordFrom(snapshot, catalogProfileOverrides.get(snapshot.hostVersion)))
   const lines: string[] = []
   lines.push('/**')
   lines.push(' * GENERATED — do not edit by hand.')
@@ -1271,6 +1298,8 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
   lines.push('  readonly capabilities: CapabilityMap')
   lines.push('  /** Catalog profile id: versions sharing it render byte-identical CSS. */')
   lines.push('  readonly catalogProfile: string')
+  lines.push('  /** True for a reviewed cross-token-contract profile reuse (compatibility mode). */')
+  lines.push('  readonly sharedProfile?: boolean')
   lines.push('  /** `installed-package` (npm/CLI) or `packaged-app` (Electron app.asar). */')
   lines.push('  readonly sourceKind: \'installed-package\' | \'packaged-app\'')
   lines.push('  readonly sourceEvidence: readonly string[]')
@@ -1290,6 +1319,8 @@ export function renderGeneratedRegistry(snapshots: readonly ContractSnapshot[]):
   lines.push('  readonly adapterId: string')
   lines.push('  readonly contractHash: string')
   lines.push('  readonly catalogProfile: string')
+  lines.push('  /** True for a reviewed cross-token-contract profile reuse (compatibility mode). */')
+  lines.push('  readonly sharedProfile?: boolean')
   lines.push('}')
   lines.push('')
   // Standalone literal (not derived from ADAPTERS) so a browser bundle importing

@@ -6,8 +6,8 @@
  * adapter in `sourceAdapters` serves these exact CSS bytes and previews.
  * Source manifests: `liveries/<id>/manifest.json`.
  * 
- * compilerVersion: 0.1.7
- * profiles: sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d, sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a
+ * compilerVersion: 0.1.8
+ * profiles: sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed, sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed
  * 
  * `liveries:check` fails the build if this file drifts from the manifests.
  */
@@ -17,8 +17,8 @@ import type { CatalogProfileData } from '../core/types.js'
 export type CatalogProfile = CatalogProfileData
 
 export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
-  "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d": {
-    "compiledAt": "2026-08-08T12:25:19.000Z",
+  "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed": {
+    "compiledAt": "2026-12-30T04:29:35.000Z",
     "liveries": [
       {
         "audit": {
@@ -61842,17 +61842,17 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
         }
       }
     ],
-    "profileId": "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
+    "profileId": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
     "sourceAdapters": [
       "0.2.1-rc.2",
       "0.2.1-rc.3",
       "0.2.1-rc.4",
       "0.2.1-rc.5"
     ],
-    "sourceHash": "sha256:71e9792f94eb1eb3cc3238314b0505d9f87f6081167961a46831782f1d33670f"
+    "sourceHash": "sha256:3e053faf5c3cbee705ee82085a3c3b92399d0eb9e8171c8599fd1693df4e5772"
   },
-  "sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a": {
-    "compiledAt": "2026-05-15T20:11:24.000Z",
+  "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed": {
+    "compiledAt": "2026-05-12T09:59:15.000Z",
     "liveries": [
       {
         "audit": {
@@ -124252,17 +124252,18 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
         }
       }
     ],
-    "profileId": "sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a",
+    "profileId": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed",
     "sourceAdapters": [
-      "0.2.2-rc.1"
+      "0.2.2-rc.1",
+      "0.2.2-rc.2"
     ],
-    "sourceHash": "sha256:808372ec23aff6696a1e86f28c4809091189a7e601c1cd015d91022e9ae65b86"
+    "sourceHash": "sha256:7cbc87f3b180cdaac772a36b1f284d09a4597bef1dbbe9e6b0d2f1a8f8816569"
   }
 }
 
 
 export const CATALOG_PROFILE_IDS: readonly string[] = [
-  "sha256:5c058b272bba23a8b682368b9137f95fbc5e069f38305fea519157fed71bcc5d",
-  "sha256:6f359550aa09962195e988bfa9ecaf371ecfc02930d37ba27ef01f35feb2598a"
+  "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
+  "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed"
 ]
 

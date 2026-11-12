@@ -72,18 +72,18 @@ async function packCheck(args) {
       problems.push(`package.json files must not include ${forbidden}/`)
     }
   }
-  // Narrow compatibility: engines.dsh must be the EXACT formal-matrix shipped
-  // allowlist (contracts/dsh/support-matrix.json), never a semver range.
+  // Contract policy: engines.dsh is the 0.2 compatibility range; exact evidence
+  // stays per certified version in the formal matrix.
   try {
     const matrix = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
     const shipped = matrix.entries
       .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
       .map((entry) => entry.hostVersion)
       .sort()
-    const expectedRange = shipped.join(' || ')
+    const expectedRange = shipped.length > 0 ? `>=${shipped[0]} <0.3.0` : ''
     if (shipped.length === 0) problems.push('formal support matrix has no g6-approved/released entry')
     if (pkg.engines?.dsh !== expectedRange) {
-      problems.push(`engines.dsh must be the exact shipped allowlist "${expectedRange}", got ${String(pkg.engines?.dsh)}`)
+      problems.push(`engines.dsh must be the 0.2 compatibility range "${expectedRange}", got ${String(pkg.engines?.dsh)}`)
     }
     const releases = pkg.dsh?.compatibility?.dshReleases
     if (releases === undefined || JSON.stringify(Object.keys(releases).sort()) !== JSON.stringify(shipped)) {

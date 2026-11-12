@@ -58,10 +58,10 @@ for (const file of files.filter((path) => path.endsWith('.json'))) {
   }
 }
 
-// Contract policy: the FORMAL support matrix decides the exact shipped adapter
-// allowlist. engines.dsh must equal that exact list (no ranges), and the
-// generated registry must contain only those adapters. Historical contract
-// snapshots stay on disk for audit/diff and are not part of the allowlist.
+// Contract policy: the FORMAL support matrix decides the shipped adapter set.
+// engines.dsh is the 0.2 compatibility range; exact evidence stays per version.
+// The generated registry must contain only shipped adapters. Historical
+// snapshots stay on disk for audit/diff.
 try {
   const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
   const matrix = JSON.parse(await readFile(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
@@ -69,12 +69,12 @@ try {
     .filter((entry) => entry.status === 'g6-approved' || entry.status === 'released')
     .map((entry) => entry.hostVersion)
     .sort()
-  const expectedRange = shipped.join(' || ')
+  const expectedRange = shipped.length > 0 ? `>=${shipped[0]} <0.3.0` : ''
   if (shipped.length === 0) {
     problems.push('formal support-matrix.json has no g6-approved/released entry')
   }
   if (pkg.engines?.dsh !== expectedRange) {
-    problems.push(`package.json engines.dsh must be the exact shipped allowlist "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
+    problems.push(`package.json engines.dsh must be the 0.2 compatibility range "${expectedRange}", got "${String(pkg.engines?.dsh)}"`)
   }
   const releases = pkg.dsh?.compatibility?.dshReleases
   if (releases === undefined || JSON.stringify(Object.keys(releases).sort()) !== JSON.stringify(shipped)) {

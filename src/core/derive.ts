@@ -97,6 +97,8 @@ export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   '--dsw-static-green-500',
   '--dsw-static-red-400',
   '--dsw-static-violet-400',
+  // 0.2.2-rc.2 file-upload progress track: pure alpha black, hue-free.
+  '--dsw-specific-file-upload-track',
 ] as const
 
 /** Stock declaration record for one snapshot (shared helper). */
