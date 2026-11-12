@@ -1,6 +1,6 @@
 # Documentation
 
-**Current npm release: `0.1.7` (2026-11-11).** The authoritative support policy is
+**Current npm release: `0.1.8` (2026-11-12).** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -9,7 +9,7 @@
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Stable certified (npm `latest`) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
-| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.7 |
+| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.8 |
 | DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; npm `latest`, GitHub prerelease; Web+Desktop acceptance bound |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm
@@ -24,7 +24,7 @@ Edge and any other DSH build are not supported.
 - **[Wallpaper workbench layout](design/wallpaper-workbench.md)** — versioned 0.1.7 breakpoints, equal-height rules and online-wallpaper visual policy.
 - **[Interfaces and architecture](design/interfaces.md)** — module boundaries,
   frozen host/client handshake, generated artifacts and build outputs.
-- **[Multi-version policy](design/multi-version.md)** — exact allowlist, stable
+- **[Multi-version policy](design/multi-version.md)** — API compatibility range, exact evidence, stable
   vs next-preview rules, how to add a DSH release without dropping older ones.
 - **[Style system](design/style-system.md)** — the 24 styles across palette,
   typography, shape, material and type scale.
@@ -42,7 +42,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**npm 最新发布版：`0.1.7`（2026-11-11）。** 支持策略以
+**npm 最新发布版：`0.1.8`（2026-11-12）。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 
@@ -64,7 +64,7 @@ not be cited as current support or behavior.
 - **[壁纸工作台布局](design/wallpaper-workbench.md)**：0.1.7 断点、等高规则和在线壁纸视觉策略。
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
 - **[兼容架构](design/compatibility.md)** — API 兼容回退、共享 catalog profile 与 exact evidence 边界。
-- **[多版本策略](design/multi-version.md)**：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
+- **[多版本策略](design/multi-version.md)** — 兼容范围、exact evidence、稳定/预览边界。：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
 - **[风格系统](design/style-system.md)**：24 套风格在调色、字体、形状、材质和字号阶梯上的差异。
 - **[设计参考](research/design-references.md)**：配色归属与机器可读的 [24 套风格表](research/design-table.json)。
 

@@ -7,7 +7,8 @@ under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/d
 ## 1. Exact versions, no compatibility mode
 
 The plugin ships exactly one adapter per supported DSH build. `engines.dsh` is an
-exact allowlist derived from `contracts/dsh/support-matrix.json`:
+compatibility policy: exact certified versions in `contracts/dsh/support-matrix.json`,
+with the runtime 0.2 range `>=0.2.1-rc.2 <0.3.0` and reviewed compatibility fallback:
 
 ```text
 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4

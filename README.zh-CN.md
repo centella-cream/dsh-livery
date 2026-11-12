@@ -10,13 +10,16 @@
 DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.8 发布候选。** `0.1.7` 是当前 npm 发布版；`0.1.8` 将精确版本加载
-> 改为 API hash 兼容 + 经 review 的共享 catalog profile，DSH Desktop `0.2.2-rc.2`
-> 这类 0.2.x 兼容更新不再需要新增完整 profile。
+> **发布状态：0.1.8 — 当前 npm 发布版。** `0.1.8` 将精确版本加载改为 API hash
+> 兼容 + 经 review 的共享 catalog profile，DSH Desktop `0.2.2-rc.2` 这类 0.2.x
+> 兼容更新不再需要新增完整 profile；同时修复 HMR 握手，让热更新后的 client
+> 重新采用当前 catalog 和已保存皮肤，而不是 fail closed 回 stock。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
-> Web/Desktop。`0.2.2-rc.1` 现在是 npm `latest`，但 GitHub release 仍是 prerelease，因此仍是预览声明。Windows Desktop、Edge 和其他 DSH 构建不在支持范围内，并会 fail closed。
+> Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop。`0.2.2-rc.2` 是 npm `next` 且 GitHub
+> prerelease，因此仍是预览声明。精确矩阵之外的兼容 0.2.x 构建可以 compatible-preview
+> 模式运行并输出诊断；Windows Desktop、Edge 和其他 DSH 构建不在支持范围内。
 
 [English](README.md) · 中文
 
@@ -110,22 +113,22 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.1.7`](https://www.npmjs.com/package/dsh-livery)。
+npm 最新发布版：[`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.7
+dsh plugin --profile web add dsh-livery@0.1.8
 dsh web
 ```
 
 ### Desktop app
 
-打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.7`；或使用 app 自带 CLI：
+打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.8`；或使用 app 自带 CLI：
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.7
+  plugin --profile desktop add dsh-livery@0.1.8
 ```
 
 如果新版本被 registry age window 拒绝：下载精确 tarball，核对 release sha256 后用本地
@@ -133,10 +136,10 @@ dsh web
 
 ## 验收
 
-正式发布制品已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`
-（各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`
-（各 34 通过 / 0 失败）的隔离全量验收。0.1.7 evidence
-位于 `contracts/dsh/evidence/0.1.7/`，范围、计数和已知
+正式发布制品已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
+（各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
+（各 34 通过 / 0 失败）的隔离全量验收。0.1.8 evidence
+位于 `contracts/dsh/evidence/0.1.8/`，范围、计数和已知
 限制见 [docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release

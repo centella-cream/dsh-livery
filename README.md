@@ -11,16 +11,19 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.8 release candidate.** `0.1.7` is the current npm release;
-> `0.1.8` replaces exact-version-only loading with API-hash compatibility plus
-> reviewed shared catalog profiles, so compatible DSH 0.2.x updates such as
-> Desktop `0.2.2-rc.2` no longer require a new full catalog profile.
+> **Release status: 0.1.8 — current npm release.** `0.1.8` replaces
+> exact-version-only loading with API-hash compatibility plus reviewed shared
+> catalog profiles, so compatible DSH 0.2.x updates such as Desktop
+> `0.2.2-rc.2` no longer require a new full catalog profile. It also fixes the
+> HMR handshake so a hot-reloaded client re-adopts the current catalog and saved
+> skin instead of failing closed to stock.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
-> and DSH `0.2.2-rc.1` Web/Desktop. `0.2.2-rc.1` is now npm `latest`, but its GitHub
-> release is still a prerelease, so it remains a preview claim. Windows Desktop,
-> Edge and other DSH builds are unsupported and fail closed.
+> DSH `0.2.2-rc.1` Web/Desktop and DSH `0.2.2-rc.2` Web/Desktop. `0.2.2-rc.2` is
+> npm `next` and a GitHub prerelease, so it remains a preview claim. Compatible
+> 0.2.x builds outside the exact matrix may run in diagnosed compatible-preview
+> mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
 English · [中文](README.zh-CN.md)
 
@@ -109,11 +112,15 @@ the active livery tokens. No per-plugin selectors or hashed host classes.
 
 ## Supported DSH builds
 
-`engines.dsh` is the exact allowlist:
+`engines.dsh` is the reviewed 0.2 compatibility range:
 
 ```text
-0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1
+>=0.2.1-rc.2 <0.3.0
 ```
+
+Exact certified builds remain the formal matrix and evidence authority. Newer
+0.2 builds with matching loader/host/client API hashes may load the newest
+certified adapter in compatible-preview mode with a visible diagnostic warning.
 
 | Host build | Entry | Runtime | Status |
 |---|---|---|---|
@@ -124,8 +131,8 @@ the active livery tokens. No per-plugin selectors or hashed host classes.
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** (npm `next`) |
 
-There is no compatibility mode. A different DSH version is rejected at install and
-fails closed at runtime. Stable support requires a non-prerelease official GitHub
+Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
+still fail closed. Stable support requires a non-prerelease official GitHub
 release plus the matching signed npm package on `latest`; npm `next` and GitHub
 prereleases are preview claims, not stability promises. Native macOS window chrome,
 traffic lights, vibrancy, Dock/rightbar states and OS-level DPI are host-owned and
@@ -133,23 +140,23 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.1.7`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.7
+dsh plugin --profile web add dsh-livery@0.1.8
 dsh web
 ```
 
 ### Desktop app
 
 Open **Settings → Plugins → Install by package name** and enter
-`dsh-livery@0.1.7`, or use the app-bundled CLI:
+`dsh-livery@0.1.8`, or use the app-bundled CLI:
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.7
+  plugin --profile desktop add dsh-livery@0.1.8
 ```
 
 If the registry age window rejects a fresh release, download the exact tarball,
@@ -159,9 +166,9 @@ an unverified tarball.
 ## Verification
 
 Full isolated acceptance passed on the exact release artifact for Web `0.2.1-rc.2`,
-`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1` with **275 passed / 0 failed each**, and
-Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1` with **34 / 0 each**. The 0.1.7 evidence files are under
-`contracts/dsh/evidence/0.1.7/`, and the scope,
+`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **275 passed / 0 failed each**, and
+Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **34 / 0 each**. The 0.1.8 evidence files are under
+`contracts/dsh/evidence/0.1.8/`, and the scope,
 counts and limitations are in [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
