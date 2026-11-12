@@ -11,10 +11,10 @@ A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.7 — current npm release.** `0.1.7` restores online-wallpaper
-> result thumbnails and unifies the surface/palette implementation across DSH plugin
-> pages (Trajectory, Context, Agent Team and the built-in studio). `0.1.6` adds the
-> DSH `0.2.2-rc.1` Web/Desktop adaptation and workbench layout work.
+> **Release status: 0.1.8 release candidate.** `0.1.7` is the current npm release;
+> `0.1.8` replaces exact-version-only loading with API-hash compatibility plus
+> reviewed shared catalog profiles, so compatible DSH 0.2.x updates such as
+> Desktop `0.2.2-rc.2` no longer require a new full catalog profile.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
@@ -28,6 +28,20 @@ English · [中文](README.zh-CN.md)
 
 Screenshots use the Chinese UI; Livery follows the DSH host locale. The style
 showcase uses a real online Picsum wallpaper, not a built-in default.
+
+## What's new in 0.1.8
+
+- **Compatibility architecture.** Admission is decided by loader/host/client API
+  hashes, not only an exact version string. `engines.dsh` is now
+  `>=0.2.1-rc.2 <0.3.0`; same-family 0.2 builds can use the newest certified
+  adapter in visibly diagnosed compatible-preview mode. Out-of-family and
+  API-divergent builds still fail closed.
+- **Shared catalog profiles.** A reviewed
+  `contracts/dsh/catalog-profile-overrides.json` lets token-contract-compatible
+  builds reuse a certified profile. DSH `0.2.2-rc.2` reuses the rc.1 profile, so
+  the host bundle does not grow by a full catalog per release.
+- **DSH `0.2.2-rc.2` adaptation.** Frozen contract, `preview` / npm `next` claim,
+  real Electron Desktop acceptance. See [compatibility architecture](docs/design/compatibility.md).
 
 ## What's new in 0.1.7
 
@@ -104,6 +118,7 @@ the active livery tokens. No per-plugin selectors or hashed host classes.
 | DSH `0.2.1-rc.4` | Web Profile + Chrome `156.0.8078.48` | Node `22.23.1` | **Next-channel preview** |
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** |
+| DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** (npm `next`) |
 
 There is no compatibility mode. A different DSH version is rejected at install and
 fails closed at runtime. Stable support requires a non-prerelease official GitHub

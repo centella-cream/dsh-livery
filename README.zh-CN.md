@@ -10,9 +10,9 @@
 DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.7 — 当前 npm 发布版。** `0.1.7` 恢复在线壁纸结果缩略图，并统一
-> DSH 插件页面（轨迹、上下文、编队及内置工作室）的 surface 与调色实现。`0.1.6` 引入
-> DSH `0.2.2-rc.1` Web/Desktop 适配与壁纸工作台布局调整。
+> **发布状态：0.1.8 发布候选。** `0.1.7` 是当前 npm 发布版；`0.1.8` 将精确版本加载
+> 改为 API hash 兼容 + 经 review 的共享 catalog profile，DSH Desktop `0.2.2-rc.2`
+> 这类 0.2.x 兼容更新不再需要新增完整 profile。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
@@ -23,6 +23,17 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 ![DSH Livery 的视觉风格页：大幅当前风格 Hero、全宽画廊，并应用真实在线 Picsum 壁纸](docs/assets/hero-zh.jpg)
 
 截图为中文界面；Livery 跟随 DSH 宿主语言。样式展示使用真实在线 Picsum 壁纸，而不是内置默认壁纸。
+
+## 0.1.8 更新
+
+- **兼容架构。** 准入由 loader/host/client API hash 决定，而不是只看精确版本串。
+  `engines.dsh` 改为 `>=0.2.1-rc.2 <0.3.0`；同 0.2 系列新版本可使用最新 certified
+  adapter 的 compatible-preview 模式，并输出诊断警告；跨系列或 API 不兼容版本仍 fail closed。
+- **共享 catalog profile。** 新增经 review 的
+  `contracts/dsh/catalog-profile-overrides.json`；token 契约兼容的版本复用 certified
+  profile。DSH `0.2.2-rc.2` 复用 rc.1 profile，host bundle 不再为每个 rc 增加整套 catalog。
+- **DSH `0.2.2-rc.2` 适配。** 冻结契约、npm `next` / preview 声明，并完成真实 Electron
+  Desktop 验收。详见 [兼容架构](docs/design/compatibility.md)。
 
 ## 0.1.7 更新
 
@@ -86,6 +97,7 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 | DSH `0.2.1-rc.4` | Web Profile + Chrome `156.0.8078.48` | Node `22.23.1` | **next 预览** |
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
+| DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
 
 没有兼容模式。不同 DSH 版本会在安装时拒绝，运行时 fail closed 回 stock。稳定支持要求
 官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
