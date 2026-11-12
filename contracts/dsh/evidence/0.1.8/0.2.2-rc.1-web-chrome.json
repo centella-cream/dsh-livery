@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 2,
+  "commit": "531b117dedca52290a81c237cabba3c7f56198a7",
+  "packageVersion": "0.1.8",
+  "tarballSha256": "fd0cd564d999cf4958dd101948e7becb91b53b3a1922e3ba31960d4b1ac8ccbc",
+  "tarballBytes": 3129229,
+  "generatedAt": "2026-11-12T14:36:15.144Z",
+  "scope": {
+    "hostVersion": "0.2.2-rc.1",
+    "profile": "web",
+    "browser": "chrome",
+    "browserVersion": "156.0.8078.48"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.2-rc.1",
+      "profile": "web",
+      "browser": "chrome",
+      "browserVersion": "156.0.8078.48"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "24.22.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.1",
+        "npmVersion": "0.2.2-rc.1"
+      }
+    }
+  },
+  "criticalChecks": [
+    {
+      "id": "env.browser-version",
+      "status": "pass",
+      "title": "actual full Chrome version matches the exact certified browser version requirement"
+    },
+    {
+      "id": "handshake.certified-adapter",
+      "status": "pass",
+      "title": "live host matches a certified adapter record (exact version + adapter + contract + catalog profile)"
+    },
+    {
+      "id": "catalog.certified-identity",
+      "status": "pass",
+      "title": "catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple"
+    },
+    {
+      "id": "merged.two-tab-sync",
+      "status": "pass",
+      "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops"
+    },
+    {
+      "id": "merged.two-tab-clear",
+      "status": "pass",
+      "title": "clearing wallpaper in page A clears page B through the same sync path"
+    },
+    {
+      "id": "merged.state-migration-v1",
+      "status": "pass",
+      "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored"
+    },
+    {
+      "id": "merged.preset-import-diff",
+      "status": "pass",
+      "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position"
+    },
+    {
+      "id": "merged.preset-apply-atomic",
+      "status": "pass",
+      "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action"
+    },
+    {
+      "id": "merged.preset-invalid-rejected",
+      "status": "pass",
+      "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage"
+    },
+    {
+      "id": "merged.preset-partial-failure",
+      "status": "pass",
+      "title": "injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution"
+    },
+    {
+      "id": "merged.position-remote",
+      "status": "pass",
+      "title": "nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position"
+    },
+    {
+      "id": "merged.clear-local-data",
+      "status": "pass",
+      "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache"
+    },
+    {
+      "id": "visual.floating-surfaces",
+      "status": "pass",
+      "title": "host Settings modal stays opaque above frost+atmosphere"
+    }
+  ],
+  "runs": [
+    {
+      "id": "web-0.2.2-rc.1-isolated",
+      "commit": "531b117dedca52290a81c237cabba3c7f56198a7",
+      "hostVersion": "0.2.2-rc.1",
+      "adapterId": "dsh-0.2.2-rc.1-r1",
+      "tarballSha256": "fd0cd564d999cf4958dd101948e7becb91b53b3a1922e3ba31960d4b1ac8ccbc",
+      "summary": {
+        "pass": 275,
+        "fail": 0,
+        "skip": 4,
+        "warn": 2,
+        "total": 281
+      },
+      "probe": "contracts/dsh/evidence/0.1.8/probes/web-0.2.2-rc.1-isolated.json",
+      "probeSha256": "38b08d5fe6dcafb92979c0583ad1ebf777eea0e13c70125d232fe4e34a59c8fc",
+      "report": "contracts/dsh/evidence/0.1.8/reports/web-0.2.2-rc.1-isolated.md",
+      "reportSha256": "0dc7bbbf449f34a839942b5523ffd09439312e71b0538c79ce9fdde2c35a8009"
+    }
+  ]
+}
