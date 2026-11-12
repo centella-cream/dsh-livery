@@ -16,14 +16,22 @@ ticket disagree, ask the Lead before weakening it.
 
 ## 2. DSH version compatibility
 
-### Exact allowlist, no guessing
+### API compatibility + exact evidence (0.1.8 model)
 
-- `engines.dsh` must equal the exact allowlist derived from the formal matrix.
-  Never add a range, wildcard, `^`, `~` or synthetic compatibility mode.
-- One adapter per supported host build. Unknown builds are rejected at install
-  time and fail closed to stock at runtime.
-- Every adapter needs a frozen `contracts/dsh/<version>/` snapshot and a matching
-  matrix entry. Do not add a version by editing only `engines.dsh`.
+- `engines.dsh` is the reviewed 0.2 compatibility range (`>=0.2.1-rc.2 <0.3.0`).
+  Exact certified builds remain the formal matrix authority; the range only lets
+  the runtime compatibility fallback load a compatible 0.2 build.
+- Every exact-certified adapter needs a frozen `contracts/dsh/<version>/` snapshot
+  and a matching matrix entry. Do not add a version by editing only `engines.dsh`.
+- A newer `0.2.2+`/`0.2.x` build with matching loader/host/client API hashes may
+  use the newest certified adapter in compatible-preview mode; diagnostics must
+  include `gate.compatibility-fallback`. Out-of-family versions fail closed.
+- Catalog profiles may be shared across token-contract-compatible builds only
+  through `contracts/dsh/catalog-profile-overrides.json` with a reviewed reason
+  and matching loader/host/client API hashes. Do not add a full profile just
+  because a token contract added unused tokens.
+- Compatibility mode is unclaimed. Stable/preview claims and `contracts/dsh/evidence/`
+  remain bound to exact host versions and exact artifact bytes.
 
 ### Stable vs preview claims
 
@@ -45,8 +53,10 @@ Do this in one change set, without dropping an older declared version:
 1. Confirm provenance from official GitHub tags/releases and npm dist-tags.
 2. Extract the contract (`contract:snapshot`; Desktop uses
    `prepare-desktop-contract.mjs`), review the diff.
-3. Add the matrix entry and adapter; update `engines.dsh` and
-   `dsh.compatibility.dshReleases`.
+3. Add the matrix entry and adapter; keep the 0.2 compatibility range in
+   `engines.dsh` and list the exact build in `dsh.compatibility.dshReleases`. If
+   API hashes match an existing certified profile, add a reviewed catalog-profile
+   override instead of a new full profile.
 4. Run `adapter:generate`, `contract:regenerate`, `liveries:compile`, `build`.
 5. Re-run acceptance for **all declared hosts** plus the new one on one exact
    candidate; never infer old-version success from a new-version run.
@@ -56,8 +66,9 @@ Do this in one change set, without dropping an older declared version:
    tagging.
 
 “Forward compatibility” means preserving every already-declared version while
-adding a verified adapter for the new one — not silently accepting future
-versions. Prefer an explicit install failure over an unverified guess.
+adding evidence for the new one; compatible-preview fallback is allowed only in
+the 0.2 family and must be visibly diagnosed, never silently claimed. Out-of-family
+and API-divergent builds still fail closed.
 
 ## 3. Acceptance must use independent environments
 
@@ -126,8 +137,9 @@ versions. Prefer an explicit install failure over an unverified guess.
 
 ## 6. Known pitfalls (keep these fixed)
 
-- DSH updates while the plugin pins an exact old version cause install rejection.
-  Add the new adapter/contract; never relax the gate as a shortcut.
+- DSH updates with new loader/host/client APIs still require a new adapter and
+  full evidence. Token/layout-only additions can share a reviewed catalog profile;
+  never relax the API compatibility gate or claim compatibility without a probe.
 - A newly published npm version can be blocked by the Desktop plugin manager's
   minimum-release-age/supply-chain window. The documented fallback is
   `npm pack` the exact version, verify its sha256, then install the local `.tgz`
