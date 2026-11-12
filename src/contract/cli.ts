@@ -23,6 +23,7 @@ import {
   buildContractSnapshot,
   canonicalJson,
   hashCanonical,
+  readCatalogProfileOverrides,
   readCommittedSnapshots,
   regenerateGeneratedContracts,
   renderGeneratedRegistry,
@@ -525,9 +526,10 @@ async function commandGateMatrix(context: CliContext, parsed: ParsedArgs, releas
   if (all) {
     try {
       const shipped = await shippedSnapshots(context.cwd)
+      const overrides = await readCatalogProfileOverrides(context.cwd)
       const generatedPath = join(context.cwd, 'src', 'generated', 'contract.ts')
       const generated = await readFile(generatedPath, 'utf8')
-      if (generated !== renderGeneratedRegistry(shipped)) {
+      if (generated !== renderGeneratedRegistry(shipped, overrides)) {
         bootProblems.push('src/generated/contract.ts is stale: regenerate with `pnpm contract:regenerate`')
       }
     } catch (error) {
