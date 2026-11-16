@@ -12,6 +12,7 @@ import {
   MAX_WALLPAPER_URL_LENGTH,
   WALLPAPER_POSITION_OPTIONS,
   WALLPAPER_POSITION_VALUES,
+  WALLPAPER_SIDEBAR_TINT_TOKEN,
   WALLPAPER_STATE_SCHEMA_VERSION,
   WALLPAPER_STORAGE_KEY,
   WALLPAPER_SURFACE_TOKENS,
@@ -364,11 +365,60 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).not.toContain('@font-face')
   })
 
+  it('phases the macOS sidebar tint to the same frost ratio as the main surfaces', () => {
+    const fillLight = '#ebeff2'
+    const fillDark = '#1e2227'
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'dusk' },
+      effects: { ...DEFAULT_WALLPAPER_EFFECTS, frost: 35 },
+      tokens: {
+        light: {
+          '--dsw-alias-bg-base': '#ffffff',
+          '--dsw-specific-sidebar-fill': fillLight,
+        },
+        dark: {
+          '--dsw-alias-bg-base': '#101010',
+          '--dsw-specific-sidebar-fill': fillDark,
+        },
+        frost: 35,
+      },
+    })
+    // macOS paints the ordinary sidebar as wash + 40% (light) / 50% (dark) of
+    // --dsw-specific-sidebar-tint. The tint must carry the frost ratio once, not
+    // stack the host multiplier on top of the already-translucent fill (which
+    // would land at 26-33% instead of 65%).
+    expect(css).toContain(
+      `body[data-dsh-livery][data-dsh-wallpaper]{${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, color-mix(in srgb, ${fillLight} 97%, #7a9bf0) 65%, transparent)}`,
+    )
+    expect(css).toContain(
+      `body[data-dsh-livery][data-dsh-wallpaper][data-ds-dark-theme]{${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, ${fillDark} 65%, transparent)}`,
+    )
+    // The fill stays frosted for Web/Windows and the macOS drawer path.
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillLight} 65%, transparent)`)
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillDark} 65%, transparent)`)
+    // No double frost: the tint is authored as a host token, not a surface token.
+    expect(WALLPAPER_SURFACE_TOKENS).not.toContain(WALLPAPER_SIDEBAR_TINT_TOKEN)
+  })
+
+  it('omits the macOS sidebar tint when a mode has no sidebar fill token', () => {
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'mono' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      tokens: {
+        light: { '--dsw-alias-bg-base': '#ffffff' },
+        dark: { '--dsw-alias-bg-base': '#000000' },
+        frost: 35,
+      },
+    })
+    expect(css).not.toContain(WALLPAPER_SIDEBAR_TINT_TOKEN)
+  })
+
   it('keeps host dialog surfaces opaque so settings never show page text through', () => {
     // Dialog/modal panels use --dsw-alias-bg-layer-2; making it translucent
     // would leak the underlying page through the Settings overlay.
     expect(WALLPAPER_SURFACE_TOKENS).not.toContain('--dsw-alias-bg-layer-2')
     expect(WALLPAPER_SURFACE_TOKENS).toContain('--dsw-specific-sidebar-fill')
+    expect(WALLPAPER_SURFACE_TOKENS).not.toContain(WALLPAPER_SIDEBAR_TINT_TOKEN)
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'dusk' },
       effects: { ...DEFAULT_WALLPAPER_EFFECTS, frost: 60 },
@@ -390,12 +440,18 @@ describe('wallpaper stylesheet builder', () => {
   })
 
   it('maps frost percentage to the remaining color percentage', () => {
-    const tokens = { light: { '--dsw-alias-bg-base': '#ffffff' }, dark: { '--dsw-alias-bg-base': '#000000' }, frost: 0 }
-    expect(buildWallpaperCss({ selection: { kind: 'builtin', id: 'mono' }, effects: DEFAULT_WALLPAPER_EFFECTS, tokens }))
-      .toContain('color-mix(in srgb, #ffffff 100%, transparent)')
+    const tokens = {
+      light: { '--dsw-alias-bg-base': '#ffffff', '--dsw-specific-sidebar-fill': '#f0f0f0' },
+      dark: { '--dsw-alias-bg-base': '#000000', '--dsw-specific-sidebar-fill': '#101010' },
+      frost: 0,
+    }
+    const clear = buildWallpaperCss({ selection: { kind: 'builtin', id: 'mono' }, effects: DEFAULT_WALLPAPER_EFFECTS, tokens })
+    expect(clear).toContain('color-mix(in srgb, #ffffff 100%, transparent)')
+    expect(clear).toContain(`${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, color-mix(in srgb, #f0f0f0 97%, #7a9bf0) 100%, transparent)`)
     const frosted = { ...tokens, frost: 100 }
-    expect(buildWallpaperCss({ selection: { kind: 'builtin', id: 'mono' }, effects: DEFAULT_WALLPAPER_EFFECTS, tokens: frosted }))
-      .toContain('color-mix(in srgb, #ffffff 0%, transparent)')
+    const opaque = buildWallpaperCss({ selection: { kind: 'builtin', id: 'mono' }, effects: DEFAULT_WALLPAPER_EFFECTS, tokens: frosted })
+    expect(opaque).toContain('color-mix(in srgb, #ffffff 0%, transparent)')
+    expect(opaque).toContain(`${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, color-mix(in srgb, #f0f0f0 97%, #7a9bf0) 0%, transparent)`)
   })
 
   it('omits token overrides for stock appearance or empty token maps', () => {

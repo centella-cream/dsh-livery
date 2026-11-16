@@ -334,6 +334,13 @@ export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-specific-sidebar-fill',
 ]
 
+/**
+ * Host token the macOS AppFrame paints above the sidebar fill. The host authors
+ * it as 40% (light) / 50% (dark) of `--dsw-specific-sidebar-fill`; frost already
+ * makes that fill translucent, so the ramp must not stack a second multiplier.
+ */
+export const WALLPAPER_SIDEBAR_TINT_TOKEN = '--dsw-specific-sidebar-tint' as const
+
 /** Livery token maps needed for surface translucency (absent for stock/hydrating). */
 export interface WallpaperTokenContext {
   readonly light: TokenMap
@@ -380,6 +387,42 @@ function cardSurfaceOverride(selector: string, tokens: TokenMap, frost: number):
   if (typeof layer2 !== 'string' || layer2.length === 0) return ''
   const remaining = Math.max(0, Math.min(100, 100 - frost))
   return `${selector}{--dsh-livery-card-surface:color-mix(in srgb, ${layer2} ${remaining}%, transparent)}`
+}
+
+/**
+ * Match the macOS sidebar's composed surface to the main column's frost ratio.
+ *
+ * On macOS the ordinary sidebar is not painted with
+ * `--dsw-specific-sidebar-fill` directly: the AppFrame paints a wash gradient
+ * over `--dsw-specific-sidebar-tint`, whose stock recipe is 40% of the fill in
+ * light mode and 50% in dark mode. Frost already rewrites the fill to
+ * `remaining%`, so the host multiplies again and the sidebar lands at
+ * `40–50% × remaining%` (default: 26–33%) while the main column stays at
+ * `remaining%` (default: 65%). Over a light wallpaper that reads as a washed-out
+ * left rail with white labels on a pale surface.
+ *
+ * Author the host's tint recipe directly at `remaining%` instead. This stays
+ * token-only (no host class selectors), keeps the host's light-mode blue cast,
+ * and leaves non-macOS hosts on the fill override, where no second multiplier
+ * exists. The main column keeps its own fill: the two surfaces stay deliberately
+ * distinct in colour while sharing one transparency ratio.
+ * @param selector - body-qualified selector.
+ * @param tokens - compiled livery token map for one mode.
+ * @param frost - frost percentage (0…100).
+ * @param mode - `light` keeps the host's 97/3 blue cast; `dark` uses the fill.
+ * @returns the tint override rule, or '' when the mode has no sidebar fill.
+ */
+function sidebarTintOverride(
+  selector: string,
+  tokens: TokenMap,
+  frost: number,
+  mode: 'light' | 'dark',
+): string {
+  const fill = tokens['--dsw-specific-sidebar-fill']
+  if (typeof fill !== 'string' || fill.length === 0) return ''
+  const remaining = Math.max(0, Math.min(100, 100 - frost))
+  const base = mode === 'light' ? `color-mix(in srgb, ${fill} 97%, #7a9bf0)` : fill
+  return `${selector}{${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, ${base} ${remaining}%, transparent)}`
 }
 
 /**
@@ -435,10 +478,14 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     const glass: string[] = []
     const light = tokenOverrides(lightSelector, tokens.light, tokens.frost)
     if (light.length > 0) glass.push(light)
+    const lightTint = sidebarTintOverride(lightSelector, tokens.light, tokens.frost, 'light')
+    if (lightTint.length > 0) glass.push(lightTint)
     const lightCard = cardSurfaceOverride(lightSelector, tokens.light, tokens.frost)
     if (lightCard.length > 0) glass.push(lightCard)
     const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost)
     if (dark.length > 0) glass.push(dark)
+    const darkTint = sidebarTintOverride(darkSelector, tokens.dark, tokens.frost, 'dark')
+    if (darkTint.length > 0) glass.push(darkTint)
     const darkCard = cardSurfaceOverride(darkSelector, tokens.dark, tokens.frost)
     if (darkCard.length > 0) glass.push(darkCard)
     // High-contrast and reduced-transparency users get the original opaque

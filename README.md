@@ -25,6 +25,11 @@ host theme takeover.
 > 0.2.x builds outside the exact matrix may run in diagnosed compatible-preview
 > mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
+> **Working tree (unreleased, target 0.1.9):** macOS wallpaper frost now phases the
+> sidebar tint to the same transparency as the main column, so a light wallpaper no
+> longer washes out the left navigation. See
+> [the sidebar surface note](docs/design/wallpaper-workbench.md#sidebar-surface).
+
 English · [中文](README.zh-CN.md)
 
 ![DSH Livery's Visual Style page with a large current-style hero, full-width gallery and a real online Picsum wallpaper](docs/assets/hero-en.jpg)

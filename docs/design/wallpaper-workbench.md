@@ -1,7 +1,8 @@
 # Wallpaper workbench layout (0.1.7)
 
-Status: current for DSH Livery `0.1.7`. This note is versioned with the release so
-the layout decision and its acceptance boundary stay reviewable after later changes.
+Status: current for DSH Livery `0.1.8`; the sidebar surface parity fix is
+unreleased (target `0.1.9`). This note is versioned with the release so the layout
+decision and its acceptance boundary stay reviewable after later changes.
 
 ## Problem
 
@@ -60,11 +61,28 @@ per-page selector override.
 
 ## Sidebar surface
 
-The host left navigation uses `--dsw-specific-sidebar-fill`. Wallpaper frost
-includes that token in the same active-livery surface override set, so the image
-continues behind the navigation instead of stopping at an opaque sidebar edge.
-The host remains the painter; Livery only provides the translucent color-mix value
-when wallpaper is active and never targets host hashed classes.
+The host left navigation is painted through two different token paths, and both
+must produce the same wall-relative transparency as the main column:
+
+| Host path | Painted value | Wallpaper treatment |
+|---|---|---|
+| Web, Windows, macOS drawer | `--dsw-specific-sidebar-fill` directly | Frost the fill once at `remaining%` (`100 - frost`). |
+| macOS ordinary sidebar | wash gradient over `--dsw-specific-sidebar-tint` (stock: 40% of the fill in light mode, 50% in dark mode; light mode adds a 3% `#7a9bf0` cast) | Author the tint at the same `remaining%`; do not let the host's 40/50% multiply the frosted fill again. |
+
+Frosting only the fill is not enough on macOS: the host would compose
+`40–50% × remaining%` (26–33% at the default 35% frost) for the sidebar while the
+main column uses `remaining%` (65%). Over a light wallpaper the left rail then reads as
+a pale sheet under white labels, and the two sides no longer look like one theme.
+
+The wallpaper stylesheet therefore emits
+`--dsw-specific-sidebar-tint: color-mix(in srgb, color-mix(in srgb, <fill> 97%, #7a9bf0) <remaining>%, transparent)`
+in light mode and `color-mix(in srgb, <fill> <remaining>%, transparent)` in dark
+mode. This is token-only (no host hashed classes), preserves the host's light-mode
+blue cast, and leaves the sidebar fill slightly distinct from the main base by
+colour rather than by opacity. The fill remains frosted for the other host paths
+and for the macOS drawer. With no wallpaper the host keeps its stock 40/50% vibrancy;
+under `prefers-reduced-transparency: reduce` or `forced-colors: active` the whole
+glass block is absent and the host paints its opaque fallback.
 
 ## Visual verification
 
@@ -78,6 +96,12 @@ when wallpaper is active and never targets host hashed classes.
 - Browser acceptance still asserts no horizontal overflow, one source card with
   four tabs, and one-column workbench behavior at 1024/767. The release evidence
   for 0.1.7 binds these runs to the artifact.
+- Before the next artifact is frozen, Desktop acceptance must add a sidebar
+  parity check: with a dark livery and a light wallpaper active, the computed
+  `--dsw-specific-sidebar-tint` alpha must equal the computed
+  `--dsw-alias-bg-base` alpha (both `remaining%`), and the captured dark-theme
+  screenshot must show the navigation text at the same surface family as the main
+  column. The stylesheet unit test covers the token math, not the rendered host.
 
 ## Related evidence
 
