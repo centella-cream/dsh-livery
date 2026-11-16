@@ -71,9 +71,11 @@ preview scenes.
 
 ## Wallpapers
 
-![Built-in Aurora wallpaper with focal position, blur, dim, frost and atmosphere controls](docs/assets/wallpaper-studio-en.jpg)
+![Built-in Aurora wallpaper with blur, dim, frost and atmosphere controls](docs/assets/wallpaper-studio-en.jpg)
 
-A built-in Aurora wallpaper with focal position and the four source tabs. Opening
+A built-in Aurora wallpaper with the four source tabs. Blur, dim, frost and the
+global atmosphere controls apply to the whole interface. Focal positioning is
+available for remote and uploaded wallpapers, not for built-in designs. Opening
 a tab loads one batch of content; search, randomise, page or switch source
 explicitly. Wallpaper choices stay local.
 

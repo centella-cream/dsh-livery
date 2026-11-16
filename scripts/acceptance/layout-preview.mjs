@@ -37,8 +37,10 @@ const expectVersion = flag('--expect-version', '0.2.1-rc.2')
 
 const WIDTHS = [
   { width: 1440, height: 900 },
+  { width: 1200, height: 800 },
   { width: 1024, height: 800 },
   { width: 767, height: 900 },
+  { width: 600, height: 900 },
 ]
 const THEMES = ['light', 'dark']
 const STRIP_PNG = Buffer.from(
@@ -367,8 +369,8 @@ try {
         const styleMetrics = await collectStyleMetrics()
         metrics.widths[key][`${theme}-wallpaper-${wallpaperOn ? 'on' : 'off'}-style`] = styleMetrics
         await capture(`${viewport.width}-${theme}-wallpaper-${wallpaperOn ? 'on' : 'off'}-style.png`)
+        const expectedColumns = viewport.width >= 1440 ? 6 : viewport.width >= 1100 ? 4 : viewport.width >= 700 ? 3 : 2
         if (wallpaperOn && viewport.width === 1440 && theme === 'light') {
-          const expectedColumns = viewport.width >= 1440 ? 6 : 3
           if (styleMetrics.galleryColumns !== expectedColumns) recordIssue('medium', 'style-gallery-columns', `${viewport.width} gallery renders ${styleMetrics.galleryColumns} columns (expected ${expectedColumns}).`)
           if (styleMetrics.toolbarRows > 2) recordIssue('medium', 'style-toolbar-rows', `Style toolbar renders ${styleMetrics.toolbarRows} rows (expected ≤2).`)
           if (styleMetrics.toolbarOverflowX) recordIssue('medium', 'style-toolbar-overflow', 'Style toolbar overflows horizontally.')
@@ -380,7 +382,7 @@ try {
         if (styleMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-style-overflow`, 'Style page has horizontal document overflow.')
         if (styleMetrics.toolbarRows > 2) recordIssue('medium', `style-toolbar-rows-${viewport.width}`, `Style toolbar renders ${styleMetrics.toolbarRows} rows at ${viewport.width}px (expected ≤2).`)
         if (viewport.width < 1440) {
-          if (styleMetrics.galleryColumns !== 3) recordIssue('medium', `style-gallery-columns-${viewport.width}`, `${viewport.width} gallery renders ${styleMetrics.galleryColumns} columns (expected 3).`)
+          if (styleMetrics.galleryColumns !== expectedColumns) recordIssue('medium', `style-gallery-columns-${viewport.width}`, `${viewport.width} gallery renders ${styleMetrics.galleryColumns} columns (expected ${expectedColumns}).`)
         }
         if (viewport.width < 1440 && !styleMetrics.galleryVisibleInFirstViewport) recordIssue('medium', `style-gallery-below-fold-${viewport.width}`, `Style gallery starts at ${styleMetrics.galleryTop}px, below the ${viewport.height}px first viewport; the large hero consumes the whole first screen.`)
         await showWallpaper()
@@ -399,11 +401,11 @@ try {
           if (wallpaperMetrics.manageOpen !== false) recordIssue('medium', 'wallpaper-manage-open', 'Management section is not collapsed by default.')
         }
         if (wallpaperMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-wallpaper-overflow`, 'Wallpaper page has horizontal document overflow.')
-        // Documented 0.1.7 policy: only the side-by-side 1440 workbench promises
+        // Current layout policy: only the side-by-side 1440 workbench promises
         // the source tabs in the first viewport. 1024/767 are deliberately
         // single-column and scroll to the source card; the remote focal-position
         // control is retained instead of being hidden to win a fold metric.
-        if (viewport.width >= 1200 && wallpaperMetrics.sourceTabsTop >= viewport.height) recordIssue('medium', `wallpaper-source-below-fold-${viewport.width}`, `Wallpaper source tabs start at ${wallpaperMetrics.sourceTabsTop}px, below the ${viewport.height}px first viewport.`)
+        if (viewport.width >= 1440 && wallpaperMetrics.sourceTabsTop >= viewport.height) recordIssue('medium', `wallpaper-source-below-fold-${viewport.width}`, `Wallpaper source tabs start at ${wallpaperMetrics.sourceTabsTop}px, below the ${viewport.height}px first viewport.`)
       }
     }
   }
