@@ -10,92 +10,76 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.9 — 发布候选，等待人工验收。** `0.1.9` 新增四套 GUI 优先的
-> palette（蓝图、包豪斯、陶土、磷光）、可选组件 chrome 轴、带风格 DNA 的紧凑 28 套
-> 目录，以及 macOS 侧栏 frost 对齐修复。当前尚未发布；在候选被验收并 promote 之前，
+> **发布状态：发布候选。** 下一个 npm 版本尚未发布；在候选被验收并发布之前，
 > `0.1.8` 仍是 npm 当前发布版。
->
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
-> Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop。`0.2.2-rc.2` 是 npm `next` 且 GitHub
-> prerelease，因此仍是预览声明。精确矩阵之外的兼容 0.2.x 构建可以 compatible-preview
-> 模式运行并输出诊断；Windows Desktop、Edge 和其他 DSH 构建不在支持范围内。
+> Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop。
+> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease，因此仍是预览声明。精确矩阵之外的
+> 兼容 0.2.x 构建可以 compatible-preview 模式运行并输出诊断；Windows Desktop、Edge
+> 和其他 DSH 构建不在支持范围内。
 
 [English](README.md) · 中文
 
-![DSH Livery 的视觉风格页：紧凑的当前风格摘要与高密度风格目录](docs/assets/hero-zh.jpg)
+![DSH Livery 的视觉风格页：应用蓝图风格后的紧凑摘要与 28 套风格目录](docs/assets/hero-zh.jpg)
 
-截图为中文界面；Livery 跟随 DSH 宿主语言。样式展示使用真实在线 Picsum 壁纸，而不是内置默认壁纸。
+截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。
 
-## 0.1.9 更新
-
-- **紧凑目录，而不是 Hero + 长滚动。** 当前风格缩成 220×138 摘要条；28 套风格放在
-  一个连续的 6/4/3/2 列网格里，分类 chip 是唯一分类导航。1440 下目录滚动高度从约
-  2,788px 降到 1,480px。
-- **每张卡片都有风格 DNA。** 卡片直接标出表面配方、组件 chrome 和 UI 字体族；默认排序
-  先把形状差异最大的风格放在第一屏，而不是先排一组相似卡片。
-- **四套 GUI 优先的新 palette。** 蓝图（工程青 + 等宽 + editorial）、包豪斯（明黄/钴蓝 +
-  展示体 + brutal/poster）、陶土（赤陶 + 圆体 + pill/tinted）、磷光（绿色 CRT + terminal）。
-  风格总数从 24 增至 28。
-- **组件 chrome。** `layout.chrome` 可从 seeds 推导并着色/描边/压暗/块状填充侧栏、
-  composer、气泡、active 行和 selector；随包提供 6 个配方，28 套风格各选一个。
-- **macOS 侧栏 frost 对齐。** 壁纸样式表现在按与主栏相同的 frost 比例直接写入
-  `--dsw-specific-sidebar-tint`，浅色壁纸不再把左侧导航冲淡。
-
-## 0.1.7 更新
-
-- **在线结果缩略图恢复。** Online 页签现在会渲染图源缩略图；加载中显示本地骨架，失败时
-  保留骨架作为回退。此前只渲染骨架，列表正常时看起来也是空白，直到点击后才生效。
-- **继承 0.1.6：** DSH `0.2.2-rc.1` Web/Desktop 支持、1440 等高工作台、1024/767 单列布局、
-  `v0.1.7` 标题标识，以及在线壁纸优先的视觉/README 验收。
-- **DSH 插件页面统一 surface。** 轨迹、上下文、编队等宿主插件页继承同一套 livery 层级和
-  调色变量；第三方数据视图使用当前风格强调色，而不是固定 stock 图表色。
-- **文档纪律。** 重要设计变更随版本写入 `docs/design/`；README、SECURITY、支持矩阵和
-  CHANGELOG 作为同一发布集同步更新。
-
-## 功能
+## 功能亮点
 
 - **六轴 28 套风格。** 色彩（OKLab seeds → 完整明暗 token）、字体（10 套本地字体栈、9 种
   排版配置）、模块形状、层级/材质、边框/焦点和组件 chrome。包含 14 套原创、12 套宽松
   许可配色和 2 套原创中式设计。
+- **紧凑目录，而不是 Hero + 长滚动。** 当前风格缩成 220×138 摘要条；28 套风格放在
+  一个连续的 6/4/3/2 列网格里，分类 chip 是唯一分类导航。
+- **每张卡片都有风格 DNA。** 卡片直接标出表面配方、组件 chrome 和 UI 字体族，应用前
+  就能分辨形状和组件差异。
+- **GUI 优先的 palette。** 蓝图、包豪斯、陶土和磷光不是简单换色：工程青、明黄/钴蓝
+  展示体、赤陶胶囊和绿色 CRT 终端表面。
+- **组件 chrome。** `layout.chrome` 可从 seeds 推导并着色/描边/压暗/块状填充侧栏、
+  composer、气泡、active 行和 selector；随包提供 6 个配方，28 套风格各选一个。
 - **壁纸工作室。** 在线 Picsum/Openverse、24 张内置 CSS 壁纸、Recent、本地/链接上传
   （IndexedDB）。模糊 0–24 px、变暗 0–70 %、磨砂 0–100 %、全局氛围。两层壁纸均为
   viewport-relative `cover`，只裁切、不拉伸变形。
 - **预设和焦点位置。** 导出/导入 风格 + 壁纸 + 效果 + 九宫格焦点；远程/上传壁纸支持
   指针和键盘焦点定位。预设不包含上传 blob、CSS、token 或本地路径。
-- **工作台 UI。** 风格页包含紧凑的当前风格摘要和连续目录；壁纸页包含当前壁纸、效果和
-  四页签来源卡；预设与本地数据清理收在可折叠管理区。
+- **macOS 侧栏 frost 对齐。** 壁纸样式表现在按与主栏相同的 frost 比例直接写入
+  `--dsw-specific-sidebar-tint`，浅色壁纸不再把左侧导航冲淡。
 - **可验证的信任边界。** 精确宿主 allowlist、冻结契约、纯 token CSS、loader ABI、
   对比度/CSS 审计和提交的验收 evidence。未知宿主安装时拒绝，运行时 fail closed 回 stock。
 
 ## 风格
 
-![六套精选风格的固定预览场景](docs/assets/styles-zh.jpg)
+![六套精选风格：蓝图、包豪斯、陶土、磷光、朱砂和石墨](docs/assets/styles-zh.jpg)
 
-28 套风格中的六套：**青瓷、梅子、Everforest、Nord、Rosé Pine、Tokyo Night**。这些是
-随包发布的固定预览场景，实时画廊使用同一套预览。
+28 套风格中的六套：**蓝图、包豪斯、陶土、磷光、朱砂、石墨**。每个画面都是应用该风格
+后的真实 DSH 界面；画廊使用同一套预览。
 
 ## 壁纸
 
-![真实在线 Picsum 壁纸、焦点位置和四页签壁纸来源](docs/assets/wallpaper-studio-zh.jpg)
+![内置极光壁纸、焦点位置、模糊、变暗、磨砂和全局氛围控制](docs/assets/wallpaper-studio-zh.jpg)
 
-从“在线壁纸”加载的真实 Picsum 图片，包含焦点位置和四个来源页签。打开页签会加载一批
-随机图片；搜索、随机、翻页或切换来源都由你主动触发。壁纸选择保存在本地。
+内置极光壁纸，包含焦点位置和四个来源页签。打开页签会加载一批内容；搜索、随机、翻页
+或切换来源都由你主动触发。壁纸选择保存在本地。
 
 ## 所有 DSH 插件页面
 
-![上下文洞察页使用同一套 livery surface 与图表调色](docs/assets/plugin-surfaces.jpg)
+![应用蓝图风格和极光壁纸后的上下文洞察页](docs/assets/plugin-surfaces-zh.jpg)
 
-轨迹、上下文、编队和内置工作室共用同一套实现：livery 层级让卡片/表格/浮层在页面底色上
-保持可见层级，第三方图表调色变量映射到当前风格 token；不写任何逐插件选择器或宿主 hashed class。
+这是应用同一套风格和壁纸后的上下文洞察页。轨迹、上下文、编队等宿主插件页共享 livery
+token 层：卡片、表格和浮层沿用同一套 surface 层级，第三方图表调色变量映射到当前风格
+token；不写任何逐插件选择器或宿主 hashed class。
 
 ## 支持的 DSH 版本
 
-`engines.dsh` 精确 allowlist：
+`engines.dsh` 是经过 review 的 0.2 兼容范围：
 
 ```text
-0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1
+>=0.2.1-rc.2 <0.3.0
 ```
+
+精确认证构建仍以正式矩阵和 evidence 为准。API hash 匹配的更新 0.2 构建可以
+compatible-preview 模式加载最新认证 adapter，并输出可见诊断。
 
 | 宿主版本 | 入口 | 运行时 | 状态 |
 |---|---|---|---|
@@ -105,10 +89,10 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
-| DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`）；Web + Desktop 均已验收 |
+| DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`） |
 
-没有兼容模式。不同 DSH 版本会在安装时拒绝，运行时 fail closed 回 stock。稳定支持要求
-官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
+compatible-preview 不是稳定性承诺；0.3+ 和 API 不一致的构建仍会 fail closed。稳定支持
+要求官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
 prerelease 属于预览声明，不承诺渠道稳定性。macOS 原生窗口 chrome、红绿灯、vibrancy、
 Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。完整策略见
 [docs/design/multi-version.md](docs/design/multi-version.md)。
@@ -116,8 +100,7 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 ## 安装
 
 npm 最新发布版：[`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery)。
-`0.1.9` 候选目前只在本地，人工验收通过后再走正式发布；测试时用官方 plugin-manager
-路径安装候选 tarball。
+下一个版本在验收通过和发布之前只是本地候选。
 
 ### Web Profile
 
@@ -128,19 +111,18 @@ dsh web
 
 ### Desktop app
 
-打开 **设置 → 插件 → 按包名安装**，输入 `dsh-livery@0.1.8`；或使用 app 自带 CLI：
-
 ```bash
-"/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add dsh-livery@0.1.8
+dsh plugin --profile desktop add dsh-livery@0.1.8
 ```
 
-如果新版本被 registry age window 拒绝：下载精确 tarball，核对 release sha256 后用本地
-文件安装。不要安装未校验的 tarball。
+包变化后重启 App。也可以在 **设置 → 插件** 中按包名安装。
+
+如果新版本被 registry age window 拒绝：安装精确 release tarball，并先核对公布的
+sha256。不要安装未校验的 tarball。
 
 ## 验收
 
-`0.1.9` 候选已在 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
+当前候选已在 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
 （各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
 （各 34 通过 / 0 失败）上完成隔离全量验收。证据绑定在 `contracts/dsh/evidence/0.1.9/`。
 范围、计数和已知限制见 [docs/verification.md](docs/verification.md)。

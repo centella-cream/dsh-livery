@@ -39,11 +39,11 @@ host bundle grow by roughly 150 KiB gzip per version.
 - Unknown compatible versions may run, but are not claimed; promote them with evidence
   before listing them as stable or preview claims.
 
-## Verified in 0.1.8
+## Verified in the current candidate
 
 - Desktop `0.2.2-rc.2`: 34 checks pass on the real Electron app with the shared
   rc.1 catalog profile.
-- Web `0.2.2-rc.2`: quick acceptance passes; full 0.1.8 evidence pending.
+- Web `0.2.2-rc.2` and `0.2.2-rc.3`: full acceptance passes on the current candidate.
 - All older certified hosts remain in the test matrix.
 
 ## Hot update (HMR)
