@@ -9,8 +9,15 @@ packaging; they are folded into the `0.1.0` entry.
 
 ## [Unreleased]
 
+### Added
+
+- 视觉风格页改为紧凑目录：当前风格为 220×138 摘要条，24 套风格在一个连续网格中展示，分类 chip 成为唯一分类导航，不再重复六段分组标题；默认按表面配方从粗野/终端/胶囊/编辑/玻璃向柔和排序，第一屏先展示形状差异。1440 宽下为 6 列，1024/767 为 3 列；1440 的目录滚动高度从约 2788px 降到 1307px，无横向溢出。
+- 风格卡片新增两项由编译数据派生的“风格 DNA”：表面配方（终端/粗野/胶囊/纸张/玻璃等）与 UI 字体族（无衬线/衬线/等宽/展示/圆体），卡片不再重复长描述，描述保留在摘要条和原生 title 中。
+- 新增 3 个表面配方 `brutal`、`pill`、`editorial`，并启用既有 `terminal`：`graphite` 改为终端、`cinnabar` 改为粗野、`sakura` 改为胶囊、`rice-paper` 改为编辑。预设总数仍为 24，形状/阴影/边框轴明显拉开。
+
 ### Fixed
 
+- 修复预览 SVG 不解析无单位 `0` 圆角、导致方形配方回退为 16px 预览圆角的问题；粗野/终端/编辑配方现在在画廊中真实呈现方形几何。
 - 修复 macOS 普通侧栏在壁纸模式下比右侧主内容区明显更透、白字对比度不足的问题：宿主把 `--dsw-specific-sidebar-fill` 以 40%（浅色）/ 50%（深色）合成进 `--dsw-specific-sidebar-tint`，而壁纸 frost 又先把 fill 降到 65%，两层相乘后侧栏只剩约 26–33% 不透明度。现在按同一 frost 比例直接写入 `--dsw-specific-sidebar-tint`（浅色模式保留宿主 97/3 的蓝色偏移），侧栏与主栏共享同一透明度；Web/Windows 与 macOS 抽屉路径仍使用 fill。设计说明见 `docs/design/wallpaper-workbench.md` 的 Sidebar surface。
 
 ## [0.1.8] — 2026-11-12

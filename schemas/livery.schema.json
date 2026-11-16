@@ -377,7 +377,10 @@
         "rounded",
         "paper",
         "elevated",
-        "terminal"
+        "terminal",
+        "brutal",
+        "pill",
+        "editorial"
       ],
       "description": "Registered surface-style recipe id (src/core/registry.ts SurfaceStyleDefinitions). The manifest never carries radii/shadows/tokens for the style; only the registered id."
     },

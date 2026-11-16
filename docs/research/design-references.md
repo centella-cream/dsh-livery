@@ -1,6 +1,7 @@
 # Design references: the 24-style set
 
-> **Status (0.1.4):** current attribution record for the 24 shipped styles.
+> **Status (0.1.8):** current attribution record for the 24 shipped styles; the
+> 0.1.9 recipe rebalance is recorded in [`style-gallery.md`](../design/style-gallery.md).
 
 The set keeps the 10 original ids (retuned for the new style system) and
 adds 14: 12 palettes inspired by open-source themes plus 2 original
@@ -41,7 +42,7 @@ repositories. The two original entries below are authored for this project.
 | id | name | rationale |
 |---|---|---|
 | celadon | 青瓷 Celadon | 宋代青瓷釉色：微青、温润、留白充足；衬线标题 + 人文无衬线正文 + 大行距。 |
-| cinnabar | 朱砂 Cinnabar | 印章朱砂：浓而不刺的红，圆角正式感，衬线正文 + 显示体标题。 |
+| cinnabar | 朱砂 Cinnabar | 印章朱砂：浓而不刺的红，方正硬朗、硬投影，衬线正文 + 显示体标题。 |
 
 ## Style axes used to differentiate the 24 designs
 

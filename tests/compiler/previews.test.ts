@@ -292,6 +292,13 @@ describe('style-system visual differentiation', () => {
     }
   })
 
+  it('parses unitless zero radii so square recipes render square', () => {
+    const cinnabar = renderPreview(previewSource(0, 'cinnabar'), 'zh', 'light', profiles[0]?.stock ?? profileStockFallback())
+    const radii = attrValues(cinnabar, 'rx')
+    expect(radii).toContain(0)
+    expect(Math.max(...radii)).toBeLessThanOrEqual(2)
+  })
+
   it('renders elevation only via deterministic feDropShadow, hairline strokes otherwise', () => {
     let withShadow = 0
     let hairlineOnly = 0

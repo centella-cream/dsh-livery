@@ -238,6 +238,100 @@ const BORDERS_STRONG_DARK = {
   '--dsw-alias-border-l4': 'rgba(255, 255, 255, 0.28)',
 } as const
 
+/** Brutal: square geometry with hard, offset block shadows. */
+const RADIUS_BRUTAL = {
+  '--dsw-radius-xs': '0',
+  '--dsw-radius-sm': '0',
+  '--dsw-radius-md': '0',
+  '--dsw-radius-lg': '0',
+  '--dsw-radius-xl': '0',
+  '--dsw-radius-panel': '0',
+  '--dsw-corner-shape': 'superellipse(0.6)',
+} as const
+
+const SHADOWS_BRUTAL_LIGHT = {
+  '--dsw-shadow-lv1': '2px 2px 0 0 #000000',
+  '--dsw-shadow-lv1-blur': '3px 3px 0 0 #000000',
+  '--dsw-shadow-lv2': '4px 4px 0 0 #000000',
+  '--dsw-shadow-lv3': '6px 6px 0 0 #000000',
+  '--dsw-elevation-panel': '4px 4px 0 0 #000000',
+  '--dsw-elevation-prominent': '6px 6px 0 0 #000000',
+  '--dsw-elevation-soft': '3px 3px 0 0 #000000',
+} as const
+
+const SHADOWS_BRUTAL_DARK = {
+  '--dsw-shadow-lv1': '2px 2px 0 0 #ffffff',
+  '--dsw-shadow-lv1-blur': '3px 3px 0 0 #ffffff',
+  '--dsw-shadow-lv2': '4px 4px 0 0 #ffffff',
+  '--dsw-shadow-lv3': '6px 6px 0 0 #ffffff',
+  '--dsw-elevation-panel': '4px 4px 0 0 #ffffff',
+  '--dsw-elevation-prominent': '6px 6px 0 0 #ffffff',
+  '--dsw-elevation-soft': '3px 3px 0 0 #ffffff',
+} as const
+
+const BORDERS_BRUTAL_LIGHT = {
+  '--dsw-alias-border-l1': 'rgba(0, 0, 0, 0.5)',
+  '--dsw-alias-border-l2': 'rgba(0, 0, 0, 0.65)',
+  '--dsw-alias-border-l3': 'rgba(0, 0, 0, 0.8)',
+  '--dsw-alias-border-l4': 'rgba(0, 0, 0, 0.95)',
+} as const
+
+const BORDERS_BRUTAL_DARK = {
+  '--dsw-alias-border-l1': 'rgba(255, 255, 255, 0.5)',
+  '--dsw-alias-border-l2': 'rgba(255, 255, 255, 0.65)',
+  '--dsw-alias-border-l3': 'rgba(255, 255, 255, 0.8)',
+  '--dsw-alias-border-l4': 'rgba(255, 255, 255, 0.95)',
+} as const
+
+/** Pill: capsule controls over generously rounded panels. */
+const RADIUS_PILL = {
+  '--dsw-radius-xs': '999px',
+  '--dsw-radius-sm': '999px',
+  '--dsw-radius-md': '20px',
+  '--dsw-radius-lg': '28px',
+  '--dsw-radius-xl': '34px',
+  '--dsw-radius-panel': '40px',
+} as const
+
+const BORDERS_PILL_LIGHT = {
+  '--dsw-alias-border-l1': 'rgba(0, 0, 0, 0.05)',
+  '--dsw-alias-border-l2': 'rgba(0, 0, 0, 0.09)',
+  '--dsw-alias-border-l3': 'rgba(0, 0, 0, 0.13)',
+  '--dsw-alias-border-l4': 'rgba(0, 0, 0, 0.18)',
+} as const
+
+const BORDERS_PILL_DARK = {
+  '--dsw-alias-border-l1': 'rgba(255, 255, 255, 0.05)',
+  '--dsw-alias-border-l2': 'rgba(255, 255, 255, 0.09)',
+  '--dsw-alias-border-l3': 'rgba(255, 255, 255, 0.13)',
+  '--dsw-alias-border-l4': 'rgba(255, 255, 255, 0.18)',
+} as const
+
+/** Editorial: near-square print geometry with crisp rules instead of shadows. */
+const RADIUS_EDITORIAL = {
+  '--dsw-radius-xs': '0',
+  '--dsw-radius-sm': '2px',
+  '--dsw-radius-md': '4px',
+  '--dsw-radius-lg': '6px',
+  '--dsw-radius-xl': '8px',
+  '--dsw-radius-panel': '10px',
+  '--dsw-corner-shape': 'superellipse(1)',
+} as const
+
+const BORDERS_EDITORIAL_LIGHT = {
+  '--dsw-alias-border-l1': 'rgba(0, 0, 0, 0.2)',
+  '--dsw-alias-border-l2': 'rgba(0, 0, 0, 0.3)',
+  '--dsw-alias-border-l3': 'rgba(0, 0, 0, 0.4)',
+  '--dsw-alias-border-l4': 'rgba(0, 0, 0, 0.55)',
+} as const
+
+const BORDERS_EDITORIAL_DARK = {
+  '--dsw-alias-border-l1': 'rgba(255, 255, 255, 0.2)',
+  '--dsw-alias-border-l2': 'rgba(255, 255, 255, 0.3)',
+  '--dsw-alias-border-l3': 'rgba(255, 255, 255, 0.4)',
+  '--dsw-alias-border-l4': 'rgba(255, 255, 255, 0.55)',
+} as const
+
 /** Warm paper hairlines (light) and warm ink hairlines (dark). */
 const BORDERS_PAPER_LIGHT = {
   '--dsw-alias-border-l1': 'rgba(120, 90, 50, 0.14)',
@@ -460,6 +554,24 @@ export const SURFACE_STYLE_DEFINITIONS: Readonly<Record<SurfaceStyleId, SurfaceS
       '--dsw-focus-ring-width': '2px',
       ...BORDERS_STRONG_DARK,
     },
+  },
+  brutal: {
+    id: 'brutal',
+    note: 'Square blocks with hard offset shadows and thick-looking rules.',
+    light: { ...RADIUS_BRUTAL, ...SHADOWS_BRUTAL_LIGHT, ...BORDERS_BRUTAL_LIGHT, '--dsw-menu-backdrop-filter': 'none', '--dsw-mask-blur': 'none', '--dsw-focus-ring-width': '2px' },
+    dark: { ...RADIUS_BRUTAL, ...SHADOWS_BRUTAL_DARK, ...BORDERS_BRUTAL_DARK, '--dsw-menu-backdrop-filter': 'none', '--dsw-mask-blur': 'none', '--dsw-focus-ring-width': '2px' },
+  },
+  pill: {
+    id: 'pill',
+    note: 'Capsule controls with large soft panels and hairline separation.',
+    light: { ...RADIUS_PILL, ...SHADOWS_SOFT, ...BORDERS_PILL_LIGHT, '--dsw-focus-ring-width': '2px' },
+    dark: { ...RADIUS_PILL, ...SHADOWS_SOFT, ...BORDERS_PILL_DARK, '--dsw-focus-ring-width': '2px' },
+  },
+  editorial: {
+    id: 'editorial',
+    note: 'Near-square print geometry with strong rules and no elevation.',
+    light: { ...RADIUS_EDITORIAL, ...NO_SHADOWS, ...BORDERS_EDITORIAL_LIGHT, '--dsw-menu-backdrop-filter': 'none', '--dsw-mask-blur': 'none', '--dsw-focus-ring-width': '2px' },
+    dark: { ...RADIUS_EDITORIAL, ...NO_SHADOWS, ...BORDERS_EDITORIAL_DARK, '--dsw-menu-backdrop-filter': 'none', '--dsw-mask-blur': 'none', '--dsw-focus-ring-width': '2px' },
   },
 }
 

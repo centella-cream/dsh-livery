@@ -114,7 +114,7 @@ describe('settings page server render', () => {
     expect(html).not.toContain('data-testid="livery-gallery"')
   })
 
-  it('renders the large hero and full-width gallery without a side rail', () => {
+  it('renders the compact hero and full-width gallery without a side rail', () => {
     const html = render(READY)
     expect(html).toContain('data-testid="livery-layout"')
     expect(html).toContain('data-testid="livery-current-card"')
@@ -123,7 +123,7 @@ describe('settings page server render', () => {
     expect(html).toContain('data-testid="livery-restore"')
     expect(html).not.toContain('data-testid="livery-actions-card"')
     expect(html).not.toContain('class="livery-rail"')
-    expect(html).toContain('Current style')
+    expect(html).toContain('Current visual style')
     // Behavior hooks moved into cards but preserved verbatim.
     expect(html).toContain('data-testid="livery-current"')
     expect(html).toContain('data-testid="livery-gallery"')
@@ -139,7 +139,7 @@ describe('settings page server render', () => {
     expect(html).toContain(`${TEST_PREVIEWS_BASE}fjord-en-light.svg`)
   })
 
-  it('renders the current summary and family-grouped gallery hooks', () => {
+  it('renders the current summary and continuous gallery hooks', () => {
     const html = render(READY)
     expect(html).toContain('data-testid="livery-current"')
     expect(html).toContain('data-testid="livery-gallery"')
@@ -156,9 +156,9 @@ describe('settings page server render', () => {
     expect(html).toContain('data-family="all"')
     expect(html).toContain('data-testid="livery-more-filters"')
     expect(html).not.toContain('data-testid="livery-tag"')
-    // Both fixture styles are calm-family, so one presentation section wraps them.
-    expect(html.match(/data-testid="livery-family"/g)).toHaveLength(1)
-    expect(html).toContain('data-testid="livery-family-calm"')
+    // The grid is continuous; family chips carry the taxonomy.
+    expect(html).toContain('data-testid="livery-card-dna"')
+    expect(html).not.toContain('data-testid="livery-family"')
     expect(html).toContain('data-testid="livery-restore"')
     expect(html).toContain('data-testid="livery-selfcheck"')
     expect(html).toContain('data-testid="livery-selfcheck-toggle"')

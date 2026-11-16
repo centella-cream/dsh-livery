@@ -108,6 +108,9 @@ export type SurfaceStyleId =
   | 'paper'
   | 'elevated'
   | 'terminal'
+  | 'brutal'
+  | 'pill'
+  | 'editorial'
 
 /** Capability ids shared by the manifest, the contract snapshot and self-check. */
 export const CAP = {

@@ -55,12 +55,12 @@ function translate(dict: Record<string, string>): LiveryPageProps['t'] {
 
 /** One style per family, ordered by tag priority inputs. */
 const catalog = makeCatalog([
-  makeLivery('fjord', { order: 10, tags: ['calm'] }),
-  makeLivery('moss', { order: 20, tags: ['organic'] }),
-  makeLivery('amber', { order: 30, tags: ['retro', 'warm'] }),
-  makeLivery('midnight', { order: 40, tags: ['deep'] }),
-  makeLivery('linen', { order: 50, tags: ['cool', 'paper'] }),
-  makeLivery('sakura', { order: 60, tags: ['neon', 'playful'] }),
+  makeLivery('fjord', { order: 10, tags: ['calm'], surfaceStyle: 'soft' }),
+  makeLivery('moss', { order: 20, tags: ['organic'], surfaceStyle: 'paper' }),
+  makeLivery('amber', { order: 30, tags: ['retro', 'warm'], surfaceStyle: 'elevated' }),
+  makeLivery('midnight', { order: 40, tags: ['deep'], surfaceStyle: 'flat' }),
+  makeLivery('linen', { order: 50, tags: ['cool', 'paper'], surfaceStyle: 'paper' }),
+  makeLivery('sakura', { order: 60, tags: ['neon', 'playful'], surfaceStyle: 'pill' }),
 ])
 
 const base = createInitialSnapshot(IDENTITY, { status: 'valid', reason: undefined, diagnostics: [] })
@@ -189,20 +189,20 @@ describe('family-grouped gallery render', () => {
     expect(html).toContain('aria-label="风格分组"')
   })
 
-  it('groups cards into presentation-only family sections in family order', () => {
+  it('renders one continuous grid in surface-recipe order without repeating section headings', () => {
     const html = renderGallery()
-    expect(html.match(/data-testid="livery-family"/g)).toHaveLength(6)
-    for (const family of STYLE_FAMILIES) {
-      expect(html).toContain(`data-testid="livery-family-${family}"`)
-    }
-    // Family order: first occurrence of each section testid follows STYLE_FAMILIES.
-    const positions = STYLE_FAMILIES.map(family => html.indexOf(`data-testid="livery-family-${family}"`))
-    expect([...positions].sort((a, b) => a - b)).toEqual(positions)
-    // Single listbox, cards as options, sections as groups.
+    // Family chips are the only category navigation; no second per-family nav.
+    expect(html.match(/data-testid="livery-family"/g)).toBeNull()
+    expect(html.match(/data-testid="livery-family-(calm|nature|light|retro|vivid|dark)"/g)).toBeNull()
+    // Single listbox, cards as options, cards ordered by STYLE_FAMILIES.
     expect(html.match(/role="listbox"/g)).toHaveLength(1)
-    expect(html.match(/role="group"/g)?.length).toBeGreaterThanOrEqual(6)
     expect(html.match(/data-testid="livery-card"/g)).toHaveLength(6)
     expect(html.match(/role="option"/g)).toHaveLength(6)
+    const ids = [...html.matchAll(/data-testid="livery-card" data-livery-id="([^"]+)"/g)].map(match => match[1])
+    // Distinct recipes first (pill → elevated → flat → paper ×2 → soft), then order.
+    expect(ids).toEqual(['sakura', 'amber', 'midnight', 'moss', 'linen', 'fjord'])
+    const families = [...html.matchAll(/data-testid="livery-card"[^>]*data-family="([^"]+)"/g)].map(match => match[1])
+    expect(families).toEqual(['vivid', 'retro', 'dark', 'nature', 'light', 'calm'])
   })
 
   it('keeps the tag row behind the 更多筛选 toggle until opened', () => {
@@ -222,14 +222,12 @@ describe('family-grouped gallery render', () => {
     expect(expanded).toContain('aria-label="Filter by tag"')
   })
 
-  it('filters to a single family when a family chip is active', () => {
+  it('filters the one grid to a single family when a family chip is active', () => {
     const html = renderGallery('en', { initialFamily: 'dark' })
     expect(html).toMatch(/data-family="dark"[^>]*aria-pressed="true"/)
-    expect(html.match(/data-testid="livery-family"/g)).toHaveLength(1)
-    expect(html).toContain('data-testid="livery-family-dark"')
     expect(html.match(/data-testid="livery-card"/g)).toHaveLength(1)
     expect(html).toContain('data-livery-id="midnight"')
-    expect(html).not.toContain('data-testid="livery-family-calm"')
+    expect(html).not.toContain('data-livery-id="fjord"')
   })
 
   it('keeps the existing gallery/search hooks intact', () => {
@@ -237,14 +235,13 @@ describe('family-grouped gallery render', () => {
     expect(html).toContain('data-testid="livery-gallery"')
     expect(html).toContain('data-testid="livery-search"')
     expect(html).toContain('data-testid="livery-locale-tab"')
-    expect(html).toContain('data-testid="livery-family"')
+    expect(html).toContain('data-testid="livery-card-dna"')
     expect(html).toContain('6 visual styles')
   })
 
-  it('shows the empty state instead of sections when nothing matches', () => {
+  it('shows the empty state instead of the grid when nothing matches', () => {
     const html = renderGallery('en', { filter: { query: 'zzzz-no-style', tagId: undefined } })
     expect(html).toContain('data-testid="livery-empty"')
     expect(html).not.toContain('data-testid="livery-gallery"')
-    expect(html).not.toContain('data-testid="livery-family"')
   })
 })

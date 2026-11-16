@@ -25,14 +25,16 @@ host theme takeover.
 > 0.2.x builds outside the exact matrix may run in diagnosed compatible-preview
 > mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
-> **Working tree (unreleased, target 0.1.9):** macOS wallpaper frost now phases the
-> sidebar tint to the same transparency as the main column, so a light wallpaper no
-> longer washes out the left navigation. See
-> [the sidebar surface note](docs/design/wallpaper-workbench.md#sidebar-surface).
+> **Working tree (unreleased, target 0.1.9):** the visual-style page is now a
+> compact 24-style catalog with style-DNA labels, and four styles ship distinct GUI
+> shapes (terminal, brutal, pill, editorial). macOS wallpaper frost also phases the
+> sidebar tint to the main column. See the
+> [gallery design note](docs/design/style-gallery.md) and the
+> [sidebar surface note](docs/design/wallpaper-workbench.md#sidebar-surface).
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery's Visual Style page with a large current-style hero, full-width gallery and a real online Picsum wallpaper](docs/assets/hero-en.jpg)
+![DSH Livery's Visual Style page with a compact current-style summary and a dense style catalog](docs/assets/hero-en.jpg)
 
 Screenshots use the Chinese UI; Livery follows the DSH host locale. The style
 showcase uses a real online Picsum wallpaper, not a built-in default.

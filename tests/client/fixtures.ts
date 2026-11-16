@@ -10,6 +10,7 @@ import type {
   CapabilityMap,
   CompiledLivery,
   LiveryCatalog,
+  SurfaceStyleId,
 } from '../../src/core/types.js'
 import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../../src/core/types.js'
 import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
@@ -381,6 +382,7 @@ export function makeLivery(
   options: {
     readonly order?: number
     readonly tags?: readonly string[]
+    readonly surfaceStyle?: SurfaceStyleId
     readonly required?: readonly CapabilityId[]
     readonly optional?: readonly CapabilityId[]
   } = {},
@@ -409,7 +411,7 @@ export function makeLivery(
         'en-US': { id: 'latin-default', lineHeight: 1.45, note: 'test', tokens: {} },
       },
     },
-    layout: { density: 'host', conversationWidth: 'host', messageFlow: 'stock', surfaceStyle: 'solid' },
+    layout: { density: 'host', conversationWidth: 'host', messageFlow: 'stock', surfaceStyle: options.surfaceStyle ?? 'solid' },
     requiredCapabilities: [...(options.required ?? ['theme-css'])],
     optionalCapabilities: [...(options.optional ?? ['reduced-motion'])],
     light: variant('#aa2222'),

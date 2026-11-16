@@ -533,15 +533,15 @@ async function main() {
       const family = desktopFamilyOf(livery.meta?.tags)
       desktopFamilyCounts.set(family, (desktopFamilyCounts.get(family) ?? 0) + 1)
     }
+    const desktopRenderedCounts = new Map(desktopStructure.sections.map((section) => [section.family, section.cards]))
     expect(
       runner,
       'desktop.gallery-families',
-      'desktop gallery renders page tabs and all six non-empty family sections in display order',
+      'desktop gallery renders page tabs and one continuous grid covering all six families with their counts',
       desktopStructure.tablistFound === true &&
-        desktopStructure.sections.map((section) => section.family).join(',') === DESKTOP_FAMILY_ORDER.join(',') &&
-        desktopStructure.sections.every((section) => section.cards > 0 && section.cards === desktopFamilyCounts.get(section.family)) &&
+        DESKTOP_FAMILY_ORDER.every((family) => (desktopRenderedCounts.get(family) ?? 0) === desktopFamilyCounts.get(family)) &&
         DESKTOP_FAMILY_ORDER.every((family) => (desktopFamilyCounts.get(family) ?? 0) > 0),
-      `sections=[${desktopStructure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; expected=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopFamilyCounts.get(family)}`).join(', ')}]`,
+      `families=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopRenderedCounts.get(family) ?? 0}`).join(', ')}]; expected=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopFamilyCounts.get(family)}`).join(', ')}]`,
     )
     // Mock the online card's automatic Picsum batch (and Openverse) so the
     // desktop probe never depends on the live network.

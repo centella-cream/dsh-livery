@@ -196,6 +196,26 @@ export const zhCN: Record<LiveryKey, string> = {
   'card.unavailable': '不可用',
   'card.unavailableHint': '缺少必需的宿主能力。',
   'card.thumbnailAlt': '「{name}」的{mode}模式预览',
+
+  // 风格卡片上的两个特征：形状 + 字体族。
+  'dna.aria': '风格特征',
+  'dna.shape.solid': '原生',
+  'dna.shape.soft': '柔和',
+  'dna.shape.glass': '玻璃',
+  'dna.shape.flat': '扁平',
+  'dna.shape.sharp': '锐利',
+  'dna.shape.rounded': '圆角',
+  'dna.shape.paper': '纸张',
+  'dna.shape.elevated': '悬浮',
+  'dna.shape.terminal': '终端',
+  'dna.shape.brutal': '粗野',
+  'dna.shape.pill': '胶囊',
+  'dna.shape.editorial': '编辑',
+  'dna.type.sans': '无衬线',
+  'dna.type.serif': '衬线',
+  'dna.type.mono': '等宽',
+  'dna.type.display': '展示',
+  'dna.type.rounded': '圆体',
   'card.thumbnailError': '预览图暂不可用',
 
   // Transient preview bar.

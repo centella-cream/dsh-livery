@@ -7,8 +7,8 @@
       "en-US": "Cinnabar"
     },
     "description": {
-      "zh-CN": "朱砂印泥般浓烈的红，圆润而正式，适合需要一点仪式感的场合。",
-      "en-US": "Seal-red cinnabar with rounded, formal edges: a little ceremony for serious work."
+      "zh-CN": "朱砂印泥般浓烈的红，方正、硬朗，像一枚落在纸上的印章。",
+      "en-US": "Seal-red cinnabar in square blocks with hard shadows: a stamped mark on the page."
     },
     "tags": [
       "warm",
@@ -53,7 +53,7 @@
     "density": "host",
     "conversationWidth": "host",
     "messageFlow": "stock",
-    "surfaceStyle": "rounded"
+    "surfaceStyle": "brutal"
   },
   "compat": {
     "requiredCapabilities": [

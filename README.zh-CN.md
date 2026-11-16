@@ -21,13 +21,14 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 > prerelease，因此仍是预览声明。精确矩阵之外的兼容 0.2.x 构建可以 compatible-preview
 > 模式运行并输出诊断；Windows Desktop、Edge 和其他 DSH 构建不在支持范围内。
 
-> **工作区（未发布，目标 0.1.9）：** macOS 壁纸磨砂现在让侧栏 tint 与主内容区使用同一
-> 透明度，浅色壁纸不再把左侧导航冲淡。详见
+> **工作区（未发布，目标 0.1.9）：** 视觉风格页改为带风格 DNA 的紧凑 24 套目录，四套
+> 风格使用明显不同的 GUI 形状（终端、粗野、胶囊、编辑）；macOS 壁纸磨砂同时让侧栏
+> tint 与主内容区一致。详见 [画廊设计](docs/design/style-gallery.md) 与
 > [侧栏表面说明](docs/design/wallpaper-workbench.md#sidebar-surface)。
 
 [English](README.md) · 中文
 
-![DSH Livery 的视觉风格页：大幅当前风格 Hero、全宽画廊，并应用真实在线 Picsum 壁纸](docs/assets/hero-zh.jpg)
+![DSH Livery 的视觉风格页：紧凑的当前风格摘要与高密度风格目录](docs/assets/hero-zh.jpg)
 
 截图为中文界面；Livery 跟随 DSH 宿主语言。样式展示使用真实在线 Picsum 壁纸，而不是内置默认壁纸。
 

@@ -964,19 +964,21 @@ export async function readGalleryStructure(page) {
       pressed: chip.getAttribute('aria-pressed') === 'true',
       text: (chip.textContent ?? '').trim(),
     }))
-    const sections = [...document.querySelectorAll('section[data-testid^="livery-family-"]')].map((section) => {
-      const countNode = section.querySelector('.livery-family__count')
-      return {
-        family: section.getAttribute('data-family'),
-        cards: section.querySelectorAll('[data-testid="livery-card"][data-livery-id]').length,
-        heading: (section.querySelector('[data-testid="livery-family"] span')?.textContent ?? '').trim(),
-        countText: (countNode?.textContent ?? '').trim(),
-      }
-    })
     const cards = [...document.querySelectorAll('[data-testid="livery-card"][data-livery-id]')].map((card) => ({
       id: card.getAttribute('data-livery-id'),
-      family: card.closest('section[data-testid^="livery-family-"]')?.getAttribute('data-family') ?? null,
+      family: card.getAttribute('data-family'),
     }))
+    // The catalog is one continuous grid; family sections are presentation order,
+    // not wrapper DOM. Derive the same per-family view from the card attribute.
+    const sections = []
+    for (const card of cards) {
+      let section = sections.find((candidate) => candidate.family === card.family)
+      if (section === undefined) {
+        section = { family: card.family, cards: 0, heading: '', countText: '' }
+        sections.push(section)
+      }
+      section.cards += 1
+    }
     const moreFilters = document.querySelector('[data-testid="livery-more-filters"]')
     return {
       tablistFound: Boolean(document.querySelector('[data-testid="livery-page-tabs"]')),
@@ -1157,7 +1159,7 @@ export async function readLayoutStructure(page, which) {
     if (target === 'style') {
       const layoutElement = document.querySelector('[data-testid="livery-layout"]')
       const layoutSurface = visible(layoutElement)
-      const galleryGrid = document.querySelector('[data-testid="livery-gallery"] .livery-grid')
+      const galleryGrid = document.querySelector('[data-testid="livery-gallery"]')
       const galleryColumns = galleryGrid === null ? [] : getComputedStyle(galleryGrid).gridTemplateColumns.split(' ').filter(Boolean)
       const toolbar = document.querySelector('[data-testid="livery-gallery-toolbar"]')
       const toolbarRows = (() => {
@@ -1203,7 +1205,7 @@ export async function readLayoutStructure(page, which) {
               aspect: Number((heroThumbVisible.rect.width / Math.max(1, heroThumbVisible.rect.height)).toFixed(3)),
             },
         styleFlags: {
-          largeHero: currentCard !== null && currentCard.classList.contains('livery-hero--large'),
+          compactHero: currentCard !== null && currentCard.classList.contains('livery-hero--compact'),
           restoreInsideHero: contains(currentCard, document.querySelector('[data-testid="livery-restore"]')),
           actionsInsideHero: contains(currentCard, document.querySelector('[data-testid="livery-restore"]')) &&
             (document.querySelector('[data-testid="livery-apply"]') === null || contains(currentCard, document.querySelector('[data-testid="livery-apply"]'))) &&

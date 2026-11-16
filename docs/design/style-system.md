@@ -1,8 +1,10 @@
 # Style system: how the 24 styles differ
 
-> **Status (0.1.4):** current implementation reference. The registry paths and
+> **Status (0.1.8):** current implementation reference. The registry paths and
 > feature flags below are the shipped style-system contract; the release support
 > matrix is in [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
+> The 0.1.9 gallery/recipe expansion is recorded in
+> [`style-gallery.md`](style-gallery.md).
 
 The goal is to make each style visibly different in **palette, typography,
 background material, module shape/elevation and type scale**, while staying inside
@@ -54,8 +56,8 @@ setting must stay authoritative.
 
 ### Surface-style ids (+6) with token maps
 
-Existing: `solid`, `soft`, `glass`. New: `flat`, `sharp`, `rounded`, `paper`,
-`elevated`, `terminal`.
+Registered: `solid`, `soft`, `glass`, `flat`, `sharp`, `rounded`, `paper`,
+`elevated`, `terminal`, `brutal`, `pill`, `editorial`.
 
 `SurfaceStyleDefinition = { id, note, light: TokenMap, dark: TokenMap }`; the maps
 may only contain these token families (all consumed by host CSS):
@@ -73,7 +75,10 @@ Recipes are the baseline; exact values live in the registry:
 material, `flat` 4/8/12 with zero shadows and 1px hairline borders, `sharp` 2/4/6
 with stronger square borders, `rounded` 10/16/24 + panel 32, `paper` 2/4/8 with warm
 hairlines and no shadows, `elevated` 8/12/20 + prominent shadows, `terminal` 0/2/4
-with no shadows and mono-density radii.
+with no shadows and mono-density radii, `brutal` square blocks with hard offset
+shadows and strong rules, `pill` capsule controls with large soft panels and
+hairline separation, `editorial` near-square print geometry with strong rules and
+no elevation.
 
 ## 2. Derivation merge order (src/core/derive.ts)
 

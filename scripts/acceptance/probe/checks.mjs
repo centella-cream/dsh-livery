@@ -1199,7 +1199,6 @@ export async function checkLiveryPanelFlow(ctx) {
         FAMILY_ORDER.every((family) => structure.chips.find((chip) => chip.family === family)?.text === uiLabels.familyNames[family]),
       `chips=${structure.chips.map((chip) => `${chip.family}:${chip.text}${chip.pressed ? '*' : ''}`).join(', ')}`,
     )
-    const sectionFamilies = structure.sections.map((section) => section.family)
     const sectionTotal = structure.sections.reduce((sum, section) => sum + section.cards, 0)
     const expectedCounts = new Map(FAMILY_ORDER.map((family) => [family, 0]))
     for (const livery of catalog.liveries) {
@@ -1207,16 +1206,15 @@ export async function checkLiveryPanelFlow(ctx) {
       expectedCounts.set(family, (expectedCounts.get(family) ?? 0) + 1)
     }
     const emptyFamilies = FAMILY_ORDER.filter((family) => (expectedCounts.get(family) ?? 0) === 0)
+    const renderedCounts = new Map(structure.sections.map((section) => [section.family, section.cards]))
     expect(
       runner,
       'gallery.family-sections',
-      'all six family sections render (not five) in display order with their styles and counts',
-      sectionFamilies.join(',') === FAMILY_ORDER.join(',') &&
-        sectionTotal === catalog.liveries.length &&
-        structure.sections.every((section) => section.cards > 0 && section.cards === expectedCounts.get(section.family)) &&
-        emptyFamilies.length === 0 &&
-        structure.sections.every((section) => section.heading === uiLabels.familyNames[section.family]),
-      `sections=[${structure.sections.map((section) => `${section.family}:${section.cards}`).join(', ')}]; expected counts=[${FAMILY_ORDER.map((family) => `${family}:${expectedCounts.get(family)}`).join(', ')}]; empty families=${emptyFamilies.join(',') || 'none'}`,
+      'one continuous grid covers all six families with their counts (no repeated section nav)',
+      sectionTotal === catalog.liveries.length &&
+        FAMILY_ORDER.every((family) => (renderedCounts.get(family) ?? 0) === expectedCounts.get(family)) &&
+        emptyFamilies.length === 0,
+      `families=[${FAMILY_ORDER.map((family) => `${family}:${renderedCounts.get(family) ?? 0}`).join(', ')}]; expected=[${FAMILY_ORDER.map((family) => `${family}:${expectedCounts.get(family)}`).join(', ')}]; empty families=${emptyFamilies.join(',') || 'none'}`,
       { sections: structure.sections, expectedCounts: Object.fromEntries(expectedCounts) },
     )
     const catalogById = new Map(catalog.liveries.map((livery) => [livery.id, livery]))
@@ -1270,7 +1268,7 @@ export async function checkLiveryPanelFlow(ctx) {
     expect(
       runner,
       'gallery.family-filter',
-      'selecting a family chip narrows the gallery to that one family section',
+      'selecting a family chip narrows the one grid to that family without duplicating a section heading',
       filteredStructure.sections.length === 1 &&
         filteredStructure.sections[0].family === 'nature' &&
         filteredStructure.cards.length === natureCount &&
@@ -1281,21 +1279,18 @@ export async function checkLiveryPanelFlow(ctx) {
     // Keyboard focus continues across the flattened card list (section boundaries).
     await page.locator('[data-testid="livery-family-chip"][data-family="all"]').click({ timeout: 8_000 })
     await sleep(200)
-    const firstFamily = FAMILY_ORDER.find((family) => (expectedCounts.get(family) ?? 0) > 0)
-    const secondFamily = FAMILY_ORDER.slice(FAMILY_ORDER.indexOf(firstFamily) + 1).find((family) => (expectedCounts.get(family) ?? 0) > 0)
-    const calmSection = page.locator(`[data-testid="livery-family-${firstFamily}"]`)
-    const lastCalmCard = calmSection.locator('[data-testid="livery-card"][data-livery-id]').last()
-    const firstNextCard = page.locator(`[data-testid="livery-family-${secondFamily}"] [data-testid="livery-card"][data-livery-id]`).first()
-    const nextId = await firstNextCard.getAttribute('data-livery-id')
-    await lastCalmCard.focus()
+    const allCards = page.locator('[data-testid="livery-card"][data-livery-id]')
+    const firstId = await allCards.nth(0).getAttribute('data-livery-id')
+    const nextId = await allCards.nth(1).getAttribute('data-livery-id')
+    await allCards.nth(0).focus()
     await page.keyboard.press('ArrowRight')
     await sleep(180)
     expect(
       runner,
-      'gallery.family-keyboard',
-      'roving focus crosses family-section boundaries as one flattened list',
+      'gallery.card-keyboard',
+      'roving focus walks the flattened card list',
       (await focusedCardId(page)) === nextId,
-      `focus after ArrowRight="${await focusedCardId(page)}" (expected first ${secondFamily} card "${nextId}")`,
+      `focus after ArrowRight="${await focusedCardId(page)}" (expected "${nextId}" after "${firstId}")`,
     )
     await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur())
   } catch (error) {
@@ -4246,16 +4241,16 @@ export async function checkLayoutStructure(ctx) {
     const styleWide = await readLayoutStructure(page, 'style')
     const styleFlags = styleWide.styleFlags ?? {}
     expectSafe('layout.style-wide-hero', 'style page uses the large no-rail hero with actions inside the current-style card',
-      styleWide.layout.present === true && styleFlags.largeHero === true && styleFlags.actionsCardPresent === false &&
+      styleWide.layout.present === true && styleFlags.compactHero === true && styleFlags.actionsCardPresent === false &&
         styleFlags.railPresent === false && (styleFlags.restoreInsideHero === true || styleFlags.actionsInsideHero === true),
       `layout=${JSON.stringify(styleWide.layout)}; flags=${JSON.stringify(styleFlags)}`)
     expectSafe('layout.style-wide-hero-preview', 'style hero shows a loaded 16:10 preview image',
       styleWide.heroThumb?.present === true && styleWide.heroThumb.visible === true &&
         (styleWide.heroThumb.naturalWidth ?? 0) > 0 && Math.abs((styleWide.heroThumb.aspect ?? 0) - 1.6) <= 0.04,
       `hero=${JSON.stringify(styleWide.heroThumb)}`)
-    expectSafe('layout.style-wide-gallery', 'style gallery follows the hero, is full width and renders 4 columns at 1440',
+    expectSafe('layout.style-wide-gallery', 'style gallery follows the hero, is full width and renders 6 columns at 1440',
       styleFlags.galleryAfterHero === true && styleFlags.secondaryAfterGallery === true &&
-        styleFlags.galleryColumns === 4 && (styleWide.gallery?.width ?? 0) > 900,
+        styleFlags.galleryColumns === 6 && (styleWide.gallery?.width ?? 0) > 900,
       `flags=${JSON.stringify(styleFlags)}; gallery=${JSON.stringify(styleWide.gallery)}`)
     expectSafe('layout.style-wide-toolbar', 'style toolbar stays within two rows and does not overflow at 1440',
       styleFlags.toolbarRows <= 2 && styleFlags.toolbarOverflowX === false,

@@ -413,9 +413,11 @@ function tokenValue(tokens: TokenMap, stock: StockSnapshot, name: string, mode: 
 
 function pxOf(value: string | null, fallback: number): number {
   if (value === null) return fallback
-  const match = /^(-?[\d.]+)px$/.exec(value.trim())
+  const match = /^(-?[\d.]+)(px)?$/.exec(value.trim())
   if (match === null) return fallback
   const parsed = Number.parseFloat(match[1] ?? '')
+  // A unitless non-zero length is invalid CSS; only `0` is a legal radius.
+  if (match[2] === undefined && parsed !== 0) return fallback
   return Number.isFinite(parsed) ? parsed : fallback
 }
 

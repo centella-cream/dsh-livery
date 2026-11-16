@@ -1,16 +1,16 @@
 /**
  * Style-family taxonomy for the gallery.
  *
- * The 24 built-in styles carry 16 stable tag ids; the gallery groups them into
- * six presentation families so the primary filter row stays compact and the
- * cards group by family instead of forming one long list. Families are derived
- * from tags (not a second data source): deterministic, priority-ordered, and
- * presentation-only — they never affect compilation, capability checks or the
- * applied stylesheet.
+ * The 24 built-in styles carry 16 stable tag ids; the gallery exposes six
+ * presentation families so the primary filter row stays compact. Families are
+ * derived from tags (not a second data source): deterministic, priority-ordered,
+ * and presentation-only — they never affect compilation, capability checks or
+ * the applied stylesheet. The default catalog order is surface-first (see
+ * `sortForGallery`); the family is a filter, not a repeated section heading.
  *
  * Pure: no React, no DOM, no Cordis.
  */
-import type { CompiledLivery } from '../../core/types.js'
+import type { CompiledLivery, SurfaceStyleId } from '../../core/types.js'
 
 /** The six gallery families, in display order. */
 export type StyleFamilyId = 'calm' | 'nature' | 'retro' | 'dark' | 'light' | 'vivid'
@@ -49,6 +49,35 @@ export function familyOf(livery: Pick<CompiledLivery, 'meta'>): StyleFamilyId {
     if (familyTags.some(tag => tags.includes(tag))) return family
   }
   return FALLBACK_FAMILY
+}
+
+/**
+ * Default catalog order: the most distinctive GUI recipes first, then the
+ * conventional soft/paper/rounded families. Family chips still filter by
+ * taxonomy; this order only decides what the first screen teaches about the set.
+ */
+export const SURFACE_GALLERY_ORDER: readonly SurfaceStyleId[] = [
+  'brutal',
+  'terminal',
+  'pill',
+  'editorial',
+  'glass',
+  'elevated',
+  'sharp',
+  'flat',
+  'rounded',
+  'paper',
+  'soft',
+  'solid',
+]
+
+/** Sort styles for the continuous catalog by shape language, then manifest order. */
+export function sortForGallery(liveries: readonly CompiledLivery[]): readonly CompiledLivery[] {
+  const rank = new Map(SURFACE_GALLERY_ORDER.map((style, index) => [style, index]))
+  return [...liveries].sort((a, b) => {
+    const bySurface = (rank.get(a.layout.surfaceStyle) ?? 99) - (rank.get(b.layout.surfaceStyle) ?? 99)
+    return bySurface || (a.meta.order - b.meta.order) || a.id.localeCompare(b.id)
+  })
 }
 
 /** One family section of the gallery. */

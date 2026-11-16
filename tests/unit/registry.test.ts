@@ -116,7 +116,7 @@ describe('metrics registry', () => {
 })
 
 describe('surface style registry', () => {
-  it('registers all nine surface styles in a stable order', () => {
+  it('registers all twelve surface styles in a stable order', () => {
     expect(SURFACE_STYLES).toEqual([
       'solid',
       'soft',
@@ -127,8 +127,11 @@ describe('surface style registry', () => {
       'paper',
       'elevated',
       'terminal',
+      'brutal',
+      'pill',
+      'editorial',
     ])
-    expect(Object.keys(SURFACE_STYLE_DEFINITIONS)).toHaveLength(9)
+    expect(Object.keys(SURFACE_STYLE_DEFINITIONS)).toHaveLength(12)
   })
 
   it('every style is token-only and within the frozen families/allowlist', () => {

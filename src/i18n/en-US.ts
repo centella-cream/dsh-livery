@@ -198,6 +198,26 @@ export const enUS = {
   'card.unavailable': 'Unavailable',
   'card.unavailableHint': 'A required host capability is missing.',
   'card.thumbnailAlt': '{name} preview in {mode} mode',
+
+  // Style traits shown on each gallery card (shape + type family).
+  'dna.aria': 'Style traits',
+  'dna.shape.solid': 'Native',
+  'dna.shape.soft': 'Soft',
+  'dna.shape.glass': 'Glass',
+  'dna.shape.flat': 'Flat',
+  'dna.shape.sharp': 'Sharp',
+  'dna.shape.rounded': 'Rounded',
+  'dna.shape.paper': 'Paper',
+  'dna.shape.elevated': 'Elevated',
+  'dna.shape.terminal': 'Terminal',
+  'dna.shape.brutal': 'Brutal',
+  'dna.shape.pill': 'Pill',
+  'dna.shape.editorial': 'Editorial',
+  'dna.type.sans': 'Sans',
+  'dna.type.serif': 'Serif',
+  'dna.type.mono': 'Mono',
+  'dna.type.display': 'Display',
+  'dna.type.rounded': 'Rounded',
   'card.thumbnailError': 'Preview image unavailable',
 
   // Transient preview bar.
