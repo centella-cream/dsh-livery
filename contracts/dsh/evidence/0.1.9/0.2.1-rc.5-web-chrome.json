@@ -4,7 +4,7 @@
   "packageVersion": "0.1.9",
   "tarballSha256": "588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9",
   "tarballBytes": 3249793,
-  "generatedAt": "2026-11-16T14:21:35.636Z",
+  "generatedAt": "2026-11-16T14:21:51.275Z",
   "scope": {
     "hostVersion": "0.2.1-rc.5",
     "profile": "web",
@@ -104,7 +104,7 @@
   ],
   "runs": [
     {
-      "id": "web-isolated-full",
+      "id": "web-0.2.1-rc.5-isolated",
       "commit": "8ce0850c155e6fe1a6489cc97c5cbcd0862ba088",
       "hostVersion": "0.2.1-rc.5",
       "adapterId": "dsh-0.2.1-rc.5-r1",
@@ -116,9 +116,9 @@
         "warn": 2,
         "total": 281
       },
-      "probe": "contracts/dsh/evidence/0.1.9/probes/web-isolated-full.json",
+      "probe": "contracts/dsh/evidence/0.1.9/probes/web-0.2.1-rc.5-isolated.json",
       "probeSha256": "4a3e76b71825a4f76e981f4df685e43ba257b5938c46dca86f83813acbc76358",
-      "report": "contracts/dsh/evidence/0.1.9/reports/web-isolated-full.md",
+      "report": "contracts/dsh/evidence/0.1.9/reports/web-0.2.1-rc.5-isolated.md",
       "reportSha256": "47b9aa7d0a6d8888f6357b8b4e587d8f7cdd430f22460f04cc5823272a0a6ca2"
     }
   ]

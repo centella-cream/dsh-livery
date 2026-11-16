@@ -4,7 +4,7 @@
   "packageVersion": "0.1.9",
   "tarballSha256": "588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9",
   "tarballBytes": 3249793,
-  "generatedAt": "2026-11-16T14:21:35.948Z",
+  "generatedAt": "2026-11-16T14:21:51.579Z",
   "scope": {
     "hostVersion": "0.2.2-rc.3",
     "profile": "desktop",
@@ -89,7 +89,7 @@
   ],
   "runs": [
     {
-      "id": "desktop-isolated-full",
+      "id": "desktop-0.2.2-rc.3-electron",
       "commit": "8ce0850c155e6fe1a6489cc97c5cbcd0862ba088",
       "hostVersion": "0.2.2-rc.3",
       "adapterId": "dsh-0.2.2-rc.3-r1",
@@ -101,9 +101,9 @@
         "warn": 0,
         "total": 36
       },
-      "probe": "contracts/dsh/evidence/0.1.9/probes/desktop-isolated-full.json",
+      "probe": "contracts/dsh/evidence/0.1.9/probes/desktop-0.2.2-rc.3-electron.json",
       "probeSha256": "ec84e939ad1f8d823ea9efca5a8188e8b715f0c753efe27e28b45106da26a21d",
-      "report": "contracts/dsh/evidence/0.1.9/reports/desktop-isolated-full.md",
+      "report": "contracts/dsh/evidence/0.1.9/reports/desktop-0.2.2-rc.3-electron.md",
       "reportSha256": "6136152cd58c4eb1d128ed75916e1663596d6121e36e4a9f26d71ca932c52e5f"
     }
   ]
