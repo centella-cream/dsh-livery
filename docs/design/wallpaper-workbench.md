@@ -1,7 +1,6 @@
 # Wallpaper workbench layout (0.1.7)
 
-Status: current for DSH Livery `0.1.8`; the sidebar surface parity fix is
-unreleased (target `0.1.9`). This note is versioned with the release so the layout
+Status: current for the DSH Livery `0.1.9` release candidate. This note is versioned with the release so the layout
 decision and its acceptance boundary stay reviewable after later changes.
 
 ## Problem

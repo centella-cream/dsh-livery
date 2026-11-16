@@ -1,6 +1,6 @@
 # Documentation
 
-**Current npm release: `0.1.8` (2026-11-12).** The authoritative support policy is
+**Release candidate: `0.1.9` (2026-11-16), pending acceptance; npm latest remains `0.1.8`.** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -44,7 +44,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**npm 最新发布版：`0.1.8`（2026-11-12）。** 支持策略以
+**发布候选：`0.1.9`（2026-11-16），等待验收；npm 最新发布版仍为 `0.1.8`。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 

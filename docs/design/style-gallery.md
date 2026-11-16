@@ -1,6 +1,6 @@
-# Style gallery and GUI style recipes (target 0.1.9)
+# Style gallery and GUI style recipes (0.1.9)
 
-Status: working-tree design for the next release. This note covers the compact
+Status: current for the `0.1.9` release candidate. This note covers the compact
 style catalog (information architecture) and the GUI-level recipe expansion. The
 support matrix and release evidence remain in
 [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json) and

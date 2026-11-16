@@ -1,5 +1,9 @@
 # Verification
 
+> **0.1.9 release candidate:** acceptance is in progress. The `0.1.8` evidence
+> and counts below remain the last promoted release until the new candidate is
+> accepted and its evidence is bound under `contracts/dsh/evidence/0.1.9/`.
+
 **Release `0.1.8` — current npm release.** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at
 `contracts/dsh/evidence/0.1.8/`; the publication workflow downloads the same bytes

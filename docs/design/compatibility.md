@@ -1,6 +1,6 @@
-# DSH compatibility architecture (0.1.8)
+# DSH compatibility architecture (0.1.9)
 
-Status: current for DSH Livery `0.1.8`.
+Status: current for DSH Livery `0.1.9` release candidate; the `0.1.8` evidence below is historical.
 
 ## Why the old model broke
 

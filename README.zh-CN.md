@@ -10,10 +10,10 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：0.1.8 — 当前 npm 发布版。** `0.1.8` 将精确版本加载改为 API hash
-> 兼容 + 经 review 的共享 catalog profile，DSH Desktop `0.2.2-rc.2` 这类 0.2.x
-> 兼容更新不再需要新增完整 profile；同时修复 HMR 握手，让热更新后的 client
-> 重新采用当前 catalog 和已保存皮肤，而不是 fail closed 回 stock。
+> **发布状态：0.1.9 — 发布候选，等待人工验收。** `0.1.9` 新增四套 GUI 优先的
+> palette（蓝图、包豪斯、陶土、磷光）、可选组件 chrome 轴、带风格 DNA 的紧凑 28 套
+> 目录，以及 macOS 侧栏 frost 对齐修复。当前尚未发布；在候选被验收并 promote 之前，
+> `0.1.8` 仍是 npm 当前发布版。
 >
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
@@ -21,31 +21,26 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 > prerelease，因此仍是预览声明。精确矩阵之外的兼容 0.2.x 构建可以 compatible-preview
 > 模式运行并输出诊断；Windows Desktop、Edge 和其他 DSH 构建不在支持范围内。
 
-> **工作区（未发布，目标 0.1.9）：** 视觉风格页改为带风格 DNA 的紧凑 28 套目录，八套
-> 风格使用明显不同的 GUI 形状（终端、粗野、胶囊、编辑），并新增组件 chrome 轴
-> 改变侧栏、composer 和气泡的填充关系；macOS 壁纸磨砂同时让侧栏
-> tint 与主内容区一致。详见 [画廊设计](docs/design/style-gallery.md) 与
-> [侧栏表面说明](docs/design/wallpaper-workbench.md#sidebar-surface)。
-
 [English](README.md) · 中文
 
 ![DSH Livery 的视觉风格页：紧凑的当前风格摘要与高密度风格目录](docs/assets/hero-zh.jpg)
 
 截图为中文界面；Livery 跟随 DSH 宿主语言。样式展示使用真实在线 Picsum 壁纸，而不是内置默认壁纸。
 
-## 0.1.8 更新
+## 0.1.9 更新
 
-- **兼容架构。** 准入由 loader/host/client API hash 决定，而不是只看精确版本串。
-  `engines.dsh` 改为 `>=0.2.1-rc.2 <0.3.0`；同 0.2 系列新版本可使用最新 certified
-  adapter 的 compatible-preview 模式，并输出诊断警告；跨系列或 API 不兼容版本仍 fail closed。
-- **共享 catalog profile。** 新增经 review 的
-  `contracts/dsh/catalog-profile-overrides.json`；token 契约兼容的版本复用 certified
-  profile。DSH `0.2.2-rc.2` 复用 rc.1 profile，host bundle 不再为每个 rc 增加整套 catalog。
-- **热更新跟随，无需退出 App。** DSH HMR 替换 client 模块后，新版本不再拒绝旧版本的
-  boot payload；会重新拉取 live catalog、在 recomposition 窗口内重试，并恢复已保存皮肤。
-  冷启动仍是验收基准。
-- **DSH `0.2.2-rc.2` 适配。** 冻结契约、npm `next` / preview 声明，并完成真实 Electron
-  Desktop 验收。详见 [兼容架构](docs/design/compatibility.md)。
+- **紧凑目录，而不是 Hero + 长滚动。** 当前风格缩成 220×138 摘要条；28 套风格放在
+  一个连续的 6/4/3/2 列网格里，分类 chip 是唯一分类导航。1440 下目录滚动高度从约
+  2,788px 降到 1,480px。
+- **每张卡片都有风格 DNA。** 卡片直接标出表面配方、组件 chrome 和 UI 字体族；默认排序
+  先把形状差异最大的风格放在第一屏，而不是先排一组相似卡片。
+- **四套 GUI 优先的新 palette。** 蓝图（工程青 + 等宽 + editorial）、包豪斯（明黄/钴蓝 +
+  展示体 + brutal/poster）、陶土（赤陶 + 圆体 + pill/tinted）、磷光（绿色 CRT + terminal）。
+  风格总数从 24 增至 28。
+- **组件 chrome。** `layout.chrome` 可从 seeds 推导并着色/描边/压暗/块状填充侧栏、
+  composer、气泡、active 行和 selector；随包提供 6 个配方，28 套风格各选一个。
+- **macOS 侧栏 frost 对齐。** 壁纸样式表现在按与主栏相同的 frost 比例直接写入
+  `--dsw-specific-sidebar-tint`，浅色壁纸不再把左侧导航冲淡。
 
 ## 0.1.7 更新
 
@@ -120,6 +115,8 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 ## 安装
 
 npm 最新发布版：[`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery)。
+`0.1.9` 候选目前只在本地，人工验收通过后再走正式发布；测试时用官方 plugin-manager
+路径安装候选 tarball。
 
 ### Web Profile
 
@@ -145,8 +142,9 @@ dsh web
 正式发布制品已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
 （各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
 （各 34 通过 / 0 失败）的隔离全量验收。0.1.8 evidence
-位于 `contracts/dsh/evidence/0.1.8/`，范围、计数和已知
-限制见 [docs/verification.md](docs/verification.md)。
+位于 `contracts/dsh/evidence/0.1.8/`。`0.1.9` 候选正在人工验收，正式 promote 前会把
+evidence 绑定到 `contracts/dsh/evidence/0.1.9/`。范围、计数和已知限制见
+[docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release
 门禁、`release:prepare` 和 `prepublish-check`。发布 workflow 不重新构建已验收 tarball。

@@ -11,12 +11,11 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: 0.1.8 — current npm release.** `0.1.8` replaces
-> exact-version-only loading with API-hash compatibility plus reviewed shared
-> catalog profiles, so compatible DSH 0.2.x updates such as Desktop
-> `0.2.2-rc.2` no longer require a new full catalog profile. It also fixes the
-> HMR handshake so a hot-reloaded client re-adopts the current catalog and saved
-> skin instead of failing closed to stock.
+> **Release status: 0.1.9 — release candidate, pending manual acceptance.**
+> `0.1.9` adds four GUI-first palettes (Blueprint, Bauhaus, Clay, Phosphor), an
+> optional component-chrome axis, a compact 28-style catalog with style-DNA labels,
+> and the macOS sidebar frost parity fix. It is not published yet; `0.1.8` remains
+> the current npm release until the candidate is accepted and promoted.
 >
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
@@ -25,14 +24,6 @@ host theme takeover.
 > 0.2.x builds outside the exact matrix may run in diagnosed compatible-preview
 > mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
-> **Working tree (unreleased, target 0.1.9):** the visual-style page is now a
-> compact 28-style catalog with style-DNA labels, four styles ship distinct GUI
-> shapes (terminal, brutal, pill, editorial), and an optional component-chrome
-> axis varies the rail, composer and bubble fills. macOS wallpaper frost also phases the
-> sidebar tint to the main column. See the
-> [gallery design note](docs/design/style-gallery.md) and the
-> [sidebar surface note](docs/design/wallpaper-workbench.md#sidebar-surface).
-
 English · [中文](README.zh-CN.md)
 
 ![DSH Livery's Visual Style page with a compact current-style summary and a dense style catalog](docs/assets/hero-en.jpg)
@@ -40,23 +31,24 @@ English · [中文](README.zh-CN.md)
 Screenshots use the Chinese UI; Livery follows the DSH host locale. The style
 showcase uses a real online Picsum wallpaper, not a built-in default.
 
-## What's new in 0.1.8
+## What's new in 0.1.9
 
-- **Compatibility architecture.** Admission is decided by loader/host/client API
-  hashes, not only an exact version string. `engines.dsh` is now
-  `>=0.2.1-rc.2 <0.3.0`; same-family 0.2 builds can use the newest certified
-  adapter in visibly diagnosed compatible-preview mode. Out-of-family and
-  API-divergent builds still fail closed.
-- **Shared catalog profiles.** A reviewed
-  `contracts/dsh/catalog-profile-overrides.json` lets token-contract-compatible
-  builds reuse a certified profile. DSH `0.2.2-rc.2` reuses the rc.1 profile, so
-  the host bundle does not grow by a full catalog per release.
-- **Hot update follows without an app restart.** DSH HMR replaces the client
-  module and the new build no longer rejects the previous build's boot payload;
-  it re-fetches the live catalog, retries across the recomposition window, and
-  reapplies the saved skin. Cold start remains the acceptance target.
-- **DSH `0.2.2-rc.2` adaptation.** Frozen contract, `preview` / npm `next` claim,
-  real Electron Desktop acceptance. See [compatibility architecture](docs/design/compatibility.md).
+- **A compact catalog, not a hero-plus-scroll.** The current style is a 220×138
+  summary bar; 28 styles sit in one continuous 6/4/3/2-column grid, with the
+  family chips as the only taxonomy. At 1440 the catalog scroll drops from about
+  2,788 px to 1,480 px.
+- **Style DNA on every card.** Each card names its surface recipe, component
+  chrome and UI type family, and the default order starts with the most distinct
+  GUI shapes instead of a run of similar cards.
+- **Four new GUI-first palettes.** Blueprint (engineering cyan + mono + editorial),
+  Bauhaus (mustard/cobalt + display + brutal/poster), Clay (terracotta + rounded +
+  pill/tinted), Phosphor (green CRT + terminal). The set grows from 24 to 28.
+- **Component chrome.** `layout.chrome` can tint, outline, darken or block-fill the
+  rail, composer, bubble, active row and selector from the palette seeds; six
+  recipes ship and all 28 styles choose one.
+- **macOS sidebar frost parity.** The wallpaper stylesheet now authors
+  `--dsw-specific-sidebar-tint` at the same frost ratio as the main column, so a
+  light wallpaper no longer washes out the left rail.
 
 ## What's new in 0.1.7
 
@@ -151,6 +143,8 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 ## Install
 
 Latest published package: [`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery).
+The `0.1.9` candidate is local-only until manual acceptance; install its tarball
+with the official plugin-manager path when testing.
 
 ### Web Profile
 
@@ -175,11 +169,12 @@ an unverified tarball.
 
 ## Verification
 
-Full isolated acceptance passed on the exact release artifact for Web `0.2.1-rc.2`,
-`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **275 passed / 0 failed each**, and
-Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **34 / 0 each**. The 0.1.8 evidence files are under
-`contracts/dsh/evidence/0.1.8/`, and the scope,
-counts and limitations are in [docs/verification.md](docs/verification.md).
+The published `0.1.8` artifact passed full isolated acceptance on Web `0.2.1-rc.2`,
+`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **275 passed / 0 failed
+each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with
+**34 / 0 each**. The `0.1.9` candidate is under manual acceptance; its evidence
+will be bound under `contracts/dsh/evidence/0.1.9/` before promotion. Scope,
+counts and limitations: [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
 loader-ABI checks, exact support-matrix / release gates, `release:prepare` and

@@ -449,7 +449,7 @@ describe('generated shipped registry', () => {
       files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.1.8')
+    expect(pkg.version).toBe('0.1.9')
     expect(pkg.engines?.dsh).toBe('>=0.2.1-rc.2 <0.3.0')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')

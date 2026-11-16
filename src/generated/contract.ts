@@ -141,7 +141,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -248,7 +248,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83",
     "sourceKind": "packaged-app",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -355,7 +355,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -462,7 +462,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed",
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -569,7 +569,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed",
+    "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
     "sourceKind": "installed-package",
     "sourceEvidence": [
       "dsh-client-modules/lib/client.js",
@@ -676,7 +676,7 @@ export const ADAPTERS: readonly AdapterRecord[] = [
         "detail": "CSS media query supported by the certified browser set."
       }
     },
-    "catalogProfile": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed",
+    "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
     "sharedProfile": true,
     "sourceKind": "installed-package",
     "sourceEvidence": [
@@ -707,37 +707,37 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
     "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed"
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
     "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed"
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
     "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed"
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83"
   },
   {
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
     "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
-    "catalogProfile": "sha256:7541192bd4427d623fb93baf16fdf6008fe013271afeab8d10269099e7d5c6ed"
+    "catalogProfile": "sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83"
   },
   {
     "hostVersion": "0.2.2-rc.1",
     "adapterId": "dsh-0.2.2-rc.1-r1",
     "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
-    "catalogProfile": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed"
+    "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f"
   },
   {
     "hostVersion": "0.2.2-rc.2",
     "adapterId": "dsh-0.2.2-rc.2-r1",
     "contractHash": "sha256:597669eeb1ea75ffa93894ba223aeb0c61d79d6b16288f6e00867749b1909f2a",
-    "catalogProfile": "sha256:79d7a671909f01408195dc2d7e4aa5a153d77a7a0db68e8e1b97a64635481aed"
+    "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f"
   }
 ]
 
