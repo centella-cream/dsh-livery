@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "commit": "8ce0850c155e6fe1a6489cc97c5cbcd0862ba088",
+  "commit": "642b3abbfbd7d21be0e41268f182f5b337f60bdc",
   "packageVersion": "0.1.9",
-  "tarballSha256": "588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9",
-  "tarballBytes": 3249793,
-  "generatedAt": "2026-11-16T14:21:51.307Z",
+  "tarballSha256": "9c7ee26c8edb913aeb218de7ed3b59290fc27e72934ff25e9f51a172de287007",
+  "tarballBytes": 2189201,
+  "generatedAt": "2026-11-16T15:31:58.896Z",
   "scope": {
     "hostVersion": "0.2.1-rc.5",
     "profile": "desktop",
@@ -91,10 +91,10 @@
   "runs": [
     {
       "id": "desktop-0.2.1-rc.5-electron",
-      "commit": "8ce0850c155e6fe1a6489cc97c5cbcd0862ba088",
+      "commit": "642b3abbfbd7d21be0e41268f182f5b337f60bdc",
       "hostVersion": "0.2.1-rc.5",
       "adapterId": "dsh-0.2.1-rc.5-r1",
-      "tarballSha256": "588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9",
+      "tarballSha256": "9c7ee26c8edb913aeb218de7ed3b59290fc27e72934ff25e9f51a172de287007",
       "summary": {
         "pass": 34,
         "fail": 0,
@@ -103,9 +103,9 @@
         "total": 36
       },
       "probe": "contracts/dsh/evidence/0.1.9/probes/desktop-0.2.1-rc.5-electron.json",
-      "probeSha256": "bd5b7e8966feaa4364c019c0d6a5ded6ebe379b65bc507674aafcce19be6a27d",
+      "probeSha256": "12444b89c215260f6e956fd8b2a4b45fe72f0c136cfaee9c1057342b69fd0681",
       "report": "contracts/dsh/evidence/0.1.9/reports/desktop-0.2.1-rc.5-electron.md",
-      "reportSha256": "330a0b0c19f88c2df73a9057b29ae0df41504405add9eaa7cc02ff98009d64b8"
+      "reportSha256": "9ca11c069a5a048f44ba1d1b6d8840438db8130ab45a3656a6065dd055a4cbb8"
     }
   ]
 }

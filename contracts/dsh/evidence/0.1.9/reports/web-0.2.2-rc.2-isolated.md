@@ -1,6 +1,6 @@
 # Acceptance evidence — DSH Livery on DSH 0.2.2-rc.2 (installed-package)
 
-Run `2026-11-16T14-11-13-926Z-isolated` · isolated DSH_HOME · **275 passed / 0 failed / 4 skipped / 2 warnings** · RESULT: PASS
+Run `2026-11-16T15-21-24-497Z-isolated` · isolated DSH_HOME · **275 passed / 0 failed / 4 skipped / 2 warnings** · RESULT: PASS
 
 **Scope (explicit):** this run covers DSH 0.2.2-rc.2 + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by separate real-Electron desktop evidence; Windows and Web Edge are not-supported and not claimed.
 
@@ -8,8 +8,8 @@ Run `2026-11-16T14-11-13-926Z-isolated` · isolated DSH_HOME · **275 passed / 0
 
 | item | value |
 |---|---|
-| date | 2026-11-16T14:14:35.131Z |
-| run commit | 8ce0850c155e6fe1a6489cc97c5cbcd0862ba088 |
+| date | 2026-11-16T15:24:48.984Z |
+| run commit | 642b3abbfbd7d21be0e41268f182f5b337f60bdc |
 | DSH | 0.2.2-rc.2 |
 | Node | v22.23.1 |
 | OS | darwin 27.0.0 (arm64) |
@@ -20,7 +20,7 @@ Run `2026-11-16T14-11-13-926Z-isolated` · isolated DSH_HOME · **275 passed / 0
 | upstream | dsh-v0.2.2-rc.2 / npm 0.2.2-rc.2 |
 | playwright-core | 1.63.0 |
 | target package | dsh-livery@0.1.9 (`file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz`) |
-| tarball sha256 | 588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9 |
+| tarball sha256 | 9c7ee26c8edb913aeb218de7ed3b59290fc27e72934ff25e9f51a172de287007 |
 | browser | headless Chrome, viewport 1440×900 |
 
 ## Host identity & certification
@@ -41,10 +41,10 @@ Certified-adapter match: ✅ yes · catalog profile sha256:6662e0e6b22f…
 ## Boot
 
 ```text
-dsh web: http://127.0.0.1:58091/?token=<redacted>
+dsh web: http://127.0.0.1:63829/?token=<redacted>
 ```
 
-- boot ready: 911 ms; install via official profile package manager: 217 ms
+- boot ready: 1.7 s; install via official profile package manager: 333 ms
 
 ## docs/design/implementation-plan.md §20 coverage (Web profile)
 
@@ -91,29 +91,29 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | <home>/Personal/openprojects/dsh-livery/.tmp/web-cli-0.2.2-rc.2.sh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz → exit 0 in 217ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-livery"] |
-| `lifecycle.profile-initialized` | isolated profile initialized from the shipped web template | ✅ pass | home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-0.2.2-rc.2-web3; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-0.2.2-rc.2-web3/profiles/web; initialized=true; sha256=588f9f1d339429351081f2c62540a376911d3ada434343ed6e1704092541f6a9 |
-| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 911ms on port 58091; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log |
+| `lifecycle.install` | official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle | ✅ pass | <home>/Personal/openprojects/dsh-livery/.tmp/web-cli-0.2.2-rc.2.sh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz → exit 0 in 333ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz; bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-livery"] |
+| `lifecycle.profile-initialized` | isolated profile initialized from the shipped web template | ✅ pass | home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/release-0.2.2-rc.2-web; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/release-0.2.2-rc.2-web/profiles/web; initialized=true; sha256=9c7ee26c8edb913aeb218de7ed3b59290fc27e72934ff25e9f51a172de287007 |
+| `lifecycle.boot` | `dsh --profile web --no-open --port 0` boots and prints its authenticated URL | ✅ pass | ready in 1734ms on port 63829; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log |
 | `lifecycle.boot-warnings` | boot log has no skipped-bundle or compatibility warnings | ✅ pass | no skipped/incompatible/warning lines in the boot log |
-| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=123ms portClosed=true forced=false |
-| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=158ms |
+| `lifecycle.sigterm` | SIGTERM stops the web service cleanly and closes the port | ✅ pass | exit=0 signal=null shutdown=175ms portClosed=true forced=false |
+| `lifecycle.uninstall` | official `dsh plugin remove` uninstalls without residue in the profile manifest | ✅ pass | exit=0 depPresent=false bundleSelected=false duration=180ms |
 | `lifecycle.final-stop` | final SIGTERM stops the restarted service and closes the port | ✅ pass | exit=0 portClosed=true forced=false |
 
 ### Boot graph & handshake
 
 | check | title | result | detail |
 |---|---|---|---|
-| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:58091/; navigation 95ms |
-| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=52a9b2e285c0 |
+| `boot.token-exchange` | launch token is exchanged for the signed cookie and dropped from the URL | ✅ pass | final url http://127.0.0.1:63829/; navigation 134ms |
+| `boot.graph-entry` | __DSH_BOOT__ lists client entry "dsh-livery" | ✅ pass | url plugins/??dsh-livery/client.js&rev=c347a41a5565 |
 
 ### Client bundle route
 
 | check | title | result | detail |
 |---|---|---|---|
-| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=52a9b2e285c0 → 200 text/javascript; charset=utf-8 (248205 bytes) |
+| `bundle.serves-client-js` | plugin client bundle (boot-graph URL) is served as JavaScript | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=c347a41a5565 → 200 text/javascript; charset=utf-8 (248205 bytes) |
 | `bundle.requires-rev` | plugin client bundle requires its graph rev | ✅ pass | GET graph URL without rev → 404 |
 | `bundle.canonical-route` | bare /plugins/<pkg>/client.js?rev= route (doc-comment form) | ⚠️ warn | GET /plugins/dsh-livery/client.js?rev=<graph rev> → 404; this DSH build serves only the graph-encoded URL (verified deviation from the doc comment) |
-| `bundle.gzip-budget` | client bundle gzip stays within the final 60 KiB performance budget (host peers excluded) | ✅ pass | 60640 bytes gzip / 248205 bytes raw (budget 61440 B / 60 KiB) |
+| `bundle.gzip-budget` | client bundle gzip stays within the final 60 KiB performance budget (host peers excluded) | ✅ pass | 60641 bytes gzip / 248205 bytes raw (budget 61440 B / 60 KiB) |
 
 ### First-frame handshake
 
@@ -139,7 +139,7 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `trust.no-cookie-401` | browser trust: no cookie 401 | ✅ pass | GET / without cookie → 401 |
 | `trust.wrong-token-rejected` | browser trust: wrong token rejected | ✅ pass | GET /?token=<redacted> → 401 |
 | `trust.token-exchange-303` | browser trust: token exchange 303 | ✅ pass | GET /?token=<redacted> token> → 303 |
-| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Wed, 16 Dec 2026 14:11:16 GMT; HttpOnly; SameSite=Strict |
+| `trust.cookie-issued` | browser trust: cookie issued | ✅ pass | Set-Cookie: Max-Age=2592000; Path=/; Expires=Wed, 16 Dec 2026 15:21:28 GMT; HttpOnly; SameSite=Strict |
 | `trust.cookie-200` | browser trust: cookie 200 | ✅ pass | GET / with cookie → 200 |
 | `trust.bad-host-index-refused` | browser trust: bad host index refused | ✅ pass | GET / Host: evil.example (cookie from 127.0.0.1) → 401 (refused; cookie authority mismatch) |
 | `trust.bad-host-api-403` | browser trust: bad host api 403 | ✅ pass | GET /api/__dsh_acceptance_probe__ Host: evil.example → 403 |
@@ -205,7 +205,7 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `copy.selfcheck-labels-zh` | zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.2-rc.2-r1 协议校验码: 597669eeb1ea 插件版本: 0.1.9 宿主版本: 0.2.2-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f 配置中的视觉风格: stock 实际应用的视觉 |
 | `copy.state-strings` | acceptance label constants match the round-12 rewritten copy for the non-happy-path states (unit-covered) | ✅ pass | zh.catalogUnavailable="视觉风格暂时无法加载"; zh.writeRefused="宿主没有保存这套视觉风格。"; en.catalogUnavailable="Visual styles are unavailable right now"; en.writeRefused="The host did not save this visual style." |
 | `copy.selfcheck-labels-zh-active` | zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量) | ✅ pass | missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.2-rc.2-r1 协议校验码: 597669eeb1ea 插件版本: 0.1.9 宿主版本: 0.2.2-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 宿主能力 10 项中 |
-| `copy.selfcheck-labels` | self-check uses the round-12 plain-language labels | ✅ pass | locale=zh; missing=[]; panel=自检 收起自检 启动信息 已加载 适配器: dsh-0.2.2-rc.2-r1 协议校验码: 597669eeb1ea 插件版本: 0.1.9 宿主版本: 0.2.2-rc.2 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 宿主能力 10 项中 7 项可用 forced-colors 可用 ho |
+| `copy.selfcheck-labels` | self-check uses the round-12 plain-language labels | ✅ pass | locale=en; missing=[]; panel=Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.2-rc.2-r1 Contract hash: 597669eeb1ea Plugin: 0.1.9 Host: 0.2.2-rc.2 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab |
 | `copy.wallpaper-online-hint` | online card uses the round-12 human hint copy | ✅ pass | online card text=在线壁纸 打开这个标签页会自动加载一批随机壁纸。点“搜索”“随机”或“换一批”才会联网获取新图片。 搜索 随机 换一批 Picsum #10 Picsum #11 |
 | `copy.frost-label` | effect slider keeps the plain 磨砂 (Frost) label | ✅ pass | effects card labels=效果 重置效果 模糊 8 px 变暗 25% 磨砂 35% 全局氛围 30% 让界面表面像磨砂玻璃一样透出壁纸。 0 时壁纸只从透明处透出；调高后，所有页面都会罩上一层壁纸。 |
 
@@ -345,8 +345,8 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `selfcheck.style-coverage` | self-check reports token coverage with no missing tokens, and the applied style exposes style-token families | ✅ pass | applied=fjord styleFamilies={"shape":6,"elevation":7,"material":0,"border":0} selfCheckMissingTokens=0 |
 | `selfcheck.identity` | self-check shows the live host version, adapter id and contract hash | ✅ pass | panel shows 0.2.2-rc.2 / dsh-0.2.2-rc.2-r1 / 597669ee… |
 | `selfcheck.catalog-profile` | self-check shows the catalog profile id | ✅ pass | panel shows 6662e0e6… (sha256:6662e0e6b22f2db382106ba…) |
-| `selfcheck.contrast` | self-check reports 0 contrast failures | ✅ pass | contrast failures=0 (panel: 自检 \| 收起自检 \| 启动信息 \| 已加载 \| 适配器: dsh-0.2.2-rc.2-r1 \| 协议校验码: 597669eeb1ea \| 插件版本: 0.1.9 \| 宿主版本: 0.2.2-rc.2 \| 颜色模式: 浅色 \| 语言: zh \| 目录: 已加载 \| 目录分组: sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abb) |
-| `selfcheck.css-safety` | self-check reports 0 !important / 0 hash selectors | ✅ pass | !important=0 hashSelectors=0 (panel: !important 规则：0 · 哈希类选择器：0 · 远程 URL：0 · 未限定范围的变量：0 · 固定 z-index：0) |
+| `selfcheck.contrast` | self-check reports 0 contrast failures | ✅ pass | contrast failures=0 (panel: Self-check \| Hide self-check \| Startup check \| Loaded \| Adapter: dsh-0.2.2-rc.2-r1 \| Contract hash: 597669eeb1ea \| Plugin: 0.1.9 \| Host: 0.2.2-rc.2 \| Color mode: Light \| Locale: en \| Catalog: Loaded \|) |
+| `selfcheck.css-safety` | self-check reports 0 !important / 0 hash selectors | ✅ pass | !important=0 hashSelectors=0 (panel: !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0) |
 | `selfcheck.optional-info` | self-check discloses optional capability fallbacks (optional-info line, or a degraded notice on older builds) | ✅ pass | 1 livery-optional-info line(s) |
 | `selfcheck.copy-diagnostics` | copy diagnostics produces diagnostics text | ✅ pass | clipboard 982 byte(s), starts: DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.1.9 适配器：dsh-0.2.2-rc.2-r1 协议校验码：597669eeb1ea 宿主版本：0.2.2-rc.2 目录分组：sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f 语言：zh 颜色模式：浅色 ## 启动信息 |
 | `selfcheck.copy-diagnostics-content` | copied diagnostics carry the DSH Livery header + adapter id + contract prefix (engineering ids live in diagnostics, not the About footer) | ✅ pass | adapterId="dsh-0.2.2-rc.2-r1" present=true; contractPrefix="597669ee" present=true; headerDSHLivery=true; noVisualStudio=true |
@@ -355,9 +355,9 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 
 | check | title | result | detail |
 |---|---|---|---|
-| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 45/46 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {"t":45,"htmlLang":"zh-CN","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:ef96cabcf394e434207f225949f97405aed5181c541cb86da86425a7aa5409f4","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
+| `firstpaint.no-stock-frame` | every painted frame after body creation already carries the livery body attribute and boot style | ✅ pass | 43/45 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {"t":138,"htmlLang":"zh-CN","themeSource":"system","dark":false,"attr":"fjord","hash":"sha256:ef96cabcf394e434207f225949f97405aed5181c541cb86da86425a7aa5409f4","tokenBg":"#f0f3f6","bg":"rgb(240, 243, 246)","bootStyle":true,"liveryStyles":1} |
 | `firstpaint.first-colour` | the first painted frame already uses the livery background token | ✅ pass | first sample --dsw-alias-bg-base=#f0f3f6 (canonical rgb(240, 243, 246)) vs livery light rgb(240, 243, 246) |
-| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=36ms fcp=164ms dcl=37.5ms load=171.10000014305115ms |
+| `firstpaint.paint-timings` | paint timing entries are recorded (first-paint / first-contentful-paint) | ✅ pass | first-paint=24ms fcp=156ms dcl=22.300000190734863ms load=159.60000014305115ms |
 
 ### Presentation layout & card structure
 
@@ -443,17 +443,17 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `wallpaper.persistence` | selected wallpaper and effects persist across a hard reload | ✅ pass | global layer attr=true; builtin=aurora; sliders={"blur":12,"dim":40,"frost":55,"atmosphere":60}; stored={"schemaVersion":2,"revision":16,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":5 |
 | `wallpaper.tab-reload` | the wallpaper tab survives a hard reload (sessionStorage mirror) | ✅ pass | reopened=true; wallpaper tab auto-selected after reload=true; overlay=true |
 | `wallpaper.upload-accept` | upload input accepts the documented image MIME set | ✅ pass | accept="image/jpeg,image/png,image/webp,image/avif" |
-| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1794838335148-0hvtir5igm"},"effects":{"blur":12,"dim":40,"frost"; error="" |
+| `wallpaper.upload-applied` | uploading a PNG applies a blob: wallpaper layer stored in IndexedDB | ✅ pass | blobInStyle=true; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1794842548482-0ugjf7cthv"},"effects":{"blur":12,"dim":40,"frost"; error="" |
 | `wallpaper.upload-invalid-type` | a non-image upload is rejected with a validation message | ✅ pass | error="不支持的图片格式。" |
 | `wallpaper.upload-invalid-size` | an upload above the 10 MiB cap is rejected with a validation message | ✅ pass | error="图片超过 10 MiB。" |
-| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1794838335148-0hvtir5igm"},"effects":{"blur" |
+| `wallpaper.upload-reload` | an uploaded wallpaper re-hydrates from IndexedDB after a hard reload | ✅ pass | blobInStyle=true; attribute=; stored={"schemaVersion":2,"revision":17,"selection":{"kind":"upload","key":"upload-1794842548482-0ugjf7cthv"},"effects":{"blur" |
 | `wallpaper.url-validation` | non-https / javascript / data URLs are rejected with a validation message | ✅ pass | http://insecure.test/a.j rejected=true; javascript:alert(1) rejected=true; data:image/svg+xml,<svg/ rejected=true |
 | `wallpaper.url-accepted` | https custom image URLs are accepted and applied through the owned layer | ✅ pass | blob=true fetchOk=true rawInStyle=false; attr=; error="" (custom URLs surface no attribution line by design) |
 | `wallpaper.remote-failure` | failed remote cache (network/status/MIME/redirect) keeps the previous selection/storage, records no history/raw CSS, and never requests a private/insecure redirect target | ✅ pass | [{"label":"network/status failure","url":"https://images.example.test/broken.jpg","errorVisible":true,"oldSelectionPreserved":true,"oldStylePreserved":true,"rawInStyle":false,"history":false},{"label":"non-image MIME failure","url":"https://images.example.test/mime.jpg","errorVisible":true,"oldSelectionPreserved":true,"oldStylePreserved":true,"rawInStyle":false,"history":false},{"label":"private-h |
 | `wallpaper.adaptive-cover` | both wallpaper layers stay background-size:cover across 1024×768 / 1920×1080 / 900×1300 | ✅ pass | 1024x768: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2; 1920x1080: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2; 900x1300: pseudo=cover, cover, cover, overlay=cover, cover, cover, coverRules=2 |
 | `wallpaper.atmosphere-conversation` | the atmosphere overlay stays present over the host conversation page | ✅ pass | attr=; overlay={"present":true,"id":"dsh-livery-wallpaper-overlay","className":"dsh-livery-wallpaper-overlay","ariaHidden":"true","zIndex":"90","pointerEvents":"none","opacity":"0.6","mixBlendMode":"soft-light","backgroundSize":"cover, cover, cover","backgroundImage":"radial-gradient(120% 130% at 8% 0%, rgb(94, 234, 212) 0%, rgba(0, 0, 0, 0) 55%), radial-gradient(110% 130% at 92% 12%, rgb(129, 140 |
 | `wallpaper.overlay-plugin` | atmosphere layer stays present and below floating UI over the third-party "插件" panel; opaque-page visual coverage is not claimed | ✅ pass | third-party="插件"; atmo0 overlay=false; atmo60 overlay=true z=90 opacity=0.6; measured pixel delta={"avg":14,"grid":16.26,"score":30.26}; perceptible=true (informational only; no visual-coverage claim) |
-| `wallpaper.clear` | clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key) | ✅ pass | stylePresent=false; attribute=null; overlay=false; stored={"schemaVersion":2,"revision":23,"selection":{"kind":"none"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"466a6baa-590f-499c-9f23-7d03af993ee8"} |
+| `wallpaper.clear` | clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key) | ✅ pass | stylePresent=false; attribute=null; overlay=false; stored={"schemaVersion":2,"revision":23,"selection":{"kind":"none"},"effects":{"blur":12,"dim":40,"frost":55,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"3c2eb772-c42f-489b-8c5a-08e7511fc0fb"} |
 | `wallpaper.tab-restore` | returning to the 视觉风格 tab restores the gallery and the wallpaper layer stays cleared | ✅ pass | style selected=true; stylePanel=true; wallpaperPanel=false |
 
 ### recent
@@ -478,7 +478,7 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `visual.narrow-card-order` | at 767px the hero/effects workbench renders before the single source card; tab panels stay mounted but hidden | ✅ pass | {"wallpaper-hero":{"top":-347.40625,"left":24,"width":719,"height":381.09375,"visible":true},"wallpaper-effects-card":{"top":39.6875,"left":24,"width":719,"height":471.296875,"visible":true},"wallpaper-source-card":{"top":510.984375,"left":24,"width":719,"height":535.796875,"visible":true},"wallpaper-manage":{"top":1046.78125,"left":24,"width":719,"height":70.796875,"visible":true}} |
 | `visual.theme-tokens` | light/dark themes swap computed livery background tokens with wallpaper active | ✅ pass | attr light=tokyo-night dark=tokyo-night; light=color(srgb 0.835294 0.839216 0.858824 / 0.45); dark=color(srgb 0.101961 0.105882 0.14902 / 0.45); darkAttr=""; lightCard={"backgroundColor":"rgba(0, 0, 0, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px none","boxShadow":"none"}; darkCard={"backgroundColor":"rgba(0, 0, 0, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px none |
 | `visual.frost-steps` | frost 0/35/80 changes active token transparency while plugin cards keep their private glass | ✅ pass | frost=0 colorMix=true pct=100 bgBase="color-mix(in srgb, #d5d6db 100%, transparent)" card={"backgroundColor":"rgba(0, 0, 0, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px none","boxShadow":"none"} \| frost=35 colorMix=true pct=65 bgBase="color-mix(in srgb, #d5d6db 65%, transparent)" card={"backgroundColor":"rgba(0, 0, 0, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px  |
-| `visual.atmosphere-steps` | atmosphere 0/30/60 maps to no overlay / 0.30 / 0.60 opacity, below floating UI | ✅ pass | atmo=0 overlay={"present":false} \| atmo=30 overlay={"present":true,"id":"dsh-livery-wallpaper-overlay","className":"dsh-livery-wallpaper-overlay","ariaHidden":"true","zIndex":"90","pointerEvents":"none","opacity":"0.3","mixBlendMode":"soft-light","backgroundSize":"cover","backgroundImage":"url(\"blob:http://127.0.0.1:58091/ebbb56a5-b4b2-418e-ac16-dd17b2105b7a\")"} \| atmo=60 overlay={"present":tr |
+| `visual.atmosphere-steps` | atmosphere 0/30/60 maps to no overlay / 0.30 / 0.60 opacity, below floating UI | ✅ pass | atmo=0 overlay={"present":false} \| atmo=30 overlay={"present":true,"id":"dsh-livery-wallpaper-overlay","className":"dsh-livery-wallpaper-overlay","ariaHidden":"true","zIndex":"90","pointerEvents":"none","opacity":"0.3","mixBlendMode":"soft-light","backgroundSize":"cover","backgroundImage":"url(\"blob:http://127.0.0.1:63829/a1e1fda8-fb97-40c2-89b1-e0d4c95f13fd\")"} \| atmo=60 overlay={"present":tr |
 | `visual.forced-colors` | forced-colors active keeps the livery scoped and removes translucent card glass | ✅ pass | attr=tokyo-night; card={"backgroundColor":"rgba(255, 255, 255, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px none","boxShadow":"none"} |
 | `visual.reduced-transparency` | prefers-reduced-transparency:reduce removes card blur/translucent private surface | ✅ pass | media=true; card={"backgroundColor":"rgba(0, 0, 0, 0)","backgroundAlpha":0,"backdropFilter":"none","border":"0px none","boxShadow":"none"} |
 | `visual.keyboard-focus` | keyboard focus reaches a builtin and shows a visible focus ring | ✅ pass | focused={"testId":"wallpaper-builtin","outline":"solid 2px rgb(52, 84, 138)","boxShadow":"none"} |
@@ -495,21 +495,21 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `merged.position-builtin-hidden` | built-in wallpaper hides the focal-position control | ✅ pass | group={"present":false} attr= |
 | `merged.preset-export` | preset export produces schema-v1 JSON with style/wallpaper/effects/position and no executable data | ✅ pass | bytes=289; preset={"schemaVersion":1,"createdWith":"dsh-livery/0.1.9","styleId":"tokyo-night","wallpaper":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":35,"atmosphere":60},"position":{"x":50,"y":50}} |
 | `merged.preset-import-diff` | valid preset import shows a diff with the changed style/wallpaper/effects/position | ✅ pass | preset={"card":true,"exportButton":true,"importFile":true,"diff":true,"diffRows":4,"apply":true,"cancel":true,"exportStatus":"","importStatus":"已载入由 dsh-livery/0.1.4 创建的预设。","applyStatus":"","error":null} diffRows=4 |
-| `merged.preset-apply-atomic` | preset apply switches style + wallpaper + effects + position together from one confirmed action | ✅ pass | applyStatus="预设已应用。关闭提示" stored={"schemaVersion":2,"revision":52,"selection":{"kind":"remote","url":"https://images.example.test/preset.jpg"},"effects":{"blur":14,"dim":30,"frost":45,"atmosphere":25},"position":{"x":100,"y":100},"sourceId":"466a6baa-59 |
+| `merged.preset-apply-atomic` | preset apply switches style + wallpaper + effects + position together from one confirmed action | ✅ pass | applyStatus="预设已应用。关闭提示" stored={"schemaVersion":2,"revision":52,"selection":{"kind":"remote","url":"https://images.example.test/preset.jpg"},"effects":{"blur":14,"dim":30,"frost":45,"atmosphere":25},"position":{"x":100,"y":100},"sourceId":"3c2eb772-c4 |
 | `merged.preset-invalid-rejected` | invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage | ✅ pass | [{"name":"unknown-field","error":{"id":"preset-error","kind":"import","code":"unknown-field","text":"预设包含不支持的字段（css）。关闭提示","importAriaInvalid":"true","importDescribedBy":"preset-error","importErrorMessage":"preset-error","retryWallpaper":false}},{"name":"bad-url","error":{"id":"preset-error","kind":"import","code":"wallpaper-url","text":"预设壁纸不是有效的 https 图片地址。关闭提示","importAriaInvalid":"true","impor |
 | `merged.preset-partial-failure` | injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution | ✅ pass | styleApplied=true; error={"id":"preset-error","kind":"apply","code":"wallpaper","text":"视觉风格已应用，但本设备未能更改壁纸。可重试壁纸，或关闭提示保留新风格。重试壁纸关闭提示","importAriaInvalid":null,"importDescribedBy":null,"importErrorMessage":null,"retryWallpaper":true}; noFalseSuccess=true; hasRetry=true; recoveredSelection={"kind":"remote","url":"https://images.example.test/partial.jpg"}; attrib="Partial Preset · Tester · CC0 · http |
-| `merged.state-migration-v1` | legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored | ✅ pass | visible={"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":35,"atmosphere":60} style=true attr=""; persisted={"schemaVersion":2,"revision":1,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":60,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"8057b3d1-6a5a-4511-954a-23fdec449980"} style=true attr=""; corruptStyle=true corruptAttr="" corruptStored={no |
-| `merged.clear-local-data` | clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache | ✅ pass | dbBefore=[{"kind":"remote","size":261742,"createdAt":1794838385980,"lastUsedAt":1794838413530,"sourceUrl":"https://picsum.photos/id/10/1600/900","hasBlob":true},{"kind":"remote","size":70,"createdAt":1794838396760,"lastUsedAt":1794838413529,"sourceUrl":"https://images.example.test/remote.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1794838404743,"lastUsedAt":1794838413520,"sourceUrl |
+| `merged.state-migration-v1` | legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored | ✅ pass | visible={"kind":"builtin","id":"aurora","blur":12,"dim":40,"frost":35,"atmosphere":60} style=true attr=""; persisted={"schemaVersion":2,"revision":1,"selection":{"kind":"builtin","id":"aurora"},"effects":{"blur":12,"dim":40,"frost":60,"atmosphere":60},"position":{"x":50,"y":50},"sourceId":"ae3d4574-faff-42bf-ae9d-87893005adfb"} style=true attr=""; corruptStyle=true corruptAttr="" corruptStored={no |
+| `merged.clear-local-data` | clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache | ✅ pass | dbBefore=[{"kind":"remote","size":261742,"createdAt":1794842598857,"lastUsedAt":1794842626719,"sourceUrl":"https://picsum.photos/id/10/1600/900","hasBlob":true},{"kind":"remote","size":70,"createdAt":1794842609748,"lastUsedAt":1794842626718,"sourceUrl":"https://images.example.test/remote.jpg","hasBlob":true},{"kind":"remote","size":70,"createdAt":1794842617930,"lastUsedAt":1794842626713,"sourceUrl |
 | `merged.two-tab-sync` | a second real page in the same profile applies wallpaper/position changes through storage events without reload loops | ✅ pass | selection={"kind":"remote","url":"https://images.example.test/sync.jpg"} position={"x":0,"y":0} style=true attr="" storageEvents=9 |
 | `merged.two-tab-clear` | clearing wallpaper in page A clears page B through the same sync path | ✅ pass | style=false attr=null |
-| `merged.two-tab-upload-ref` | page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref | ✅ pass | {"uploadKey":"upload-1794838455846-0lqtrya6zy","refRows":2,"refsAfterAdopt":[{"key":"dsh-livery.wallpaper.ref.466a6baa-590f-499c-9f23-7d03af993ee8","uploads":[],"updatedAt":1794838404744},{"key":"dsh-livery.wallpaper.ref.8c0ea651-5e82-4265-b04e-1336cf8112ea","uploads":[],"updatedAt":1794838312985},{"key":"dsh-livery.wallpaper.ref.8057b3d1-6a5a-4511-954a-23fdec449980","uploads":["upload-17948384558 |
+| `merged.two-tab-upload-ref` | page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref | ✅ pass | {"uploadKey":"upload-1794842669127-0hnuf9lc2v","refRows":2,"refsAfterAdopt":[{"key":"dsh-livery.wallpaper.ref.3c2eb772-c42f-489b-8c5a-08e7511fc0fb","uploads":[],"updatedAt":1794842617931},{"key":"dsh-livery.wallpaper.ref.55837245-e029-4e70-b844-80a10e405cf8","uploads":[],"updatedAt":1794842526321},{"key":"dsh-livery.wallpaper.ref.ae3d4574-faff-42bf-ae9d-87893005adfb","uploads":["upload-17948426691 |
 
 ### perf
 
 | check | title | result | detail |
 |---|---|---|---|
 | `perf.catalog-size` | catalog JSON response stays within the measured headroom cap (+50% extreme regression tolerated as warning) | ✅ pass | actual 1580630 bytes; cap 1768384 bytes (c68be7c); within cap |
-| `perf.cold-start` | cold-start time stays near the measured baseline (warn only unless extreme) | ✅ pass | actual boot=911ms fcp=164ms; baseline p50=1919ms p95=2021ms; pass |
+| `perf.cold-start` | cold-start time stays near the measured baseline (warn only unless extreme) | ✅ pass | actual boot=1734ms fcp=156ms; baseline p50=1919ms p95=2021ms; pass |
 
 ### network
 
@@ -542,113 +542,113 @@ dsh web: http://127.0.0.1:58091/?token=<redacted>
 | `residue.catalog-route` | after uninstall /livery/api/catalog returns 404 | ✅ pass | GET /livery/api/catalog → 404 |
 | `residue.preview-route` | after uninstall /livery/assets/previews/sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f/fjord-zh-light.svg returns 404 | ✅ pass | GET /livery/assets/previews/sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f/fjord-zh-light.svg → 404 |
 | `residue.plugin-route` | after uninstall /plugins/dsh-livery/client.js returns 404 | ✅ pass | GET /plugins/dsh-livery/client.js → 404 |
-| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=52a9b2e285c0 → 404 |
+| `residue.old-bundle-url` | after uninstall the previously served client bundle URL returns 404 | ✅ pass | GET /plugins/??dsh-livery/client.js&rev=c347a41a5565 → 404 |
 | `residue.profile-manifest` | uninstall removes dependency/bundle selection; any stale settings row is documented (not silently ignored) | ✅ pass | profile dependency removed; patch liveryRows=1 skinId=stock |
 
 ## Screenshots
 
 | file | locale | mode | state |
 |---|---|---|---|
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel.png` | zh | light | panel |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery.png` | zh | light | panel-gallery |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-preview-en.png` | zh | light | panel-gallery-preview-en |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-preview-zh.png` | zh | light | panel-gallery-preview-zh |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-search-tag.png` | zh | light | panel-gallery-search-tag |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-search-empty.png` | zh | light | panel-gallery-search-empty |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-previewing.png` | zh | light | panel-previewing |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied.png` | zh | light | panel-applied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied-preview-en.png` | zh | light | panel-applied-preview-en |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied-after-reload.png` | zh | light | panel-applied-after-reload |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-applied.png` | zh | dark | applied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-forced-colors.png` | zh | light | forced-colors |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/en-light-panel-applied.png` | en | light | panel-applied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/en-light-panel-gallery.png` | en | light | panel-gallery |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-selfcheck.png` | zh | light | selfcheck |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-diagnostics-copied.png` | zh | light | panel-diagnostics-copied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-applied-after-ready.png` | zh | light | applied-after-ready |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-applied-1023.png` | zh | light | applied-1023 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-applied-767.png` | zh | light | applied-767 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-1440.png` | zh | light | layout-style-1440 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-1024.png` | zh | light | layout-style-1024 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-767.png` | zh | light | layout-style-767 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-1440.png` | zh | light | layout-wallpaper-1440 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-1024.png` | zh | light | layout-wallpaper-1024 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-767.png` | zh | light | layout-wallpaper-767 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-graphite.png` | zh | light | style-graphite |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-graphite-conversation.png` | zh | light | style-graphite-conversation |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-catppuccin.png` | zh | light | style-catppuccin |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-catppuccin-conversation.png` | zh | light | style-catppuccin-conversation |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-rice-paper.png` | zh | light | style-rice-paper |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-rice-paper-conversation.png` | zh | light | style-rice-paper-conversation |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-tokyo-night.png` | zh | light | style-tokyo-night |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-style-tokyo-night-conversation.png` | zh | light | style-tokyo-night-conversation |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-auto.png` | zh | light | wallpaper-online-auto |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-search.png` | zh | light | wallpaper-online-search |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-retry.png` | zh | light | wallpaper-online-retry |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-applied.png` | zh | light | wallpaper-online-applied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-builtin.png` | zh | light | wallpaper-builtin |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-atmosphere.png` | zh | light | wallpaper-atmosphere |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-blurred.png` | zh | light | wallpaper-blurred |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-frost.png` | zh | light | wallpaper-frost |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-persisted.png` | zh | light | wallpaper-persisted |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-upload.png` | zh | light | wallpaper-upload |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-upload-persisted.png` | zh | light | wallpaper-upload-persisted |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-custom-url.png` | zh | light | wallpaper-custom-url |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-1024x768.png` | zh | light | wallpaper-resize-1024x768 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-1920x1080.png` | zh | light | wallpaper-resize-1920x1080 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-900x1300.png` | zh | light | wallpaper-resize-900x1300 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-atmosphere-conversation.png` | zh | light | wallpaper-atmosphere-conversation |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png` | zh | light | wallpaper-plugin-atmosphere-0 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png` | zh | light | wallpaper-plugin-atmosphere-60 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1440-light-off.png` | zh | light | visual-1440-light-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1440-light-on.png` | zh | light | visual-1440-light-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1440-dark-on.png` | zh | dark | visual-1440-dark-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1440-dark-off.png` | zh | dark | visual-1440-dark-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1024-light-off.png` | zh | light | visual-1024-light-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1024-light-on.png` | zh | light | visual-1024-light-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1024-dark-on.png` | zh | dark | visual-1024-dark-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1024-dark-off.png` | zh | dark | visual-1024-dark-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-767-light-off.png` | zh | light | visual-767-light-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-767-light-on.png` | zh | light | visual-767-light-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-767-dark-on.png` | zh | dark | visual-767-dark-on |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-767-dark-off.png` | zh | dark | visual-767-dark-off |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-0.png` | zh | light | visual-frost-0 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-35.png` | zh | light | visual-frost-35 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-80.png` | zh | light | visual-frost-80 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-0.png` | zh | light | visual-atmosphere-0 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-30.png` | zh | light | visual-atmosphere-30 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-60.png` | zh | light | visual-atmosphere-60 |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-forced-colors.png` | zh | light | visual-forced-colors |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-reduced-transparency.png` | zh | light | visual-reduced-transparency |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-visual-keyboard-selected.png` | zh | light | visual-keyboard-selected |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-position-top-left.png` | zh | light | merged-position-top-left |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-position-bottom-right.png` | zh | light | merged-position-bottom-right |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-diff.png` | zh | light | merged-preset-diff |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-applied.png` | zh | light | merged-preset-applied |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-error.png` | zh | light | merged-preset-error |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-partial-fault.png` | zh | light | merged-preset-partial-fault |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-partial-recovered.png` | zh | light | merged-preset-partial-recovered |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-panel-stock.png` | zh | light | panel-stock |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-stock-after-reload.png` | zh | light | stock-after-reload |
-| `artifacts/acceptance/final-0.2.2-rc.2-web3/screens/0.2.2-rc.2-web-chrome/zh-light-stock-post-uninstall.png` | zh | light | stock-post-uninstall |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-home.png` | zh | light | home |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel.png` | zh | light | panel |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery.png` | zh | light | panel-gallery |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-preview-en.png` | zh | light | panel-gallery-preview-en |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-preview-zh.png` | zh | light | panel-gallery-preview-zh |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-search-tag.png` | zh | light | panel-gallery-search-tag |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-gallery-search-empty.png` | zh | light | panel-gallery-search-empty |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-previewing.png` | zh | light | panel-previewing |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied.png` | zh | light | panel-applied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied-preview-en.png` | zh | light | panel-applied-preview-en |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-applied-after-reload.png` | zh | light | panel-applied-after-reload |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-applied.png` | zh | dark | applied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-forced-colors.png` | zh | light | forced-colors |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/en-light-panel-applied.png` | en | light | panel-applied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/en-light-panel-gallery.png` | en | light | panel-gallery |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-selfcheck.png` | zh | light | selfcheck |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-diagnostics-copied.png` | zh | light | panel-diagnostics-copied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-applied-after-ready.png` | zh | light | applied-after-ready |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-applied-1023.png` | zh | light | applied-1023 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-applied-767.png` | zh | light | applied-767 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-1440.png` | zh | light | layout-style-1440 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-1024.png` | zh | light | layout-style-1024 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-style-767.png` | zh | light | layout-style-767 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-1440.png` | zh | light | layout-wallpaper-1440 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-1024.png` | zh | light | layout-wallpaper-1024 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-layout-wallpaper-767.png` | zh | light | layout-wallpaper-767 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-graphite.png` | zh | light | style-graphite |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-graphite-conversation.png` | zh | light | style-graphite-conversation |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-catppuccin.png` | zh | light | style-catppuccin |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-catppuccin-conversation.png` | zh | light | style-catppuccin-conversation |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-rice-paper.png` | zh | light | style-rice-paper |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-rice-paper-conversation.png` | zh | light | style-rice-paper-conversation |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-tokyo-night.png` | zh | light | style-tokyo-night |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-style-tokyo-night-conversation.png` | zh | light | style-tokyo-night-conversation |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-auto.png` | zh | light | wallpaper-online-auto |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-search.png` | zh | light | wallpaper-online-search |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-retry.png` | zh | light | wallpaper-online-retry |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-online-applied.png` | zh | light | wallpaper-online-applied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-builtin.png` | zh | light | wallpaper-builtin |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-atmosphere.png` | zh | light | wallpaper-atmosphere |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-blurred.png` | zh | light | wallpaper-blurred |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-frost.png` | zh | light | wallpaper-frost |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-persisted.png` | zh | light | wallpaper-persisted |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-upload.png` | zh | light | wallpaper-upload |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-upload-persisted.png` | zh | light | wallpaper-upload-persisted |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-custom-url.png` | zh | light | wallpaper-custom-url |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-1024x768.png` | zh | light | wallpaper-resize-1024x768 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-1920x1080.png` | zh | light | wallpaper-resize-1920x1080 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-resize-900x1300.png` | zh | light | wallpaper-resize-900x1300 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-atmosphere-conversation.png` | zh | light | wallpaper-atmosphere-conversation |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-0.png` | zh | light | wallpaper-plugin-atmosphere-0 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-wallpaper-plugin-atmosphere-60.png` | zh | light | wallpaper-plugin-atmosphere-60 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1440-light-off.png` | zh | light | visual-1440-light-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1440-light-on.png` | zh | light | visual-1440-light-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1440-dark-on.png` | zh | dark | visual-1440-dark-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1440-dark-off.png` | zh | dark | visual-1440-dark-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1024-light-off.png` | zh | light | visual-1024-light-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-1024-light-on.png` | zh | light | visual-1024-light-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1024-dark-on.png` | zh | dark | visual-1024-dark-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-1024-dark-off.png` | zh | dark | visual-1024-dark-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-767-light-off.png` | zh | light | visual-767-light-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-767-light-on.png` | zh | light | visual-767-light-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-767-dark-on.png` | zh | dark | visual-767-dark-on |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-dark-visual-767-dark-off.png` | zh | dark | visual-767-dark-off |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-0.png` | zh | light | visual-frost-0 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-35.png` | zh | light | visual-frost-35 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-frost-80.png` | zh | light | visual-frost-80 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-0.png` | zh | light | visual-atmosphere-0 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-30.png` | zh | light | visual-atmosphere-30 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-atmosphere-60.png` | zh | light | visual-atmosphere-60 |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-forced-colors.png` | zh | light | visual-forced-colors |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-reduced-transparency.png` | zh | light | visual-reduced-transparency |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-visual-keyboard-selected.png` | zh | light | visual-keyboard-selected |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-position-top-left.png` | zh | light | merged-position-top-left |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-position-bottom-right.png` | zh | light | merged-position-bottom-right |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-diff.png` | zh | light | merged-preset-diff |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-applied.png` | zh | light | merged-preset-applied |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-error.png` | zh | light | merged-preset-error |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-partial-fault.png` | zh | light | merged-preset-partial-fault |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-merged-preset-partial-recovered.png` | zh | light | merged-preset-partial-recovered |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-panel-stock.png` | zh | light | panel-stock |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-stock-after-reload.png` | zh | light | stock-after-reload |
+| `artifacts/acceptance/release-0.2.2-rc.2-web/screens/0.2.2-rc.2-web-chrome/zh-light-stock-post-uninstall.png` | zh | light | stock-post-uninstall |
 
 ## Artifacts
 
-- probe: `artifacts/acceptance/final-0.2.2-rc.2-web3/probe.json`
-- console/network: `artifacts/acceptance/final-0.2.2-rc.2-web3/console.json`
-- timings: `artifacts/acceptance/final-0.2.2-rc.2-web3/timings.json`
-- filmstrip frames: `artifacts/acceptance/final-0.2.2-rc.2-web3/filmstrip` (22 frames)
-- HTML snapshots: `artifacts/acceptance/final-0.2.2-rc.2-web3/html`
+- probe: `artifacts/acceptance/release-0.2.2-rc.2-web/probe.json`
+- console/network: `artifacts/acceptance/release-0.2.2-rc.2-web/console.json`
+- timings: `artifacts/acceptance/release-0.2.2-rc.2-web/timings.json`
+- filmstrip frames: `artifacts/acceptance/release-0.2.2-rc.2-web/filmstrip` (11 frames)
+- HTML snapshots: `artifacts/acceptance/release-0.2.2-rc.2-web/html`
 
 ## Lifecycle
 
 | step | result |
 |---|---|
-| SIGTERM stop before uninstall | exit 0, port closed: true, 123 ms |
-| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 158 ms |
-| fresh boot after uninstall | ready in 913 ms, port 58384 |
+| SIGTERM stop before uninstall | exit 0, port closed: true, 175 ms |
+| official `dsh plugin remove` | exit 0, dependency removed: true, bundle deselected: true, 180 ms |
+| fresh boot after uninstall | ready in 1.0 s, port 64201 |
 | residue sweep (boot graph / DOM / routes / tokens) | see residue checks above |
 | final SIGTERM | exit 0, port closed: true |
 
@@ -701,13 +701,13 @@ First paint timings:
 
 ```json
 {
-  "timeOrigin": 1794838291084.8,
-  "responseStart": 3.6000001430511475,
-  "domContentLoaded": 37.5,
-  "load": 171.10000014305115,
-  "firstPaint": 36,
-  "firstContentfulPaint": 164,
-  "duration": 171.10000014305115
+  "timeOrigin": 1794842503844.7,
+  "responseStart": 2.200000047683716,
+  "domContentLoaded": 22.300000190734863,
+  "load": 159.60000014305115,
+  "firstPaint": 24,
+  "firstContentfulPaint": 156,
+  "duration": 159.60000014305115
 }
 ```
 
@@ -719,44 +719,44 @@ Lifecycle:
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 123,
+    "shutdownMs": 175,
     "forceKilled": false,
-    "port": 58091,
+    "port": 63829,
     "portClosed": true,
     "portClosedWaitedMs": 0,
     "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
-    "logTail": "dsh web: http://127.0.0.1:58091/?token=<redacted>"
+    "logTail": "dsh web: http://127.0.0.1:63829/?token=<redacted>"
   },
   "uninstall": {
     "phase": "uninstall",
     "command": "<home>/Personal/openprojects/dsh-livery/.tmp/web-cli-0.2.2-rc.2.sh plugin --profile web remove dsh-livery",
-    "startedAt": "2026-11-16T14:14:32.852Z",
+    "startedAt": "2026-11-16T15:24:46.122Z",
     "exitCode": 0,
     "signal": null,
     "timedOut": false,
-    "durationMs": 158,
-    "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz\n\nDone in 40ms using pnpm v12.3.4\n",
+    "durationMs": 180,
+    "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.1.9.tgz\n\nDone in 42ms using pnpm v12.3.4\n",
     "stderr": "",
     "dependencyPresent": false,
     "bundleSelected": false
   },
   "postUninstallBoot": {
-    "url": "http://127.0.0.1:58384/?token=<redacted>",
-    "baseUrl": "http://127.0.0.1:58384",
-    "port": 58384,
-    "readyMs": 913
+    "url": "http://127.0.0.1:64201/?token=<redacted>",
+    "baseUrl": "http://127.0.0.1:64201",
+    "port": 64201,
+    "readyMs": 1020
   },
   "stopAfterResidue": {
     "stopped": true,
     "exitCode": 0,
     "signal": null,
-    "shutdownMs": 120,
+    "shutdownMs": 275,
     "forceKilled": false,
-    "port": 58384,
+    "port": 64201,
     "portClosed": true,
     "portClosedWaitedMs": 0,
     "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web-post-uninstall.log",
-    "logTail": "dsh web: http://127.0.0.1:58384/?token=<redacted>"
+    "logTail": "dsh web: http://127.0.0.1:64201/?token=<redacted>"
   }
 }
 ```
