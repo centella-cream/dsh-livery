@@ -212,10 +212,16 @@ jobs:
           NAME=$(node -p "require('./package.json').name")
           FOUND=0
           for attempt in $(seq 1 30); do
-            if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then FOUND=1; break; fi
+            if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+              TARBALL=$(npm view "$NAME@$VERSION" dist.tarball 2>/dev/null || true)
+              if [ -n "$TARBALL" ] && curl -fsI --max-time 20 "$TARBALL" >/dev/null 2>&1; then
+                FOUND=1
+                break
+              fi
+            fi
             sleep 10
           done
-          test "$FOUND" = "1" || { echo "npm version $NAME@$VERSION did not propagate" >&2; exit 1; }
+          test "$FOUND" = "1" || { echo "npm version $NAME@$VERSION did not propagate (tarball not downloadable)" >&2; exit 1; }
           mkdir -p .tmp/registry
           npm pack "$NAME@$VERSION" --pack-destination .tmp/registry
       - name: Compare registry bytes with the accepted candidate
