@@ -27,6 +27,7 @@ import type {
 import { LIVERY_VERSION } from '../core/types.js'
 import { summarizeContrast } from '../core/contrast.js'
 import { DELIBERATELY_INHERITED_TOKENS } from '../core/derive.js'
+import { CHROME_TOKEN_NAMES } from '../core/chrome.js'
 import {
   CONSUMED_METRIC_FONT_TOKENS,
   auditStyleCoverage,
@@ -225,7 +226,7 @@ export function tokenSetsFor(stock: StockSnapshot): StockTokenSets {
   }
 
   const style = styleTokenNames(stock)
-  const emissionAllowed = new Set<string>([...emitted, ...style])
+  const emissionAllowed = new Set<string>([...emitted, ...style, ...CHROME_TOKEN_NAMES])
   const sets: StockTokenSets = {
     version: stock.version,
     tokenContractHash: stock.tokenContractHash,

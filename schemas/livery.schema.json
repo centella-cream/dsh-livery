@@ -127,6 +127,9 @@
         },
         "surfaceStyle": {
           "$ref": "#/$defs/surfaceStyleId"
+        },
+        "chrome": {
+          "$ref": "#/$defs/chromeStyleId"
         }
       }
     },
@@ -365,6 +368,18 @@
         "stock",
         "separated"
       ]
+    },
+    "chromeStyleId": {
+      "type": "string",
+      "enum": [
+        "plain",
+        "tinted",
+        "outline",
+        "terminal",
+        "editorial",
+        "poster"
+      ],
+      "description": "Optional component-fill recipe id (src/core/chrome.ts). Omitted means plain; the manifest never carries fill values directly."
     },
     "surfaceStyleId": {
       "type": "string",

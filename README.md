@@ -26,8 +26,9 @@ host theme takeover.
 > mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
 > **Working tree (unreleased, target 0.1.9):** the visual-style page is now a
-> compact 24-style catalog with style-DNA labels, and four styles ship distinct GUI
-> shapes (terminal, brutal, pill, editorial). macOS wallpaper frost also phases the
+> compact 24-style catalog with style-DNA labels, four styles ship distinct GUI
+> shapes (terminal, brutal, pill, editorial), and an optional component-chrome
+> axis varies the rail, composer and bubble fills. macOS wallpaper frost also phases the
 > sidebar tint to the main column. See the
 > [gallery design note](docs/design/style-gallery.md) and the
 > [sidebar surface note](docs/design/wallpaper-workbench.md#sidebar-surface).

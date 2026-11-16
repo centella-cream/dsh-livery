@@ -7,7 +7,7 @@
  * field and no duplicated taxonomy — so a style can never advertise a recipe it
  * does not ship.
  */
-import type { CompiledLivery, SurfaceStyleId } from '../../core/types.js'
+import type { ChromeStyleId, CompiledLivery, SurfaceStyleId } from '../../core/types.js'
 import type { LiveryTranslate } from '../platform.js'
 import type { LiveryKey } from '../../i18n/index.js'
 
@@ -28,6 +28,15 @@ export type DnaShapeKey =
   | 'dna.shape.brutal'
   | 'dna.shape.pill'
   | 'dna.shape.editorial'
+
+/** i18n key for one chrome recipe's card label. */
+export type DnaChromeKey =
+  | 'dna.chrome.plain'
+  | 'dna.chrome.tinted'
+  | 'dna.chrome.outline'
+  | 'dna.chrome.terminal'
+  | 'dna.chrome.editorial'
+  | 'dna.chrome.poster'
 
 /** i18n key for one UI type family's card label. */
 export type DnaTypeKey =
@@ -52,6 +61,18 @@ export function shapeLabelKey(surface: SurfaceStyleId): DnaShapeKey {
     case 'brutal': return 'dna.shape.brutal'
     case 'pill': return 'dna.shape.pill'
     case 'editorial': return 'dna.shape.editorial'
+  }
+}
+
+/** Dictionary key of a chrome recipe's label. */
+export function chromeLabelKey(chrome: ChromeStyleId): DnaChromeKey {
+  switch (chrome) {
+    case 'plain': return 'dna.chrome.plain'
+    case 'tinted': return 'dna.chrome.tinted'
+    case 'outline': return 'dna.chrome.outline'
+    case 'terminal': return 'dna.chrome.terminal'
+    case 'editorial': return 'dna.chrome.editorial'
+    case 'poster': return 'dna.chrome.poster'
   }
 }
 
@@ -88,8 +109,9 @@ export function typeFamilyOf(stack: string): StyleTypeFamily {
 /** The two visible traits of one style. */
 export interface StyleDna {
   readonly shape: StyleDnaKeyValue
+  readonly chrome: StyleDnaKeyValue
   readonly type: StyleDnaKeyValue
-  readonly labels: readonly [string, string]
+  readonly labels: readonly [string, string, string]
 }
 
 /** One localized trait label plus its dictionary key (for tests/diagnostics). */
@@ -111,11 +133,13 @@ export function styleDna(
   t: LiveryTranslate,
 ): StyleDna {
   const shapeKey = shapeLabelKey(livery.layout.surfaceStyle)
+  const chromeKey = chromeLabelKey(livery.layout.chrome ?? 'plain')
   const stack = livery.typography.ui[locale === 'zh' ? 'zh-CN' : 'en-US']
   const typeKey = typeLabelKey(typeFamilyOf(stack))
   return {
     shape: { key: shapeKey, label: t(shapeKey) },
+    chrome: { key: chromeKey, label: t(chromeKey) },
     type: { key: typeKey, label: t(typeKey) },
-    labels: [t(shapeKey), t(typeKey)],
+    labels: [t(shapeKey), t(chromeKey), t(typeKey)],
   }
 }

@@ -216,6 +216,12 @@ export const zhCN: Record<LiveryKey, string> = {
   'dna.type.mono': '等宽',
   'dna.type.display': '展示',
   'dna.type.rounded': '圆体',
+  'dna.chrome.plain': '素色',
+  'dna.chrome.tinted': '着色',
+  'dna.chrome.outline': '描边',
+  'dna.chrome.terminal': '深侧栏',
+  'dna.chrome.editorial': '素纸',
+  'dna.chrome.poster': '海报',
   'card.thumbnailError': '预览图暂不可用',
 
   // Transient preview bar.

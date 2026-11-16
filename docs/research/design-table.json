@@ -58,7 +58,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "plain"
     },
     {
       "id": "plum",
@@ -117,7 +118,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "tinted"
     },
     {
       "id": "amber-dusk",
@@ -176,7 +178,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "outline"
     },
     {
       "id": "moss",
@@ -235,7 +238,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "plain"
     },
     {
       "id": "graphite",
@@ -294,7 +298,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "terminal"
     },
     {
       "id": "rice-paper",
@@ -353,7 +358,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "editorial"
     },
     {
       "id": "deep-sea",
@@ -412,7 +418,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "outline"
     },
     {
       "id": "sakura",
@@ -471,7 +478,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "tinted"
     },
     {
       "id": "midnight",
@@ -530,7 +538,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "plain"
     },
     {
       "id": "linen",
@@ -589,7 +598,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "plain"
     },
     {
       "id": "nord",
@@ -648,7 +658,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "nord"
+      "inspiration": "nord",
+      "chrome": "plain"
     },
     {
       "id": "dracula",
@@ -707,7 +718,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "dracula"
+      "inspiration": "dracula",
+      "chrome": "tinted"
     },
     {
       "id": "gruvbox",
@@ -766,7 +778,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "gruvbox"
+      "inspiration": "gruvbox",
+      "chrome": "poster"
     },
     {
       "id": "solarized",
@@ -825,7 +838,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "solarized"
+      "inspiration": "solarized",
+      "chrome": "editorial"
     },
     {
       "id": "catppuccin",
@@ -884,7 +898,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "catppuccin"
+      "inspiration": "catppuccin",
+      "chrome": "tinted"
     },
     {
       "id": "tokyo-night",
@@ -943,7 +958,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "tokyo-night"
+      "inspiration": "tokyo-night",
+      "chrome": "tinted"
     },
     {
       "id": "rose-pine",
@@ -1002,7 +1018,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "rose-pine"
+      "inspiration": "rose-pine",
+      "chrome": "tinted"
     },
     {
       "id": "everforest",
@@ -1061,7 +1078,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "everforest"
+      "inspiration": "everforest",
+      "chrome": "plain"
     },
     {
       "id": "kanagawa",
@@ -1120,7 +1138,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "kanagawa"
+      "inspiration": "kanagawa",
+      "chrome": "outline"
     },
     {
       "id": "one-dark",
@@ -1179,7 +1198,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "one-dark"
+      "inspiration": "one-dark",
+      "chrome": "terminal"
     },
     {
       "id": "ayu",
@@ -1238,7 +1258,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "ayu"
+      "inspiration": "ayu",
+      "chrome": "plain"
     },
     {
       "id": "flexoki",
@@ -1297,7 +1318,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": "flexoki"
+      "inspiration": "flexoki",
+      "chrome": "editorial"
     },
     {
       "id": "celadon",
@@ -1356,7 +1378,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "plain"
     },
     {
       "id": "cinnabar",
@@ -1415,7 +1438,8 @@
         "forced-colors",
         "reduced-motion"
       ],
-      "inspiration": null
+      "inspiration": null,
+      "chrome": "poster"
     }
   ]
 }

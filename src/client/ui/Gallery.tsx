@@ -167,6 +167,8 @@ function SkinCard({
         <span className="livery-card__dna" data-testid="livery-card-dna" aria-label={t('dna.aria')}>
           <span>{dna.shape.label}</span>
           <span aria-hidden="true">·</span>
+          <span>{dna.chrome.label}</span>
+          <span aria-hidden="true">·</span>
           <span>{dna.type.label}</span>
         </span>
         {!applicable && (

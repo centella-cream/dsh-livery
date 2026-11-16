@@ -80,12 +80,34 @@ shadows and strong rules, `pill` capsule controls with large soft panels and
 hairline separation, `editorial` near-square print geometry with strong rules and
 no elevation.
 
+## 1b. Chrome recipes (`layout.chrome`)
+
+An optional fourth presentation axis for the shell's component fills. It may
+only author the consumed component tokens
+`--dsw-specific-sidebar-fill`, `--dsw-specific-sidebar-nav-item-{hover,active,active-accent}`,
+`--dsw-specific-input-major`, `--dsw-specific-bubble`,
+`--dsw-specific-bubble-highlight` and `--dsw-specific-selector`. Recipes are pure
+functions of the variant seeds and mode (`src/core/chrome.ts`):
+
+| id | relationship |
+|---|---|
+| `plain` | no override (default; omitted manifests behave as plain) |
+| `tinted` | low accent tint on rail, composer and bubbles |
+| `outline` | page-coloured fills; active rail carried by its accent mark |
+| `terminal` | darker rail, page composer, faint accent active row |
+| `editorial` | paper rail/composer, text-tinted bubbles |
+| `poster` | strong accent blocks on rail, bubble and selected controls |
+
+Chrome never changes shape, elevation, text colours or selectors. The contrast
+matrix audits every recipe against its palette before it can ship.
+
 ## 2. Derivation merge order (src/core/derive.ts)
 
 1. derive colour tokens from the four OKLab seeds (existing A-tier logic)
 2. merge `metrics.tokens` (both modes)
 3. merge `surfaceStyle.light|dark`
-4. merge explicit `variants.light|dark.tokens` (manifest overrides win; existing rule)
+4. merge `chrome.<mode>` component-fill recipes (see §1b)
+5. merge explicit `variants.light|dark.tokens` (manifest overrides win; existing rule)
 
 The renderer emits the resulting `CompiledVariant.tokens` unchanged. Token values
 must pass the extended CSS-safety audit. Allowed value shapes are lengths, unitless

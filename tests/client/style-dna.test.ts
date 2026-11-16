@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { FONT_STACKS } from '../../src/core/registry.js'
-import { shapeLabelKey, styleDna, typeFamilyOf, typeLabelKey } from '../../src/client/ui/style-dna.js'
+import { chromeLabelKey, shapeLabelKey, styleDna, typeFamilyOf, typeLabelKey } from '../../src/client/ui/style-dna.js'
 import { getDictionary } from '../../src/i18n/index.js'
 import type { CompiledLivery } from '../../src/core/types.js'
 
@@ -27,17 +27,20 @@ describe('style DNA', () => {
     expect(shapeLabelKey('editorial')).toBe('dna.shape.editorial')
     expect(typeLabelKey('sans')).toBe('dna.type.sans')
     expect(typeLabelKey('serif')).toBe('dna.type.serif')
+    expect(chromeLabelKey('poster')).toBe('dna.chrome.poster')
+    expect(chromeLabelKey('terminal')).toBe('dna.chrome.terminal')
   })
 
   it('derives localized shape + type labels from compiled data', () => {
     const livery = {
-      layout: { surfaceStyle: 'brutal' },
+      layout: { surfaceStyle: 'brutal', chrome: 'poster' },
       typography: { ui: { 'zh-CN': FONT_STACKS['display-latin'].stack, 'en-US': FONT_STACKS['display-latin'].stack } },
     } as unknown as CompiledLivery
     const en = getDictionary('en')
     const dna = styleDna(livery, 'en', (key) => en[key])
     expect(dna.shape).toEqual({ key: 'dna.shape.brutal', label: 'Brutal' })
+    expect(dna.chrome).toEqual({ key: 'dna.chrome.poster', label: 'Poster' })
     expect(dna.type).toEqual({ key: 'dna.type.display', label: 'Display' })
-    expect(dna.labels).toEqual(['Brutal', 'Display'])
+    expect(dna.labels).toEqual(['Brutal', 'Poster', 'Display'])
   })
 })

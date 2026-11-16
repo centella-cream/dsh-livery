@@ -18,8 +18,10 @@ Two failures were visible on the 1440×900 DSH Desktop style page:
 2. **Palette and type carried most of the difference.** The surface-style system
    already changed radius, elevation, borders and material, but the shipped set
    clustered around `paper`, `soft` and `rounded`; zero-radius and hard-shadow
-   recipes were underused. The card did not say which shape/material/type a style
-   would apply, so the gallery read as “same GUI, different colours and fonts”.
+   recipes were underused, and the shell's rail/composer/bubble fills were still
+   driven by the stock derived colours. The card did not say which
+   shape/chrome/type a style would apply, so the gallery read as “same GUI,
+   different colours and fonts”.
 
 ## Catalog: one compact grid, chips are the only taxonomy
 
@@ -35,9 +37,10 @@ Two failures were visible on the 1440×900 DSH Desktop style page:
   `elevated`, `sharp`, `flat`, `rounded`, `paper` back to `soft`, then manifest
   order inside a recipe. The first row therefore shows four visibly different GUI
   shapes, not four recolours of the same one.
-- Cards are compact: thumbnail, name and two **style-DNA** labels. The longer
-  description lives in the native `title` and in the current-style bar, so it is
-  available without making every cell tall. Tags remain searchable metadata.
+- Cards are compact: thumbnail, name and three **style-DNA** labels (shape,
+  chrome, type). The longer description lives in the native `title` and in the
+  current-style bar, so it is available without making every cell tall. Tags
+  remain searchable metadata.
 - Density by container width (`livery-studio`):
 
   | Container width | Columns | 1440/1024/767 measurement |
@@ -56,14 +59,16 @@ Two failures were visible on the 1440×900 DSH Desktop style page:
 
 ## Style DNA
 
-Every card names two traits derived from compiled data:
+Every card names three traits derived from compiled data:
 
 - **shape/material** from `layout.surfaceStyle` (`terminal`, `brutal`, `pill`,
   `paper`, `glass`, …);
+- **component chrome** from `layout.chrome` (`tinted`, `outline`, `terminal`,
+  `editorial`, `poster`; omitted means `plain`);
 - **UI type family** from the resolved UI font stack (`sans`, `serif`, `mono`,
   `display`, `rounded`).
 
-There is no second manifest field, so a card cannot advertise a recipe the
+All three come from compiled data, so a card cannot advertise a recipe the
 stylesheet does not ship. The classifier resolves `sans-serif` before `serif` so
 every normal UI stack is not mislabeled.
 
@@ -85,6 +90,30 @@ preview renderer now parses unitless `0` radius values; before this fix square
 recipes silently fell back to the stock 16 px preview radius, which is why the
 gallery under-reported their difference.
 
+## Chrome: how the rail, composer and bubbles relate
+
+`layout.chrome` is a fourth, optional axis. It may only author the consumed
+component fills (`--dsw-specific-sidebar-fill`,
+`--dsw-specific-sidebar-nav-item-{hover,active,active-accent}`,
+`--dsw-specific-input-major`, `--dsw-specific-bubble`,
+`--dsw-specific-bubble-highlight`, `--dsw-specific-selector`). Recipes are pure
+functions of the variant seeds and mode, so every palette keeps readable
+contrast instead of inheriting another theme's hard-coded fills.
+
+| Chrome | Rail / composer / bubble relationship | Assigned styles |
+|---|---|---|
+| `plain` | Host-derived fills; no override | fjord, nord, celadon, linen, midnight, moss, everforest, ayu |
+| `tinted` | Accent tint at 6% rail / 3% composer / 10% bubble | sakura, catppuccin, plum, rose-pine, dracula, tokyo-night |
+| `outline` | Page-coloured fills; active rail row carried by its accent mark | amber-dusk, deep-sea, kanagawa |
+| `terminal` | Darker rail, page composer, faint accent active row | graphite, one-dark |
+| `editorial` | Paper rail/composer, text-tinted bubbles | rice-paper, flexoki, solarized |
+| `poster` | Strong accent blocks at 14% rail / 20% bubble / 24% active row | cinnabar, gruvbox |
+
+The merge order is metrics → surface style → chrome → explicit manifest tokens.
+Chrome never touches shape, elevation, text colours or host selectors; the
+compile-time contrast matrix remains the authority (2832 assertions across the
+two catalog profiles, 0 failures at the accepted amounts).
+
 ## Boundaries
 
 - Token-only: recipes use the frozen shape/elevation/material/border families;
@@ -99,7 +128,8 @@ gallery under-reported their difference.
 ## Verification
 
 - Unit: gallery render, style-DNA classification, registry order, preview
-  zero-radius regression. `pnpm verify` must be green.
+  zero-radius regression, chrome recipe determinism and token allowlist.
+  `pnpm verify` must be green.
 - Measured layout: 1440/1024/767 via the real Electron renderer with a brand-new
   isolated DSH home and user-data dir; no horizontal overflow.
 - Before the next artifact is frozen, re-run the full Web and Desktop acceptance

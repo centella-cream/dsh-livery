@@ -22,7 +22,8 @@ DeepSeek Harness 的视觉层插件：**24 套精选风格**、带在线图片�
 > 模式运行并输出诊断；Windows Desktop、Edge 和其他 DSH 构建不在支持范围内。
 
 > **工作区（未发布，目标 0.1.9）：** 视觉风格页改为带风格 DNA 的紧凑 24 套目录，四套
-> 风格使用明显不同的 GUI 形状（终端、粗野、胶囊、编辑）；macOS 壁纸磨砂同时让侧栏
+> 风格使用明显不同的 GUI 形状（终端、粗野、胶囊、编辑），并新增组件 chrome 轴
+> 改变侧栏、composer 和气泡的填充关系；macOS 壁纸磨砂同时让侧栏
 > tint 与主内容区一致。详见 [画廊设计](docs/design/style-gallery.md) 与
 > [侧栏表面说明](docs/design/wallpaper-workbench.md#sidebar-surface)。
 

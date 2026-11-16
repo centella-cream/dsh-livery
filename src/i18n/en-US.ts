@@ -218,6 +218,12 @@ export const enUS = {
   'dna.type.mono': 'Mono',
   'dna.type.display': 'Display',
   'dna.type.rounded': 'Rounded',
+  'dna.chrome.plain': 'Plain',
+  'dna.chrome.tinted': 'Tinted',
+  'dna.chrome.outline': 'Outline',
+  'dna.chrome.terminal': 'Dark rail',
+  'dna.chrome.editorial': 'Paper',
+  'dna.chrome.poster': 'Poster',
   'card.thumbnailError': 'Preview image unavailable',
 
   // Transient preview bar.

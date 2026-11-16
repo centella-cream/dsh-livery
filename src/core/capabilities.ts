@@ -105,7 +105,7 @@ export function evaluateCapabilities(
     if (!availability(contract, id)) record(id, false)
   }
 
-  const effectiveLayout: Record<keyof LiveryManifest['layout'], string> = { ...manifest.layout }
+  const effectiveLayout = { ...manifest.layout } as unknown as Record<string, string>
   for (const gate of RECIPE_GATES) {
     const requested = manifest.layout[gate.recipe]
     if (requested === gate.defaultValue) continue

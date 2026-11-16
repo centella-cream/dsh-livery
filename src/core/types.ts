@@ -98,6 +98,14 @@ export type MetricsId =
 export type DensityId = 'host' | 'compact' | 'comfortable'
 export type ConversationWidthId = 'host' | 'focused' | 'wide'
 export type MessageFlowId = 'stock' | 'separated'
+export type ChromeStyleId =
+  | 'plain'
+  | 'tinted'
+  | 'outline'
+  | 'terminal'
+  | 'editorial'
+  | 'poster'
+
 export type SurfaceStyleId =
   | 'solid'
   | 'soft'
@@ -165,6 +173,8 @@ export interface LiveryManifest {
     readonly conversationWidth: ConversationWidthId
     readonly messageFlow: MessageFlowId
     readonly surfaceStyle: SurfaceStyleId
+    /** Optional component-fill recipe; omitted manifests behave as `plain`. */
+    readonly chrome?: ChromeStyleId
   }
   readonly compat: {
     readonly requiredCapabilities: readonly CapabilityId[]

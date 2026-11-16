@@ -53,7 +53,8 @@
     "density": "host",
     "conversationWidth": "host",
     "messageFlow": "stock",
-    "surfaceStyle": "glass"
+    "surfaceStyle": "glass",
+    "chrome": "outline"
   },
   "compat": {
     "requiredCapabilities": [

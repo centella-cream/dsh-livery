@@ -54,6 +54,7 @@ import {
 import type { StockSnapshot, StockTokenDeclaration } from '../generated/stock.js'
 import { CONTRAST_CHECKS, adjustForContrast, auditContrast, resolveCheckColors } from './contrast.js'
 import { metricsOf, surfaceStyleOf } from './registry.js'
+import { chromeTokens } from './chrome.js'
 
 /** Declaration record of one host stock snapshot (mode-independent metadata). */
 export type StockDeclarations = Readonly<Record<string, StockTokenDeclaration>>
@@ -429,8 +430,10 @@ function deriveVariant(
   const metricTokens = metricTokenOverrides(manifest)
   const surfaceStyle = manifest.layout.surfaceStyle
   const styleTokens = surfaceStyleOf(surfaceStyle)[mode]
+  const chrome = chromeTokens(manifest.layout.chrome ?? 'plain', mode, seeds)
   for (const [name, value] of Object.entries(metricTokens)) full[name] = value
   for (const [name, value] of Object.entries(styleTokens)) full[name] = value
+  for (const [name, value] of Object.entries(chrome)) full[name] = value
   // Re-apply explicit overrides last so they always win over style/metric tokens.
   for (const [name, value] of Object.entries(overrides)) full[name] = value
 
@@ -481,7 +484,7 @@ function deriveVariant(
   const forced = new Set<string>([...overridden, ...Object.keys(roleOverrides)])
   // Style/metric tokens are emitted when they differ from stock (surface `solid`
   // and legacy metric profiles keep empty maps, so they add no bytes).
-  const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens)])
+  const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens), ...Object.keys(chrome)])
   const emitted: MutableTokens = {}
   for (const name of Object.keys(full)) {
     const value = full[name]
