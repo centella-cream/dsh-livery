@@ -152,7 +152,7 @@ licences).
   353,625 B / 2.95 MB raw across both profiles). Client gzip stays under 60 KiB
   (measured 60,084 B). Both numbers are enforced by `scripts/build.mjs` and were
   raised explicitly for this content expansion, not silently relaxed. The package
-  tarball budget moves from 3 MiB to 3.5 MiB (measured 3,219,038 B with 224 previews);
+  tarball budget moves from 3 MiB to 3.5 MiB (measured about 3.22 MB with 224 previews);
   the 12 KiB per-livery CSS budget is unchanged.
 - Host adapters and contracts are unchanged; this is a token-contract change only,
   with no new host capability. Layout structure stays host/stock: DSH exposes no

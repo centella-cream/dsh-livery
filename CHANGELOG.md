@@ -15,12 +15,12 @@ packaging; they are folded into the `0.1.0` entry.
 - 风格卡片新增三项由编译数据派生的“风格 DNA”：表面配方（终端/粗野/胶囊/纸张/玻璃等）、组件 chrome（素色/着色/描边/深侧栏/素纸/海报）与 UI 字体族（无衬线/衬线/等宽/展示/圆体），卡片不再重复长描述，描述保留在摘要条和原生 title 中。
 - 新增 4 套原创 palette：蓝图 Blueprint（工程图纸 + 等宽标签 + editorial/outline）、包豪斯 Bauhaus（明黄/钴蓝 + 几何展示字 + brutal/poster）、陶土 Clay（赤陶 + 胶囊 + pill/tinted）、磷光 Phosphor（绿色 CRT + 方形终端 + terminal/terminal）。四套均含完整明暗 seeds、字体、字号阶梯与预览。
 - 新增可选 `layout.chrome` 组件配方轴：`plain`、`tinted`、`outline`、`terminal`、`editorial`、`poster`，只改侧栏、composer、气泡、导航 active、selector 等已消费 token；配方由每套配色的种子在 OKLab 中推导，28 套风格分别分配，对比度矩阵 0 失败。
-- 新增 3 个表面配方 `brutal`、`pill`、`editorial`，并启用既有 `terminal`：`graphite` 改为终端、`cinnabar` 改为粗野、`sakura` 改为胶囊、`rice-paper` 改为编辑。预设总数增至 28，形状/阴影/边框轴明显拉开。host gzip 预算从 320 KiB 上调到 360 KiB（实测 353,625 B），client gzip 仍在 60 KiB 内（实测 60,084 B），tarball 预算从 3 MiB 上调到 3.5 MiB（实测 3,219,038 B），构建/打包门禁同步更新。
+- 新增 3 个表面配方 `brutal`、`pill`、`editorial`，并启用既有 `terminal`：`graphite` 改为终端、`cinnabar` 改为粗野、`sakura` 改为胶囊、`rice-paper` 改为编辑。预设总数增至 28，形状/阴影/边框轴明显拉开。host gzip 预算从 320 KiB 上调到 360 KiB（实测 353,625 B），client gzip 仍在 60 KiB 内（实测 60,084 B），tarball 预算从 3 MiB 上调到 3.5 MiB（实测约 3.22 MB），构建/打包门禁同步更新。
 
 ### Changed
 
 - 版本面升级到 `0.1.9`（package、`LIVERY_VERSION`、`CATALOG_COMPILER_VERSION`、生成物、README/CHANGELOG 与设计文档）。
-- host gzip 预算 320 → 360 KiB（实测 353,625 B），tarball 预算 3 → 3.5 MiB（实测 3,219,038 B）；client gzip 保持 60 KiB 上限（实测 60,084 B）。这些上调随 28 套内容显式记录，构建/打包门禁同步。
+- host gzip 预算 320 → 360 KiB（实测 353,625 B），tarball 预算 3 → 3.5 MiB（实测约 3.22 MB）；client gzip 保持 60 KiB 上限（实测 60,084 B）。这些上调随 28 套内容显式记录，构建/打包门禁同步。
 
 ### Fixed
 
