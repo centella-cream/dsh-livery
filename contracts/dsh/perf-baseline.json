@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "generatedAt": "2026-10-29T08:55:00.000Z",
   "measuredFrom": {
-    "candidate": "dsh-livery-0.1.3.tgz",
-    "sha256": "26ae0f29aa27d085e8fefcfaaf78f5980a97125ba79ecbda95833c9aa574764a",
-    "commit": "cd5d1943772b58d0f9cf01ee66adeb59b05b71e2",
+    "candidate": "dsh-livery-0.1.9.tgz",
+    "sha256": "e717dfbdc774d8baf7835e3ea47b9516d84e801995c10c3dbf3a0ecb8be58988",
+    "commit": "c68be7c",
     "chromeVersion": "156.0.8078.48",
-    "note": "remeasured on final round-11 0.1.3 candidate with exact Chrome for Testing 156.0.8078.48 and no-proxy acceptance launch"
+    "note": "remeasured for the 28-style 0.1.9 candidate on the certified 0.2.1-rc.2 Web run with Chrome for Testing 156.0.8078.48"
   },
   "catalogJson": {
-    "bytes": 1313436,
-    "maxBytes": 1511424,
+    "bytes": 1537726,
+    "maxBytes": 1768384,
     "headroomRatio": 0.15,
     "method": "raw bytes of GET /livery/api/catalog in the isolated rc.2 Web run"
   },
