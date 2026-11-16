@@ -14,6 +14,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 视觉风格页改为紧凑目录：当前风格为 220×138 摘要条，28 套风格在一个连续网格中展示，分类 chip 成为唯一分类导航，不再重复六段分组标题；默认按表面配方从粗野/终端/胶囊/编辑/玻璃向柔和排序，第一屏先展示形状差异。1440 宽下为 6 列，1024/767 为 3 列；1440 的目录滚动高度从约 2788px 降到 1480px，无横向溢出。
 - 风格卡片新增三项由编译数据派生的“风格 DNA”：表面配方（终端/粗野/胶囊/纸张/玻璃等）、组件 chrome（素色/着色/描边/深侧栏/素纸/海报）与 UI 字体族（无衬线/衬线/等宽/展示/圆体），卡片不再重复长描述，描述保留在摘要条和原生 title 中。
 - 新增 4 套原创 palette：蓝图 Blueprint（工程图纸 + 等宽标签 + editorial/outline）、包豪斯 Bauhaus（明黄/钴蓝 + 几何展示字 + brutal/poster）、陶土 Clay（赤陶 + 胶囊 + pill/tinted）、磷光 Phosphor（绿色 CRT + 方形终端 + terminal/terminal）。四套均含完整明暗 seeds、字体、字号阶梯与预览。
+- 适配 DSH `0.2.2-rc.3`（当前 npm `next` / 本机 Desktop）：新增冻结契约、adapter、兼容 catalog profile override 和 Desktop 验收；Web rc.3 仍待验收。
 - 新增可选 `layout.chrome` 组件配方轴：`plain`、`tinted`、`outline`、`terminal`、`editorial`、`poster`，只改侧栏、composer、气泡、导航 active、selector 等已消费 token；配方由每套配色的种子在 OKLab 中推导，28 套风格分别分配，对比度矩阵 0 失败。
 - 新增 3 个表面配方 `brutal`、`pill`、`editorial`，并启用既有 `terminal`：`graphite` 改为终端、`cinnabar` 改为粗野、`sakura` 改为胶囊、`rice-paper` 改为编辑。预设总数增至 28，形状/阴影/边框轴明显拉开。host gzip 预算从 320 KiB 上调到 360 KiB（实测 353,625 B），client gzip 仍在 60 KiB 内（实测 60,084 B），tarball 预算从 3 MiB 上调到 3.5 MiB（实测约 3.22 MB），构建/打包门禁同步更新。
 

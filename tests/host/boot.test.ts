@@ -231,7 +231,7 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     expect(state.gate.accepted).toBe(true)
     expect(state.accepted).toBe(true)
     expect(state.rows).toHaveLength(3)
-    expect(state.payload.adapterId).toBe('dsh-0.2.2-rc.2-r1')
+    expect(state.payload.adapterId).toBe('dsh-0.2.2-rc.3-r1')
     expect(state.diagnostics.join('\n')).toContain('gate.compatibility-fallback')
   })
 

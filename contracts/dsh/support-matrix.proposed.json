@@ -90,7 +90,7 @@
       "notes": [
         "Certified on tarball sha256 99fa98c7ee9c08d2eecda3b1c43aa3e51a42d32b373974231d365a8023c00e18 (pre-certification package; a release repack follows the matrix promotion).",
         "Isolated full Web acceptance: 121 pass / 0 fail / 3 expected skips / 1 warning; user Web Profile clone: 121 pass / 0 fail / 3 expected skips / 3 warnings (clone repaired the pre-existing broken dsh-charter tarball reference; one unrelated plugin entry did not activate).",
-        "Contract: adapter dsh-0.2.1-rc.2-r1, contractHash sha256:fc5ccff8…; loader ABI table 11 modules; font ladder via documented host role hooks; catalog profile sha256:060e80ef… shared byte-identically with 0.2.1-rc.3.",
+        "Contract: adapter dsh-0.2.1-rc.2-r1, contractHash sha256:fc5ccff8\u2026; loader ABI table 11 modules; font ladder via documented host role hooks; catalog profile sha256:060e80ef\u2026 shared byte-identically with 0.2.1-rc.3.",
         "G6 not claimed: desktop targets and web/edge pending."
       ]
     },
@@ -134,7 +134,7 @@
       "notes": [
         "Contract certified from the packaged Electron app.asar (DSH 0.2.1-rc.3, Electron 44.7.0, bundled Node 24.21.0); missing type documents supplemented from the same published npm version and recorded in source.prepared.",
         "Official plugin-manager install acceptance in an isolated Desktop DSH_HOME: exit 0 without version exemption, bundle selected, both catalog profiles installed.",
-        "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning — boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
+        "Runtime (headless web carrier over the packaged 0.2.1-rc.3 runtime): 121 pass / 0 fail / 3 expected skips / 1 warning \u2014 boot gate, identity, CSS/hash, catalog/previews, settings UI, theme/fonts, first paint, residue checks all green.",
         "NOT verified / not claimed: actual Electron window rendering, native caption/traffic lights, frame clearance, DPI and vibrancy. desktop.macos stays pending; no G6/release claim.",
         "G6 not claimed."
       ]
@@ -257,6 +257,44 @@
       "evidence": [],
       "notes": [
         "Contract snapshot frozen; waiting for certification evidence."
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.3",
+      "adapterId": "dsh-0.2.2-rc.3-r1",
+      "contractHash": "sha256:0ac1b8dd8f1685384f6314c9f5299acd8afb7c1d5a52e055d0a7ce0c55a5cf72",
+      "status": "g6-approved",
+      "profiles": {
+        "desktop": {
+          "macos": "passed",
+          "win32": "not-supported"
+        },
+        "web": {
+          "chrome": "pending",
+          "edge": "not-supported"
+        }
+      },
+      "claimTier": "preview",
+      "distributionChannel": "next",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.3",
+        "npmVersion": "0.2.2-rc.3"
+      },
+      "clientTarget": "chrome120",
+      "evidence": [
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json"
+      ],
+      "notes": [
+        "DSH 0.2.2-rc.3 is npm next and a GitHub prerelease; preview claim.",
+        "API hashes match 0.2.2-rc.1/rc.2; reviewed catalog-profile override reuses the rc.1 profile in compatible-preview mode.",
+        "Desktop macOS acceptance passed; Web rc.3 remains pending (npm Web host boot not certifiable in this environment)."
       ]
     }
   ]

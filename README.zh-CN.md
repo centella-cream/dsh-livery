@@ -105,6 +105,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
+| DSH `0.2.2-rc.3` | macOS Desktop app | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`）；Desktop 已验收，Web 待验收 |
 
 没有兼容模式。不同 DSH 版本会在安装时拒绝，运行时 fail closed 回 stock。稳定支持要求
 官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub

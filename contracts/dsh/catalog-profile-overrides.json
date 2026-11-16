@@ -6,6 +6,11 @@
       "hostVersion": "0.2.2-rc.2",
       "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
       "reason": "0.2.2-rc.2 loader/host/client API hashes match rc.1; token contract adds 17 tokens (205 consumed) and layout hash changes behind rc.1-compatible slots. Shared rc.1 catalog is safe because every livery token is emitted as a concrete value and unknown/new tokens inherit stock."
+    },
+    {
+      "hostVersion": "0.2.2-rc.3",
+      "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
+      "reason": "0.2.2-rc.3 loader/host/client API hashes match rc.1/rc.2; token contract changes only existing token values and adds no consumed token names. The rc.1 catalog stays valid because DSH Livery derives every alias/specific token itself and unknown values inherit the host."
     }
   ]
 }

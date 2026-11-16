@@ -132,6 +132,7 @@ certified adapter in compatible-preview mode with a visible diagnostic warning.
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** (npm `next`) |
+| DSH `0.2.2-rc.3` | macOS Desktop app | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`); Desktop accepted, Web pending |
 
 Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
 still fail closed. Stable support requires a non-prerelease official GitHub

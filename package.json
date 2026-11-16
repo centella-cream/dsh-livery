@@ -40,6 +40,7 @@
     "contracts/dsh/0.2.1-rc.5",
     "contracts/dsh/0.2.2-rc.1",
     "contracts/dsh/0.2.2-rc.2",
+    "contracts/dsh/0.2.2-rc.3",
     "contracts/dsh/support-matrix.json"
   ],
   "sideEffects": [
@@ -85,7 +86,8 @@
         "0.2.1-rc.4": "compatible",
         "0.2.1-rc.5": "compatible",
         "0.2.2-rc.1": "compatible",
-        "0.2.2-rc.2": "compatible-preview"
+        "0.2.2-rc.2": "compatible-preview",
+        "0.2.2-rc.3": "compatible-preview"
       }
     }
   },
