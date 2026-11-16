@@ -614,7 +614,10 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const hotReloaded = this.deps.boot.kind === 'valid'
       && this.deps.boot.payload?.pluginVersion !== undefined
       && this.deps.boot.payload.pluginVersion !== LIVERY_VERSION
-    const attempts = hotReloaded ? 4 : 1
+    // HMR's write-stability window can exceed the old 1.5s budget (2s debounce
+    // plus module replacement). Keep retrying longer for a hot update, while a
+    // cold start still fails immediately.
+    const attempts = hotReloaded ? 8 : 1
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       try {
         catalog = await this.deps.fetchCatalog()
@@ -622,7 +625,9 @@ export class LiveryRuntime implements LiveryRuntimeApi {
         catalog = undefined
       }
       if (catalog !== undefined || this.disposed || generation !== this.generation) break
-      if (attempt + 1 < attempts) await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)))
+      if (attempt + 1 < attempts) {
+        await new Promise(resolve => setTimeout(resolve, Math.min(1000, 250 * (attempt + 1))))
+      }
     }
     if (this.disposed || generation !== this.generation) return
     this.catalogSettled = true

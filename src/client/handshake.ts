@@ -137,18 +137,31 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
   }
   const reasons: string[] = []
   const warnings: string[] = []
+  let profileChangedByHmr = false
   if (payload.pluginVersion !== LIVERY_VERSION) {
     // HMR replaces only the client module first. The new build sees the boot
     // payload produced by the previous plugin build; the adapter identity is
     // still the same build of this plugin, so re-fetch the live catalog and
     // re-apply rather than fail closed to stock. A real host mismatch still
-    // fails through adapter/entry/catalog-profile checks below.
+    // fails through adapter/entry checks below.
     warnings.push(`plugin version changed by HMR: boot=${payload.pluginVersion} build=${LIVERY_VERSION}`)
+    if (payload.catalogProfile !== adapter.catalogProfile) {
+      // A plugin release can change its catalog-profile id even when the host
+      // adapter is unchanged (the compiler/profile hash is part of the profile
+      // id). The boot payload belongs to the previous plugin build, so its
+      // profile is stale; the live catalog fetched after recomposition is the
+      // authority for the new profile. Do not fail closed to stock for this
+      // self-inflicted version transition.
+      profileChangedByHmr = true
+      warnings.push(
+        `catalog profile changed by HMR: boot=${payload.catalogProfile} build=${adapter.catalogProfile}`,
+      )
+    }
   }
   if (payload.entryId !== ENTRY_ID) {
     reasons.push(`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`)
   }
-  if (payload.catalogProfile !== adapter.catalogProfile) {
+  if (!profileChangedByHmr && payload.catalogProfile !== adapter.catalogProfile) {
     reasons.push(`catalog profile mismatch: host=${payload.catalogProfile} certified=${adapter.catalogProfile}`)
   }
   if (reasons.length > 0) {
@@ -174,11 +187,17 @@ export function bootIdentity(boot: BootCheck): HostIdentity | undefined {
   if (boot.kind === 'mismatch') return undefined
   const payload = boot.payload
   if (payload !== undefined) {
+    // On HMR the boot payload is from the previous plugin build; its catalog
+    // profile id may be stale. Use the matched adapter's profile so the live
+    // catalog check validates the profile the new build actually serves.
+    const catalogProfile = payload.pluginVersion !== LIVERY_VERSION
+      ? boot.adapter?.catalogProfile ?? payload.catalogProfile
+      : payload.catalogProfile
     return {
       hostVersion: payload.hostVersion,
       adapterId: payload.adapterId,
       contractHash: payload.contractHash,
-      catalogProfile: payload.catalogProfile,
+      catalogProfile,
     }
   }
   if (boot.adapter === undefined) return undefined

@@ -113,6 +113,25 @@ describe('checkBoot — certified adapter whitelist', () => {
     expect(check.reasons.join(' ')).toContain('plugin version changed by HMR')
   })
 
+  it('accepts a catalog-profile change caused by an HMR version bump', () => {
+    const shipped = ADAPTER_IDENTITIES[0]!
+    const previousProfile = `sha256:${'1'.repeat(64)}`
+    const payload = makeBootPayload({
+      hostVersion: shipped.hostVersion,
+      adapterId: shipped.adapterId,
+      contractHash: shipped.contractHash,
+      catalogProfile: previousProfile,
+      pluginVersion: '0.1.8',
+    })
+    const check = checkBoot(payload, ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('valid')
+    expect(check.reasons.join(' ')).toContain('plugin version changed by HMR')
+    expect(check.reasons.join(' ')).toContain('catalog profile changed by HMR')
+    // The stale boot profile must not leak into the live identity; the matched
+    // adapter is authoritative until the new catalog is fetched.
+    expect(bootIdentity(check)?.catalogProfile).toBe(shipped.catalogProfile)
+  })
+
   it('fails closed on an entry id mismatch', () => {
     const check = checkBoot(makeBootPayload({ entryId: 'other' }), ADAPTER_IDENTITIES)
     expect(check.kind).toBe('mismatch')

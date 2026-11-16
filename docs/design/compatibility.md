@@ -60,8 +60,11 @@ safe:
   stale host boot style is removed by the new confirmed apply;
 - a new client build accepts the previous build's boot payload when the adapter
   identity is unchanged, reports `plugin version changed by HMR`, and re-fetches
-  the catalog instead of failing closed;
-- the catalog fetch retries briefly across the recomposition window;
+  the catalog instead of failing closed; a changed catalog-profile id caused by
+  the plugin release itself is also accepted, using the matched adapter's
+  profile for the live-catalog check;
+- the catalog fetch retries across the recomposition window (up to eight
+  bounded attempts for a detected HMR transition);
 - saved skin/wallpaper state is host-backed, so the new instance reapplies it.
 
 Cold start remains the acceptance target; HMR is a convenience path and is covered

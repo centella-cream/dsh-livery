@@ -28,6 +28,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复预览 SVG 不解析无单位 `0` 圆角、导致方形配方回退为 16px 预览圆角的问题；粗野/终端/编辑配方现在在画廊中真实呈现方形几何。
 - 修复 macOS 普通侧栏在壁纸模式下比右侧主内容区明显更透、白字对比度不足的问题：宿主把 `--dsw-specific-sidebar-fill` 以 40%（浅色）/ 50%（深色）合成进 `--dsw-specific-sidebar-tint`，而壁纸 frost 又先把 fill 降到 65%，两层相乘后侧栏只剩约 26–33% 不透明度。现在按同一 frost 比例直接写入 `--dsw-specific-sidebar-tint`（浅色模式保留宿主 97/3 的蓝色偏移），侧栏与主栏共享同一透明度；Web/Windows 与 macOS 抽屉路径仍使用 fill。设计说明见 `docs/design/wallpaper-workbench.md` 的 Sidebar surface。
 
+- 修复热更新跨版本时的 catalog-profile 误判：插件自身版本变化会带来新的 catalog profile，但 HMR 仍持有旧 boot payload；现在按匹配 adapter 接受旧 profile、重新拉取并校验 live catalog，并延长 HMR 窗口内的 catalog 重试。
 ## [0.1.8] — 2026-11-12
 
 ### Changed

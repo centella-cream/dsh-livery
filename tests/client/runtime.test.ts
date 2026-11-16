@@ -116,6 +116,27 @@ function seedHostFirstFrame(doc: FakeDocument, id: string, hash: string): void {
 }
 
 describe('hot-update recovery', () => {
+  it('re-fetches and adopts the new catalog when a plugin release changes its profile during HMR', async () => {
+    const catalog = makeCatalog()
+    const previousProfile = `sha256:${'1'.repeat(64)}`
+    const harness = createHarness({
+      boot: validBoot({
+        pluginVersion: '0.1.8',
+        catalogProfile: previousProfile,
+        cssHash: expectedHash(catalog, 'fjord'),
+      }),
+      catalog,
+    })
+    harness.runtime.start()
+    await flush()
+    const snapshot = harness.runtime.getSnapshot()
+    expect(snapshot.phase).toBe('ready')
+    expect(snapshot.catalogStatus).toBe('ready')
+    expect(snapshot.catalogProfile).toBe(TEST_ADAPTER.catalogProfile)
+    expect(snapshot.identity?.pluginVersion).toBe(LIVERY_VERSION)
+    expect(harness.fetchCalls()).toBe(1)
+  })
+
   it('retries the catalog when a valid boot payload came from an older plugin build', async () => {
     const catalog = makeCatalog()
     const harness = createHarness({
