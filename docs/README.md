@@ -11,7 +11,7 @@
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.8 |
 | DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; npm `latest`, GitHub prerelease; Web+Desktop acceptance bound |
-| DSH `0.2.2-rc.3` | Desktop macOS, Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `next`); Desktop accepted, Web pending |
+| DSH `0.2.2-rc.3` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `next`); Web + Desktop accepted |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm
 package. A version that exists only on npm's `next` channel is documented as
@@ -56,7 +56,7 @@ not be cited as current support or behavior.
 | DSH `0.2.1-rc.4` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | next 通道预览（npm `next`；已有 GitHub prerelease tag） |
 | DSH `0.2.1-rc.5` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；0.1.7 重新验收 |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；npm `latest` + GitHub prerelease；已通过 Web+Desktop 验收 |
-| DSH `0.2.2-rc.3` | Desktop macOS，Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | 预览（npm `next`）；Desktop 已验收，Web 待验收 |
+| DSH `0.2.2-rc.3` | Web + Desktop macOS，Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | 预览（npm `next`）；Web + Desktop 已验收 |
 
 “稳定”要求非 prerelease 的官方 GitHub release 与签名 npm 包同时存在；只有 npm `next`
 通道的版本只作为预览兼容性记录，不承诺稳定性。DSH Desktop Windows、Web Edge

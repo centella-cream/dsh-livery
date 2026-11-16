@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 0.1.4 layout-preview review (verifier-owned, not release evidence).
+ * 0.1.9 layout-preview review (verifier-owned, not release evidence).
  *
  * Installs one exact preview tarball through the official plugin manager, boots
  * the DSH 0.2.1-rc.2 Web profile in an isolated home, drives the real Chrome
@@ -250,7 +250,7 @@ try {
       const tops = [...element.children].filter((child) => child.getBoundingClientRect().height > 0).map((child) => Math.round(child.getBoundingClientRect().top))
       return new Set(tops).size
     }
-    const galleryGrid = document.querySelector('[data-testid="livery-gallery"] .livery-grid')
+    const galleryGrid = document.querySelector('[data-testid="livery-gallery"]')
     const galleryColumns = galleryGrid === null ? [] : getComputedStyle(galleryGrid).gridTemplateColumns.split(' ').filter(Boolean)
     const toolbar = document.querySelector('[data-testid="livery-gallery-toolbar"]')
     const order = ['livery-current-card', 'livery-gallery-card', 'livery-secondary']
@@ -368,7 +368,8 @@ try {
         metrics.widths[key][`${theme}-wallpaper-${wallpaperOn ? 'on' : 'off'}-style`] = styleMetrics
         await capture(`${viewport.width}-${theme}-wallpaper-${wallpaperOn ? 'on' : 'off'}-style.png`)
         if (wallpaperOn && viewport.width === 1440 && theme === 'light') {
-          if (styleMetrics.galleryColumns !== 4) recordIssue('medium', 'style-gallery-columns', `1440 gallery renders ${styleMetrics.galleryColumns} columns (expected 4).`)
+          const expectedColumns = viewport.width >= 1440 ? 6 : 3
+          if (styleMetrics.galleryColumns !== expectedColumns) recordIssue('medium', 'style-gallery-columns', `${viewport.width} gallery renders ${styleMetrics.galleryColumns} columns (expected ${expectedColumns}).`)
           if (styleMetrics.toolbarRows > 2) recordIssue('medium', 'style-toolbar-rows', `Style toolbar renders ${styleMetrics.toolbarRows} rows (expected ≤2).`)
           if (styleMetrics.toolbarOverflowX) recordIssue('medium', 'style-toolbar-overflow', 'Style toolbar overflows horizontally.')
           if (styleMetrics.oldRailPresent) recordIssue('high', 'style-old-rail', 'Old style rail/actions card is still present.')
@@ -378,6 +379,9 @@ try {
         }
         if (styleMetrics.bodyOverflow) recordIssue('high', `${viewport.width}-${theme}-${wallpaperOn ? 'on' : 'off'}-style-overflow`, 'Style page has horizontal document overflow.')
         if (styleMetrics.toolbarRows > 2) recordIssue('medium', `style-toolbar-rows-${viewport.width}`, `Style toolbar renders ${styleMetrics.toolbarRows} rows at ${viewport.width}px (expected ≤2).`)
+        if (viewport.width < 1440) {
+          if (styleMetrics.galleryColumns !== 3) recordIssue('medium', `style-gallery-columns-${viewport.width}`, `${viewport.width} gallery renders ${styleMetrics.galleryColumns} columns (expected 3).`)
+        }
         if (viewport.width < 1440 && !styleMetrics.galleryVisibleInFirstViewport) recordIssue('medium', `style-gallery-below-fold-${viewport.width}`, `Style gallery starts at ${styleMetrics.galleryTop}px, below the ${viewport.height}px first viewport; the large hero consumes the whole first screen.`)
         await showWallpaper()
         const wallpaperMetrics = await collectWallpaperMetrics()
@@ -476,7 +480,7 @@ metrics.issues = uniqueIssues
 const high = uniqueIssues.filter((issue) => issue.severity === 'high')
 const medium = uniqueIssues.filter((issue) => issue.severity === 'medium')
 const lines = [
-  '# 0.1.4 layout preview — verifier screenshots and metrics',
+  '# 0.1.9 layout preview — verifier screenshots and metrics',
   '',
   `- candidate: \`${path.basename(tgz)}\`${metrics.environment?.tarballSha256 ? ` (sha256 ${metrics.environment.tarballSha256})` : ''}`,
   `- host: DSH ${metrics.environment?.hostVersion ?? expectVersion}; Chrome ${metrics.environment?.chromeVersion ?? 'unknown'}`,

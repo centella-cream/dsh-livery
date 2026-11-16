@@ -49,7 +49,7 @@ if (entry.status !== 'g6-approved') {
   console.error(`promote-release: ${version} must be g6-approved before promotion, got ${String(entry.status)}`)
   process.exit(1)
 }
-if (record.schemaVersion !== 1 || typeof record.tarballSha256 !== 'string' || !Array.isArray(record.runs) || record.runs.length === 0) {
+if (![1, 2].includes(record.schemaVersion) || typeof record.tarballSha256 !== 'string' || !Array.isArray(record.runs) || record.runs.length === 0) {
   console.error('promote-release: evidence file is incomplete')
   process.exit(1)
 }

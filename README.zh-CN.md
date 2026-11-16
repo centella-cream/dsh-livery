@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#支持的-dsh-版本)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.2--rc.3%20Desktop-6d6df6.svg)](#支持的-dsh-版本)
 
 > **让 DSH 好看，也让 DSH 好用。**
 
@@ -105,7 +105,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
-| DSH `0.2.2-rc.3` | macOS Desktop app | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`）；Desktop 已验收，Web 待验收 |
+| DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`）；Web + Desktop 均已验收 |
 
 没有兼容模式。不同 DSH 版本会在安装时拒绝，运行时 fail closed 回 stock。稳定支持要求
 官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
@@ -140,12 +140,10 @@ dsh web
 
 ## 验收
 
-正式发布制品已通过 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
-（各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`
-（各 34 通过 / 0 失败）的隔离全量验收。0.1.8 evidence
-位于 `contracts/dsh/evidence/0.1.8/`。`0.1.9` 候选正在人工验收，正式 promote 前会把
-evidence 绑定到 `contracts/dsh/evidence/0.1.9/`。范围、计数和已知限制见
-[docs/verification.md](docs/verification.md)。
+`0.1.9` 候选已在 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
+（各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
+（各 34 通过 / 0 失败）上完成隔离全量验收。证据绑定在 `contracts/dsh/evidence/0.1.9/`。
+范围、计数和已知限制见 [docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release
 门禁、`release:prepare` 和 `prepublish-check`。发布 workflow 不重新构建已验收 tarball。

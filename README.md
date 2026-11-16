@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.1--rc.3%20Desktop-6d6df6.svg)](#supported-dsh-builds)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.2--rc.3%20Desktop-6d6df6.svg)](#supported-dsh-builds)
 
 > **Make your DSH beautiful to look at — and alive to use.**
 
@@ -132,7 +132,7 @@ certified adapter in compatible-preview mode with a visible diagnostic warning.
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** (npm `next`) |
-| DSH `0.2.2-rc.3` | macOS Desktop app | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`); Desktop accepted, Web pending |
+| DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`); Web + Desktop accepted |
 
 Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
 still fail closed. Stable support requires a non-prerelease official GitHub
@@ -170,12 +170,12 @@ an unverified tarball.
 
 ## Verification
 
-The published `0.1.8` artifact passed full isolated acceptance on Web `0.2.1-rc.2`,
-`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with **275 passed / 0 failed
-each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2` with
-**34 / 0 each**. The `0.1.9` candidate is under manual acceptance; its evidence
-will be bound under `contracts/dsh/evidence/0.1.9/` before promotion. Scope,
-counts and limitations: [docs/verification.md](docs/verification.md).
+The `0.1.9` candidate passed full isolated acceptance on Web `0.2.1-rc.2`,
+`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with
+**275 passed / 0 failed each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`,
+`0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with **34 / 0 each**. Evidence is bound
+under `contracts/dsh/evidence/0.1.9/`. Scope, counts and limitations:
+[docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
 loader-ABI checks, exact support-matrix / release gates, `release:prepare` and

@@ -1,8 +1,10 @@
 # Verification
 
-> **0.1.9 release candidate:** acceptance is in progress. The `0.1.8` evidence
-> and counts below remain the last promoted release until the new candidate is
-> accepted and its evidence is bound under `contracts/dsh/evidence/0.1.9/`.
+> **0.1.9 release candidate:** full acceptance passed on Web `0.2.1-rc.2`,
+> `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and
+> Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`;
+> evidence is bound under `contracts/dsh/evidence/0.1.9/`. The `0.1.8` counts
+> below remain the last published release until this candidate is tagged.
 
 **Release `0.1.8` — current npm release.** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at

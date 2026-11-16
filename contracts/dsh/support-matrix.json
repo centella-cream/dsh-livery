@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-11-12T00:00:00.000Z",
+  "updatedAt": "2026-11-16T12:40:37.834228Z",
   "entries": [
     {
       "hostVersion": "0.2.1-rc.2",
@@ -31,7 +31,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.1-rc.2-web-chrome.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.2 + Web Profile + exact Chrome 156.0.8078.48; 156.0.8078.48 is the only certified browser version.",
@@ -69,7 +69,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.1-rc.3-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
@@ -105,7 +105,7 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.1-rc.4-web-chrome.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.4-web-chrome.json"
       ],
       "notes": [
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
@@ -144,8 +144,8 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.1-rc.5-web-chrome.json",
-        "contracts/dsh/evidence/0.1.8/0.2.1-rc.5-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.5-web-chrome.json",
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.5-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence is bound for 0.1.6.",
@@ -184,8 +184,8 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.2-rc.1-web-chrome.json",
-        "contracts/dsh/evidence/0.1.8/0.2.2-rc.1-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.1-web-chrome.json",
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.1-desktop-macos.json"
       ],
       "notes": [
         "npm `latest` now points at DSH 0.2.2-rc.1, but the official GitHub release is still a prerelease; this remains a preview claim, not a stable claim.",
@@ -224,8 +224,8 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.8/0.2.2-rc.2-web-chrome.json",
-        "contracts/dsh/evidence/0.1.8/0.2.2-rc.2-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.2-web-chrome.json",
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.2-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.2-rc.2 is npm next and a GitHub prerelease; preview claim.",
@@ -237,14 +237,14 @@
       "hostVersion": "0.2.2-rc.3",
       "adapterId": "dsh-0.2.2-rc.3-r1",
       "contractHash": "sha256:0ac1b8dd8f1685384f6314c9f5299acd8afb7c1d5a52e055d0a7ce0c55a5cf72",
-      "status": "g6-approved",
+      "status": "released",
       "profiles": {
         "desktop": {
           "macos": "passed",
           "win32": "not-supported"
         },
         "web": {
-          "chrome": "pending",
+          "chrome": "passed",
           "edge": "not-supported"
         }
       },
@@ -263,12 +263,13 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json",
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.2-rc.3 is npm next and a GitHub prerelease; preview claim.",
         "API hashes match 0.2.2-rc.1/rc.2; reviewed catalog-profile override reuses the rc.1 profile in compatible-preview mode.",
-        "Desktop macOS acceptance passed; Web rc.3 remains pending (npm Web host boot not certifiable in this environment)."
+        "Web and Desktop acceptance passed on the final 0.1.9 candidate."
       ]
     }
   ]
