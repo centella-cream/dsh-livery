@@ -1,6 +1,6 @@
 # Documentation
 
-**Release candidate: `0.1.9` (2026-11-16), pending acceptance; npm latest remains `0.1.8`.** The authoritative support policy is
+**Release `0.1.9` (2026-11-16) is published; `dsh-livery@0.1.9` is npm `latest`.** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -9,8 +9,9 @@
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Stable certified (npm `latest`) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
-| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.8 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; npm `latest`, GitHub prerelease; Web+Desktop acceptance bound |
+| DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.9 |
+| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; GitHub prerelease; Web+Desktop acceptance bound |
+| DSH `0.2.2-rc.2` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; Web+Desktop acceptance bound |
 | DSH `0.2.2-rc.3` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `next`); Web + Desktop accepted |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm

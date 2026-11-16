@@ -1,6 +1,6 @@
 # Style system: how the 28 styles differ
 
-> **Status (0.1.9 release candidate):** current implementation reference. The registry paths and
+> **Status (0.1.9, published):** current implementation reference. The registry paths and
 > feature flags below are the shipped style-system contract; the release support
 > matrix is in [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
 > The 0.1.9 gallery/recipe expansion is recorded in

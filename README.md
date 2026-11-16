@@ -11,8 +11,8 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: release candidate.** The next npm release is not published
-> yet; `0.1.8` remains the current npm release until the candidate is accepted.
+> **Release status: published `0.1.9`.** `dsh-livery@0.1.9` is the current npm
+> release and the accepted artifact.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop and DSH `0.2.2-rc.3`
@@ -120,20 +120,19 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery).
-The next release is a local candidate until it is accepted and published.
+Latest published package: [`dsh-livery@0.1.9`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.8
+dsh plugin --profile web add dsh-livery@0.1.9
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.1.8
+dsh plugin --profile desktop add dsh-livery@0.1.9
 ```
 
 Restart the app after the package changes. You can also install by package name
@@ -144,7 +143,7 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 ## Verification
 
-The current candidate passed full isolated acceptance on Web `0.2.1-rc.2`,
+The published `0.1.9` artifact passed full isolated acceptance on Web `0.2.1-rc.2`,
 `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with
 **275 passed / 0 failed each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`,
 `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with **34 / 0 each**. Evidence is bound

@@ -1,6 +1,6 @@
 # DSH compatibility architecture (0.1.9)
 
-Status: current for DSH Livery `0.1.9` release candidate; the `0.1.8` evidence below is historical.
+Status: current for DSH Livery `0.1.9` (published); the `0.1.8` evidence below is historical.
 
 ## Why the old model broke
 
@@ -39,11 +39,11 @@ host bundle grow by roughly 150 KiB gzip per version.
 - Unknown compatible versions may run, but are not claimed; promote them with evidence
   before listing them as stable or preview claims.
 
-## Verified in the current candidate
+## Verified in 0.1.9
 
 - Desktop `0.2.2-rc.2`: 34 checks pass on the real Electron app with the shared
   rc.1 catalog profile.
-- Web `0.2.2-rc.2` and `0.2.2-rc.3`: full acceptance passes on the current candidate.
+- Web `0.2.2-rc.2` and `0.2.2-rc.3`: full acceptance passes on 0.1.9.
 - All older certified hosts remain in the test matrix.
 
 ## Hot update (HMR)

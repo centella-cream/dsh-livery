@@ -1,12 +1,12 @@
 # Verification
 
-> **0.1.9 release candidate:** full acceptance passed on Web `0.2.1-rc.2`,
+> **Release `0.1.9` is published.** Full acceptance passed on Web `0.2.1-rc.2`,
 > `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and
 > Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`;
-> evidence is bound under `contracts/dsh/evidence/0.1.9/`. The `0.1.8` counts
-> below remain the last published release until this candidate is tagged.
+> 11 evidence files are bound under `contracts/dsh/evidence/0.1.9/`. The `0.1.8`
+> section below is retained as the previous published release.
 
-**Release `0.1.8` — current npm release.** The exact accepted artifact, sha256,
+**Release `0.1.8` — previous published release (historical).** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at
 `contracts/dsh/evidence/0.1.8/`; the publication workflow downloads the same bytes
 from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub

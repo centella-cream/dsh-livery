@@ -10,8 +10,8 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：发布候选。** 下一个 npm 版本尚未发布；在候选被验收并发布之前，
-> `0.1.8` 仍是 npm 当前发布版。
+> **发布状态：已发布 `0.1.9`。** `dsh-livery@0.1.9` 是当前 npm 发布版，也是
+> 已验收制品。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop。
@@ -100,20 +100,19 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.1.8`](https://www.npmjs.com/package/dsh-livery)。
-下一个版本在验收通过和发布之前只是本地候选。
+npm 最新发布版：[`dsh-livery@0.1.9`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.8
+dsh plugin --profile web add dsh-livery@0.1.9
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.1.8
+dsh plugin --profile desktop add dsh-livery@0.1.9
 ```
 
 包变化后重启 App。也可以在 **设置 → 插件** 中按包名安装。
@@ -123,7 +122,7 @@ sha256。不要安装未校验的 tarball。
 
 ## 验收
 
-当前候选已在 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
+已发布的 `0.1.9` 制品已在 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
 （各 275 通过 / 0 失败）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`
 （各 34 通过 / 0 失败）上完成隔离全量验收。证据绑定在 `contracts/dsh/evidence/0.1.9/`。
 范围、计数和已知限制见 [docs/verification.md](docs/verification.md)。
