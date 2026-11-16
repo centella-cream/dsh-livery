@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#1f5fbf",
+        "secondary": "#3a8fb7",
+        "surface": "#eef3f8",
+        "text": "#102a43"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#5ec8e5",
+        "secondary": "#7fa8d8",
+        "surface": "#0a1622",
+        "text": "#d9e8f5"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "tech-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "system-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "technical",
+      "en-US": "technical"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "editorial",
+    "chrome": "outline"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  },
+  "id": "blueprint",
+  "meta": {
+    "name": {
+      "zh-CN": "蓝图",
+      "en-US": "Blueprint"
+    },
+    "description": {
+      "zh-CN": "工程蓝图：冰蓝纸面、钴蓝与青色标注，细线、等宽标签，像一张可交互的图纸。",
+      "en-US": "An engineering blueprint: icy paper, cobalt and cyan annotations, hairline rules and monospace labels."
+    },
+    "tags": [
+      "tech",
+      "cool"
+    ],
+    "order": 250
+  }
+}

@@ -31,7 +31,7 @@ harness drives the system Chrome through `channel: 'chrome'`.
 - Entry/page/search/gallery copy is asserted in the current labels table
   (`视觉风格` / `Visual Style`, `搜索视觉风格` / `Search visual styles`,
   `视觉风格画廊` / `Visual style gallery`); data-testids are unchanged.
-- Counts are derived from the served catalog: 24 liveries/profile
+- Counts are derived from the served catalog: 28 liveries/profile
   (`catalog.gallery-size`), 24 gallery cards, 96 preview SVGs/profile, per-livery
   CSS ≤12 KiB, and style vocabulary (surface recipes, font stacks, shape/
   elevation/material/border families).

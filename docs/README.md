@@ -26,12 +26,12 @@ Edge and any other DSH build are not supported.
   frozen host/client handshake, generated artifacts and build outputs.
 - **[Multi-version policy](design/multi-version.md)** — API compatibility range, exact evidence, stable
   vs next-preview rules, how to add a DSH release without dropping older ones.
-- **[Style system](design/style-system.md)** — the 24 styles across palette,
+- **[Style system](design/style-system.md)** — the 28 styles across palette,
   typography, shape, material and type scale.
 - **[Style gallery and GUI recipes](design/style-gallery.md)** — compact catalog,
   style-DNA labels and the terminal/brutal/pill/editorial surface recipes.
 - **[Design references](research/design-references.md)** — palette attributions
-  and the machine-readable [24-style table](research/design-table.json).
+  and the machine-readable [28-style table](research/design-table.json).
 
 ## Archive (historical, not authoritative)
 
@@ -67,9 +67,9 @@ not be cited as current support or behavior.
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
 - **[兼容架构](design/compatibility.md)** — API 兼容回退、共享 catalog profile 与 exact evidence 边界。
 - **[多版本策略](design/multi-version.md)** — 兼容范围、exact evidence、稳定/预览边界。：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
-- **[风格系统](design/style-system.md)**：24 套风格在调色、字体、形状、材质和字号阶梯上的差异。
+- **[风格系统](design/style-system.md)**：28 套风格在调色、字体、形状、材质、字号阶梯和组件 chrome 上的差异。
 - **[风格画廊与 GUI 配方](design/style-gallery.md)**：紧凑目录、风格 DNA 标签与 terminal/brutal/pill/editorial 表面配方。
-- **[设计参考](research/design-references.md)**：配色归属与机器可读的 [24 套风格表](research/design-table.json)。
+- **[设计参考](research/design-references.md)**：配色归属与机器可读的 [28 套风格表](research/design-table.json)。
 
 ## 历史归档（非权威）
 

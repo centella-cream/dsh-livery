@@ -65,7 +65,7 @@ const FORBIDDEN_SVG_FRAGMENTS = [
 ]
 
 describe('preview rendering (multi-profile)', () => {
-  it('renders exactly 4 deterministic previews per livery, per profile (2 × 40)', () => {
+  it('renders exactly 4 deterministic previews per livery, per profile (2 × 56)', () => {
     for (const [index, profile] of profiles.entries()) {
       const files: string[] = []
       for (const id of liveryIds()) {

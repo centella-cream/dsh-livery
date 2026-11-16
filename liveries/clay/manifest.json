@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#b4552f",
+        "secondary": "#d99a6c",
+        "surface": "#f3e7dc",
+        "text": "#3a241c"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#e8a87c",
+        "secondary": "#c97c56",
+        "surface": "#221814",
+        "text": "#f2e3d5"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "rounded-latin"
+    },
+    "content": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "comfortable",
+      "en-US": "comfortable"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "pill",
+    "chrome": "tinted"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  },
+  "id": "clay",
+  "meta": {
+    "name": {
+      "zh-CN": "陶土",
+      "en-US": "Clay"
+    },
+    "description": {
+      "zh-CN": "陶土与手作：赤陶色、圆润胶囊控件、柔和阴影，界面像捏出来的器物。",
+      "en-US": "Clay and handwork: terracotta, capsule controls and soft shadows, as if the shell were shaped by hand."
+    },
+    "tags": [
+      "warm",
+      "organic"
+    ],
+    "order": 270
+  }
+}

@@ -155,7 +155,7 @@ operation.
 - `src/generated/liveries.ts` — compiled catalog profiles.
 - `lib/index.js` — Host ESM bundle.
 - `lib/client.js` — one self-contained client loader envelope with inlined CSS.
-- `lib/previews/<catalogProfile>/` — 96 previews (24 styles × 2 locales × 2 modes)
+- `lib/previews/<catalogProfile>/` — 112 previews (28 styles × 2 locales × 2 modes)
   plus `index.json`.
 - `schemas/`, `liveries/` and `contracts/dsh/<version>/` — shipped data.
 

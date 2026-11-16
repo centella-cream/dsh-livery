@@ -72,7 +72,7 @@ if (packageJson.engines?.dsh !== shippedAllowlist) {
   process.exit(1)
 }
 
-const TGZ_BUDGET_BYTES = 3 * 1024 * 1024
+const TGZ_BUDGET_BYTES = 3.5 * 1024 * 1024
 const tgzBytes = readFileSync(tarball).length
 if (tgzBytes > TGZ_BUDGET_BYTES) {
   console.error(`release-check: tarball ${tgzBytes}B exceeds ${TGZ_BUDGET_BYTES}B package budget`)

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#c99600",
+        "secondary": "#1f4e9c",
+        "surface": "#f6f0e4",
+        "text": "#171512"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#f2c14e",
+        "secondary": "#e05a4a",
+        "surface": "#16130f",
+        "text": "#f2ead9"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "display-latin"
+    },
+    "content": {
+      "zh-CN": "humanist-cjk",
+      "en-US": "humanist-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "punchy",
+      "en-US": "punchy"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "brutal",
+    "chrome": "poster"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  },
+  "id": "bauhaus",
+  "meta": {
+    "name": {
+      "zh-CN": "包豪斯",
+      "en-US": "Bauhaus"
+    },
+    "description": {
+      "zh-CN": "包豪斯海报：奶油底、明黄与钴蓝、几何展示字与硬投影，把会话变成一张构成海报。",
+      "en-US": "Bauhaus poster: cream ground, mustard yellow and cobalt blue, geometric display type and hard shadow blocks."
+    },
+    "tags": [
+      "contrast",
+      "playful"
+    ],
+    "order": 260
+  }
+}

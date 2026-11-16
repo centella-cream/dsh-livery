@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "variants": {
+    "light": {
+      "seeds": {
+        "accent": "#1f7a3a",
+        "secondary": "#3f9a5a",
+        "surface": "#eef7ec",
+        "text": "#0c2414"
+      }
+    },
+    "dark": {
+      "seeds": {
+        "accent": "#52e08a",
+        "secondary": "#2e9e5b",
+        "surface": "#05100a",
+        "text": "#c9f5d4"
+      }
+    }
+  },
+  "typography": {
+    "ui": {
+      "zh-CN": "system-cjk",
+      "en-US": "tech-latin"
+    },
+    "content": {
+      "zh-CN": "system-cjk",
+      "en-US": "tech-latin"
+    },
+    "code": "system-mono",
+    "metrics": {
+      "zh-CN": "technical",
+      "en-US": "technical"
+    }
+  },
+  "layout": {
+    "density": "host",
+    "conversationWidth": "host",
+    "messageFlow": "stock",
+    "surfaceStyle": "terminal",
+    "chrome": "terminal"
+  },
+  "compat": {
+    "requiredCapabilities": [
+      "theme-css",
+      "host-font-family",
+      "surface-material"
+    ],
+    "optionalCapabilities": [
+      "host-density-tokens",
+      "host-transcript-width",
+      "reduced-transparency",
+      "forced-colors",
+      "reduced-motion"
+    ]
+  },
+  "id": "phosphor",
+  "meta": {
+    "name": {
+      "zh-CN": "磷光",
+      "en-US": "Phosphor"
+    },
+    "description": {
+      "zh-CN": "绿色磷光终端：近黑底、荧光绿字符、方形无阴影控件，像一台安静的 CRT。",
+      "en-US": "A green phosphor terminal: near-black ground, luminous green text and square shadowless controls, like a quiet CRT."
+    },
+    "tags": [
+      "deep",
+      "tech"
+    ],
+    "order": 280
+  }
+}

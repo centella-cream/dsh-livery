@@ -1440,6 +1440,242 @@
       ],
       "inspiration": null,
       "chrome": "poster"
+    },
+    {
+      "id": "blueprint",
+      "order": 250,
+      "name": {
+        "zh-CN": "\u84dd\u56fe",
+        "en-US": "Blueprint"
+      },
+      "description": {
+        "zh-CN": "\u5de5\u7a0b\u84dd\u56fe\uff1a\u51b0\u84dd\u7eb8\u9762\u3001\u94b4\u84dd\u4e0e\u9752\u8272\u6807\u6ce8\uff0c\u7ec6\u7ebf\u3001\u7b49\u5bbd\u6807\u7b7e\uff0c\u50cf\u4e00\u5f20\u53ef\u4ea4\u4e92\u7684\u56fe\u7eb8\u3002",
+        "en-US": "An engineering blueprint: icy paper, cobalt and cyan annotations, hairline rules and monospace labels."
+      },
+      "tags": [
+        "tech",
+        "cool"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#1f5fbf",
+          "secondary": "#3a8fb7",
+          "surface": "#eef3f8",
+          "text": "#102a43"
+        },
+        "dark": {
+          "accent": "#5ec8e5",
+          "secondary": "#7fa8d8",
+          "surface": "#0a1622",
+          "text": "#d9e8f5"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "tech-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "system-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "technical",
+        "en-US": "technical"
+      },
+      "surfaceStyle": "editorial",
+      "chrome": "outline",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ]
+    },
+    {
+      "id": "bauhaus",
+      "order": 260,
+      "name": {
+        "zh-CN": "\u5305\u8c6a\u65af",
+        "en-US": "Bauhaus"
+      },
+      "description": {
+        "zh-CN": "\u5305\u8c6a\u65af\u6d77\u62a5\uff1a\u5976\u6cb9\u5e95\u3001\u660e\u9ec4\u4e0e\u94b4\u84dd\u3001\u51e0\u4f55\u5c55\u793a\u5b57\u4e0e\u786c\u6295\u5f71\uff0c\u628a\u4f1a\u8bdd\u53d8\u6210\u4e00\u5f20\u6784\u6210\u6d77\u62a5\u3002",
+        "en-US": "Bauhaus poster: cream ground, mustard yellow and cobalt blue, geometric display type and hard shadow blocks."
+      },
+      "tags": [
+        "contrast",
+        "playful"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#c99600",
+          "secondary": "#1f4e9c",
+          "surface": "#f6f0e4",
+          "text": "#171512"
+        },
+        "dark": {
+          "accent": "#f2c14e",
+          "secondary": "#e05a4a",
+          "surface": "#16130f",
+          "text": "#f2ead9"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "display-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "punchy",
+        "en-US": "punchy"
+      },
+      "surfaceStyle": "brutal",
+      "chrome": "poster",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ]
+    },
+    {
+      "id": "clay",
+      "order": 270,
+      "name": {
+        "zh-CN": "\u9676\u571f",
+        "en-US": "Clay"
+      },
+      "description": {
+        "zh-CN": "\u9676\u571f\u4e0e\u624b\u4f5c\uff1a\u8d64\u9676\u8272\u3001\u5706\u6da6\u80f6\u56ca\u63a7\u4ef6\u3001\u67d4\u548c\u9634\u5f71\uff0c\u754c\u9762\u50cf\u634f\u51fa\u6765\u7684\u5668\u7269\u3002",
+        "en-US": "Clay and handwork: terracotta, capsule controls and soft shadows, as if the shell were shaped by hand."
+      },
+      "tags": [
+        "warm",
+        "organic"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#b4552f",
+          "secondary": "#d99a6c",
+          "surface": "#f3e7dc",
+          "text": "#3a241c"
+        },
+        "dark": {
+          "accent": "#e8a87c",
+          "secondary": "#c97c56",
+          "surface": "#221814",
+          "text": "#f2e3d5"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "rounded-latin"
+        },
+        "content": {
+          "zh-CN": "humanist-cjk",
+          "en-US": "humanist-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "comfortable",
+        "en-US": "comfortable"
+      },
+      "surfaceStyle": "pill",
+      "chrome": "tinted",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ]
+    },
+    {
+      "id": "phosphor",
+      "order": 280,
+      "name": {
+        "zh-CN": "\u78f7\u5149",
+        "en-US": "Phosphor"
+      },
+      "description": {
+        "zh-CN": "\u7eff\u8272\u78f7\u5149\u7ec8\u7aef\uff1a\u8fd1\u9ed1\u5e95\u3001\u8367\u5149\u7eff\u5b57\u7b26\u3001\u65b9\u5f62\u65e0\u9634\u5f71\u63a7\u4ef6\uff0c\u50cf\u4e00\u53f0\u5b89\u9759\u7684 CRT\u3002",
+        "en-US": "A green phosphor terminal: near-black ground, luminous green text and square shadowless controls, like a quiet CRT."
+      },
+      "tags": [
+        "deep",
+        "tech"
+      ],
+      "seeds": {
+        "light": {
+          "accent": "#1f7a3a",
+          "secondary": "#3f9a5a",
+          "surface": "#eef7ec",
+          "text": "#0c2414"
+        },
+        "dark": {
+          "accent": "#52e08a",
+          "secondary": "#2e9e5b",
+          "surface": "#05100a",
+          "text": "#c9f5d4"
+        }
+      },
+      "fonts": {
+        "ui": {
+          "zh-CN": "system-cjk",
+          "en-US": "tech-latin"
+        },
+        "content": {
+          "zh-CN": "system-cjk",
+          "en-US": "tech-latin"
+        },
+        "code": "system-mono"
+      },
+      "metrics": {
+        "zh-CN": "technical",
+        "en-US": "technical"
+      },
+      "surfaceStyle": "terminal",
+      "chrome": "terminal",
+      "requiredCapabilities": [
+        "theme-css",
+        "host-font-family",
+        "surface-material"
+      ],
+      "optionalCapabilities": [
+        "host-density-tokens",
+        "host-transcript-width",
+        "reduced-transparency",
+        "forced-colors",
+        "reduced-motion"
+      ]
     }
   ]
 }

@@ -7,7 +7,7 @@
 
 > **Make your DSH beautiful to look at — and alive to use.**
 
-A visual layer for DeepSeek Harness: **24 curated styles**, a wallpaper studio with
+A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio with
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
@@ -26,7 +26,7 @@ host theme takeover.
 > mode; Windows Desktop, Edge and other DSH builds remain unsupported.
 
 > **Working tree (unreleased, target 0.1.9):** the visual-style page is now a
-> compact 24-style catalog with style-DNA labels, four styles ship distinct GUI
+> compact 28-style catalog with style-DNA labels, four styles ship distinct GUI
 > shapes (terminal, brutal, pill, editorial), and an optional component-chrome
 > axis varies the rail, composer and bubble fills. macOS wallpaper frost also phases the
 > sidebar tint to the main column. See the
@@ -76,10 +76,11 @@ showcase uses a real online Picsum wallpaper, not a built-in default.
 
 ## Features
 
-- **24 styles across five visual axes.** Colour (OKLab seeds → complete light/dark
+- **28 styles across six visual axes.** Colour (OKLab seeds → complete light/dark
   tokens), typography (10 local-only font stacks and 9 typography profiles), shape,
-  elevation/material and border/focus treatment. The set includes 10 original
-  designs, 12 permissively licensed palettes and 2 original Chinese designs.
+  elevation/material, border/focus treatment and component chrome. The set includes
+  14 original designs, 12 permissively licensed palettes and 2 original Chinese
+  designs.
 - **Wallpaper studio.** Online Picsum/Openverse sources, 24 built-in CSS wallpapers,
   Recent, and Local & link uploads (IndexedDB). Blur 0–24 px, dim 0–70 %, frost
   0–100 % and a global atmosphere overlay. The two painted wallpaper layers are
@@ -87,7 +88,8 @@ showcase uses a real online Picsum wallpaper, not a built-in default.
 - **Presets and focal position.** Export/import style + wallpaper + effects +
   nine-grid focal point; remote/upload wallpapers support pointer and keyboard
   focal positioning. Presets never contain uploaded blobs, CSS, tokens or paths.
-- **Workbench UI.** A style page with a current-style hero and full gallery, a
+- **Workbench UI.** A style page with a compact current-style summary and a dense
+  continuous catalog, a
   wallpaper page with current wallpaper, effects and a four-tab source picker, and
   a collapsed management area for presets and local-data cleanup.
 - **Trust by construction.** Exact host allowlist, frozen contracts, token-only
@@ -98,7 +100,7 @@ showcase uses a real online Picsum wallpaper, not a built-in default.
 
 ![Six selected styles from the shipped fixed preview scenes](docs/assets/styles-en.jpg)
 
-Six of the 24 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
+Six of the 28 styles: **Celadon, Sakura, Everforest, Nord, Rosé Pine, Tokyo Night**.
 These are shipped fixed preview scenes; the live gallery renders the same previews.
 
 ## Wallpapers

@@ -323,7 +323,7 @@ export const PLAN20_ROWS = [
   {
     criterion: 'At least 24 double-mode, visually distinct visual styles (palette + typography + material + shape/elevation)',
     checks: ['catalog.gallery-size', 'gallery.cards', 'previews.assets-served', 'catalog.style-vocabulary', 'catalog.css-budget'],
-    note: 'style-system v2: 24 liveries per profile, 96 previews per profile; per-livery CSS ≤ 12 KiB',
+    note: 'style-system v2: 28 liveries per profile, 112 previews per profile; per-livery CSS ≤ 12 KiB',
   },
   {
     criterion: 'Colour + host-level font-family actually effective (not just the settings page)',

@@ -424,8 +424,8 @@ describe('generated shipped registry', () => {
     const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.1')!.catalogProfile]!
     expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
     expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.1', '0.2.2-rc.2'])
-    expect(oldProfile.liveries).toHaveLength(24)
-    expect(newestProfile.liveries).toHaveLength(24)
+    expect(oldProfile.liveries).toHaveLength(28)
+    expect(newestProfile.liveries).toHaveLength(28)
   })
 
   it('is byte-reproducible from the formal matrix + committed snapshots', async () => {

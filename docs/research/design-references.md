@@ -1,11 +1,11 @@
-# Design references: the 24-style set
+# Design references: the 28-style set
 
-> **Status (0.1.8):** current attribution record for the 24 shipped styles; the
+> **Status (0.1.8):** current attribution record for the 28 shipped styles; the
 > 0.1.9 recipe rebalance is recorded in [`style-gallery.md`](../design/style-gallery.md).
 
-The set keeps the 10 original ids (retuned for the new style system) and
-adds 14: 12 palettes inspired by open-source themes plus 2 original
-Chinese-aesthetic designs (青瓷/朱砂). The open-source palettes are used as *colour
+The set keeps the 10 original ids and adds 18: 12 palettes inspired by
+open-source themes, 2 original Chinese-aesthetic designs (青瓷/朱砂) and 4 original
+GUI worlds (蓝图/包豪斯/陶土/磷光). The open-source palettes are used as *colour
 inspiration* under their permissive licences. No source code, images, fonts or
 trademarks are copied, and every colour is re-derived through the plugin's own
 OKLab seed/token pipeline, with light and dark variants written for DSH token
@@ -35,7 +35,7 @@ inspiration only, with no source code or assets copied. Palette values are
 adapted (contrast-repaired, re-derived into light/dark token sets for DSH), so
 resulting liveries are interpretations rather than pixel-exact ports. Each
 project's licence is cited above; the full licence texts live in their
-repositories. The two original entries below are authored for this project.
+repositories. The six original entries below are authored for this project.
 
 ## Original entries
 
@@ -43,8 +43,12 @@ repositories. The two original entries below are authored for this project.
 |---|---|---|
 | celadon | 青瓷 Celadon | 宋代青瓷釉色：微青、温润、留白充足；衬线标题 + 人文无衬线正文 + 大行距。 |
 | cinnabar | 朱砂 Cinnabar | 印章朱砂：浓而不刺的红，方正硬朗、硬投影，衬线正文 + 显示体标题。 |
+| blueprint | 蓝图 Blueprint | 工程蓝图：冰蓝纸面、钴蓝/青色标注、细规则线、等宽标签；editorial + outline chrome。 |
+| bauhaus | 包豪斯 Bauhaus | 奶油底 + 明黄/钴蓝、几何展示字、硬投影色块；brutal + poster chrome。 |
+| clay | 陶土 Clay | 赤陶与手作：暖陶土色、胶囊控件、柔和阴影、圆体；pill + tinted chrome。 |
+| phosphor | 磷光 Phosphor | 绿色 CRT：近黑底、荧光绿字符、方形无阴影控件、等宽 UI；terminal + terminal chrome。 |
 
-## Style axes used to differentiate the 24 designs
+## Style axes used to differentiate the 28 designs
 
 Every livery differs on at least three axes (see `docs/design/style-system.md`):
 
@@ -53,12 +57,16 @@ Every livery differs on at least three axes (see `docs/design/style-system.md`):
 2. **Typography** — 10 local-only font stacks (system sans, humanist, serif
    CJK/Latin, display, rounded, mono-UI) plus 9 metric profiles that override the
    consumed host type-scale tokens (UI micro text, small text, brand row).
-3. **Module shape** — 9 surface styles: radii scale (`--dsw-radius-xs…panel`),
+3. **Module shape** — 12 surface styles: radii scale (`--dsw-radius-xs…panel`),
    `--dsw-corner-shape`, elevation/shadow tokens and border tints, from sharp
-   squared panels to pill-rounded cards and floating elevated panels.
+   squared panels to pill-rounded cards, hard-shadow blocks and floating
+   elevated panels.
 4. **Material/背景质感** — glass-style translucent panels with
    `--dsw-menu-backdrop-filter`, paper/flat styles with hairline borders and no
    shadow, plus palette-driven surface tints.
+5. **Component chrome** — 6 recipes for the rail, composer, bubble, active row and
+   selector fills (`plain`, `tinted`, `outline`, `terminal`, `editorial`,
+   `poster`), derived from each palette's seeds and audited by the contrast matrix.
 
 Structural layout (transcript width, message flow, density) is still host-owned:
 DSH exposes no public hook for it in any certified build, so those recipes remain

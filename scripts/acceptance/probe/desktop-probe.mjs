@@ -464,7 +464,7 @@ async function main() {
       runner,
       'desktop.gallery',
       'desktop Visual Style panel renders the 24 compiled styles',
-      liveryCards.length >= 24,
+      liveryCards.length >= 28,
       `${liveryCards.length} cards: ${liveryCards.map((card) => card.id).join(', ')}`,
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-panel-gallery-desktop.png'), { label: 'desktop livery panel gallery' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'panel-gallery' }))

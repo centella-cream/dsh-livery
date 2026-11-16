@@ -52,10 +52,10 @@ Two failures were visible on the 1440×900 DSH Desktop style page:
 
 - The single `role="listbox"` keeps the existing roving-focus contract; the sort
   order is the flattened order, not a second DOM structure.
-- Measured at 1440×900: 24 cards, 6 columns, grid starts at y = 529, document
-  scroll 1307 px (was 2788 px), no horizontal overflow. At 1024/767 the panel is
-  691/714 px wide, so 3 columns and about 2.3k px of scroll are the correct
-  density; the target is no overflow, not an equal column count at every viewport.
+- Measured at 1440×900: 28 cards, 6 columns, grid starts at y = 529, document
+  scroll 1480 px, no horizontal overflow. At 1024/767 the panel is 691/714 px
+  wide, so 3 columns and about 2.7k px of scroll are the correct density; the
+  target is no overflow, not an equal column count at every viewport.
 
 ## Style DNA
 
@@ -79,12 +79,12 @@ unused recipe is assigned:
 
 | Recipe | Shape / elevation language | Assigned style |
 |---|---|---|
-| `terminal` | square, no shadows, crisp rules | `graphite` |
-| `brutal` | square blocks, hard offset shadows, strong rules | `cinnabar` |
-| `pill` | capsule controls, large panels, soft shadows | `sakura` |
-| `editorial` | near-square print geometry, strong rules, no elevation | `rice-paper` |
+| `terminal` | square, no shadows, crisp rules | `graphite`, `phosphor` |
+| `brutal` | square blocks, hard offset shadows, strong rules | `cinnabar`, `bauhaus` |
+| `pill` | capsule controls, large panels, soft shadows | `sakura`, `clay` |
+| `editorial` | near-square print geometry, strong rules, no elevation | `rice-paper`, `blueprint` |
 
-The other palettes keep their existing recipe. The set stays at 24 styles; the
+The other palettes keep their existing recipe. The set now has 28 styles; the
 change is a rebalance of the shape/elevation axis, not a new palette round. The
 preview renderer now parses unitless `0` radius values; before this fix square
 recipes silently fell back to the stock 16 px preview radius, which is why the
@@ -103,15 +103,15 @@ contrast instead of inheriting another theme's hard-coded fills.
 | Chrome | Rail / composer / bubble relationship | Assigned styles |
 |---|---|---|
 | `plain` | Host-derived fills; no override | fjord, nord, celadon, linen, midnight, moss, everforest, ayu |
-| `tinted` | Accent tint at 6% rail / 3% composer / 10% bubble | sakura, catppuccin, plum, rose-pine, dracula, tokyo-night |
-| `outline` | Page-coloured fills; active rail row carried by its accent mark | amber-dusk, deep-sea, kanagawa |
-| `terminal` | Darker rail, page composer, faint accent active row | graphite, one-dark |
+| `tinted` | Accent tint at 6% rail / 3% composer / 10% bubble | sakura, catppuccin, plum, rose-pine, dracula, tokyo-night, clay |
+| `outline` | Page-coloured fills; active rail row carried by its accent mark | amber-dusk, deep-sea, kanagawa, blueprint |
+| `terminal` | Darker rail, page composer, faint accent active row | graphite, one-dark, phosphor |
 | `editorial` | Paper rail/composer, text-tinted bubbles | rice-paper, flexoki, solarized |
-| `poster` | Strong accent blocks at 14% rail / 20% bubble / 24% active row | cinnabar, gruvbox |
+| `poster` | Strong accent blocks at 14% rail / 20% bubble / 24% active row | cinnabar, gruvbox, bauhaus |
 
 The merge order is metrics → surface style → chrome → explicit manifest tokens.
 Chrome never touches shape, elevation, text colours or host selectors; the
-compile-time contrast matrix remains the authority (2832 assertions across the
+compile-time contrast matrix remains the authority (3304 assertions across the
 two catalog profiles, 0 failures at the accepted amounts).
 
 ## Boundaries

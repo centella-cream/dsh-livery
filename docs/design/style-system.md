@@ -1,4 +1,4 @@
-# Style system: how the 24 styles differ
+# Style system: how the 28 styles differ
 
 > **Status (0.1.8):** current implementation reference. The registry paths and
 > feature flags below are the shipped style-system contract; the release support
@@ -133,7 +133,7 @@ The 640×400 fixture must show the style differences deterministically:
 The output is byte-stable and uses no filters other than `feDropShadow` and no
 external assets.
 
-## 4. Livery set: 24 designs
+## 4. Livery set: 28 designs
 
 Keep the 10 existing ids and add 14 new ones. Each manifest declares seeds
 (light + dark), a font pairing (ui/content/code from the registry), a metrics id,
@@ -146,8 +146,14 @@ licences).
 ## 5. Compatibility / budgets
 
 - Manifest schema stays `schemaVersion: 1`; only enum ids are extended (additive).
-- Per-livery CSS budget stays 12 KiB (expected ~9.5 KiB after style tokens).
-- Catalog grows to 24 liveries × 2 profiles; preview dirs get 96 SVGs/profile.
+- Per-livery CSS budget stays 12 KiB (measured max 9,644 B after the chrome axis).
+- Catalog grows to 28 liveries × 2 profiles; preview dirs get 112 SVGs/profile.
+- Host gzip budget moves from 320 KiB to 360 KiB for the 28-style catalog (measured
+  353,640 B / 2.95 MB raw across both profiles). Client gzip stays under 60 KiB
+  (measured 60,080 B). Both numbers are enforced by `scripts/build.mjs` and were
+  raised explicitly for this content expansion, not silently relaxed. The package
+  tarball budget moves from 3 MiB to 3.5 MiB (measured 3,219,038 B with 224 previews);
+  the 12 KiB per-livery CSS budget is unchanged.
 - Host adapters and contracts are unchanged; this is a token-contract change only,
   with no new host capability. Layout structure stays host/stock: DSH exposes no
   public density, transcript or message-flow hook, so differences are limited to
