@@ -1283,6 +1283,21 @@ export async function readCatalogProfileOverrides(workspace: string): Promise<Re
     if (!(entry['compatibility'] as Record<string, unknown> | undefined)?.['diffHash']) {
       throw new Error('catalog-profile-overrides: compatibility.diffHash is required')
     }
+    const targetSnapshot = JSON.parse(readFileSync(join(workspace, 'contracts', 'dsh', String(target['hostVersion']), 'contract.json'), 'utf8')) as ContractSnapshot
+    for (const [field, hashKey] of [['loaderAbiHash', 'loaderAbi'], ['hostApiHash', 'hostApi'], ['clientApiHash', 'clientApi'], ['tokenHash', 'token'], ['layoutHash', 'layout']] as const) {
+      if (target[field] !== targetSnapshot.hashes[hashKey]) throw new Error(`catalog-profile-overrides: target ${field} does not match snapshot`)
+    }
+    if (target['compilerVersion'] !== CATALOG_COMPILER_VERSION) throw new Error('catalog-profile-overrides: target compilerVersion is stale')
+    if (target['catalogProfile'] !== catalogProfileId(targetSnapshot)) throw new Error('catalog-profile-overrides: target catalogProfile is not intrinsic')
+    const available = Object.entries(targetSnapshot.capabilities).filter(([, value]) => value === true).map(([key]) => key).sort()
+    if (JSON.stringify(target['capabilityVector']) !== JSON.stringify(available)) throw new Error('catalog-profile-overrides: target capabilityVector is stale')
+    const providerSnapshot = JSON.parse(readFileSync(join(workspace, 'contracts', 'dsh', String(provider['hostVersion']), 'contract.json'), 'utf8')) as ContractSnapshot
+    for (const [field, hashKey] of [['loaderAbiHash', 'loaderAbi'], ['hostApiHash', 'hostApi'], ['clientApiHash', 'clientApi'], ['tokenHash', 'token'], ['layoutHash', 'layout']] as const) {
+      if (provider[field] !== providerSnapshot.hashes[hashKey]) throw new Error(`catalog-profile-overrides: provider ${field} does not match snapshot`)
+    }
+    if (provider['compilerVersion'] !== CATALOG_COMPILER_VERSION) throw new Error('catalog-profile-overrides: provider compilerVersion is stale')
+    const providerAvailable = Object.entries(providerSnapshot.capabilities).filter(([, value]) => value === true).map(([key]) => key).sort()
+    if (JSON.stringify(provider['capabilityVector']) !== JSON.stringify(providerAvailable)) throw new Error('catalog-profile-overrides: provider capabilityVector is stale')
     const host = target['hostVersion'] as string
     if (overrides.has(host)) throw new Error(`catalog-profile-overrides: duplicate hostVersion ${host}`)
     overrides.set(host, effective)

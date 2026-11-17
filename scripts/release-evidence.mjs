@@ -78,7 +78,56 @@ if (evidence.commit !== head) {
   if (targetScope.profile === 'web' && targetScope.browser !== 'chrome') fail('web evidence target.scope.browser must be chrome')
   if (targetScope.profile === 'desktop' && targetScope.platform !== 'macos') fail('desktop evidence target.scope.platform must be macos')
 }
+function canonicalJson(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  const record = value
+  return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(',')}}`
+}
+function sha256Text(text) {
+  return `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`
+}
+
 if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.runs must be non-empty')
+// 0.2.0+ requires the canonical audit envelopes supplied by the compiler. This
+// proves the envelope corresponds to the accepted catalog identity and is not a
+// self-reported summary.
+if (Number.parseInt(String(evidence.packageVersion).split('.')[0] ?? '0', 10) >= 2) {
+  if (!Array.isArray(evidence.auditEnvelopes) || evidence.auditEnvelopes.length === 0) {
+    fail('0.2.0+ evidence must include auditEnvelopes')
+  }
+  for (const entry of evidence.auditEnvelopes) {
+    if (typeof entry.path !== 'string' || typeof entry.sha256 !== 'string') {
+      fail('each audit envelope entry needs path + sha256')
+    }
+    let bytes
+    try {
+      bytes = readFileSync(resolve(entry.path))
+    } catch {
+      fail(`audit envelope is missing: ${entry.path}`)
+    }
+    const fileHash = createHash('sha256').update(bytes).digest('hex')
+    if (fileHash !== entry.sha256) fail(`audit envelope sha mismatch: ${entry.path}`)
+    let envelopes
+    try {
+      envelopes = JSON.parse(bytes.toString('utf8'))
+    } catch {
+      fail(`audit envelope is not JSON: ${entry.path}`)
+    }
+    if (!Array.isArray(envelopes) || envelopes.length === 0) fail(`audit envelope is empty: ${entry.path}`)
+    for (const envelope of envelopes) {
+      const payload = envelope?.payload
+      if (payload === null || typeof payload !== 'object') fail(`audit envelope payload missing: ${entry.path}`)
+      if (Object.prototype.hasOwnProperty.call(payload, 'auditHash')) fail(`audit payload must not contain auditHash: ${entry.path}`)
+      if (typeof envelope.auditHash !== 'string' || envelope.auditHash !== sha256Text(canonicalJson(payload))) {
+        fail(`auditHash mismatch: ${entry.path}`)
+      }
+      if (typeof payload.liveryId !== 'string' || payload.liveryId === '') fail(`audit liveryId missing: ${entry.path}`)
+      if (typeof payload.liveryHash !== 'string' || payload.liveryHash === '') fail(`audit liveryHash missing: ${entry.path}`)
+      if (typeof payload.cssHash !== 'string' || payload.cssHash === '') fail(`audit cssHash missing: ${entry.path}`)
+    }
+  }
+}
 if (evidence.scope !== undefined) {
   const scope = evidence.scope
   const entry = matrix.entries.find((candidate) => candidate.hostVersion === scope.hostVersion)

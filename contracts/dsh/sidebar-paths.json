@@ -1,0 +1,34 @@
+{
+  "0.2.0-rc.2": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.1-rc.2": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.1-rc.3": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.1-rc.4": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.1-rc.5": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.2-rc.1": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": false
+  },
+  "0.2.2-rc.2": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": true
+  },
+  "0.2.2-rc.3": {
+    "supportsSidebarFillToken": true,
+    "supportsSidebarTintToken": true
+  }
+}
