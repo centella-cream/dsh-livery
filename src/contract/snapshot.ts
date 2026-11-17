@@ -9,7 +9,7 @@
  * The CLI entry is built by scripts/build.mjs.
  */
 import { createHash } from 'node:crypto'
-import { clientSlotHash } from './client-slots.js'
+import { CONSUMED_CLIENT_SLOTS, clientSlotHash } from './client-slots.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -629,7 +629,7 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
       break
     }
   }
-  return { hash: hashCanonical(payload), ...payload, evidence }
+  return { hash: hashCanonical(payload), ...payload, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence }
 }
 
 function readmeSetDocumentedAttributes(readmeTexts: readonly string[]): string[] {
@@ -769,7 +769,7 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
   const rawHostApi = await collectHostApi(install.packagesRoot)
   const hostApi: HostApiContract = { ...rawHostApi, evidence: relativize(rawHostApi.evidence) }
   const rawClientApi = await collectClientApi(install.packagesRoot)
-  const clientApi: ClientApiContract = { ...rawClientApi, evidence: relativize(rawClientApi.evidence) }
+  const clientApi: ClientApiContract = { ...rawClientApi, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence: relativize(rawClientApi.evidence) }
   const rawLayout = await collectLayoutContract(install.packagesRoot, tokens, dshVariables)
   const layout: LayoutContract = { ...rawLayout, evidence: relativize(rawLayout.evidence) }
   const rawProfileSchema = await collectProfileSchema(install.packagesRoot)

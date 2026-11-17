@@ -61,6 +61,8 @@ export interface HostApiContract {
   readonly evidence: readonly FileHash[]
 }
 
+import type { ConsumedClientSlot } from './client-slots.js'
+
 export interface ClientApiContract {
   readonly hash: string
   /** Cordis client services consumed by Livery. */
@@ -69,6 +71,8 @@ export interface ClientApiContract {
     readonly settingsSection: { readonly kind: string; readonly scope: string; readonly owner: string }
     readonly localeNamespace: string
   }
+  /** Every slot Livery actually consumes, including owner/register/inject semantics. */
+  readonly consumedSlots: readonly ConsumedClientSlot[]
   readonly theme: {
     readonly darkAttribute: string
     readonly themeSourceAttribute: string

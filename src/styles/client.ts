@@ -18,15 +18,12 @@
  */
 export const CLIENT_CSS = `
 
-.livery-workspace{position:relative;isolation:isolate}
+.livery-workspace{position:relative;isolation:isolate;--dsh-livery-decoration-line:var(--lw-line);--dsh-livery-decoration-accent:var(--lw-brand)}
 .livery-workspace>:not(.livery-studio-decoration){position:relative;z-index:1}
-.livery-studio-decoration{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:.9}
-.livery-studio-decoration__art{position:absolute;inset:8px;border:1px solid var(--lw-brand);opacity:.28}
-.livery-studio-decoration[data-recipe="studio-grid"] .livery-studio-decoration__art{background-image:linear-gradient(var(--lw-line) 1px,transparent 1px),linear-gradient(90deg,var(--lw-line) 1px,transparent 1px);background-size:32px 32px;border:0}
-.livery-studio-decoration[data-recipe="studio-dots"] .livery-studio-decoration__art{background-image:radial-gradient(var(--lw-brand) 1px,transparent 1px);background-size:22px 22px;border:0;opacity:.18}
-.livery-studio-decoration[data-recipe="studio-rules"] .livery-studio-decoration__art{background-image:repeating-linear-gradient(180deg,transparent 0,transparent 23px,var(--lw-line) 24px);border:0;opacity:.2}
-.livery-studio-decoration__art--reduced{opacity:.16}
-.livery-studio-decoration__art--minimal{opacity:.1}
+.livery-studio-decoration{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.livery-studio-decoration__svg{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);opacity:.28}
+.livery-studio-decoration__svg--reduced{opacity:.16}
+.livery-studio-decoration__svg--minimal{opacity:.1}
 @media (forced-colors:active){.livery-studio-decoration{display:none}}
 
 

@@ -39,6 +39,7 @@ import { CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, LIVERY_VERSION, PREVIEW_ROUTE_
 import { deriveLivery } from '../core/derive.js'
 import { evaluateCapabilities } from '../core/capabilities.js'
 import { derivePresentation, presentationFromLayout } from '../core/presentation.js'
+import { auditStudioDecoration } from '../core/decoration.js'
 import { computeLiveryCssHash, hashCss, hashLivery, renderBootCss, renderLiveryCss, styleTextFromFragments } from '../core/render.js'
 import { FONT_STACKS, METRICS, TAGS, resolveTypography } from '../core/registry.js'
 import type { AdapterRecord } from '../generated/contract.js'
@@ -485,7 +486,11 @@ function auditEnvelopeFor(
     contrast: livery.audit.contrast,
     tokenCoverage: livery.audit.tokenCoverage,
     cssSafety: livery.audit.cssSafety,
-    decorationAudits: [],
+    decorationAudits: (() => {
+      const declared = livery.presentation?.axes.studioDecoration.declared
+      if (declared === undefined || typeof declared !== 'object') return []
+      return [auditStudioDecoration(declared.id, declared.parameters)]
+    })(),
   }
   return { payload, auditHash: sha256(canonicalJson(payload)) }
 }

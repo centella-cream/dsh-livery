@@ -67,6 +67,7 @@ function makeSnapshot(overrides: {
       hash: hashes.clientApi,
       services: ['configForms'],
       slots: { settingsSection: { kind: 'list', scope: 'root', owner: 'SettingsSectionOwnerProps' }, localeNamespace: 'dsh-livery' },
+      consumedSlots: [],
       theme: { darkAttribute: 'data-ds-dark-theme', themeSourceAttribute: 'data-ds-theme-source', observer: 'theme/change' },
       locale: { ids: ['zh', 'en'], langAttribute: 'html[lang]' },
       configForms: { entryKey: 'entry', sharedForm: 'get' },
