@@ -1,6 +1,6 @@
 # Wallpaper workbench layout (0.1.7)
 
-Status: current for the DSH Livery `0.1.9` release candidate. This note is versioned with the release so the layout
+Status: current for the DSH Livery `0.1.9` published. This note is versioned with the release so the layout
 decision and its acceptance boundary stay reviewable after later changes.
 
 ## Problem

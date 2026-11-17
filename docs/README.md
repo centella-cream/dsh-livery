@@ -46,7 +46,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**发布候选：`0.1.9`（2026-11-16），等待验收；npm 最新发布版仍为 `0.1.8`。** 支持策略以
+**`0.1.9`（2026-11-16）已发布；`dsh-livery@0.1.9` 是 npm `latest`。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 
@@ -55,8 +55,9 @@ not be cited as current support or behavior.
 | DSH `0.2.1-rc.2` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | 稳定认证（npm `latest`） |
 | DSH `0.2.1-rc.3` | Desktop 应用、macOS、Electron/Node 24.21.0、Chromium 152.0.7977.130 | 稳定认证渲染器表面（GitHub 已 tag） |
 | DSH `0.2.1-rc.4` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | next 通道预览（npm `next`；已有 GitHub prerelease tag） |
-| DSH `0.2.1-rc.5` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；0.1.7 重新验收 |
-| DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；npm `latest` + GitHub prerelease；已通过 Web+Desktop 验收 |
+| DSH `0.2.1-rc.5` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；0.1.9 重新验收 |
+| DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；GitHub prerelease；已通过 Web+Desktop 验收 |
+| DSH `0.2.2-rc.2` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；已通过 Web+Desktop 验收 |
 | DSH `0.2.2-rc.3` | Web + Desktop macOS，Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | 预览（npm `next`）；Web + Desktop 已验收 |
 
 “稳定”要求非 prerelease 的官方 GitHub release 与签名 npm 包同时存在；只有 npm `next`

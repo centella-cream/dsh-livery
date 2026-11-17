@@ -1,6 +1,6 @@
 # Design references: the 28-style set
 
-> **Status (0.1.9 release candidate):** current attribution record for the 28 shipped styles; the
+> **Status (0.1.9 published):** current attribution record for the 28 shipped styles; the
 > 0.1.9 recipe rebalance is recorded in [`style-gallery.md`](../design/style-gallery.md).
 
 The set keeps the 10 original ids and adds 18: 12 palettes inspired by

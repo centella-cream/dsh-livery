@@ -6,6 +6,29 @@
 > 11 evidence files are bound under `contracts/dsh/evidence/0.1.9/`. The `0.1.8`
 > section below is retained as the previous published release.
 
+**Release `0.1.9` — current npm release.** The accepted artifact is
+`dsh-livery-0.1.9.tgz`, sha256
+`f1ee56180c0a78fc922a265457df589bba052c1fbd486b28cabc61dc2875938d`, 2,189,307 bytes,
+302 files, built from commit `9d21ba0ce9c861686e25c032c14a44d2c1e449c0` and published
+as npm `latest` and GitHub Release `v0.1.9`. Eleven evidence files are bound under
+`contracts/dsh/evidence/0.1.9/`.
+
+| Host | Profile / platform | Certified runtime | Status |
+|---|---|---|---|
+| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (Web) |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | Stable certified renderer surface |
+| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Preview |
+| DSH `0.2.1-rc.5` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
+| DSH `0.2.2-rc.1` | Web + Desktop macOS | Node `24.22.1` / `24.21.0` | Preview |
+| DSH `0.2.2-rc.2` | Web + Desktop macOS | Node `24.22.1` / `24.21.0` | Preview |
+| DSH `0.2.2-rc.3` | Web + Desktop macOS | Node `24.21.0` / Electron `44.7.0` | Preview |
+
+Acceptance on the exact `0.1.9` artifact: Web `0.2.1-rc.2`, `0.2.1-rc.4`,
+`0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` each **275 / 0 / 4 / 2**;
+Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`
+each **34 / 0 / 2 / 0**. The expanded layout probe covers 1440/1200/1024/767/600
+with 49 screenshots and 0 high / 0 medium.
+
 **Release `0.1.8` — previous published release (historical).** The exact accepted artifact, sha256,
 byte size and commit are recorded in the seven committed evidence files at
 `contracts/dsh/evidence/0.1.8/`; the publication workflow downloads the same bytes
