@@ -21,7 +21,7 @@
 
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { WORKSPACE_ROOT } from './probe/util.mjs'
 
@@ -79,8 +79,12 @@ const tgzPath = flag('--tgz')
 const packageVersion = flag('--package-version')
 const commitArg = flag('--commit')
 const runArgs = flags('--run')
+const auditEnvelopeArgs = flags('--audit-envelope')
 if (!evidencePath || !tgzPath || !packageVersion || runArgs.length === 0) {
-  fail('usage: evidence.mjs --evidence <out> --tgz <tgz> --package-version <v> --run <id>:<host>:<adapter>:<probe>:<report> [...]')
+  fail('usage: evidence.mjs --evidence <out> --tgz <tgz> --package-version <v> --run <id>:<host>:<adapter>:<probe>:<report> [--audit-envelope <json> ...]')
+}
+if (Number.parseInt(String(packageVersion).split('.')[0] ?? '0', 10) >= 2 && auditEnvelopeArgs.length === 0) {
+  fail('0.2.0+ evidence requires at least one --audit-envelope')
 }
 
 const repoRoot = WORKSPACE_ROOT
@@ -218,6 +222,17 @@ for (const raw of runArgs) {
 }
 
 if (profile === null) fail('no runs')
+const evidenceDir = path.dirname(resolvePath(evidencePath))
+const envelopeDir = path.join(evidenceDir, 'audit-envelopes')
+if (auditEnvelopeArgs.length > 0) mkdirSync(envelopeDir, { recursive: true })
+const auditEnvelopes = auditEnvelopeArgs.map((source) => {
+  const absolute = resolvePath(source)
+  if (!existsSync(absolute)) fail(`audit envelope is missing: ${source}`)
+  const bytes = readFileSync(absolute)
+  const destination = path.join(envelopeDir, path.basename(absolute))
+  copyFileSync(absolute, destination)
+  return { path: rel(destination), sha256: sha256(bytes) }
+})
 const evidence = {
   schemaVersion: 2,
   commit,
@@ -241,6 +256,7 @@ const evidence = {
     certification: targetCertification,
   },
   criticalChecks: [...criticalCheckMap.values()],
+  ...(auditEnvelopes.length === 0 ? {} : { auditEnvelopes }),
   runs,
 }
 writeFileSync(resolvePath(evidencePath), `${JSON.stringify(evidence, null, 2)}\n`)
