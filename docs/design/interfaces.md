@@ -1,6 +1,6 @@
 # Interfaces and architecture
 
-**Status (0.1.4):** current implementation reference. The authoritative support
+**Status (0.1.9):** current implementation reference. The authoritative support
 policy is [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json);
 the exact release evidence is in [`docs/verification.md`](../verification.md).
 Historical interfaces and pre-0.1.0 design notes are under
@@ -26,22 +26,21 @@ runtime chunk between them.
 ## 2. Supported hosts and adapter model
 
 The formal matrix is the only generation authority. The package ships **one
-adapter per certified host build**, selected by the exact observed DSH version:
+adapter per certified host build**, plus the reviewed 0.2 compatibility range:
 
-| Host | Adapter | Scope |
-|---|---|---|
-| `0.2.1-rc.2` | `dsh-0.2.1-rc.2-r1` | Web/Chrome (stable) |
-| `0.2.1-rc.3` | `dsh-0.2.1-rc.3-r1` | Desktop/macOS renderer (stable) |
-| `0.2.1-rc.4` | `dsh-0.2.1-rc.4-r1` | Web/Chrome (next-channel preview) |
+```text
+>=0.2.1-rc.2 <0.3.0
+```
 
-`engines.dsh` is the exact allowlist derived from the matrix; there is **no**
-semver range and **no** compatibility mode. Unknown builds are rejected at
-install time and fail closed to stock at runtime. Stable vs next-preview rules
-are in [multi-version.md](multi-version.md).
+Exact hosts in `contracts/dsh/support-matrix.json` are the evidence authority;
+matching loader/host/client API hashes may use the newest certified adapter in
+compatible-preview mode with a visible diagnostic. Unknown/out-of-family builds
+fail closed to stock. Stable vs next-preview rules are in
+[multi-version.md](multi-version.md).
 
-The three adapters share one catalog profile (`sha256:1962031f…`) because their
-render-affecting token contracts match. The host serves only the active
-adapter's profile.
+The current matrix has seven host builds and two render-affecting catalog
+profiles. The host serves only the active adapter's profile; a profile override
+requires matching API hashes and a reviewed reason.
 
 ## 3. Generated registry and stock snapshots
 

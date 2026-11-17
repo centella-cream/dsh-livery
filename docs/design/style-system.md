@@ -135,7 +135,8 @@ external assets.
 
 ## 4. Livery set: 28 designs
 
-Keep the 10 existing ids and add 14 new ones. Each manifest declares seeds
+The 28 designs comprise 14 original, 12 permissively licensed palettes and 2
+original Chinese designs. Each manifest declares seeds
 (light + dark), a font pairing (ui/content/code from the registry), a metrics id,
 a surface style and tags. The lead author maintains the design table
 (`docs/research/design-references.md`) with MIT/ISC/PD open-source inspirations and
@@ -148,11 +149,11 @@ licences).
 - Manifest schema stays `schemaVersion: 1`; only enum ids are extended (additive).
 - Per-livery CSS budget stays 12 KiB (measured max 9,644 B after the chrome axis).
 - Catalog grows to 28 liveries × 2 profiles; preview dirs get 112 SVGs/profile.
-- Host gzip budget moves from 320 KiB to 360 KiB for the 28-style catalog (measured
-  353,625 B / 2.95 MB raw across both profiles). Client gzip stays under 60 KiB
-  (measured 60,084 B). Both numbers are enforced by `scripts/build.mjs` and were
+- Host gzip budget stays at 360 KiB for the 28-style catalog (measured 353,844 B /
+  2.95 MB raw across both profiles). Client gzip stays under 60 KiB (measured
+  60,356 B). Both numbers are enforced by `scripts/build.mjs` and were
   raised explicitly for this content expansion, not silently relaxed. The package
-  tarball budget moves from 3 MiB to 3.5 MiB (measured about 3.22 MB with 224 previews);
+  tarball budget stays at 3.5 MiB (measured about 2.19 MB with 224 previews);
   the 12 KiB per-livery CSS budget is unchanged.
 - Host adapters and contracts are unchanged; this is a token-contract change only,
   with no new host capability. Layout structure stays host/stock: DSH exposes no

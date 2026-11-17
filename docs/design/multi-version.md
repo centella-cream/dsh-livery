@@ -1,23 +1,24 @@
 # Multi-version policy
 
-**Status (0.1.4):** current policy. This page replaces the earlier
+**Status (0.1.9):** current policy. This page replaces the earlier
 compatibility-range/compat-mode proposal, which was removed and is archived
 under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
-## 1. Exact versions, no compatibility mode
+## 1. Exact certified builds + reviewed compatibility range
 
-The plugin ships exactly one adapter per supported DSH build. `engines.dsh` is an
-compatibility policy: exact certified versions in `contracts/dsh/support-matrix.json`,
-with the runtime 0.2 range `>=0.2.1-rc.2 <0.3.0` and reviewed compatibility fallback:
+The plugin ships exactly one adapter per formally certified DSH build. The exact
+builds and their acceptance evidence are in
+`contracts/dsh/support-matrix.json`. `engines.dsh` is the reviewed 0.2 range:
 
 ```text
-0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4
+>=0.2.1-rc.2 <0.3.0
 ```
 
-There is no `^`, `~`, range or synthetic compat adapter. A different host
-version is rejected at install time; at runtime a non-matching boot payload
-fails closed to stock. Compatibility is proven by a frozen contract snapshot and
-real host acceptance, not inferred from semver.
+A host inside that range with matching loader/host/client API hashes may load the
+newest certified adapter in compatible-preview mode; it is visibly diagnosed and
+is not an exact-support claim. Out-of-family or API-divergent hosts fail closed.
+Compatibility is proven by a frozen contract snapshot and real host acceptance,
+not inferred from a version string alone.
 
 ## 2. Stable vs next-channel preview
 
@@ -25,7 +26,11 @@ real host acceptance, not inferred from semver.
 |---|---|---|
 | `0.2.1-rc.2` | npm `latest` + official GitHub release | Stable certified (Web) |
 | `0.2.1-rc.3` | GitHub-tagged Desktop app | Stable certified (Desktop/macOS renderer) |
-| `0.2.1-rc.4` | npm `next` package + GitHub prerelease tag (commit 504a01a…) | Next-channel preview (Web) |
+| `0.2.1-rc.4` | npm `next` package + GitHub prerelease tag | Next-channel preview (Web) |
+| `0.2.1-rc.5` | npm `next` / prerelease | Preview (Web + Desktop) |
+| `0.2.2-rc.1` | npm `latest` / prerelease | Preview (Web + Desktop) |
+| `0.2.2-rc.2` | npm `next` / prerelease | Preview (Web + Desktop) |
+| `0.2.2-rc.3` | npm `next` / prerelease | Preview (Web + Desktop) |
 
 Matrix entries also carry the exact certification fields:
 
