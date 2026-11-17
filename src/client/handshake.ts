@@ -12,7 +12,8 @@
  */
 import type { AdapterIdentity } from '../generated/contract.js'
 import type { BootPayload, LiveryCatalog } from '../core/types.js'
-import { BOOT_GLOBAL, ENTRY_ID, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../core/types.js'
+import { BOOT_GLOBAL, CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, ENTRY_ID, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX } from '../core/types.js'
+import { canonicalJson } from '../core/presentation.js'
 
 /** The exact identity fields a handshake/catalog pair must agree on. */
 export interface HostIdentity {
@@ -233,7 +234,12 @@ function isCapabilityMap(value: unknown): boolean {
 export function isCatalogShape(value: unknown): value is LiveryCatalog {
   if (typeof value !== 'object' || value === null) return false
   const candidate = value as RawRecord
-  if (candidate.schemaVersion !== SCHEMA_VERSION) return false
+  if (candidate.schemaVersion !== CATALOG_SCHEMA_VERSION) return false
+  if (!isRecord(candidate.grammar)) return false
+  if (canonicalJson(candidate.grammar) !== canonicalJson(CATALOG_GRAMMAR)) return false
+  for (const field of ['grammarHash', 'catalogHash'] as const) {
+    if (typeof candidate[field] !== 'string') return false
+  }
   for (const field of ['adapterId', 'hostVersion', 'contractHash', 'catalogProfile', 'previewsBase'] as const) {
     if (typeof candidate[field] !== 'string') return false
   }
@@ -321,6 +327,7 @@ export interface CatalogExpectation {
 
 /**
  * Validate a fetched catalog against the certified-adapter registry.
+
  * @param raw - decoded JSON, unknown shape.
  * @param expectation - registry and optional handshake identity.
  * @returns the catalog + adapter on success, otherwise undefined + reasons.

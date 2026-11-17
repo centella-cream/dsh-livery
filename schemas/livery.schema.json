@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dsh-livery.invalid/schemas/livery.schema.json",
-  "title": "DSH Livery manifest (schemaVersion 1)",
+  "$id": "https://dsh-livery.invalid/schemas/livery.v2.schema.json",
+  "title": "DSH Livery manifest (schemaVersion 2)",
   "description": "Strict manifest contract for a built-in or custom DSH Livery. A manifest may only reference registered fonts, metrics, layout recipes and capability ids; it can never carry selectors, arbitrary CSS, remote URLs or font faces. Colours are four OKLab seeds per mode plus an optional whitelist token override map. Compilation, derivation and auditing happen outside the manifest.",
   "$comment": "additionalProperties:false is deliberate at every object level: unknown fields are rejected by the compiler, not ignored.",
   "type": "object",
@@ -12,13 +12,12 @@
     "meta",
     "variants",
     "typography",
-    "layout",
-    "compat"
+    "presentation"
   ],
   "properties": {
     "schemaVersion": {
-      "description": "Manifest schema version. Only version 1 exists.",
-      "const": 1
+      "description": "Manifest schema version.",
+      "const": 2
     },
     "id": {
       "description": "Stable livery id, also used as the body[data-dsh-livery] value and preview filename stem.",
@@ -105,50 +104,8 @@
         }
       }
     },
-    "layout": {
-      "description": "Registered layout recipes only; manifests never carry selectors or lengths.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "density",
-        "conversationWidth",
-        "messageFlow",
-        "surfaceStyle"
-      ],
-      "properties": {
-        "density": {
-          "$ref": "#/$defs/densityId"
-        },
-        "conversationWidth": {
-          "$ref": "#/$defs/conversationWidthId"
-        },
-        "messageFlow": {
-          "$ref": "#/$defs/messageFlowId"
-        },
-        "surfaceStyle": {
-          "$ref": "#/$defs/surfaceStyleId"
-        },
-        "chrome": {
-          "$ref": "#/$defs/chromeStyleId"
-        }
-      }
-    },
-    "compat": {
-      "description": "Capability declaration. A missing required capability makes the livery unavailable; a missing optional capability is degraded with a documented fallback.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requiredCapabilities",
-        "optionalCapabilities"
-      ],
-      "properties": {
-        "requiredCapabilities": {
-          "$ref": "#/$defs/capabilityList"
-        },
-        "optionalCapabilities": {
-          "$ref": "#/$defs/capabilityList"
-        }
-      }
+    "presentation": {
+      "$ref": "#/$defs/presentation"
     }
   },
   "$defs": {
@@ -410,7 +367,8 @@
         "surface-material",
         "reduced-transparency",
         "forced-colors",
-        "reduced-motion"
+        "reduced-motion",
+        "host-font-role-hooks"
       ]
     },
     "capabilityList": {
@@ -419,6 +377,164 @@
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/capabilityId"
+      }
+    },
+    "studioDecorationId": {
+      "type": "string",
+      "enum": [
+        "none",
+        "studio-grid",
+        "studio-frame",
+        "studio-dots",
+        "studio-rules"
+      ]
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "geometry",
+        "border",
+        "elevation",
+        "material",
+        "chrome",
+        "density",
+        "transcriptWidth",
+        "texture",
+        "ornament",
+        "studioDecoration",
+        "navigation",
+        "messages",
+        "motion"
+      ],
+      "properties": {
+        "geometry": {
+          "type": "string",
+          "enum": [
+            "stock",
+            "soft",
+            "square",
+            "sharp",
+            "rounded",
+            "paper",
+            "pill",
+            "editorial"
+          ]
+        },
+        "border": {
+          "type": "string",
+          "enum": [
+            "hairline",
+            "strong",
+            "warm-hairline",
+            "terminal",
+            "brutal"
+          ]
+        },
+        "elevation": {
+          "type": "string",
+          "enum": [
+            "stock",
+            "soft",
+            "flat",
+            "hard-1px",
+            "elevated",
+            "hard-offset"
+          ]
+        },
+        "material": {
+          "type": "string",
+          "enum": [
+            "solid",
+            "glass"
+          ]
+        },
+        "chrome": {
+          "$ref": "#/$defs/chromeStyleId"
+        },
+        "density": {
+          "$ref": "#/$defs/densityId"
+        },
+        "transcriptWidth": {
+          "$ref": "#/$defs/conversationWidthId"
+        },
+        "texture": {
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        "ornament": {
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        "studioDecoration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "recipe",
+            "parameters"
+          ],
+          "properties": {
+            "recipe": {
+              "$ref": "#/$defs/studioDecorationId"
+            },
+            "parameters": {
+              "type": "object",
+              "maxProperties": 4,
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "navigation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "structure"
+          ],
+          "properties": {
+            "structure": {
+              "const": "host"
+            }
+          }
+        },
+        "messages": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "flow",
+            "user",
+            "assistant"
+          ],
+          "properties": {
+            "flow": {
+              "$ref": "#/$defs/messageFlowId"
+            },
+            "user": {
+              "const": "stock"
+            },
+            "assistant": {
+              "const": "stock"
+            }
+          }
+        },
+        "motion": {
+          "type": "string",
+          "enum": [
+            "static"
+          ]
+        }
       }
     }
   }

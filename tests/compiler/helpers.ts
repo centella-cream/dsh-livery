@@ -6,6 +6,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { LiveryManifest } from '../../src/core/types.js'
+import { normalizeManifest } from '../../src/core/presentation.js'
 import type { ManifestSource } from '../../src/compiler/validate.js'
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -31,8 +32,12 @@ export function liveryIds(rootDir: string = REPO_ROOT): string[] {
     .sort()
 }
 
+export function readRawManifest(id: string, rootDir: string = REPO_ROOT): unknown {
+  return JSON.parse(readFileSync(join(rootDir, 'liveries', id, 'manifest.json'), 'utf8'))
+}
+
 export function readManifest(id: string, rootDir: string = REPO_ROOT): LiveryManifest {
-  return JSON.parse(readFileSync(join(rootDir, 'liveries', id, 'manifest.json'), 'utf8')) as LiveryManifest
+  return normalizeManifest(readRawManifest(id, rootDir))
 }
 
 export function cloneManifest(manifest: LiveryManifest): Record<string, unknown> {

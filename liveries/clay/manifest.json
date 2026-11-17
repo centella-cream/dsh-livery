@@ -1,5 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "id": "clay",
+  "meta": {
+    "name": {
+      "zh-CN": "陶土",
+      "en-US": "Clay"
+    },
+    "description": {
+      "zh-CN": "陶土与手作：赤陶色、圆润胶囊控件、柔和阴影，界面像捏出来的器物。",
+      "en-US": "Clay and handwork: terracotta, capsule controls and soft shadows, as if the shell were shaped by hand."
+    },
+    "tags": [
+      "warm",
+      "organic"
+    ],
+    "order": 270
+  },
   "variants": {
     "light": {
       "seeds": {
@@ -33,41 +49,28 @@
       "en-US": "comfortable"
     }
   },
-  "layout": {
+  "presentation": {
+    "geometry": "pill",
+    "border": "hairline",
+    "elevation": "soft",
+    "material": "solid",
+    "chrome": "tinted",
     "density": "host",
-    "conversationWidth": "host",
-    "messageFlow": "stock",
-    "surfaceStyle": "pill",
-    "chrome": "tinted"
-  },
-  "compat": {
-    "requiredCapabilities": [
-      "theme-css",
-      "host-font-family",
-      "surface-material"
-    ],
-    "optionalCapabilities": [
-      "host-density-tokens",
-      "host-transcript-width",
-      "reduced-transparency",
-      "forced-colors",
-      "reduced-motion"
-    ]
-  },
-  "id": "clay",
-  "meta": {
-    "name": {
-      "zh-CN": "陶土",
-      "en-US": "Clay"
+    "transcriptWidth": "host",
+    "texture": "none",
+    "ornament": "none",
+    "studioDecoration": {
+      "recipe": "studio-dots",
+      "parameters": {}
     },
-    "description": {
-      "zh-CN": "陶土与手作：赤陶色、圆润胶囊控件、柔和阴影，界面像捏出来的器物。",
-      "en-US": "Clay and handwork: terracotta, capsule controls and soft shadows, as if the shell were shaped by hand."
+    "navigation": {
+      "structure": "host"
     },
-    "tags": [
-      "warm",
-      "organic"
-    ],
-    "order": 270
+    "messages": {
+      "flow": "stock",
+      "user": "stock",
+      "assistant": "stock"
+    },
+    "motion": "static"
   }
 }

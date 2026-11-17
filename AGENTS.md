@@ -18,20 +18,21 @@ ticket disagree, ask the Lead before weakening it.
 
 ### API compatibility + exact evidence (0.1.8 model)
 
-- `engines.dsh` is the reviewed 0.2 compatibility range (`>=0.2.1-rc.2 <0.3.0`).
-  Exact certified builds remain the formal matrix authority; the range only lets
-  the runtime compatibility fallback load a compatible 0.2 build.
+- `engines.dsh` is the reviewed 0.2 compatibility **installability** range
+  (`>=0.2.1-rc.2 <0.3.0`). It does not grant runtime compatibility.
+- Runtime is **exact-only**: a host must resolve to an exact adapter in
+  `src/generated/contract.ts`; an in-range unlisted build fails closed before
+  adapter selection. There is no version-string fallback and no
+  `gate.compatibility-fallback` success path.
 - Every exact-certified adapter needs a frozen `contracts/dsh/<version>/` snapshot
   and a matching matrix entry. Do not add a version by editing only `engines.dsh`.
-- A newer `0.2.2+`/`0.2.x` build with matching loader/host/client API hashes may
-  use the newest certified adapter in compatible-preview mode; diagnostics must
-  include `gate.compatibility-fallback`. Out-of-family versions fail closed.
-- Catalog profiles may be shared across token-contract-compatible builds only
-  through `contracts/dsh/catalog-profile-overrides.json` with a reviewed reason
-  and matching loader/host/client API hashes. Do not add a full profile just
-  because a token contract added unused tokens.
-- Compatibility mode is unclaimed. Stable/preview claims and `contracts/dsh/evidence/`
-  remain bound to exact host versions and exact artifact bytes.
+- Catalog profiles may be shared across API-compatible builds only through
+  `contracts/dsh/catalog-profile-overrides.json` with a reviewed v2 document,
+  matching loader/host/client API hashes, recomputed provider profile and a
+  structured compatibility diff. Do not add a full profile just because a token
+  contract added unused tokens.
+- Stable/preview claims and `contracts/dsh/evidence/` remain bound to exact host
+  versions and exact artifact bytes.
 
 ### Stable vs preview claims
 
@@ -66,9 +67,8 @@ Do this in one change set, without dropping an older declared version:
    tagging.
 
 “Forward compatibility” means preserving every already-declared version while
-adding evidence for the new one; compatible-preview fallback is allowed only in
-the 0.2 family and must be visibly diagnosed, never silently claimed. Out-of-family
-and API-divergent builds still fail closed.
+adding evidence for the new one. Unknown builds fail closed; installability does
+not imply runtime support.
 
 ## 3. Acceptance must use independent environments
 

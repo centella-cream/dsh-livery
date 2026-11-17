@@ -118,6 +118,8 @@ describe('computeBootState — acceptance per certified adapter', () => {
       hostVersion: adapter.hostVersion,
       contractHash: adapter.contractHash,
       catalogProfile: adapter.catalogProfile,
+      grammarHash: expect.stringMatching(/^sha256:/),
+      catalogHash: expect.stringMatching(/^sha256:/),
       profileKind: 'web',
       accepted: true,
       skinId: 'ivory-slate',
@@ -226,13 +228,13 @@ describe('computeBootState — unknown / uncertified host versions', () => {
     expect(state.diagnostics.join('\n')).toContain('gate.version-unknown')
   })
 
-  it('maps a same-family future rc to the newest certified adapter in compatibility mode', () => {
+  it('fails closed for a same-family uncertified future rc under exact-only policy', () => {
     const state = computeBootState({ ...unresolvedInput('0.2.3-rc.1'), skinId: 'fjord' })
-    expect(state.gate.accepted).toBe(true)
-    expect(state.accepted).toBe(true)
-    expect(state.rows).toHaveLength(3)
-    expect(state.payload.adapterId).toBe('dsh-0.2.2-rc.3-r1')
-    expect(state.diagnostics.join('\n')).toContain('gate.compatibility-fallback')
+    expect(state.gate.accepted).toBe(false)
+    expect(state.accepted).toBe(false)
+    expect(state.rows).toEqual([])
+    expect(state.gate.codes).toContain('gate.version-mismatch')
+    expect(state.diagnostics.join('\n')).not.toContain('compatibility-fallback')
   })
 
   it.each(['9.9.9', '1.0.0', '0.1.9', '0.2.0-alpha.1', 'not-a-version'])(

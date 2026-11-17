@@ -24,7 +24,7 @@ import type { CatalogProfile } from '../../src/generated/liveries.js'
 import { ADAPTERS, ADAPTER_IDENTITIES, SUPPORTED_HOST_VERSIONS } from '../../src/generated/contract.js'
 import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
 import type { BootPayload, CompiledLivery, LiveryCatalog } from '../../src/core/types.js'
-import { LIVERY_VERSION, SCHEMA_VERSION } from '../../src/core/types.js'
+import { CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, LIVERY_VERSION } from '../../src/core/types.js'
 import { findLivery, liveryCssHash, renderBootCssFromCatalog, styleTextOf } from '../../src/core/catalog.js'
 import { hashCss } from '../../src/core/render.js'
 import { bootIdentity, checkBoot, checkCatalog, expectedPreviewsBase } from '../../src/client/handshake.js'
@@ -59,7 +59,10 @@ function profileFor(adapter: AdapterIdentity | AdapterRecord): CatalogProfile {
 function catalogFor(adapter: AdapterRecord): LiveryCatalog {
   const profile = profileFor(adapter)
   return {
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: CATALOG_SCHEMA_VERSION,
+    grammar: CATALOG_GRAMMAR,
+    grammarHash: 'sha256:test-grammar',
+    catalogHash: 'sha256:test-catalog',
     compilerVersion: LIVERY_VERSION,
     adapterId: adapter.adapterId,
     hostVersion: adapter.hostVersion,

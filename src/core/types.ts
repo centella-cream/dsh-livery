@@ -6,11 +6,17 @@
  * Everything here is data; nothing touches a runtime.
  */
 
-/** Livery manifest / compiled artifact schema version. */
-export const SCHEMA_VERSION = 1 as const
+/** Legacy manifest schema; v2 manifests are normalized before compilation. */
+export const MANIFEST_SCHEMA_VERSION = 2 as const
+export const LEGACY_MANIFEST_SCHEMA_VERSION = 1 as const
+/** Catalog wire protocol (independent from manifests/presets). */
+export const CATALOG_SCHEMA_VERSION = 2 as const
+export const LEGACY_CATALOG_SCHEMA_VERSION = 1 as const
+/** @deprecated use MANIFEST_SCHEMA_VERSION; kept for v1 validators. */
+export const SCHEMA_VERSION = LEGACY_MANIFEST_SCHEMA_VERSION
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.1.9' as const
+export const LIVERY_VERSION = '0.2.0' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always
@@ -149,8 +155,10 @@ export interface Seeds {
 export type TokenMap = Readonly<Record<string, string>>
 
 /** Livery manifest (`liveries/<id>/manifest.json`), schemaVersion 1. */
+import type { EffectivePresentation, PresentationSpec } from './presentation.js'
+
 export interface LiveryManifest {
-  readonly schemaVersion: typeof SCHEMA_VERSION
+  readonly schemaVersion: typeof LEGACY_MANIFEST_SCHEMA_VERSION | typeof MANIFEST_SCHEMA_VERSION
   readonly id: LiveryId
   readonly meta: {
     readonly name: LocalizedText
@@ -180,6 +188,8 @@ export interface LiveryManifest {
     readonly requiredCapabilities: readonly CapabilityId[]
     readonly optionalCapabilities: readonly CapabilityId[]
   }
+  /** Normalized v2 presentation; absent on raw v1 inputs. */
+  readonly presentation?: PresentationSpec
 }
 
 export interface LiveryVariantInput {
@@ -268,6 +278,7 @@ export interface CssSafetyReport {
 export interface LiveryAuditReport {
   readonly contrast: readonly ContrastEntry[]
   readonly contrastFailures: number
+  readonly contrastTotal?: number
   readonly tokenCoverage: TokenCoverageReport
   readonly cssSafety: CssSafetyReport
   /** Declared but unavailable capabilities, with the fallback actually used. */
@@ -318,6 +329,10 @@ export interface CompiledLivery {
   readonly meta: LiveryManifest['meta']
   readonly typography: ResolvedTypography
   readonly layout: LiveryManifest['layout']
+  /** Static 0.2 presentation axes, present once compiled from a v2 model. */
+  readonly presentation?: EffectivePresentation
+  /** Compact audit summary used by the 0.2 catalog. */
+  readonly auditSummary?: AuditSummary
   /** Capability ids declared by the manifest plus the effective fallback. */
   readonly requiredCapabilities: readonly CapabilityId[]
   readonly optionalCapabilities: readonly CapabilityId[]
@@ -352,8 +367,30 @@ export interface CatalogProfileData {
 }
 
 /** Versioned catalog served by the Host and read by the Client. */
+export interface CatalogGrammar {
+  readonly catalog: 2
+  readonly presentation: 2
+  readonly decoration: 1
+  readonly preview: 1
+  readonly parameterSchema: 1
+}
+
+export const CATALOG_GRAMMAR: CatalogGrammar = Object.freeze({ catalog: 2, presentation: 2, decoration: 1, preview: 1, parameterSchema: 1 })
+
+export interface AuditSummary {
+  readonly contrast: { readonly pass: boolean; readonly total: number; readonly failed: number }
+  readonly tokenCoverage: { readonly pass: boolean; readonly covered: number; readonly inherited: number; readonly missing: number }
+  readonly cssSafety: { readonly pass: boolean; readonly important: number; readonly hashSelectors: number; readonly remoteUrls: number; readonly fixedZIndexes: number; readonly unscopedTokens: number }
+  readonly degradedAxes: number
+  readonly unavailableAxes: number
+  readonly auditHash: string
+}
+
 export interface LiveryCatalog {
-  readonly schemaVersion: typeof SCHEMA_VERSION
+  readonly schemaVersion: typeof LEGACY_CATALOG_SCHEMA_VERSION | typeof CATALOG_SCHEMA_VERSION
+  readonly grammar: CatalogGrammar
+  readonly grammarHash: string
+  readonly catalogHash: string
   readonly compilerVersion: typeof LIVERY_VERSION
   readonly adapterId: string
   readonly hostVersion: string
@@ -374,6 +411,8 @@ export interface BootPayload {
   readonly contractHash: string
   /** Catalog profile id this host's compiled CSS/previews belong to. */
   readonly catalogProfile: string
+  readonly grammarHash?: string
+  readonly catalogHash?: string
   readonly profileKind: 'web' | 'desktop'
   /**
    * True when the host is inside the compatibility range but uncertified;

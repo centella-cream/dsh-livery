@@ -10,13 +10,13 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：已发布 `0.1.9`。** `dsh-livery@0.1.9` 是当前 npm 发布版，也是
-> 已验收制品。
+> **发布状态：`0.2.0` 实现候选（未发布）。**
+> `dsh-livery@0.1.9` 仍是当前已发布制品，直到 0.2.0 候选通过验收/发布门禁。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop。
-> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease，因此仍是预览声明。精确矩阵之外的
-> 兼容 0.2.x 构建可以 compatible-preview 模式运行并输出诊断；Windows Desktop、Edge
+> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease，因此仍是预览声明。`0.2.0`
+> 候选只接受 exact-certified 宿主：未知构建整体 fail closed；Windows Desktop、Edge
 > 和其他 DSH 构建不在支持范围内。
 
 [English](README.md) · 中文

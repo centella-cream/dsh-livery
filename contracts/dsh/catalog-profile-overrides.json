@@ -11,6 +11,11 @@
       "hostVersion": "0.2.2-rc.3",
       "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
       "reason": "0.2.2-rc.3 loader/host/client API hashes match rc.1/rc.2; token contract changes only existing token values and adds no consumed token names. The rc.1 catalog stays valid because DSH Livery derives every alias/specific token itself and unknown values inherit the host."
+    },
+    {
+      "hostVersion": "0.2.2-rc.1",
+      "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
+      "reason": "0.2.2-rc.1 loader/host/client API hashes match rc.2/rc.3; 0.2.0 compiler reuses the same render profile with additive token/layout changes."
     }
   ]
 }

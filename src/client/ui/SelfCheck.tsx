@@ -171,11 +171,11 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
                     <p className="livery-check__value">
                       {presented.audit.contrastFailures === 0
                         ? t('check.contrastPass', {
-                          total: formatNumber(locale, presented.audit.contrast.length),
+                          total: formatNumber(locale, presented.audit.contrastTotal ?? presented.audit.contrast.length),
                         })
                         : t('check.contrastValue', {
                           failed: formatNumber(locale, presented.audit.contrastFailures),
-                          total: formatNumber(locale, presented.audit.contrast.length),
+                          total: formatNumber(locale, presented.audit.contrastTotal ?? presented.audit.contrast.length),
                         })}
                     </p>
                     {presented.audit.contrast

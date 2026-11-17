@@ -7,6 +7,26 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.2.0] — unreleased (implementation candidate)
+
+### Added
+
+- v2 manifest protocol: `presentation` axes (geometry/border/elevation/material/chrome/density/transcriptWidth/texture/studioDecoration/navigation/messages/motion), v1→v2 normalization, and four v2 archetype manifests (`graphite`, `clay`, `cinnabar`, `rice-paper`); other 24 styles remain v1-normalized.
+- Catalog v2 envelope with full grammar identity, `grammarHash`/`catalogHash`, per-livery static presentation axes, compact audit summary and canonical recipe parameters.
+- L5a Studio Decoration on Livery-owned gallery/wallpaper/settings surfaces: `studio-grid`, `studio-dots`, `studio-frame`, `studio-rules`, with continuous 999/799/599 container tiers.
+- Exact-only runtime policy: unknown DSH builds fail closed before adapter selection; `engines.dsh` remains installability-only.
+
+### Changed
+
+- Split manifest/catalog/preset schema versions; v2 manifests no longer hand-declare capability lists (derived from base axes + recipe registry).
+- Compiler derives static presentation axes and emits runtime-safe catalogs; full contrast detail stays in audit artifacts rather than the boot bundle.
+- Client catalog validation requires catalog v2 grammar/hash fields.
+
+### Fixed
+
+- v1 `messageFlow` normalizes to `presentation.messages.flow`; surfaceStyle expansion is frozen for all 12 recipes.
+- Runtime audit payload no longer inflates the host gzip budget; host/client budgets remain within limits.
+
 ## [0.1.9] — 2026-11-16
 
 ### Added

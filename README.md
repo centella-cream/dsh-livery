@@ -11,15 +11,16 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: published `0.1.9`.** `dsh-livery@0.1.9` is the current npm
-> release and the accepted artifact.
+> **Release status: `0.2.0` implementation candidate (unreleased).**
+> `dsh-livery@0.1.9` remains the current published artifact until the 0.2.0
+> candidate passes the acceptance/release gates.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop and DSH `0.2.2-rc.3`
-> Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease, so it remains
-> a preview claim. Compatible 0.2.x builds outside the exact matrix may run in
-> diagnosed compatible-preview mode; Windows Desktop, Edge and other DSH builds
-> remain unsupported.
+ > Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease, so it remains
+> a preview claim. The `0.2.0` candidate is **exact-certified only**: unknown
+> builds fail closed; Windows Desktop, Edge and other DSH builds remain
+> unsupported.
 
 English · [中文](README.zh-CN.md)
 

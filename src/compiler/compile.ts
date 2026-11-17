@@ -33,9 +33,10 @@ import type {
   LiveryManifest,
   ResolvedTypography,
 } from '../core/types.js'
-import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../core/types.js'
+import { CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../core/types.js'
 import { deriveLivery } from '../core/derive.js'
 import { evaluateCapabilities } from '../core/capabilities.js'
+import { derivePresentation, presentationFromLayout } from '../core/presentation.js'
 import { computeLiveryCssHash, hashCss, hashLivery, renderBootCss, renderLiveryCss, styleTextFromFragments } from '../core/render.js'
 import { FONT_STACKS, METRICS, TAGS, resolveTypography } from '../core/registry.js'
 import type { AdapterRecord } from '../generated/contract.js'
@@ -346,6 +347,28 @@ function compileOne(
   // The runtime never re-renders: Host injects `css.*` verbatim and compares the
   // Client hash against this exact concatenation.
   const cssHash = computeLiveryCssHash(css)
+  const presentationSpec = manifest.presentation ?? presentationFromLayout(manifest.layout)
+  const presentation = derivePresentation(presentationSpec, evaluation.map)
+  const auditSummary = {
+    contrast: { pass: audit.contrastFailures === 0, total: audit.contrast.length, failed: audit.contrastFailures },
+    tokenCoverage: {
+      pass: audit.tokenCoverage.missing.length === 0,
+      covered: audit.tokenCoverage.covered.length,
+      inherited: audit.tokenCoverage.inherited.length,
+      missing: audit.tokenCoverage.missing.length,
+    },
+    cssSafety: {
+      pass: audit.cssSafety.pass,
+      important: audit.cssSafety.important,
+      hashSelectors: audit.cssSafety.hashSelectors,
+      remoteUrls: audit.cssSafety.remoteUrls,
+      fixedZIndexes: audit.cssSafety.fixedZIndexes.length,
+      unscopedTokens: audit.cssSafety.unscopedTokens,
+    },
+    degradedAxes: Object.values(presentation.axes).filter((axis) => axis.status === 'Degraded').length,
+    unavailableAxes: Object.values(presentation.axes).filter((axis) => axis.status === 'Unavailable').length,
+    auditHash: sha256(canonicalJson(audit)),
+  }
   const base: Omit<CompiledLivery, 'hash'> = {
     id: manifest.id,
     meta: manifest.meta,
@@ -358,6 +381,8 @@ function compileOne(
     css,
     cssHash,
     audit,
+    presentation,
+    auditSummary,
   }
   const livery: CompiledLivery = { ...base, hash: hashLivery(base) }
 
@@ -692,8 +717,13 @@ export function compileCatalog(options: CompileOptions): CompileResult {
       profileProblems.push(...compiled.problems.map((problem) => ({ ...problem, path: `[${profileId}] ${problem.path}` })))
     }
     const liveries = cores.map((core) => core.livery)
-    const catalog: LiveryCatalog = {
-      schemaVersion: SCHEMA_VERSION,
+    const catalogLiveries = liveries.map((livery) => ({
+      ...livery,
+      audit: { ...livery.audit, contrast: [], contrastTotal: livery.audit.contrast.length },
+    }))
+    const catalogBase = {
+      schemaVersion: CATALOG_SCHEMA_VERSION,
+      grammar: CATALOG_GRAMMAR,
       compilerVersion: LIVERY_VERSION,
       adapterId: representative.adapterId,
       hostVersion: representative.hostVersion,
@@ -701,8 +731,10 @@ export function compileCatalog(options: CompileOptions): CompileResult {
       catalogProfile: profileId,
       capabilities,
       previewsBase: `${PREVIEW_ROUTE_PREFIX}${profileId}/`,
-      liveries,
-    }
+      liveries: catalogLiveries,
+    } as const
+    const grammarHash = sha256(canonicalJson(CATALOG_GRAMMAR))
+    const catalog: LiveryCatalog = { ...catalogBase, grammarHash, catalogHash: sha256(canonicalJson({ ...catalogBase, grammarHash })) }
 
     // Frozen equality: the stored cssHash, the boot bytes and the frozen
     // `renderBootCss` helper must agree for every livery.
@@ -876,7 +908,7 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     compiledAt: draft.report.compiledAt,
     sourceHash: draft.report.sourceHash,
     sourceAdapters: draft.group.adapters.map((adapter) => adapter.hostVersion),
-    liveries: draft.cores.map((core) => core.livery),
+    liveries: draft.cores.map((core) => ({ ...core.livery, audit: { ...core.livery.audit, contrast: [], contrastTotal: core.livery.audit.contrast.length } })),
   }))
   const summarySources: SummaryProfileSource[] = drafts.map((draft, index) => ({
     profile: profileData[index] as CatalogProfileData,
@@ -943,7 +975,7 @@ function profileResultOf(draft: ProfileDraft): ProfileCompileResult {
       compiledAt: draft.report.compiledAt,
       sourceHash: draft.report.sourceHash,
       sourceAdapters: draft.group.adapters.map((adapter) => adapter.hostVersion),
-      liveries: draft.cores.map((core) => core.livery),
+      liveries: draft.cores.map((core) => ({ ...core.livery, audit: { ...core.livery.audit, contrast: [], contrastTotal: core.livery.audit.contrast.length } })),
     },
     adapters: draft.group.adapters,
     representative: draft.representative,

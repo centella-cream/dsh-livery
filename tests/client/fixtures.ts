@@ -12,7 +12,7 @@ import type {
   LiveryCatalog,
   SurfaceStyleId,
 } from '../../src/core/types.js'
-import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX, SCHEMA_VERSION } from '../../src/core/types.js'
+import { CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, LIVERY_VERSION, PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
 import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
 import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
 import type { ConfigFormLike, ConfigFormSnapshotLike, CoreApi, LocaleSource, ThemeSource } from '../../src/client/runtime.js'
@@ -451,7 +451,10 @@ export function makeCatalog(
   adapter: AdapterIdentity = TEST_ADAPTER,
 ): LiveryCatalog {
   return {
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: CATALOG_SCHEMA_VERSION,
+    grammar: CATALOG_GRAMMAR,
+    grammarHash: 'sha256:test-grammar',
+    catalogHash: 'sha256:test-catalog',
     compilerVersion: LIVERY_VERSION,
     adapterId: adapter.adapterId,
     hostVersion: adapter.hostVersion,

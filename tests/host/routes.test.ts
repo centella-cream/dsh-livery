@@ -96,7 +96,7 @@ describe('GET /livery/api/catalog', () => {
     expect(parsed.contractHash).toBe(ADAPTER.contractHash)
     expect(parsed.catalogProfile).toBe(SYNTHETIC_PROFILE_A)
     expect(parsed.previewsBase).toBe(previewsBaseFor(SYNTHETIC_PROFILE_A))
-    expect(parsed.schemaVersion).toBe(1)
+    expect(parsed.schemaVersion).toBe(2)
     expect(parsed.liveries).toHaveLength(1)
   })
 

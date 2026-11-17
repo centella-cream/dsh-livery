@@ -208,7 +208,7 @@ describe('compileCatalog — shipped adapters only', () => {
   })
 
   it('honours explicit manifest token overrides even when the token is unconsumed', () => {
-    const base = readManifest('fjord')
+    const { presentation: _presentation, ...base } = readManifest('fjord')
     const makeManifest = (id: string, order: number, withOverride: boolean): LiveryManifest => {
       const clone = structuredClone(base)
       return {

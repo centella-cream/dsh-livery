@@ -23,7 +23,9 @@ import { CAP } from '../core/types.js'
 import { DEFAULT_ADAPTER } from '../generated/contract.js'
 import { stockForVersion } from '../generated/stock.js'
 import type { StockSnapshot } from '../generated/stock.js'
-import manifestSchema from '../../schemas/livery.schema.json'
+import manifestSchemaV2 from '../../schemas/livery.schema.json'
+import manifestSchemaV1 from '../../schemas/livery.v1.schema.json'
+import { normalizeManifest } from '../core/presentation.js'
 
 /** One machine-readable validation problem. `path` is `<source file>#<JSON pointer>`. */
 export interface Diagnostic {
@@ -118,19 +120,23 @@ export function unsafeCssValueReason(value: string): string | null {
   return null
 }
 
-let cachedValidator: ValidateFunction | null = null
+let cachedV1: ValidateFunction | null = null
+let cachedV2: ValidateFunction | null = null
 
-/** Compile (once) the strict draft 2020-12 schema. Throws only if the schema itself is broken. */
-export function getManifestValidator(): ValidateFunction {
-  if (cachedValidator) return cachedValidator
+function validatorFor(schema: object): ValidateFunction {
   const ajv = new Ajv2020({
     strict: true,
     allErrors: true,
     allowUnionTypes: false,
     validateFormats: false,
   })
-  cachedValidator = ajv.compile(manifestSchema as object)
-  return cachedValidator
+  return ajv.compile(schema)
+}
+
+/** Compile (once) the strict draft 2020-12 schema for one manifest version. */
+export function getManifestValidator(version: 1 | 2 = 2): ValidateFunction {
+  if (version === 1) return cachedV1 ??= validatorFor(manifestSchemaV1 as object)
+  return cachedV2 ??= validatorFor(manifestSchemaV2 as object)
 }
 
 function pointerOf(error: ErrorObject): string {
@@ -180,14 +186,15 @@ export function validateManifest(
   source: ManifestSource,
   options: ManifestValidationOptions = {},
 ): Diagnostic[] {
-  const validator = getManifestValidator()
+  const version = (source.raw as { schemaVersion?: unknown })?.schemaVersion === 1 ? 1 : 2
+  const validator = getManifestValidator(version)
   const valid = validator(source.raw)
   if (!valid) return schemaDiagnostics(source, validator.errors)
 
   const capabilities = options.capabilities ?? DEFAULT_ADAPTER.capabilities
   const stock = options.stock ?? defaultStockSnapshot()
   const whitelist = tokenWhitelist(stock)
-  const manifest = source.raw as LiveryManifest
+  const manifest = normalizeManifest(source.raw)
   const diagnostics: Diagnostic[] = []
   const file = source.file
 
@@ -379,7 +386,7 @@ export function validateCatalog(
     diagnostics.push(...manifestDiagnostics)
     if (manifestDiagnostics.length > 0) continue
 
-    const manifest = source.raw as LiveryManifest
+    const manifest = normalizeManifest(source.raw)
     manifests.push(manifest)
 
     const previousIdFile = seenIds.get(manifest.id)

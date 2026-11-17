@@ -241,7 +241,7 @@ describe('checkCatalog — certified identity + profile', () => {
   it('rejects malformed envelopes', () => {
     const catalog = makeCatalog() as unknown as Record<string, unknown>
     expect(checkCatalog(undefined, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
-    expect(checkCatalog({ ...catalog, schemaVersion: 2 }, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
+    expect(checkCatalog({ ...catalog, schemaVersion: 3 }, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
     expect(checkCatalog({ ...catalog, liveries: 'nope' }, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
     expect(checkCatalog({ ...catalog, capabilities: null }, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
     expect(checkCatalog({ ...catalog, previewsBase: 42 }, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()

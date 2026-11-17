@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "rice-paper",
   "meta": {
     "name": {
@@ -49,25 +49,28 @@
       "en-US": "editorial"
     }
   },
-  "layout": {
+  "presentation": {
+    "geometry": "editorial",
+    "border": "strong",
+    "elevation": "flat",
+    "material": "solid",
+    "chrome": "editorial",
     "density": "host",
-    "conversationWidth": "host",
-    "messageFlow": "stock",
-    "surfaceStyle": "editorial",
-    "chrome": "editorial"
-  },
-  "compat": {
-    "requiredCapabilities": [
-      "theme-css",
-      "host-font-family",
-      "surface-material"
-    ],
-    "optionalCapabilities": [
-      "host-density-tokens",
-      "host-transcript-width",
-      "reduced-transparency",
-      "forced-colors",
-      "reduced-motion"
-    ]
+    "transcriptWidth": "host",
+    "texture": "none",
+    "ornament": "none",
+    "studioDecoration": {
+      "recipe": "studio-rules",
+      "parameters": {}
+    },
+    "navigation": {
+      "structure": "host"
+    },
+    "messages": {
+      "flow": "stock",
+      "user": "stock",
+      "assistant": "stock"
+    },
+    "motion": "static"
   }
 }

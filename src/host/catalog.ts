@@ -13,13 +13,15 @@
  * A request can therefore never name a path.
  */
 
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  CATALOG_GRAMMAR,
+  CATALOG_SCHEMA_VERSION,
   LIVERY_VERSION,
   PREVIEW_ROUTE_PREFIX,
-  SCHEMA_VERSION,
   type CatalogProfileData,
   type CompiledLivery,
   type LiveryCatalog,
@@ -28,7 +30,6 @@ import { type AdapterRecord } from '../generated/contract.js'
 import { CATALOG_PROFILES, CATALOG_PROFILE_IDS } from '../generated/liveries.js'
 
 /** Generated catalog document version: the schema every consumer parses. */
-export const CATALOG_SCHEMA_VERSION = SCHEMA_VERSION
 
 /** Directory name (one hop below the built module) holding per-profile previews. */
 export const PREVIEWS_DIRECTORY = 'previews'
@@ -96,8 +97,9 @@ export function buildCatalog(
   adapter: AdapterRecord,
   profile: CatalogProfileData | undefined = catalogProfileFor(adapter),
 ): LiveryCatalog {
-  return {
+  const base = {
     schemaVersion: CATALOG_SCHEMA_VERSION,
+    grammar: CATALOG_GRAMMAR,
     compilerVersion: LIVERY_VERSION,
     adapterId: adapter.adapterId,
     hostVersion: adapter.hostVersion,
@@ -106,7 +108,17 @@ export function buildCatalog(
     capabilities: adapter.capabilities,
     previewsBase: previewsBaseFor(adapter.catalogProfile),
     liveries: profile?.liveries ?? [],
+  } as const
+  const canonical = (value: unknown): string => {
+    if (value === null || typeof value !== 'object') return JSON.stringify(value)
+    if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`
+    const record = value as Record<string, unknown>
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(',')}}`
   }
+  const sha = (value: string): string => `sha256:${createHash('sha256').update(value, 'utf8').digest('hex')}`
+  const grammarHash = sha(canonical(CATALOG_GRAMMAR))
+  const catalogHash = sha(canonical({ ...base, grammarHash }))
+  return { ...base, grammarHash, catalogHash }
 }
 
 /**

@@ -19,7 +19,7 @@ import {
 } from '../../src/host/catalog.js'
 import {
   PREVIEW_ROUTE_PREFIX,
-  SCHEMA_VERSION,
+  CATALOG_SCHEMA_VERSION,
   LIVERY_VERSION,
   type LiveryCatalog,
 } from '../../src/core/types.js'
@@ -36,7 +36,7 @@ function expectCatalogShape(value: unknown): asserts value is LiveryCatalog {
   expect(value).toBeTypeOf('object')
   expect(value).not.toBeNull()
   const catalog = value as Record<string, unknown>
-  expect(catalog.schemaVersion).toBe(SCHEMA_VERSION)
+  expect(catalog.schemaVersion).toBe(CATALOG_SCHEMA_VERSION)
   expect(catalog.compilerVersion).toBe(LIVERY_VERSION)
   expect(typeof catalog.adapterId).toBe('string')
   expect(typeof catalog.hostVersion).toBe('string')
@@ -52,7 +52,7 @@ describe('buildCatalog', () => {
     const adapter = makeAdapter()
     const profile = makeProfile(SYNTHETIC_PROFILE_A, [makeLivery()])
     const catalog = buildCatalog(adapter, profile)
-    expect(catalog.schemaVersion).toBe(SCHEMA_VERSION)
+    expect(catalog.schemaVersion).toBe(CATALOG_SCHEMA_VERSION)
     expect(catalog.compilerVersion).toBe(LIVERY_VERSION)
     expect(catalog.adapterId).toBe(adapter.adapterId)
     expect(catalog.hostVersion).toBe(adapter.hostVersion)

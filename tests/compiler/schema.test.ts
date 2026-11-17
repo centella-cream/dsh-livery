@@ -7,6 +7,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import type { LiveryManifest } from '../../src/core/types.js'
+import { normalizeManifest } from '../../src/core/presentation.js'
 import {
   defaultStockSnapshot,
   getManifestValidator,
@@ -21,12 +22,12 @@ import type { AdapterRecord } from '../../src/generated/contract.js'
 import type { StockSnapshot } from '../../src/generated/stock.js'
 import { adapterRecordFrom, stockSnapshotFrom } from '../../src/contract/snapshot.js'
 import type { ContractSnapshot } from '../../src/contract/types.js'
-import { cloneManifest, liveryIds, loadManifestSources, readManifest } from './helpers.js'
+import { cloneManifest, liveryIds, loadManifestSources, readRawManifest } from './helpers.js'
 
 const FJORD_FILE = 'liveries/fjord/manifest.json'
 
 function sourceFor(id: string): ManifestSource {
-  return { file: `liveries/${id}/manifest.json`, raw: readManifest(id) }
+  return { file: `liveries/${id}/manifest.json`, raw: readRawManifest(id) }
 }
 
 function mutated(manifest: LiveryManifest, mutate: (copy: Record<string, unknown>) => void): ManifestSource {
@@ -36,23 +37,26 @@ function mutated(manifest: LiveryManifest, mutate: (copy: Record<string, unknown
 }
 
 function schemaCodes(source: ManifestSource): string[] {
-  const validator = getManifestValidator()
+  const version = (source.raw as { schemaVersion?: number }).schemaVersion === 2 ? 2 : 1
+  const validator = getManifestValidator(version)
   const valid = validator(source.raw)
   return valid ? [] : (validator.errors ?? []).map((error) => error.keyword)
 }
 
 describe('livery manifest JSON Schema', () => {
-  const fjord = readManifest('fjord')
+  const fjord = readRawManifest('fjord') as LiveryManifest
 
   it('compiles the schema in strict draft 2020-12 mode', () => {
-    expect(() => getManifestValidator()).not.toThrow()
+    expect(() => getManifestValidator(1)).not.toThrow()
+    expect(() => getManifestValidator(2)).not.toThrow()
   })
 
   it('accepts all 10 shipped manifests', () => {
     for (const id of liveryIds()) {
       const source = sourceFor(id)
       expect(validateManifest(source), `${id} should validate`).toEqual([])
-      expect(getManifestValidator()(source.raw), `${id} should pass the raw schema`).toBe(true)
+      const version = (source.raw as { schemaVersion?: number }).schemaVersion === 2 ? 2 : 1
+      expect(getManifestValidator(version)(source.raw), `${id} should pass the raw schema`).toBe(true)
     }
   })
 
@@ -208,7 +212,7 @@ describe('livery manifest JSON Schema', () => {
 })
 
 describe('semantic manifest validation', () => {
-  const fjord = readManifest('fjord')
+  const fjord = readRawManifest('fjord') as LiveryManifest
 
   it('rejects duplicate ids across the catalog', () => {
     const duplicate: ManifestSource = {
@@ -290,7 +294,7 @@ describe('semantic manifest validation', () => {
   })
 
   it('accepts the shipped catalog and keeps ids/order unique', () => {
-    const manifests = loadManifestSources().map((source) => source.raw as LiveryManifest)
+    const manifests = loadManifestSources().map((source) => normalizeManifest(source.raw))
     const result = validateCatalog(loadManifestSources())
     expect(result.ok, JSON.stringify(result.diagnostics, null, 2)).toBe(true)
     expect(result.manifests).toHaveLength(liveryIds().length)
@@ -302,7 +306,7 @@ describe('semantic manifest validation', () => {
   })
 
   it('keeps layout structural and exercises the style-system v2 axes', () => {
-    const manifests = loadManifestSources().map((source) => source.raw as LiveryManifest)
+    const manifests = loadManifestSources().map((source) => normalizeManifest(source.raw))
     const values = (pick: (manifest: LiveryManifest) => string): Set<string> => new Set(manifests.map(pick))
     // Frozen decision: DSH has no public density/width/flow hook, so the structure
     // stays host/stock and the visible differences are palette/type/shape/elevation.

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "graphite",
   "meta": {
     "name": {
@@ -49,25 +49,28 @@
       "en-US": "technical"
     }
   },
-  "layout": {
+  "presentation": {
+    "geometry": "square",
+    "border": "terminal",
+    "elevation": "flat",
+    "material": "solid",
+    "chrome": "terminal",
     "density": "host",
-    "conversationWidth": "host",
-    "messageFlow": "stock",
-    "surfaceStyle": "terminal",
-    "chrome": "terminal"
-  },
-  "compat": {
-    "requiredCapabilities": [
-      "theme-css",
-      "host-font-family",
-      "surface-material"
-    ],
-    "optionalCapabilities": [
-      "host-density-tokens",
-      "host-transcript-width",
-      "reduced-transparency",
-      "forced-colors",
-      "reduced-motion"
-    ]
+    "transcriptWidth": "host",
+    "texture": "none",
+    "ornament": "none",
+    "studioDecoration": {
+      "recipe": "studio-grid",
+      "parameters": {}
+    },
+    "navigation": {
+      "structure": "host"
+    },
+    "messages": {
+      "flow": "stock",
+      "user": "stock",
+      "assistant": "stock"
+    },
+    "motion": "static"
   }
 }

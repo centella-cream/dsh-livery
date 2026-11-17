@@ -9,6 +9,7 @@ import type { ChromeStyleId, LiveryManifest } from '../../src/core/types.js'
 import { STOCK_021_RC2 } from './helpers.js'
 import { FIXTURE_MANIFESTS } from './fixtures.js'
 import { readFileSync } from 'node:fs'
+import { normalizeManifest } from '../../src/core/presentation.js'
 import { resolve } from 'node:path'
 
 const SEEDS = { accent: '#b03a2e', secondary: '#cf7e71', surface: '#faf3ef', text: '#33201a' }
@@ -56,7 +57,7 @@ describe('chrome recipes', () => {
 
 describe('shipped chrome assignments', () => {
   it('applies the terminal chrome to the real graphite manifest', () => {
-    const graphite = JSON.parse(readFileSync(resolve('liveries/graphite/manifest.json'), 'utf8')) as LiveryManifest
+    const graphite = normalizeManifest(JSON.parse(readFileSync(resolve('liveries/graphite/manifest.json'), 'utf8')))
     const plain: LiveryManifest = { ...graphite, layout: { ...graphite.layout, chrome: 'plain' } }
     const shipped = deriveLivery(graphite, STOCK_021_RC2)
     const stockChrome = deriveLivery(plain, STOCK_021_RC2)
