@@ -23,7 +23,7 @@ Edge and any other DSH build are not supported.
 
 - **[Verification](verification.md)** — release scope, exact artifact binding,
   acceptance matrix, known limitations and reproduction commands.
-- **[Wallpaper workbench layout](design/wallpaper-workbench.md)** — versioned 0.1.7 breakpoints, equal-height rules and online-wallpaper visual policy.
+- **[Wallpaper workbench layout](design/wallpaper-workbench.md)** — responsive breakpoints, equal-height rules and online-wallpaper visual policy.
 - **[Interfaces and architecture](design/interfaces.md)** — module boundaries,
   frozen host/client handshake, generated artifacts and build outputs.
 - **[Multi-version policy](design/multi-version.md)** — API compatibility range, exact evidence, stable
@@ -34,6 +34,12 @@ Edge and any other DSH build are not supported.
   style-DNA labels and the terminal/brutal/pill/editorial surface recipes.
 - **[Design references](research/design-references.md)** — palette attributions
   and the machine-readable [28-style table](research/design-table.json).
+
+## Proposed
+
+- **[0.2.0 proposal](design/0.2.0-proposal.md)** — proposed multi-axis GUI style
+  engine, capability gating, manifest v2 and the host APIs needed for structural
+  layout. Not implemented; not a current support or acceptance claim.
 
 ## Archive (historical, not authoritative)
 
@@ -67,13 +73,18 @@ not be cited as current support or behavior.
 ## 当前文档
 
 - **[验收总结](verification.md)**：发布范围、精确制品绑定、验收矩阵、已知限制与复现命令。
-- **[壁纸工作台布局](design/wallpaper-workbench.md)**：0.1.7 断点、等高规则和在线壁纸视觉策略。
+- **[壁纸工作台布局](design/wallpaper-workbench.md)**：响应式断点、等高规则和在线壁纸视觉策略。
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
 - **[兼容架构](design/compatibility.md)** — API 兼容回退、共享 catalog profile 与 exact evidence 边界。
-- **[多版本策略](design/multi-version.md)** — 兼容范围、exact evidence、稳定/预览边界。：精确允许列表、稳定版与 next 预览规则、新增 DSH 版本时不丢失旧版本。
+- **[多版本策略](design/multi-version.md)**：兼容范围、exact evidence、稳定/预览边界、新增 DSH 版本时不丢失旧版本。
 - **[风格系统](design/style-system.md)**：28 套风格在调色、字体、形状、材质、字号阶梯和组件 chrome 上的差异。
 - **[风格画廊与 GUI 配方](design/style-gallery.md)**：紧凑目录、风格 DNA 标签与 terminal/brutal/pill/editorial 表面配方。
 - **[设计参考](research/design-references.md)**：配色归属与机器可读的 [28 套风格表](research/design-table.json)。
+
+## 方案稿
+
+- **[0.2.0 方案稿](design/0.2.0-proposal.md)**：提议中的多轴 GUI 风格引擎、
+  能力门禁、manifest v2，以及结构性布局所需的上游接口。尚未实现，不构成当前支持或验收声明。
 
 ## 历史归档（非权威）
 
