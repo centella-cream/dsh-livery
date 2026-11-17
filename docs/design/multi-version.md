@@ -105,8 +105,11 @@ token contracts.
 
 “Forward compatibility” here means **preserving every version already declared
 in the matrix while adding a new one**, not silently accepting unknown future
-versions. The exact-allowlist policy is intentional: it makes install failures
-obvious and keeps the advertised support honest.
+versions. Exact certified builds remain the evidence authority. Within the
+reviewed 0.2 range, compatibility fallback is allowed only when loader/host/client
+API hashes match; it is diagnosed and is not a stable-support claim. The 0.2.0
+proposal further narrows this to exact-certified hosts until a trusted runtime
+fingerprint exists.
 
 When upstream publishes a new DSH version, the correct action is a plugin release
 that adds a verified adapter for it, not a range that guesses compatibility. If a

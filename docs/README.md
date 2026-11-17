@@ -26,6 +26,7 @@ Edge and any other DSH build are not supported.
 - **[Wallpaper workbench layout](design/wallpaper-workbench.md)** — responsive breakpoints, equal-height rules and online-wallpaper visual policy.
 - **[Interfaces and architecture](design/interfaces.md)** — module boundaries,
   frozen host/client handshake, generated artifacts and build outputs.
+- **[Compatibility architecture](design/compatibility.md)** — exact evidence, shared catalog profiles and reviewed fallback boundaries.
 - **[Multi-version policy](design/multi-version.md)** — API compatibility range, exact evidence, stable
   vs next-preview rules, how to add a DSH release without dropping older ones.
 - **[Style system](design/style-system.md)** — the 28 styles across palette,
