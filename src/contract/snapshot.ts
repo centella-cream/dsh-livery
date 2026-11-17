@@ -9,6 +9,7 @@
  * The CLI entry is built by scripts/build.mjs.
  */
 import { createHash } from 'node:crypto'
+import { clientSlotHash } from './client-slots.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -1247,12 +1248,44 @@ export function catalogProfileId(snapshot: ContractSnapshot): string {
 export async function readCatalogProfileOverrides(workspace: string): Promise<ReadonlyMap<string, string>> {
   const path = join(workspace, 'contracts', 'dsh', 'catalog-profile-overrides.json')
   if (!existsSync(path)) return new Map()
-  const document = JSON.parse(await readFile(path, 'utf8')) as { overrides?: Array<{ hostVersion?: unknown; catalogProfile?: unknown }> }
+  const document = JSON.parse(await readFile(path, 'utf8')) as Record<string, unknown>
+  if (document['schemaVersion'] !== 2) throw new Error('catalog-profile-overrides: schemaVersion must be 2')
+  const entries = document['overrides']
+  if (!Array.isArray(entries)) throw new Error('catalog-profile-overrides: overrides must be an array')
   const overrides = new Map<string, string>()
-  for (const entry of document.overrides ?? []) {
-    if (typeof entry.hostVersion === 'string' && typeof entry.catalogProfile === 'string') {
-      overrides.set(entry.hostVersion, entry.catalogProfile)
+  const grammar = { catalog: 2, presentation: 2, decoration: 1, preview: 1, parameterSchema: 1 }
+  const isIdentity = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== 'object' || value === null) return false
+    const identity = value as Record<string, unknown>
+    if (identity['profileIdentityVersion'] !== 2) return false
+    for (const field of ['hostVersion', 'loaderAbiHash', 'hostApiHash', 'clientApiHash', 'tokenHash', 'layoutHash', 'compilerVersion', 'clientSlotHash', 'catalogProfile'] as const) {
+      if (typeof identity[field] !== 'string' || identity[field] === '') return false
     }
+    if (typeof identity['grammar'] !== 'object' || JSON.stringify(identity['grammar']) !== JSON.stringify(grammar)) return false
+    if (!Array.isArray(identity['capabilityVector'])) return false
+    return true
+  }
+  for (const raw of entries) {
+    if (typeof raw !== 'object' || raw === null) throw new Error('catalog-profile-overrides: invalid entry')
+    const entry = raw as Record<string, unknown>
+    if (entry['schemaVersion'] !== 2) throw new Error('catalog-profile-overrides: entry schemaVersion must be 2')
+    if (!isIdentity(entry['target']) || !isIdentity(entry['provider'])) throw new Error('catalog-profile-overrides: target/provider identity is incomplete')
+    const target = entry['target'] as Record<string, unknown>
+    const provider = entry['provider'] as Record<string, unknown>
+    const effective = entry['effectiveCatalogProfile']
+    if (typeof effective !== 'string' || effective !== provider['catalogProfile']) {
+      throw new Error('catalog-profile-overrides: effectiveCatalogProfile must equal provider.catalogProfile')
+    }
+    for (const hash of ['loaderAbiHash', 'hostApiHash', 'clientApiHash', 'clientSlotHash'] as const) {
+      if (target[hash] !== provider[hash]) throw new Error(`catalog-profile-overrides: ${hash} mismatch`)
+    }
+    if (target['clientSlotHash'] !== clientSlotHash()) throw new Error('catalog-profile-overrides: clientSlotHash is stale')
+    if (!(entry['compatibility'] as Record<string, unknown> | undefined)?.['diffHash']) {
+      throw new Error('catalog-profile-overrides: compatibility.diffHash is required')
+    }
+    const host = target['hostVersion'] as string
+    if (overrides.has(host)) throw new Error(`catalog-profile-overrides: duplicate hostVersion ${host}`)
+    overrides.set(host, effective)
   }
   return overrides
 }

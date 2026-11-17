@@ -1,21 +1,212 @@
 {
-  "schemaVersion": 1,
-  "note": "Deliberate catalog-profile reuse for API-compatible host builds whose token contract only adds or renames unused tokens. The shared profile is the newest certified profile for the same render family; overrides are reviewed with a contract diff and must keep the same loaderAbi/hostApi/clientApi/layout semantics.",
+  "schemaVersion": 2,
+  "note": "Reviewed catalog-profile reuse for 0.2.0 exact hosts. Identity fields are recomputed from frozen snapshots; v1 overrides are rejected.",
   "overrides": [
     {
-      "hostVersion": "0.2.2-rc.2",
-      "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
-      "reason": "0.2.2-rc.2 loader/host/client API hashes match rc.1; token contract adds 17 tokens (205 consumed) and layout hash changes behind rc.1-compatible slots. Shared rc.1 catalog is safe because every livery token is emitted as a concrete value and unknown/new tokens inherit stock."
+      "schemaVersion": 2,
+      "target": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.1",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+        "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:16691145cd9adc75b67ee37e612a89de7e6443150f78b3ae8614c337b547ddfc"
+      },
+      "provider": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.1",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+        "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f"
+      },
+      "effectiveCatalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
+      "compatibility": {
+        "tokenChanges": [],
+        "layoutChanges": [],
+        "addedCapabilities": [],
+        "removedCapabilities": [],
+        "diffHash": "sha256:dace03f733c689a59925a336b7c25714a5d92910e7b6adc6cb1102f4c37977f2"
+      },
+      "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     },
     {
-      "hostVersion": "0.2.2-rc.3",
-      "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
-      "reason": "0.2.2-rc.3 loader/host/client API hashes match rc.1/rc.2; token contract changes only existing token values and adds no consumed token names. The rc.1 catalog stays valid because DSH Livery derives every alias/specific token itself and unknown values inherit the host."
+      "schemaVersion": 2,
+      "target": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.2",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:b21122ac214e9a2c1768ef19047df45ed63ed19ccedeb795ce5a2bf345236565",
+        "layoutHash": "sha256:48075c6e98c1780e74b41b4b4417af5fad8448c8b241ae0f37d680681590ac6b",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:607e5aea42096b4fb59b2a749381ef7259f955d72ae655d390c16754278b4c7c"
+      },
+      "provider": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.1",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+        "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f"
+      },
+      "effectiveCatalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
+      "compatibility": {
+        "tokenChanges": [
+          {
+            "kind": "value-only",
+            "name": "token-contract"
+          }
+        ],
+        "layoutChanges": [
+          {
+            "kind": "value-only",
+            "name": "layout-contract"
+          }
+        ],
+        "addedCapabilities": [],
+        "removedCapabilities": [],
+        "diffHash": "sha256:2db4f1602e4191cb49321c7f6aad002fcf17b5b687011a9a6d4ec92175ce7c9d"
+      },
+      "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     },
     {
-      "hostVersion": "0.2.2-rc.1",
-      "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
-      "reason": "0.2.2-rc.1 loader/host/client API hashes match rc.2/rc.3; 0.2.0 compiler reuses the same render profile with additive token/layout changes."
+      "schemaVersion": 2,
+      "target": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.3",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:f90b02b7152366bd6887065d5b80783c8ce84b7fb9ad55e01307addee78a57a0",
+        "layoutHash": "sha256:422d14c6ef755114b4ed175539b85a48736406ff52806e2764e9b7c7d3570c09",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3"
+      },
+      "provider": {
+        "profileIdentityVersion": 2,
+        "hostVersion": "0.2.2-rc.1",
+        "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
+        "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
+        "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+        "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
+        "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+        "compilerVersion": "0.2.0",
+        "grammar": {
+          "catalog": 2,
+          "presentation": 2,
+          "decoration": 1,
+          "preview": 1,
+          "parameterSchema": 1
+        },
+        "capabilityVector": [
+          "fontRoleHooks",
+          "hostFontFamily",
+          "surfaceMaterial",
+          "themeCss"
+        ],
+        "clientSlotHash": "sha256:83f3a0f1b779943b803cc92245de4ad413b0af8083a478fec43dca5fb971e7d8",
+        "catalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f"
+      },
+      "effectiveCatalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
+      "compatibility": {
+        "tokenChanges": [
+          {
+            "kind": "value-only",
+            "name": "token-contract"
+          }
+        ],
+        "layoutChanges": [
+          {
+            "kind": "value-only",
+            "name": "layout-contract"
+          }
+        ],
+        "addedCapabilities": [],
+        "removedCapabilities": [],
+        "diffHash": "sha256:2db4f1602e4191cb49321c7f6aad002fcf17b5b687011a9a6d4ec92175ce7c9d"
+      },
+      "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     }
   ]
 }
