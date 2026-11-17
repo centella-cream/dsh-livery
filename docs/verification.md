@@ -105,6 +105,12 @@ matrix exactly. The Desktop run uses the real
 Electron app, the official plugin manager and an isolated app
 `DSH_HOME`/user-data-dir, driving the actual renderer for rc.3, rc.5 and 0.2.2-rc.1.
 
+## 0.1.8 historical verification
+
+This subsection records the previous release's scope (five adapters, 24 styles
+per profile). It is historical and must not be read as the 0.1.9 matrix, which
+has seven adapters and 28 styles per profile; see the 0.1.9 section above.
+
 ## What is verified
 
 - Official install, activation and uninstall lifecycle; boot gate and handshake.
