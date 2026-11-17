@@ -13,22 +13,20 @@ host bundle grow by roughly 150 KiB gzip per version.
 
 ## Model
 
-1. **API compatibility decides admission.** A host version is exact-certified when
-   it appears in the formal matrix. A newer `0.2.2+`/`0.2.x` prerelease whose
-   loader ABI, host API and client API hashes match the certified family is
-   admitted in `compatible-preview` mode and reuses the newest certified adapter.
-   Out-of-family versions (`0.2.0`, `0.3.x`, ...) still fail closed.
+1. **Exact certification decides admission.** A host version is admitted only
+   when it appears in the formal matrix. In-range uncertified builds fail closed
+   before adapter selection; there is no `compatible-preview` runtime path.
 2. **Catalog profiles are shared by review.** `contracts/dsh/catalog-profile-overrides.json`
    records reviewed profile reuse. The provider must have identical
    loader/host/client API hashes and layout-compatible slots; token additions are
    safe because every livery token is emitted concretely and unknown tokens inherit
    stock. The compiler skips byte-identity only for explicit shared-profile records.
-3. **Evidence stays exact.** Formal evidence and stable/preview claims remain bound
-   to exact host versions and artifact bytes. Compatibility mode is an unclaimed
-   preview path; diagnostics carry a `gate.compatibility-fallback` warning.
-4. **Package manager range.** `engines.dsh` is `>=0.2.1-rc.2 <0.3.0`; the exact
-   certified set is still the formal matrix. `dsh.compatibility.dshReleases` lists
-   the exact reviewed builds.
+3. **Evidence stays exact.** Formal evidence and stable/preview claims are bound
+   to exact host versions and artifact bytes. Unknown builds emit
+   `gate.host-unsupported`, never a compatibility success claim.
+4. **Package manager range.** `engines.dsh` is `>=0.2.1-rc.2 <0.3.0` as an
+   installability declaration only. `dsh.compatibility.dshReleases` lists the exact
+   runtime-certified builds.
 
 ## Adding a version
 

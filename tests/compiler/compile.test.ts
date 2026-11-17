@@ -57,7 +57,7 @@ const first = compileOnce()
 /** Shipped livery count (10 today, will grow; tests must never hardcode it). */
 const LIVERY_COUNT = liveryIds().length
 const PREVIEW_COUNT = LIVERY_COUNT * 4
-const FILES_PER_PROFILE = PREVIEW_COUNT + 1 + 4 // svgs + index + 4 audit artifacts
+const FILES_PER_PROFILE = PREVIEW_COUNT + 1 + 5 // svgs + index + 5 audit artifacts
 const TOTAL_FILES = 1 + first.profileCount * FILES_PER_PROFILE + 1 // catalog + profiles + summary
 const profileById = (id: string) => first.profiles.find((profile) => profile.profile.profileId === id)
 

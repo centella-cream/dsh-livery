@@ -27,6 +27,8 @@ import type {
   CompiledLivery,
   CompiledVariant,
   ContractCapabilityFacts,
+  FullAuditEnvelopeV2,
+  FullAuditPayloadV2,
   LiveryAuditReport,
   LiveryCatalog,
   LiveryCss,
@@ -463,6 +465,30 @@ function renderCssForAdapter(
 /* ------------------------------------------------------------------ */
 /* Preview generation                                                  */
 /* ------------------------------------------------------------------ */
+
+function auditEnvelopeFor(
+  livery: CompiledLivery,
+  profileId: string,
+  sourceHash: string,
+  contractHash: string,
+  tokenHash: string,
+): FullAuditEnvelopeV2 {
+  const payload: FullAuditPayloadV2 = {
+    schemaVersion: 2,
+    profileId,
+    sourceHash,
+    liveryId: livery.id,
+    liveryHash: livery.hash,
+    cssHash: livery.cssHash,
+    contractHash,
+    tokenHash,
+    contrast: livery.audit.contrast,
+    tokenCoverage: livery.audit.tokenCoverage,
+    cssSafety: livery.audit.cssSafety,
+    decorationAudits: [],
+  }
+  return { payload, auditHash: sha256(canonicalJson(payload)) }
+}
 
 function previewSourceOf(livery: CompiledLivery): PreviewLivery {
   return {
@@ -951,6 +977,10 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     files.set(`${draft.artifactDirectory}/contrast.json`, serializeJson(draft.contrast))
     files.set(`${draft.artifactDirectory}/token-coverage.json`, serializeJson(draft.tokenCoverage))
     files.set(`${draft.artifactDirectory}/css-safety.json`, serializeJson(draft.cssSafety))
+    files.set(
+      `${draft.artifactDirectory}/audit-envelope.json`,
+      serializeJson(draft.cores.map((core) => auditEnvelopeFor(core.livery, draft.report.profileId, draft.report.sourceHash, draft.report.contractHash, draft.stock.tokenContractHash))),
+    )
   }
   files.set(SUMMARY_PATH, serializeJson(summary))
 

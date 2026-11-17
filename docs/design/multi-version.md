@@ -1,6 +1,6 @@
 # Multi-version policy
 
-**Status (0.1.9):** current policy. This page replaces the earlier
+**Status (0.2.0 candidate):** current policy. This page replaces the earlier
 compatibility-range/compat-mode proposal, which was removed and is archived
 under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
@@ -8,16 +8,15 @@ under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/d
 
 The plugin ships exactly one adapter per formally certified DSH build. The exact
 builds and their acceptance evidence are in
-`contracts/dsh/support-matrix.json`. `engines.dsh` is the reviewed 0.2 range:
+`contracts/dsh/support-matrix.json`. `engines.dsh` is the reviewed 0.2 installability range:
 
 ```text
 >=0.2.1-rc.2 <0.3.0
 ```
 
-A host inside that range with matching loader/host/client API hashes may load the
-newest certified adapter in compatible-preview mode; it is visibly diagnosed and
-is not an exact-support claim. Out-of-family or API-divergent hosts fail closed.
-Compatibility is proven by a frozen contract snapshot and real host acceptance,
+A host inside that range but absent from the exact registry installs but fails
+closed before adapter selection; there is no compatibility fallback. Exact
+certification is proven by a frozen contract snapshot and real host acceptance,
 not inferred from a version string alone.
 
 ## 2. Stable vs next-channel preview
@@ -105,11 +104,8 @@ token contracts.
 
 “Forward compatibility” here means **preserving every version already declared
 in the matrix while adding a new one**, not silently accepting unknown future
-versions. Exact certified builds remain the evidence authority. Within the
-reviewed 0.2 range, compatibility fallback is allowed only when loader/host/client
-API hashes match; it is diagnosed and is not a stable-support claim. The 0.2.0
-proposal further narrows this to exact-certified hosts until a trusted runtime
-fingerprint exists.
+versions. Exact certified builds remain the evidence authority. The 0.2.0 runtime is exact-certified only; in-range uncertified builds fail
+closed and there is no compatibility fallback.
 
 When upstream publishes a new DSH version, the correct action is a plugin release
 that adds a verified adapter for it, not a range that guesses compatibility. If a

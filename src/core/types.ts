@@ -377,6 +377,39 @@ export interface CatalogGrammar {
 
 export const CATALOG_GRAMMAR: CatalogGrammar = Object.freeze({ catalog: 2, presentation: 2, decoration: 1, preview: 1, parameterSchema: 1 })
 
+export interface DecorationAudit {
+  readonly recipe: string
+  readonly recipeHash: string
+  readonly rendererVersion: number
+  readonly pathRegistryHash: string
+  readonly grammarHash: string
+  readonly primitiveCount: number
+  readonly primitiveKinds: readonly string[]
+  readonly tokenRefs: readonly string[]
+  readonly issues: readonly { readonly code: string; readonly path: string; readonly message: string }[]
+  readonly decorationAuditHash: string
+}
+
+export interface FullAuditPayloadV2 {
+  readonly schemaVersion: 2
+  readonly profileId: string
+  readonly sourceHash: string
+  readonly liveryId: string
+  readonly liveryHash: string
+  readonly cssHash: string
+  readonly contractHash: string
+  readonly tokenHash: string
+  readonly contrast: readonly ContrastEntry[]
+  readonly tokenCoverage: TokenCoverageReport
+  readonly cssSafety: CssSafetyReport
+  readonly decorationAudits: readonly DecorationAudit[]
+}
+
+export interface FullAuditEnvelopeV2 {
+  readonly payload: FullAuditPayloadV2
+  readonly auditHash: string
+}
+
 export interface AuditSummary {
   readonly contrast: { readonly pass: boolean; readonly total: number; readonly failed: number }
   readonly tokenCoverage: { readonly pass: boolean; readonly covered: number; readonly inherited: number; readonly missing: number }

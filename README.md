@@ -92,15 +92,15 @@ selectors or hashed host classes.
 
 ## Supported DSH builds
 
-`engines.dsh` is the reviewed 0.2 compatibility range:
+`engines.dsh` is the reviewed 0.2 **installability** range; runtime acceptance is exact-certified only:
 
 ```text
 >=0.2.1-rc.2 <0.3.0
 ```
 
-Exact certified builds remain the formal matrix and evidence authority. Newer
-0.2 builds with matching loader/host/client API hashes may load the newest
-certified adapter in compatible-preview mode with a visible diagnostic warning.
+Only builds listed in the formal matrix have a runtime adapter. An in-range but
+uncertified build installs but fails closed before adapter selection; there is no
+version-string compatibility fallback.
 
 | Host build | Entry | Runtime | Status |
 |---|---|---|---|

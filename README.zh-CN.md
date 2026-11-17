@@ -73,14 +73,13 @@ token；不写任何逐插件选择器或宿主 hashed class。
 
 ## 支持的 DSH 版本
 
-`engines.dsh` 是经过 review 的 0.2 兼容范围：
+`engines.dsh` 是经过 review 的 0.2 **可安装范围**；运行时只接受 exact-certified 宿主：
 
 ```text
 >=0.2.1-rc.2 <0.3.0
 ```
 
-精确认证构建仍以正式矩阵和 evidence 为准。API hash 匹配的更新 0.2 构建可以
-compatible-preview 模式加载最新认证 adapter，并输出可见诊断。
+只有正式矩阵中的构建才有运行时 adapter；范围内但未认证的构建可以安装，但会在 adapter 选择前 fail closed，不做版本号 fallback。
 
 | 宿主版本 | 入口 | 运行时 | 状态 |
 |---|---|---|---|
@@ -92,7 +91,7 @@ compatible-preview 模式加载最新认证 adapter，并输出可见诊断。
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`） |
 
-compatible-preview 不是稳定性承诺；0.3+ 和 API 不一致的构建仍会 fail closed。稳定支持
+exact-only 不是安装范围承诺；未知构建仍会 fail closed。稳定支持
 要求官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
 prerelease 属于预览声明，不承诺渠道稳定性。macOS 原生窗口 chrome、红绿灯、vibrancy、
 Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。完整策略见
