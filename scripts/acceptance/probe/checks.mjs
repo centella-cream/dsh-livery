@@ -386,7 +386,9 @@ export async function checkCatalog(ctx) {
     runner,
     'catalog.schema',
     'catalog shape carries the certified host identity and catalog profile',
-    catalog.schemaVersion === 1
+    catalog.schemaVersion === 2
+      && typeof catalog.grammarHash === 'string'
+      && typeof catalog.catalogHash === 'string'
       && typeof catalog.adapterId === 'string'
       && typeof catalog.hostVersion === 'string'
       && typeof catalog.contractHash === 'string'

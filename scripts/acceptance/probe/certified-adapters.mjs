@@ -44,13 +44,13 @@ const CAPABILITIES_021 = Object.freeze({
   'host-font-role-hooks': true,
 })
 
-/** Every certified host build for this release (both share one catalog profile). */
+/** Every certified host build for this release (the 0.2.1 family shares one catalog profile). */
 export const CERTIFIED_ADAPTERS = Object.freeze([
   Object.freeze({
     hostVersion: '0.2.1-rc.2',
     adapterId: 'dsh-0.2.1-rc.2-r1',
     contractHash: 'sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d',
-    catalogProfile: 'sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83',
+    catalogProfile: 'sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',
@@ -60,7 +60,7 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.3',
     adapterId: 'dsh-0.2.1-rc.3-r1',
     contractHash: 'sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60',
-    catalogProfile: 'sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83',
+    catalogProfile: 'sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087',
     nodeRange: '^24.21.0',
     platformModules: 11,
     sourceKind: 'packaged-app',
@@ -70,7 +70,7 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.4',
     adapterId: 'dsh-0.2.1-rc.4-r1',
     contractHash: 'sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf',
-    catalogProfile: 'sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83',
+    catalogProfile: 'sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',
@@ -110,7 +110,7 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     hostVersion: '0.2.1-rc.5',
     adapterId: 'dsh-0.2.1-rc.5-r1',
     contractHash: 'sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619',
-    catalogProfile: 'sha256:be3eaba78fdabea0efbf55c6e6fc0fd9b67877cfbf5c4847b2deef5a6885bc83',
+    catalogProfile: 'sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087',
     nodeRange: '^22.23.1',
     platformModules: 11,
     sourceKind: 'installed-package',

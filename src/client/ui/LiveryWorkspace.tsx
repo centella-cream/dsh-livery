@@ -153,7 +153,6 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
       {shownLivery?.presentation !== undefined && (
         <StudioDecoration
           recipe={(shownLivery.presentation.axes.studioDecoration.declared as { id: StudioDecorationId }).id}
-          parameters={(shownLivery.presentation.axes.studioDecoration.declared as { parameters?: Record<string, string | number> }).parameters}
         />
       )}
       <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
