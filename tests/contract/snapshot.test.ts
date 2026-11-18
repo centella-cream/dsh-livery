@@ -131,7 +131,10 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(web.certifiedBrowserVersions).toEqual(['156.0.8078.48'])
     expect(web.certifiedRuntimeVersions).toEqual(['22.23.1'])
     expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
-    expect(web.evidence).toEqual(['contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json'])
+    expect(web.evidence).toEqual([
+      'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
+      'contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json',
+    ])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
     expect(web.profiles.web.chrome).toBe('passed')

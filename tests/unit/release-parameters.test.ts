@@ -68,6 +68,12 @@ describe('0.1.3 release parameterization', () => {
         expect(entry.evidence).toEqual([
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json',
+          'contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json',
+        ])
+      } else if (entry.hostVersion === '0.2.1-rc.2') {
+        expect(entry.evidence).toEqual([
+          'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
+          'contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json',
         ])
       } else if (entry.hostVersion === '0.2.1-rc.5') {
         expect(entry.evidence).toEqual([
