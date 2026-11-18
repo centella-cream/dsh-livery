@@ -52,6 +52,7 @@ export const REQUIRED_DESKTOP_CHECKS = Object.freeze([
   'desktop.floating-surfaces',
   'desktop.restore-stock',
   'desktop.matrix-consistency',
+  'desktop.sidebar-path',
 ])
 
 const argv = process.argv.slice(2)
@@ -229,7 +230,7 @@ const auditEnvelopes = auditEnvelopeArgs.map((source) => {
   const absolute = resolvePath(source)
   if (!existsSync(absolute)) fail(`audit envelope is missing: ${source}`)
   const bytes = readFileSync(absolute)
-  const destination = path.join(envelopeDir, path.basename(absolute))
+  const destination = path.join(envelopeDir, `${path.basename(path.dirname(absolute))}-${path.basename(absolute)}`)
   copyFileSync(absolute, destination)
   return { path: rel(destination), sha256: sha256(bytes) }
 })

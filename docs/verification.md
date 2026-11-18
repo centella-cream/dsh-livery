@@ -1,5 +1,33 @@
 # Verification
 
+## Release `0.2.0` — accepted release candidate (unpublished)
+
+The 0.2.0 candidate is `dsh-livery-0.2.0.tgz`, sha256
+`665fc21dbadfc667fa5653eaea598e98f03b5bb3be792bf7e0bbdd6f76462948`, built from
+commit `68ae74191ecd8ff7341cf5c154fe38e00621712c`. It is not published; `0.1.9`
+remains npm `latest`.
+
+| Host | Profile / platform | Runtime | Result |
+|---|---|---|---|
+| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **35 pass / 0 fail / 2 skip / 0 warn** |
+
+Evidence:
+
+- `contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json`
+- `contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json`
+- raw probes and reports under `contracts/dsh/evidence/0.2.0/probes/` and
+  `contracts/dsh/evidence/0.2.0/reports/`
+- canonical audit envelopes under `contracts/dsh/evidence/0.2.0/audit-envelopes/`
+
+The Desktop probe records `desktop.sidebar-path` with the observed tint/fill
+surface alpha. The full Web evidence includes the merged preset/wallpaper checks
+and the Settings floating-surface check; the Desktop probe covers the Electron
+renderer surface, not native window shell/vibrancy.
+
+Release-evidence verification passes for both files against the candidate
+tarball.
+
 > **Release `0.1.9` is published.** Full acceptance passed on Web `0.2.1-rc.2`,
 > `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and
 > Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`;

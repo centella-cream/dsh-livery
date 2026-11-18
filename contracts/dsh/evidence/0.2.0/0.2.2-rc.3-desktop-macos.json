@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "commit": "68ae74191ecd8ff7341cf5c154fe38e00621712c",
+  "packageVersion": "0.2.0",
+  "tarballSha256": "665fc21dbadfc667fa5653eaea598e98f03b5bb3be792bf7e0bbdd6f76462948",
+  "tarballBytes": 2196219,
+  "generatedAt": "2026-11-18T02:55:13.149Z",
+  "scope": {
+    "hostVersion": "0.2.2-rc.3",
+    "profile": "desktop",
+    "platform": "macos",
+    "browserVersion": "152.0.7977.130"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.2-rc.3",
+      "profile": "desktop",
+      "platform": "macos",
+      "browser": "chrome",
+      "browserVersion": "152.0.7977.130"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "next",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.3",
+        "npmVersion": "0.2.2-rc.3"
+      }
+    }
+  },
+  "criticalChecks": [
+    {
+      "id": "desktop.official-install",
+      "status": "pass",
+      "title": "official rc.3 plugin-manager install accepts the package with no version exemption"
+    },
+    {
+      "id": "desktop.certified-runtime",
+      "status": "pass",
+      "title": "app-bundled CLI reports a certified host version"
+    },
+    {
+      "id": "desktop.renderer-launches",
+      "status": "pass",
+      "title": "real Electron renderer launches under the isolated app runtime"
+    },
+    {
+      "id": "desktop.boot-graph-row",
+      "status": "pass",
+      "title": "boot graph lists the dsh-livery client module"
+    },
+    {
+      "id": "desktop.apply-persists",
+      "status": "pass",
+      "title": "apply writes exactly one livery config mutation into the isolated desktop profile patch"
+    },
+    {
+      "id": "desktop.position-remote",
+      "status": "pass",
+      "title": "desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position"
+    },
+    {
+      "id": "desktop.reduced-transparency",
+      "status": "pass",
+      "title": "desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce"
+    },
+    {
+      "id": "desktop.floating-surfaces",
+      "status": "pass",
+      "title": "desktop host floating surfaces stay opaque above wallpaper"
+    },
+    {
+      "id": "desktop.restore-stock",
+      "status": "pass",
+      "title": "restore stock removes the livery from the desktop renderer"
+    },
+    {
+      "id": "desktop.matrix-consistency",
+      "status": "pass",
+      "title": "desktop report claims do not exceed the support matrix desktop.macos status"
+    },
+    {
+      "id": "desktop.sidebar-path",
+      "status": "pass",
+      "title": "desktop sidebar exposes a tint or fill surface with an observed alpha"
+    }
+  ],
+  "auditEnvelopes": [
+    {
+      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f-audit-envelope.json",
+      "sha256": "a67ab337a708f6a08a2b3e27db40d75b14724450f2f19e1d3aeb039dfacda625"
+    }
+  ],
+  "runs": [
+    {
+      "id": "r31-desktop2",
+      "commit": "68ae74191ecd8ff7341cf5c154fe38e00621712c",
+      "hostVersion": "0.2.2-rc.3",
+      "adapterId": "dsh-0.2.2-rc.3-r1",
+      "tarballSha256": "665fc21dbadfc667fa5653eaea598e98f03b5bb3be792bf7e0bbdd6f76462948",
+      "summary": {
+        "pass": 35,
+        "fail": 0,
+        "skip": 2,
+        "warn": 0,
+        "total": 37
+      },
+      "probe": "contracts/dsh/evidence/0.2.0/probes/r31-desktop2.json",
+      "probeSha256": "35d3d122b354e9b876cab345b78bf88850b3ebad6b40908d1b192088ffc0fc3b",
+      "report": "contracts/dsh/evidence/0.2.0/reports/r31-desktop2.md",
+      "reportSha256": "08f775b66b2d99bd56bc51487dc35dbe7701e72aeb07818ed236150a2511db84"
+    }
+  ]
+}

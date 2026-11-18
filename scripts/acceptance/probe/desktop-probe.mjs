@@ -569,6 +569,33 @@ async function main() {
     }, undefined, { timeout: 10_000 }).catch(() => {})
     const desktopWallpaper = await readWallpaperState(page)
     await captureScreenshot(page, path.join(screensDir, 'zh-wallpaper-desktop.png'), { label: 'desktop wallpaper studio (built-in applied)' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'wallpaper-builtin' }))
+    const sidebarParity = await page.evaluate(() => {
+      const read = (name) => {
+        const probe = document.createElement('div')
+        probe.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px'
+        probe.style.backgroundColor = `var(${name})`
+        document.body.append(probe)
+        const value = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        return value
+      }
+      const alpha = (value) => {
+        const match = String(value).match(/rgba?\(([^)]*)\)/u)
+        const parts = match ? match[1].split(',').map((part) => part.trim()) : []
+        return parts.length === 4 ? Number(parts[3]) : 1
+      }
+      const tint = read('--dsw-specific-sidebar-tint')
+      const fill = read('--dsw-specific-sidebar-fill')
+      return { tint, fill, tintAlpha: alpha(tint), fillAlpha: alpha(fill) }
+    })
+    expect(
+      runner,
+      'desktop.sidebar-path',
+      'desktop sidebar exposes a tint or fill surface with an observed alpha',
+      (sidebarParity.tintAlpha > 0 && sidebarParity.tint !== 'rgba(0, 0, 0, 0)') || (sidebarParity.fillAlpha > 0 && sidebarParity.fill !== 'rgba(0, 0, 0, 0)'),
+      JSON.stringify(sidebarParity),
+      { sidebarParity },
+    )
     expect(
       runner,
       'desktop.wallpaper',

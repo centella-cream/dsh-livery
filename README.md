@@ -11,9 +11,10 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: `0.2.0` implementation candidate (unreleased).**
-> `dsh-livery@0.1.9` remains the current published artifact until the 0.2.0
-> candidate passes the acceptance/release gates.
+> **Release status: `0.2.0` release candidate (accepted, unpublished).**
+> Web `0.2.1-rc.2` + Chrome `156.0.8078.48` and Desktop `0.2.2-rc.3` +
+> macOS Electron have isolated 0.2.0 acceptance evidence. `dsh-livery@0.1.9`
+> remains the current published artifact until 0.2.0 is tagged and published.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop and DSH `0.2.2-rc.3`

@@ -7,7 +7,7 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.2.0] — unreleased (implementation candidate)
+## [0.2.0] — release candidate (accepted, unpublished)
 
 ### Added
 
