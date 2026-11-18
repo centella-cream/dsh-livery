@@ -5,7 +5,7 @@
  * must bind those bytes. Version and evidence paths are derived, never hardcoded.
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { matrixEvidence, defaultCandidatePath, parseFlag, readMatrix, readPackageJson } from './release-lib.mjs'
 
 const fail = (message) => {
@@ -18,8 +18,14 @@ for (const entry of matrix.entries) {
   if (entry.status !== 'released') fail(`formal matrix entry ${entry.hostVersion} is ${String(entry.status)}, not released`)
   if (!Array.isArray(entry.evidence) || entry.evidence.length === 0) fail(`formal matrix entry ${entry.hostVersion} has no evidence`)
 }
-const candidates = matrixEvidence(matrix)
-if (candidates.length === 0) fail('no evidence files in the formal matrix')
+const candidates = matrixEvidence(matrix).filter((file) => {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8')).packageVersion === pkg.version
+  } catch {
+    fail(`cannot read evidence file: ${file}`)
+  }
+})
+if (candidates.length === 0) fail(`no evidence files for package version ${pkg.version}`)
 const supplied = parseFlag(process.argv.slice(2), 'tgz') ?? process.env.RELEASE_TGZ
 const tgz = supplied === undefined || supplied === '' ? defaultCandidatePath(pkg) : supplied
 if (!existsSync(tgz)) fail(`candidate tarball missing: ${tgz}`)
