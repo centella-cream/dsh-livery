@@ -2,10 +2,10 @@
 
 ## Release `0.2.0` — accepted release candidate (unpublished)
 
-The 0.2.0 candidate is `dsh-livery-0.2.0.tgz`, sha256
-`665fc21dbadfc667fa5653eaea598e98f03b5bb3be792bf7e0bbdd6f76462948`, built from
-commit `68ae74191ecd8ff7341cf5c154fe38e00621712c`. It is not published; `0.1.9`
-remains npm `latest`.
+The 0.2.0 candidate is `dsh-livery-0.2.0.tgz`. Its exact sha256, byte size and
+build commit are recorded in the committed evidence JSON under
+`contracts/dsh/evidence/0.2.0/`. It is not published; `0.1.9` remains npm
+`latest`.
 
 | Host | Profile / platform | Runtime | Result |
 |---|---|---|---|
