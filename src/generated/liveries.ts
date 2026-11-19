@@ -95023,7 +95023,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     ],
     "profileId": "sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3",
     "sourceAdapters": [
-      "0.2.2-rc.3"
+      "0.2.2-rc.3",
+      "0.2.2-rc.5"
     ],
     "sourceHash": "sha256:0272bcb5019d7c56f7ea9882ee9acd04d6f716edf2158e491497ed67d28fcc4b"
   },

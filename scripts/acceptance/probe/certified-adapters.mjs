@@ -87,6 +87,16 @@ export const CERTIFIED_ADAPTERS = Object.freeze([
     capabilities: CAPABILITIES_021,
   }),
   Object.freeze({
+    hostVersion: '0.2.2-rc.5',
+    adapterId: 'dsh-0.2.2-rc.5-r1',
+    contractHash: 'sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3',
+    catalogProfile: 'sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3',
+    nodeRange: '>=24.9.0',
+    platformModules: 11,
+    sourceKind: 'installed-package',
+    capabilities: CAPABILITIES_021,
+  }),
+  Object.freeze({
     hostVersion: '0.2.2-rc.3',
     adapterId: 'dsh-0.2.2-rc.3-r1',
     contractHash: 'sha256:0f583969a24ec4f76277ec1d52485335c3d58cca653b5e3c680977faecb80f94',

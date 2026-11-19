@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 2,
+  "commit": "3cb0b2b17afa0641e3e5ed4b8b528849588af9fd",
+  "packageVersion": "0.2.0",
+  "tarballSha256": "3dc9dcda6b0fb041fca6e5978ad872a0aaa1e806140df02f843a2e3e4981cd8a",
+  "tarballBytes": 2815173,
+  "generatedAt": "2026-11-19T18:34:17.637Z",
+  "scope": {
+    "hostVersion": "0.2.2-rc.5",
+    "profile": "web",
+    "browser": "chrome",
+    "browserVersion": "156.0.8078.48"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.2-rc.5",
+      "profile": "web",
+      "browser": "chrome",
+      "browserVersion": "156.0.8078.48"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "24.22.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.5",
+        "npmVersion": "0.2.2-rc.5"
+      }
+    }
+  },
+  "criticalChecks": [
+    {
+      "id": "env.browser-version",
+      "status": "pass",
+      "title": "actual full Chrome version matches the exact certified browser version requirement"
+    },
+    {
+      "id": "handshake.certified-adapter",
+      "status": "pass",
+      "title": "live host matches a certified adapter record (exact version + adapter + contract + catalog profile)"
+    },
+    {
+      "id": "catalog.certified-identity",
+      "status": "pass",
+      "title": "catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple"
+    },
+    {
+      "id": "merged.two-tab-sync",
+      "status": "pass",
+      "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops"
+    },
+    {
+      "id": "merged.two-tab-clear",
+      "status": "pass",
+      "title": "clearing wallpaper in page A clears page B through the same sync path"
+    },
+    {
+      "id": "merged.state-migration-v1",
+      "status": "pass",
+      "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored"
+    },
+    {
+      "id": "merged.preset-import-diff",
+      "status": "pass",
+      "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position"
+    },
+    {
+      "id": "merged.preset-apply-atomic",
+      "status": "pass",
+      "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action"
+    },
+    {
+      "id": "merged.preset-invalid-rejected",
+      "status": "pass",
+      "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage"
+    },
+    {
+      "id": "merged.preset-partial-failure",
+      "status": "pass",
+      "title": "injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution"
+    },
+    {
+      "id": "merged.position-remote",
+      "status": "pass",
+      "title": "nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position"
+    },
+    {
+      "id": "merged.clear-local-data",
+      "status": "pass",
+      "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache"
+    },
+    {
+      "id": "visual.floating-surfaces",
+      "status": "pass",
+      "title": "host Settings modal stays opaque above frost+atmosphere"
+    }
+  ],
+  "auditEnvelopes": [
+    {
+      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3-audit-envelope.json",
+      "sha256": "6a4543acaab49e42640620ab09d41536b56a889d1437c5d11dc09277b8a070ae"
+    }
+  ],
+  "runs": [
+    {
+      "id": "0.2.2-rc.5-web",
+      "commit": "3cb0b2b17afa0641e3e5ed4b8b528849588af9fd",
+      "hostVersion": "0.2.2-rc.5",
+      "adapterId": "dsh-0.2.2-rc.5-r1",
+      "tarballSha256": "3dc9dcda6b0fb041fca6e5978ad872a0aaa1e806140df02f843a2e3e4981cd8a",
+      "summary": {
+        "pass": 275,
+        "fail": 0,
+        "skip": 4,
+        "warn": 2,
+        "total": 281
+      },
+      "probe": "contracts/dsh/evidence/0.2.0/probes/0.2.2-rc.5-web.json",
+      "probeSha256": "df1937ad0c556d57bdb0ba5127672c6f7531f0c58f1f2ee7c7d6497b37bdb6ec",
+      "report": "contracts/dsh/evidence/0.2.0/reports/0.2.2-rc.5-web.md",
+      "reportSha256": "b17cef2715910e2a4f19ba9af2ecff74326dce78706cac7b1d34e27fe636679c"
+    }
+  ]
+}

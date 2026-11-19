@@ -1202,6 +1202,25 @@ export async function readCommittedSnapshots(workspace: string): Promise<Contrac
  * `src/generated/stock.ts` (per-version stock token snapshots) from the committed
  * contract files. Deterministic: no wall clock, stable key order.
  */
+function renderAdapterIdentities(snapshots: readonly ContractSnapshot[]): string {
+  const identities = snapshots.map((snapshot) => ({
+    hostVersion: snapshot.hostVersion,
+    adapterId: snapshot.adapterId,
+    contractHash: snapshot.contractHash,
+    catalogProfile: catalogProfileId(snapshot),
+  }))
+  return `/** Client-safe certified adapter identities; generated, do not edit. */
+export interface AdapterIdentity {
+  readonly hostVersion: string
+  readonly adapterId: string
+  readonly contractHash: string
+  readonly catalogProfile: string
+}
+
+export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = ${JSON.stringify(identities, null, 2)}
+`
+}
+
 export async function regenerateGeneratedContracts(workspace: string): Promise<GeneratedRegistryPaths> {
   // Shipped adapters only: the formal support matrix decides which frozen
   // contracts become runtime adapters. Historical snapshots remain on disk for
@@ -1212,8 +1231,10 @@ export async function regenerateGeneratedContracts(workspace: string): Promise<G
   await mkdir(generatedDir, { recursive: true })
   const contractPath = join(generatedDir, 'contract.ts')
   const stockPath = join(generatedDir, 'stock.ts')
+  const identitiesPath = join(generatedDir, 'adapter-identities.ts')
   await writeFile(contractPath, renderGeneratedRegistry(snapshots, overrides))
   await writeFile(stockPath, renderGeneratedStockRegistry(snapshots))
+  await writeFile(identitiesPath, renderAdapterIdentities(snapshots))
   return { contractPath, stockPath, versions: snapshots.map((snapshot) => snapshot.hostVersion) }
 }
 
