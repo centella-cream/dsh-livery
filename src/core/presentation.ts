@@ -311,12 +311,12 @@ export interface LiveryManifestV2Input {
   readonly presentation: PresentationSpec
 }
 
-function surfaceStyleForAxes(axes: { geometry: string; border: string; elevation: string; material: string }): SurfaceStyleId {
+function surfaceStyleForAxes(axes: { geometry: string; border: string; elevation: string; material: string }): SurfaceStyleId | undefined {
   for (const [id, candidate] of Object.entries(SURFACE_AXES) as [SurfaceStyleId, typeof axes][]) {
     if (candidate.geometry === axes.geometry && candidate.border === axes.border
       && candidate.elevation === axes.elevation && candidate.material === axes.material) return id
   }
-  return 'solid'
+  return undefined
 }
 
 function derivedCompat(spec: PresentationSpec): LiveryManifest['compat'] {
@@ -338,12 +338,15 @@ export function normalizeManifest(raw: unknown): LiveryManifest {
   const record = raw as Record<string, unknown>
   if (record.schemaVersion === 2) {
     const v2 = record as unknown as LiveryManifestV2Input
-    const spec = v2.presentation
+    const style = surfaceStyleForAxes(v2.presentation)
+    const spec: PresentationSpec = style === undefined
+      ? { ...v2.presentation, ...SURFACE_AXES.solid }
+      : v2.presentation
     const layout: LiveryManifest['layout'] = {
       density: spec.density,
       conversationWidth: spec.transcriptWidth,
       messageFlow: spec.messages.flow,
-      surfaceStyle: surfaceStyleForAxes(spec),
+      surfaceStyle: style ?? 'solid',
       chrome: spec.chrome,
     }
     return {
