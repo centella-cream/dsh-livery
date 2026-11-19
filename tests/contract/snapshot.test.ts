@@ -328,32 +328,32 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
         profiles: ['web', 'desktop'],
         platforms: ['web', 'darwin'],
         browsers: [
-          { family: 'chrome', versions: ['156.0.8078.48', '152.0.7977.130'] },
-          { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
+          { family: 'chrome', versions: ['156.0.8078.48'] },
+          { family: 'chromium', versions: ['152.0.7977.130'] },
         ],
       },
       '0.2.2-rc.1': {
         profiles: ['web', 'desktop'],
         platforms: ['web', 'darwin'],
         browsers: [
-          { family: 'chrome', versions: ['156.0.8078.48', '152.0.7977.130'] },
-          { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
+          { family: 'chrome', versions: ['156.0.8078.48'] },
+          { family: 'chromium', versions: ['152.0.7977.130'] },
         ],
       },
       '0.2.2-rc.2': {
         profiles: ['web', 'desktop'],
         platforms: ['web', 'darwin'],
         browsers: [
-          { family: 'chrome', versions: ['156.0.8078.48', '152.0.7977.130'] },
-          { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
+          { family: 'chrome', versions: ['156.0.8078.48'] },
+          { family: 'chromium', versions: ['152.0.7977.130'] },
         ],
       },
       '0.2.2-rc.3': {
         profiles: ['web', 'desktop'],
         platforms: ['web', 'darwin'],
         browsers: [
-          { family: 'chrome', versions: ['156.0.8078.48', '152.0.7977.130'] },
-          { family: 'chromium', versions: ['156.0.8078.48', '152.0.7977.130'] },
+          { family: 'chrome', versions: ['156.0.8078.48'] },
+          { family: 'chromium', versions: ['152.0.7977.130'] },
         ],
       },
     }

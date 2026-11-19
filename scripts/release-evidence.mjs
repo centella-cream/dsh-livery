@@ -75,6 +75,13 @@ if (evidence.commit !== head) {
     const actual = JSON.stringify(certification[field] ?? null)
     if (expected !== actual) fail(`evidence target.certification.${field} does not match the support matrix`)
   }
+  const scopeCert = entry.scopeCertification?.[targetScope.profile]?.[targetScope.profile === 'web' ? 'chrome' : 'macos']
+  if (scopeCert !== undefined) {
+    const versions = scopeCert.browserVersions ?? []
+    if (!versions.includes(targetScope.browserVersion)) {
+      fail(`browser ${targetScope.browserVersion} is not certified for ${targetScope.profile} scope ${entry.hostVersion}`)
+    }
+  }
   if (targetScope.profile === 'web' && targetScope.browser !== 'chrome') fail('web evidence target.scope.browser must be chrome')
   if (targetScope.profile === 'desktop' && targetScope.platform !== 'macos') fail('desktop evidence target.scope.platform must be macos')
 }

@@ -39,7 +39,19 @@
         "Desktop macOS/Windows and Web Edge are not-supported support boundaries, not active runtime gates: no support or guarantee is provided for those surfaces.",
         "Only unsupported DSH builds are rejected at install/runtime and fail closed to stock.",
         "clientTarget chrome120 records the build target, not a browser certification claim."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "22.23.1"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.1-rc.3",
@@ -76,7 +88,22 @@
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
         "Desktop Windows, Web Edge and other DSH builds are not-supported."
-      ]
+      ],
+      "scopeCertification": {
+        "desktop": {
+          "macos": {
+            "browserVersions": [
+              "152.0.7977.130"
+            ],
+            "runtimeVersions": [
+              "24.21.0"
+            ],
+            "electronVersions": [
+              "44.7.0"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.1-rc.4",
@@ -114,7 +141,19 @@
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
         "Still a preview claim, not stable: promotion requires a non-prerelease release plus npm latest channel and fresh acceptance. GitHub-tagged 0.2.1-rc.2 (npm latest) and 0.2.1-rc.3 (Desktop) remain the stable claims.",
         "Web Profile + exact Chrome 156.0.8078.48 only; Desktop macOS/Windows and Web Edge are not-supported for this host build; rc.4 Desktop app was not available for certification."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "22.23.1"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.1-rc.5",
@@ -156,7 +195,32 @@
         "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence is bound for 0.1.6.",
         "GitHub release dsh-v0.2.1-rc.5 is a prerelease; At 0.1.5/0.1.6 acceptance npm latest was 0.2.1-rc.5; npm latest has since moved to 0.2.2-rc.1. Preview claim.",
         "Single adapter record serves both Web and Desktop profile entries for host build 0.2.1-rc.5."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "22.23.1"
+            ]
+          }
+        },
+        "desktop": {
+          "macos": {
+            "browserVersions": [
+              "152.0.7977.130"
+            ],
+            "runtimeVersions": [
+              "24.21.0"
+            ],
+            "electronVersions": [
+              "44.7.0"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.2-rc.1",
@@ -198,7 +262,32 @@
         "npm `latest` now points at DSH 0.2.2-rc.1, but the official GitHub release is still a prerelease; this remains a preview claim, not a stable claim.",
         "0.2.2 API: peer-scoped index injection/rendering, 188 consumed tokens, new layout/token contracts.",
         "Single adapter record serves Web and Desktop entry profiles for 0.2.2-rc.1."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "24.22.1"
+            ]
+          }
+        },
+        "desktop": {
+          "macos": {
+            "browserVersions": [
+              "152.0.7977.130"
+            ],
+            "runtimeVersions": [
+              "24.21.0"
+            ],
+            "electronVersions": [
+              "44.7.0"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.2-rc.2",
@@ -240,7 +329,32 @@
         "DSH 0.2.2-rc.2 is npm next and a GitHub prerelease; preview claim.",
         "Compatibility architecture: shares the rc.1 catalog profile via reviewed catalog-profile override; loader/host/client APIs are identical.",
         "Single adapter record serves Web and Desktop entry profiles; Web/Desktop acceptance required before release."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "24.22.1"
+            ]
+          }
+        },
+        "desktop": {
+          "macos": {
+            "browserVersions": [
+              "152.0.7977.130"
+            ],
+            "runtimeVersions": [
+              "24.21.0"
+            ],
+            "electronVersions": [
+              "44.7.0"
+            ]
+          }
+        }
+      }
     },
     {
       "hostVersion": "0.2.2-rc.3",
@@ -281,7 +395,32 @@
         "DSH 0.2.2-rc.3 is npm next and a GitHub prerelease; preview claim.",
         "API hashes match 0.2.2-rc.1/rc.2; reviewed catalog-profile override reuses the rc.1 profile in compatible-preview mode.",
         "Web and Desktop acceptance passed on the final 0.1.9 candidate."
-      ]
+      ],
+      "scopeCertification": {
+        "web": {
+          "chrome": {
+            "browserVersions": [
+              "156.0.8078.48"
+            ],
+            "runtimeVersions": [
+              "24.22.1"
+            ]
+          }
+        },
+        "desktop": {
+          "macos": {
+            "browserVersions": [
+              "152.0.7977.130"
+            ],
+            "runtimeVersions": [
+              "24.21.0"
+            ],
+            "electronVersions": [
+              "44.7.0"
+            ]
+          }
+        }
+      }
     }
   ]
 }

@@ -1034,13 +1034,11 @@ export function adapterManifestFrom(snapshot: ContractSnapshot, entry?: SupportM
   if (webChromePassed || webEdgePassed) verifiedPlatforms.push('web')
   if (entry?.profiles.desktop.macos === 'passed') verifiedPlatforms.push('darwin')
   if (entry?.profiles.desktop.win32 === 'passed') verifiedPlatforms.push('win32')
-  const versions = [...(entry?.certifiedBrowserVersions ?? [])]
+  const scoped = (entry as { scopeCertification?: Record<string, Record<string, { browserVersions?: string[] }>> } | undefined)?.scopeCertification
   const verifiedBrowsers: Array<{ family: string; versions: string[] }> = []
-  if (versions.length > 0) {
-    if (webChromePassed) verifiedBrowsers.push({ family: 'chrome', versions: [...versions] })
-    if (webEdgePassed) verifiedBrowsers.push({ family: 'edge', versions: [...versions] })
-    if (desktopPassed) verifiedBrowsers.push({ family: 'chromium', versions: [...versions] })
-  }
+  if (webChromePassed) verifiedBrowsers.push({ family: 'chrome', versions: [...(scoped?.web?.chrome?.browserVersions ?? entry?.certifiedBrowserVersions ?? [])] })
+  if (webEdgePassed) verifiedBrowsers.push({ family: 'edge', versions: [...(scoped?.web?.edge?.browserVersions ?? entry?.certifiedBrowserVersions ?? [])] })
+  if (desktopPassed) verifiedBrowsers.push({ family: 'chromium', versions: [...(scoped?.desktop?.macos?.browserVersions ?? scoped?.desktop?.win32?.browserVersions ?? entry?.certifiedBrowserVersions ?? [])] })
   return {
     hostVersion: snapshot.hostVersion,
     adapterId: snapshot.adapterId,
