@@ -5567,15 +5567,15 @@ export async function checkPerformance(ctx) {
   const catalogBytes = state.catalogResponseBytes
   if (typeof catalogBytes === 'number') {
     const cap = baseline?.catalogJson?.maxBytes ?? null
-    const status = cap === null ? 'skip' : catalogBytes > Math.ceil(cap * 1.5) ? 'fail' : catalogBytes > cap ? 'warn' : 'pass'
+    const status = cap === null ? 'skip' : catalogBytes > cap ? 'fail' : 'pass'
     if (status === 'skip') {
       runner.skip('perf.catalog-size', 'catalog JSON response stays within the measured headroom cap', `baseline missing; measured ${catalogBytes} bytes`)
     } else {
       runner.add(
         status,
         'perf.catalog-size',
-        'catalog JSON response stays within the measured headroom cap (+50% extreme regression tolerated as warning)',
-        `actual ${catalogBytes} bytes; cap ${cap} bytes (${baseline.measuredFrom?.commit ?? 'candidate'}); ${status === 'pass' ? 'within cap' : status === 'warn' ? 'above cap, below extreme threshold' : 'extreme regression'}`,
+        'catalog JSON response stays within the measured headroom cap (hard fail)',
+        `actual ${catalogBytes} bytes; cap ${cap} bytes (${baseline.measuredFrom?.commit ?? 'candidate'}); ${status === 'pass' ? 'within cap' : 'above hard cap'}`,
         { catalogBytes, cap, baseline: baseline.catalogJson },
       )
     }
