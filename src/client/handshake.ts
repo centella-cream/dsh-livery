@@ -276,6 +276,7 @@ function isCompiledLivery(value: unknown): boolean {
   }
   const css = value.css
   if (!isRecord(css) || typeof css.tokens !== 'string' || typeof css.typography !== 'string' || typeof css.layout !== 'string') return false
+  if (!isRecord(value.presentation) || !isRecord(value.presentation.axes) || !isRecord(value.auditSummary)) return false
   if (!isText(value.cssHash) || !isText(value.hash)) return false
   if (!isStringArray(value.requiredCapabilities) || !isStringArray(value.optionalCapabilities)) return false
   const audit = value.audit

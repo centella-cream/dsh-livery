@@ -416,6 +416,8 @@ export function makeLivery(
     optionalCapabilities: [...(options.optional ?? ['reduced-motion'])],
     light: variant('#aa2222'),
     dark: variant('#2222aa'),
+    presentation: { axes: {}, overall: 'Full', responsivePolicy: { breakpoints: [], atNarrow: 'Degraded', atMinimal: 'Degraded' } },
+    auditSummary: { contrastTotal: 0, degraded: 0, tokenCoverage: { covered: 0, inherited: 0, missing: 0 }, cssSafety: { important: 0, hashSelectors: 0, remoteUrls: 0, unscopedTokens: 0 } },
     css: { tokens: '', typography: '', layout: '' },
     cssHash: `hash:/*${id}*/`,
     hash: `bundled:${id}`,
