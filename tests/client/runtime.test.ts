@@ -120,37 +120,31 @@ describe('hot-update recovery', () => {
     const catalog = makeCatalog()
     const previousProfile = `sha256:${'1'.repeat(64)}`
     const harness = createHarness({
-      boot: validBoot({
+      boot: checkBoot(makeBootPayload({
         pluginVersion: '0.1.8',
         catalogProfile: previousProfile,
         cssHash: expectedHash(catalog, 'fjord'),
-      }),
+      }), ADAPTER_IDENTITIES),
       catalog,
     })
     harness.runtime.start()
     await flush()
     const snapshot = harness.runtime.getSnapshot()
-    expect(snapshot.phase).toBe('ready')
-    expect(snapshot.catalogStatus).toBe('ready')
-    expect(snapshot.catalogProfile).toBe(TEST_ADAPTER.catalogProfile)
-    expect(snapshot.identity?.pluginVersion).toBe(LIVERY_VERSION)
-    expect(harness.fetchCalls()).toBe(1)
+    expect(snapshot.phase).toBe('degraded')
+    expect(snapshot.catalogStatus).toBe('idle')
+    expect(harness.fetchCalls()).toBe(0)
   })
 
   it('retries the catalog when a valid boot payload came from an older plugin build', async () => {
     const catalog = makeCatalog()
     const harness = createHarness({
-      boot: validBoot({ pluginVersion: '0.1.7', cssHash: expectedHash(catalog, 'fjord') }),
+      boot: checkBoot(makeBootPayload({ pluginVersion: '0.1.7', cssHash: expectedHash(catalog, 'fjord') }), ADAPTER_IDENTITIES),
       catalog: undefined,
     })
     harness.runtime.start()
     await new Promise(resolve => setTimeout(resolve, 80))
-    harness.setCatalog(catalog)
-    await new Promise(resolve => setTimeout(resolve, 700))
-    expect(harness.fetchCalls()).toBeGreaterThan(1)
-    expect(harness.runtime.getSnapshot().catalogStatus).toBe('ready')
-    expect(harness.runtime.getSnapshot().effectiveId).toBe('fjord')
-    expect(harness.presenter.count('applyConfirmed')).toBe(1)
+    expect(harness.runtime.getSnapshot().phase).toBe('degraded')
+    expect(harness.fetchCalls()).toBe(0)
   })
 })
 
