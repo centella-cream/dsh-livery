@@ -28,9 +28,7 @@ import { rememberedPageTab, rememberPageTab } from './tabs.js'
 import type { PageTab } from './tabs.js'
 import { Gallery } from './Gallery.js'
 import { SelfCheck } from './SelfCheck.js'
-import type { StudioDecorationId } from '../../core/presentation.js'
 import { WallpaperPanel } from './WallpaperPanel.js'
-import { StudioDecoration } from './StudioDecoration.js'
 
 /** Toast state; `seq` remounts the banner so the same text can re-show. */
 interface ToastState {
@@ -149,12 +147,11 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
   }, [t])
 
   return (
-    <div className="livery-workspace" data-testid="livery-section">
-      {shownLivery?.presentation !== undefined && (
-        <StudioDecoration
-          recipe={(shownLivery.presentation.axes.studioDecoration.declared as { id: StudioDecorationId }).id}
-        />
-      )}
+    <div
+      className="livery-workspace"
+      data-testid="livery-section"
+      data-studio-decoration={shownLivery?.presentation === undefined ? undefined : (shownLivery.presentation.axes.studioDecoration.declared as { id?: string }).id}
+    >
       <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
         {(['style', 'wallpaper'] as const).map(id => (
           <button
