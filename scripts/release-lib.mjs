@@ -53,3 +53,32 @@ export function parseFlag(argv, name) {
   const index = argv.indexOf(`--${name}`)
   return index === -1 ? undefined : argv[index + 1]
 }
+
+/** Formal matrix scopes that are currently `passed`. */
+export function matrixPassedScopes(matrix = readMatrix()) {
+  const scopes = []
+  for (const entry of matrix.entries) {
+    for (const [profile, platforms] of Object.entries(entry.profiles ?? {})) {
+      for (const [platform, status] of Object.entries(platforms ?? {})) {
+        if (status !== 'passed') continue
+        scopes.push({
+          key: `${entry.hostVersion}:${profile}:${platform}`,
+          hostVersion: entry.hostVersion,
+          profile,
+          platform,
+          claimTier: entry.claimTier,
+        })
+      }
+    }
+  }
+  return scopes
+}
+
+/** Scope key declared by one evidence document. */
+export function evidenceScopeKey(document) {
+  const scope = document?.scope
+  if (!scope || typeof scope.hostVersion !== 'string') return null
+  const profile = scope.profile
+  const platform = profile === 'web' ? (scope.browser ?? 'chrome') : (scope.platform ?? 'macos')
+  return `${scope.hostVersion}:${profile}:${platform}`
+}

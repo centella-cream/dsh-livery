@@ -129,6 +129,8 @@ jobs:
           test "v$VERSION" = "$GITHUB_REF_NAME" || { echo "tag/version mismatch: v$VERSION vs $GITHUB_REF_NAME" >&2; exit 1; }
       - name: Verify the downloaded bytes (no rebuild)
         run: pnpm verify:artifact -- --tgz "$TGZ"
+      - name: Enforce evidence coverage for every passed matrix scope
+        run: node scripts/prepublish-check.mjs --tgz "$TGZ"
       - name: Bind candidate to all formal-matrix evidence
         run: |
           test -f .tmp/candidate/release-manifest.json

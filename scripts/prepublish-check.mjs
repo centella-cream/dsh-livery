@@ -6,7 +6,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { matrixEvidence, defaultCandidatePath, parseFlag, readMatrix, readPackageJson } from './release-lib.mjs'
+import { defaultCandidatePath, evidenceScopeKey, matrixEvidence, matrixPassedScopes, parseFlag, readMatrix, readPackageJson } from './release-lib.mjs'
 
 const fail = (message) => {
   console.error(`prepublish-check: BLOCKED ${message}`)
@@ -18,7 +18,8 @@ for (const entry of matrix.entries) {
   if (entry.status !== 'released') fail(`formal matrix entry ${entry.hostVersion} is ${String(entry.status)}, not released`)
   if (!Array.isArray(entry.evidence) || entry.evidence.length === 0) fail(`formal matrix entry ${entry.hostVersion} has no evidence`)
 }
-const candidates = matrixEvidence(matrix).filter((file) => {
+const allCandidates = matrixEvidence(matrix)
+const candidates = allCandidates.filter((file) => {
   try {
     return JSON.parse(readFileSync(file, 'utf8')).packageVersion === pkg.version
   } catch {
@@ -26,6 +27,17 @@ const candidates = matrixEvidence(matrix).filter((file) => {
   }
 })
 if (candidates.length === 0) fail(`no evidence files for package version ${pkg.version}`)
+const scopes = matrixPassedScopes(matrix)
+const covered = new Set()
+for (const file of candidates) {
+  const document = JSON.parse(readFileSync(file, 'utf8'))
+  const key = evidenceScopeKey(document)
+  if (key !== null) covered.add(key)
+}
+const missing = scopes.filter((scope) => !covered.has(scope.key))
+if (missing.length > 0) {
+  fail(`package version ${pkg.version} evidence does not cover ${missing.length}/${scopes.length} passed scopes: ${missing.map((scope) => scope.key).join(', ')}`)
+}
 const supplied = parseFlag(process.argv.slice(2), 'tgz') ?? process.env.RELEASE_TGZ
 const tgz = supplied === undefined || supplied === '' ? defaultCandidatePath(pkg) : supplied
 if (!existsSync(tgz)) fail(`candidate tarball missing: ${tgz}`)
