@@ -18,14 +18,13 @@
  */
 export const CLIENT_CSS = `
 
-.livery-workspace{position:relative;isolation:isolate}
-.livery-workspace::before{content:'';position:absolute;inset:8px;z-index:0;pointer-events:none;opacity:.28;border:1px solid var(--lw-brand)}
+.livery-workspace{position:relative}
+.livery-workspace::before{content:'';position:absolute;inset:8px;z-index:0;pointer-events:none;border:1px solid var(--lw-brand)}
 .livery-workspace[data-studio-decoration="studio-grid"]::before{background-image:linear-gradient(var(--lw-line) 1px,transparent 1px),linear-gradient(90deg,var(--lw-line) 1px,transparent 1px);background-size:32px 32px;border:0}
 .livery-workspace[data-studio-decoration="studio-dots"]::before{background-image:radial-gradient(var(--lw-brand) 1px,transparent 1px);background-size:22px 22px;border:0;opacity:.18}
+.livery-workspace[data-density="dense"]::before{background-size:16px 16px}
 .livery-workspace[data-studio-decoration="studio-rules"]::before{background-image:repeating-linear-gradient(180deg,transparent 0,transparent 23px,var(--lw-line) 24px);border:0;opacity:.2}
 .livery-workspace>:not(.livery-studio-decoration){position:relative;z-index:1}
-@container livery-studio (max-width:999px){.livery-workspace::before{opacity:.16}}
-@container livery-studio (max-width:599px){.livery-workspace::before{display:none}}
 @media (forced-colors:active){.livery-workspace::before{display:none}}
 
 

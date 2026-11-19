@@ -131,6 +131,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
     reducedMotion: false,
   })
   const studioRecipe = studioRuntime !== undefined && typeof studioRuntime.effective === 'object' ? studioRuntime.effective.id : 'none'
+  const studioDensity = typeof studioAxis?.declared === 'object' ? String(studioAxis.declared.parameters['density'] ?? 'subtle') : 'subtle'
   const shownDescription = shownLivery === undefined
     ? t('current.stockDescription')
     : localizedDescription(shownLivery, locale)
@@ -159,6 +160,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
       className="livery-workspace"
       data-testid="livery-section"
       data-studio-decoration={studioRecipe}
+      data-density={studioDensity}
     >
       <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
         {(['style', 'wallpaper'] as const).map(id => (
