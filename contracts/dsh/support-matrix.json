@@ -274,7 +274,8 @@
       "evidence": [
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json",
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json",
-        "contracts/dsh/evidence/0.2.0/0.2.2-rc.3-web-chrome.json"
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.3-web-chrome.json",
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.2-rc.3 is npm next and a GitHub prerelease; preview claim.",
