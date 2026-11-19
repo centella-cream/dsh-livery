@@ -7,6 +7,7 @@
 
 import type { CapabilityId, CapabilityMap, ChromeStyleId, LiveryManifest, SurfaceStyleId } from './types.js'
 import { CAP } from './types.js'
+import { SURFACE_STYLE_DEFINITIONS } from './registry.js'
 
 export type AxisStatus = 'Full' | 'Inherited' | 'Degraded' | 'Unavailable'
 
@@ -319,6 +320,33 @@ function surfaceStyleForAxes(axes: { geometry: string; border: string; elevation
   return undefined
 }
 
+function surfaceTokenFamily(name: string): 'geometry' | 'border' | 'elevation' | 'material' | undefined {
+  if (name.startsWith('--dsw-radius-') || name === '--dsw-corner-shape') return 'geometry'
+  if (name.startsWith('--dsw-alias-border-')) return 'border'
+  if (name.startsWith('--dsw-elevation-') || name.startsWith('--dsw-shadow-')) return 'elevation'
+  if (name === '--dsw-menu-backdrop-filter' || name === '--dsw-mask-blur') return 'material'
+  return undefined
+}
+
+/** Compose independent geometry/border/elevation/material token families from matching styles. */
+export function compositeSurfaceTokens(spec: PresentationSpec): { light: Record<string, string>; dark: Record<string, string> } {
+  const exact = surfaceStyleForAxes(spec)
+  if (exact !== undefined) {
+    const definition = SURFACE_STYLE_DEFINITIONS[exact]
+    return { light: { ...definition.light }, dark: { ...definition.dark } }
+  }
+  const axes = { geometry: spec.geometry, border: spec.border, elevation: spec.elevation, material: spec.material }
+  const light: Record<string, string> = {}
+  const dark: Record<string, string> = {}
+  for (const axis of ['geometry', 'border', 'elevation', 'material'] as const) {
+    const style = Object.values(SURFACE_STYLE_DEFINITIONS).find((candidate) => SURFACE_AXES[candidate.id][axis] === axes[axis])
+    if (style === undefined) continue
+    for (const [name, value] of Object.entries(style.light)) if (surfaceTokenFamily(name) === axis) light[name] = value
+    for (const [name, value] of Object.entries(style.dark)) if (surfaceTokenFamily(name) === axis) dark[name] = value
+  }
+  return { light, dark }
+}
+
 function derivedCompat(spec: PresentationSpec): LiveryManifest['compat'] {
   const required: CapabilityId[] = [CAP.themeCss]
   const optional: CapabilityId[] = [
@@ -340,15 +368,13 @@ export function normalizeManifest(raw: unknown): LiveryManifest {
   const record = raw as Record<string, unknown>
   if (record.schemaVersion === 2) {
     const v2 = record as unknown as LiveryManifestV2Input
-    const style = surfaceStyleForAxes(v2.presentation)
-    const spec: PresentationSpec = style === undefined
-      ? { ...v2.presentation, ...SURFACE_AXES.solid }
-      : v2.presentation
+    const spec = v2.presentation
     const layout: LiveryManifest['layout'] = {
       density: spec.density,
       conversationWidth: spec.transcriptWidth,
       messageFlow: spec.messages.flow,
-      surfaceStyle: style ?? 'solid',
+      surfaceStyle: surfaceStyleForAxes(spec) ?? 'solid',
+      surfaceTokens: compositeSurfaceTokens(spec),
       chrome: spec.chrome,
     }
     return {

@@ -116,7 +116,7 @@ export function evaluateCapabilities(
 
   return {
     map,
-    effectiveLayout: effectiveLayout as LiveryManifest['layout'],
+    effectiveLayout: effectiveLayout as unknown as LiveryManifest['layout'],
     degraded,
   }
 }

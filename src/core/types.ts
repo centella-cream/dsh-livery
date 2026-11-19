@@ -181,6 +181,8 @@ export interface LiveryManifest {
     readonly conversationWidth: ConversationWidthId
     readonly messageFlow: MessageFlowId
     readonly surfaceStyle: SurfaceStyleId
+    /** Composite token maps for independent v2 axes (takes precedence over surfaceStyle). */
+    readonly surfaceTokens?: { readonly light: Readonly<Record<string, string>>; readonly dark: Readonly<Record<string, string>> }
     /** Optional component-fill recipe; omitted manifests behave as `plain`. */
     readonly chrome?: ChromeStyleId
   }

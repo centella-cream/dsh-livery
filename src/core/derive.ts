@@ -433,6 +433,7 @@ function deriveVariant(
   const chrome = chromeTokens(manifest.layout.chrome ?? 'plain', mode, seeds)
   for (const [name, value] of Object.entries(metricTokens)) full[name] = value
   for (const [name, value] of Object.entries(styleTokens)) full[name] = value
+  for (const [name, value] of Object.entries(manifest.layout.surfaceTokens?.[mode] ?? {})) full[name] = value
   for (const [name, value] of Object.entries(chrome)) full[name] = value
   // Re-apply explicit overrides last so they always win over style/metric tokens.
   for (const [name, value] of Object.entries(overrides)) full[name] = value
