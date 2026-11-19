@@ -70,7 +70,8 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.9/0.2.1-rc.3-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.3-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.0/0.2.1-rc.3-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.3 Desktop app / macOS only; Electron renderer verified; native macOS window shell is host-owned and outside plugin certification.",
@@ -106,7 +107,8 @@
       },
       "clientTarget": "chrome120",
       "evidence": [
-        "contracts/dsh/evidence/0.1.9/0.2.1-rc.4-web-chrome.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.4-web-chrome.json",
+        "contracts/dsh/evidence/0.2.0/0.2.1-rc.4-web-chrome.json"
       ],
       "notes": [
         "Next-channel preview: signed npm tarball @deepseek-ai/dsh@0.2.1-rc.4 and GitHub prerelease tag dsh-v0.2.1-rc.4 (commit 504a01a9578abc2c6f1fb896b1dc322c9fe24f66) exist; npm dist-tag remains next and the GitHub release is a prerelease.",
@@ -146,7 +148,9 @@
       "clientTarget": "chrome120",
       "evidence": [
         "contracts/dsh/evidence/0.1.9/0.2.1-rc.5-web-chrome.json",
-        "contracts/dsh/evidence/0.1.9/0.2.1-rc.5-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.1-rc.5-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.0/0.2.1-rc.5-web-chrome.json",
+        "contracts/dsh/evidence/0.2.0/0.2.1-rc.5-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.1-rc.5 Web + Desktop entry adapter; full Web and Desktop acceptance evidence is bound for 0.1.6.",
@@ -186,7 +190,9 @@
       "clientTarget": "chrome120",
       "evidence": [
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.1-web-chrome.json",
-        "contracts/dsh/evidence/0.1.9/0.2.2-rc.1-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.1-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.1-web-chrome.json",
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.1-desktop-macos.json"
       ],
       "notes": [
         "npm `latest` now points at DSH 0.2.2-rc.1, but the official GitHub release is still a prerelease; this remains a preview claim, not a stable claim.",
@@ -226,7 +232,9 @@
       "clientTarget": "chrome120",
       "evidence": [
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.2-web-chrome.json",
-        "contracts/dsh/evidence/0.1.9/0.2.2-rc.2-desktop-macos.json"
+        "contracts/dsh/evidence/0.1.9/0.2.2-rc.2-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.2-web-chrome.json",
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.2-desktop-macos.json"
       ],
       "notes": [
         "DSH 0.2.2-rc.2 is npm next and a GitHub prerelease; preview claim.",
@@ -266,7 +274,7 @@
       "evidence": [
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json",
         "contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json",
-        "contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json"
+        "contracts/dsh/evidence/0.2.0/0.2.2-rc.3-web-chrome.json"
       ],
       "notes": [
         "DSH 0.2.2-rc.3 is npm next and a GitHub prerelease; preview claim.",

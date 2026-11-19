@@ -1,19 +1,19 @@
 {
   "schemaVersion": 2,
-  "commit": "43832819d4532902bde09d518e342184b9a2757d",
+  "commit": "1e54ce4efee988e6f0a0af0b2287f3c4b095ad53",
   "packageVersion": "0.2.0",
-  "tarballSha256": "5099f96ad8a1db26011b3b107a51b23820d622b0d23a055c2620cfb2f2297708",
-  "tarballBytes": 2196778,
-  "generatedAt": "2026-11-18T03:14:39.569Z",
+  "tarballSha256": "7992b9eee44a447b189d6e58ed39ed1c05380440e2b6920566f6063d858074bf",
+  "tarballBytes": 2585803,
+  "generatedAt": "2026-11-19T10:21:39.701Z",
   "scope": {
-    "hostVersion": "0.2.2-rc.3",
+    "hostVersion": "0.2.1-rc.5",
     "profile": "desktop",
     "platform": "macos",
     "browserVersion": "152.0.7977.130"
   },
   "target": {
     "scope": {
-      "hostVersion": "0.2.2-rc.3",
+      "hostVersion": "0.2.1-rc.5",
       "profile": "desktop",
       "platform": "macos",
       "browser": "chrome",
@@ -21,17 +21,18 @@
     },
     "certification": {
       "claimTier": "preview",
-      "distributionChannel": "next",
+      "distributionChannel": "latest",
       "certifiedBrowserVersions": [
         "156.0.8078.48",
         "152.0.7977.130"
       ],
       "certifiedRuntimeVersions": [
+        "22.23.1",
         "24.21.0"
       ],
       "upstream": {
-        "githubTag": "dsh-v0.2.2-rc.3",
-        "npmVersion": "0.2.2-rc.3"
+        "githubTag": "dsh-v0.2.1-rc.5",
+        "npmVersion": "0.2.1-rc.5"
       }
     }
   },
@@ -89,22 +90,22 @@
     {
       "id": "desktop.sidebar-path",
       "status": "pass",
-      "title": "desktop sidebar exposes a tint or fill surface with an observed alpha"
+      "title": "desktop sidebar path and computed alpha match the frost remaining ratio"
     }
   ],
   "auditEnvelopes": [
     {
-      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f-audit-envelope.json",
-      "sha256": "a67ab337a708f6a08a2b3e27db40d75b14724450f2f19e1d3aeb039dfacda625"
+      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087-audit-envelope.json",
+      "sha256": "d8b70d55bcb6e8ce2d3f3b1778c2285c84f5faeb154b0a9298c2e5eee625ada4"
     }
   ],
   "runs": [
     {
-      "id": "final3-desktop",
-      "commit": "43832819d4532902bde09d518e342184b9a2757d",
-      "hostVersion": "0.2.2-rc.3",
-      "adapterId": "dsh-0.2.2-rc.3-r1",
-      "tarballSha256": "5099f96ad8a1db26011b3b107a51b23820d622b0d23a055c2620cfb2f2297708",
+      "id": "0.2.1-rc.5-desktop",
+      "commit": "1e54ce4efee988e6f0a0af0b2287f3c4b095ad53",
+      "hostVersion": "0.2.1-rc.5",
+      "adapterId": "dsh-0.2.1-rc.5-r1",
+      "tarballSha256": "7992b9eee44a447b189d6e58ed39ed1c05380440e2b6920566f6063d858074bf",
       "summary": {
         "pass": 35,
         "fail": 0,
@@ -112,10 +113,10 @@
         "warn": 0,
         "total": 37
       },
-      "probe": "contracts/dsh/evidence/0.2.0/probes/final3-desktop.json",
-      "probeSha256": "30a6d86e2fd9b551c66a81b6351296ff3a22051c85d32d2bf12205ff8e9230e2",
-      "report": "contracts/dsh/evidence/0.2.0/reports/final3-desktop.md",
-      "reportSha256": "9a3b08cc019ddb4cefa9cf0918c391081f21a8fd116eddb974168ae148144850"
+      "probe": "contracts/dsh/evidence/0.2.0/probes/0.2.1-rc.5-desktop.json",
+      "probeSha256": "2cdd6286438f769242cd762bd1172df2ef5de72d3580b7a4337b9baaad76fc4d",
+      "report": "contracts/dsh/evidence/0.2.0/reports/0.2.1-rc.5-desktop.md",
+      "reportSha256": "9a62cc4404602d2f14cd5d9f6475576b36efb0459fb3ae6f73eade4182e48bed"
     }
   ]
 }
