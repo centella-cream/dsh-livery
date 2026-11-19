@@ -35,7 +35,7 @@ if (supplied !== undefined) {
 } else {
   rmSync(work, { recursive: true, force: true })
   mkdirSync(work, { recursive: true })
-  execFileSync('pnpm', ['build'], { cwd: root, stdio: 'inherit' })
+  execFileSync('pnpm', ['build'], { cwd: root, stdio: 'inherit', env: { ...process.env, LIVERY_STRICT_PROFILE: '1' } })
   const packed = execFileSync('pnpm', ['pack', '--pack-destination', work], { cwd: root, encoding: 'utf8' })
   const tgz = packed.trim().split('\n').at(-1)
   if (tgz === undefined || !tgz.endsWith('.tgz')) throw new Error(`pnpm pack did not report a tarball: ${packed}`)

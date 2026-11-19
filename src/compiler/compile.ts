@@ -794,7 +794,7 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     for (const adapter of group.adapters) {
       // Compare every other adapter in the group (object identity, not version
       // string): two records that claim the same profile must render identically.
-      if (adapter === representative || adapter.sharedProfile === true) continue
+      if (adapter === representative || (adapter.sharedProfile === true && process.env.LIVERY_STRICT_PROFILE !== '1')) continue
       const adapterStock = stockForVersion(adapter.hostVersion)
       if (adapterStock === undefined) {
         adapterRenderIdentity = false
