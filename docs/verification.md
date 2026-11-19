@@ -1,6 +1,6 @@
 # Verification
 
-## Release `0.2.0` — historical candidate evidence (superseded, NO-GO)
+## Release `0.2.0` — implementation candidate (not published)
 
 The 0.2.0 candidate is `dsh-livery-0.2.0.tgz`. Its exact sha256, byte size and
 build commit are recorded in the committed evidence JSON under
@@ -9,25 +9,30 @@ build commit are recorded in the committed evidence JSON under
 
 | Host | Profile / platform | Runtime | Result |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
-| DSH `0.2.2-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.1-rc.2` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.1-rc.4` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.1-rc.5` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.1` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.2` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.3` | Web, Chrome `156.0.8078.48` | Node `24.21.0` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.1-rc.5` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.2-rc.1` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.2-rc.2` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.2-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 
 Evidence:
 
-- `contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json`
-- raw probes and reports under `contracts/dsh/evidence/0.2.0/probes/` and
-  `contracts/dsh/evidence/0.2.0/reports/`
-- canonical audit envelopes under `contracts/dsh/evidence/0.2.0/audit-envelopes/`
+- `contracts/dsh/evidence/0.2.0/` contains one JSON per declared scope, plus raw
+  probes, reports and canonical audit envelopes.
+- Each evidence file binds the exact tarball sha256, probe/report sha256,
+  critical check ids, build commit and audit envelope.
+- `pnpm prepublishOnly` verifies all 11 files against the final candidate.
 
 The Desktop probe records `desktop.sidebar-path` with the observed tint/fill
-surface alpha. The full Web evidence includes the merged preset/wallpaper checks
-and the Settings floating-surface check; the Desktop probe covers the Electron
-renderer surface, not native window shell/vibrancy.
-
-These files were generated against the superseded `5099f96…` candidate at
-commit `cbc44e0`. Later review fixes changed code and docs; the evidence is no
-longer release evidence and must be regenerated for all 11 passed matrix scopes.
+surface alpha. The Web probe covers the merged preset/wallpaper checks and the
+Settings floating-surface check; the Desktop probe covers the Electron renderer
+surface, not native window shell/vibrancy.
 
 > **Release `0.1.9` is published.** Full acceptance passed on Web `0.2.1-rc.2`,
 > `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and

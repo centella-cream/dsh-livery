@@ -11,10 +11,10 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: `0.2.0` implementation candidate — NO-GO, do not publish.**
-> The 2026-11 review found scope coverage, audit binding, L5a runtime, Desktop
-> parity and matrix-schema blockers. `dsh-livery@0.1.9` remains the current
-> published artifact.
+> **Release status: `0.2.0` implementation candidate — not published.**
+> All 11 declared scopes have current acceptance evidence and the release gates
+> pass. Remaining protocol review items are tracked before a publish decision;
+> `dsh-livery@0.1.9` remains the current published artifact.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop and DSH `0.2.2-rc.3`

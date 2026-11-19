@@ -10,9 +10,8 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片和虚化/磨砂效果的壁纸工作室，
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：`0.2.0` 实现候选 — NO-GO，禁止发布。**
-> 2026-11 审查发现 scope 覆盖、audit 绑定、L5a 运行时、Desktop parity 和
-> matrix schema 阻断项。`dsh-livery@0.1.9` 仍是当前已发布制品。
+> **发布状态：`0.2.0` 实现候选 — 尚未发布。**
+> 11 个声明 scope 均已有当前验收证据，发布门禁通过；仍需关闭剩余协议审查项后再决定发布。`dsh-livery@0.1.9` 仍是当前已发布制品。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop。

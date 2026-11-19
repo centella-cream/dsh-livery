@@ -4,7 +4,7 @@
 
 | Version | Supported |
 |---|---|
-| `0.2.x` implementation candidate | No (NO-GO) |
+| `0.2.x` implementation candidate | No (not published) |
 | `0.1.x` (published release) | Yes |
 
 The supported scope is the exact matrix in
