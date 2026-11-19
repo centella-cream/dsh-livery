@@ -12,6 +12,7 @@
  * outside React lives in the presenter.
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { resolveRuntimeAxis } from '../../core/presentation.js'
 import { Button, Modal, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   isStock,
@@ -123,6 +124,13 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
     ? undefined
     : liveries.find(candidate => candidate.id === shownId)
   const shownName = displayName(shownId)
+  const studioAxis = shownLivery?.presentation?.axes.studioDecoration
+  const studioRuntime = studioAxis === undefined ? undefined : resolveRuntimeAxis(studioAxis, typeof window === 'undefined' ? 0 : window.innerWidth, {
+    forcedColors: typeof matchMedia === 'function' && matchMedia('(forced-colors: active)').matches,
+    reducedTransparency: false,
+    reducedMotion: false,
+  })
+  const studioRecipe = studioRuntime !== undefined && typeof studioRuntime.effective === 'object' ? studioRuntime.effective.id : 'none'
   const shownDescription = shownLivery === undefined
     ? t('current.stockDescription')
     : localizedDescription(shownLivery, locale)
@@ -150,7 +158,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
     <div
       className="livery-workspace"
       data-testid="livery-section"
-      data-studio-decoration={shownLivery?.presentation === undefined ? undefined : (shownLivery.presentation.axes.studioDecoration.declared as { id?: string }).id}
+      data-studio-decoration={studioRecipe}
     >
       <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
         {(['style', 'wallpaper'] as const).map(id => (
