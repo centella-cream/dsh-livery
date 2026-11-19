@@ -602,23 +602,6 @@ async function main() {
         width: window.innerWidth,
       }
     })
-    const sidebarParity = await readSidebarParity()
-    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
-      ? 'macos-ordinary-tint'
-      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
-    const alphaTarget = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.remaining : sidebarParity.remaining
-    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
-    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - alphaTarget) <= 0.03
-    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
-    artifacts.sidebarObservation = sidebarObservation
-    expect(
-      runner,
-      'desktop.sidebar-path',
-      'desktop sidebar path and computed alpha match the frost remaining ratio',
-      parityOk,
-      JSON.stringify(sidebarObservation),
-      { sidebarObservation },
-    )
     expect(
       runner,
       'desktop.wallpaper',
@@ -773,6 +756,23 @@ async function main() {
       `patch skinId=${patchAfter.skinId ?? '(none)'} (before ${patchBefore.skinId ?? '(none)'}); rows=${patchAfter.liveryRows}`,
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-applied-desktop.png'), { label: 'desktop applied' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'applied' }))
+    const sidebarParity = await readSidebarParity()
+    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
+      ? 'macos-ordinary-tint'
+      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
+    const alphaTarget = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.remaining : sidebarParity.remaining
+    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
+    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - alphaTarget) <= 0.03
+    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
+    artifacts.sidebarObservation = sidebarObservation
+    expect(
+      runner,
+      'desktop.sidebar-path',
+      'desktop sidebar path and computed alpha match the frost remaining ratio',
+      parityOk,
+      JSON.stringify(sidebarObservation),
+      { sidebarObservation },
+    )
 
     // Desktop boot injection is delivered by the host's own boot-ready handshake
     // after window creation, so the meaningful first-frame evidence is a FRESH
