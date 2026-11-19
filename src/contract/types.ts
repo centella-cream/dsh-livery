@@ -68,7 +68,9 @@ export interface ClientApiContract {
   /** Cordis client services consumed by Livery. */
   readonly services: readonly string[]
   readonly slots: {
-    readonly settingsSection: { readonly kind: string; readonly scope: string; readonly owner: string }
+    readonly main?: { readonly kind: string; readonly scope: string }
+    readonly sidebarPanellist?: { readonly kind: string; readonly scope: string }
+    readonly settingsSection: { readonly kind: string; readonly scope: string; readonly owner?: string }
     readonly localeNamespace: string
   }
   /** Every slot Livery actually consumes, including owner/register/inject semantics. */
