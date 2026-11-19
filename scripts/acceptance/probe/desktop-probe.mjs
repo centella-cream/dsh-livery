@@ -569,7 +569,7 @@ async function main() {
     }, undefined, { timeout: 10_000 }).catch(() => {})
     const desktopWallpaper = await readWallpaperState(page)
     await captureScreenshot(page, path.join(screensDir, 'zh-wallpaper-desktop.png'), { label: 'desktop wallpaper studio (built-in applied)' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'wallpaper-builtin' }))
-    const sidebarParity = await page.evaluate(() => {
+    const readSidebarParity = () => page.evaluate(() => {
       const read = (name) => {
         const probe = document.createElement('div')
         probe.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px'
@@ -580,21 +580,44 @@ async function main() {
         return value
       }
       const alpha = (value) => {
-        const match = String(value).match(/rgba?\(([^)]*)\)/u)
-        const parts = match ? match[1].split(',').map((part) => part.trim()) : []
-        return parts.length === 4 ? Number(parts[3]) : 1
+        const text = String(value)
+        const rgba = text.match(/rgba?\(([^)]*)\)/u)
+        if (rgba) {
+          const parts = rgba[1].split(',').map((part) => part.trim())
+          return parts.length === 4 ? Number(parts[3]) : 1
+        }
+        const slash = text.match(/\/\s*([\d.]+)\s*\)/u)
+        return slash ? Number(slash[1]) : 1
       }
       const tint = read('--dsw-specific-sidebar-tint')
       const fill = read('--dsw-specific-sidebar-fill')
-      return { tint, fill, tintAlpha: alpha(tint), fillAlpha: alpha(fill) }
+      const base = read('--dsw-alias-bg-base')
+      const frostInput = document.querySelector('[data-testid="wallpaper-frost"]')
+      const frost = frostInput && 'value' in frostInput ? Number(frostInput.value) : 35
+      return {
+        tint, fill, base,
+        tintAlpha: alpha(tint), fillAlpha: alpha(fill), baseAlpha: alpha(base),
+        frost,
+        remaining: Math.max(0, Math.min(100, 100 - frost)) / 100,
+        width: window.innerWidth,
+      }
     })
+    const sidebarParity = await readSidebarParity()
+    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
+      ? 'macos-ordinary-tint'
+      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
+    const alphaTarget = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.remaining : sidebarParity.remaining
+    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
+    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - alphaTarget) <= 0.03
+    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
+    artifacts.sidebarObservation = sidebarObservation
     expect(
       runner,
       'desktop.sidebar-path',
-      'desktop sidebar exposes a tint or fill surface with an observed alpha',
-      (sidebarParity.tintAlpha > 0 && sidebarParity.tint !== 'rgba(0, 0, 0, 0)') || (sidebarParity.fillAlpha > 0 && sidebarParity.fill !== 'rgba(0, 0, 0, 0)'),
-      JSON.stringify(sidebarParity),
-      { sidebarParity },
+      'desktop sidebar path and computed alpha match the frost remaining ratio',
+      parityOk,
+      JSON.stringify(sidebarObservation),
+      { sidebarObservation },
     )
     expect(
       runner,
