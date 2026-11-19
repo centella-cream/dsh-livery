@@ -602,7 +602,9 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   const payload = {
     services: ['configForms', 'slots', 'locale', 'theme'],
     slots: {
-      settingsSection: { kind: 'list', scope: 'root', owner: 'SettingsSectionOwnerProps' },
+      main: { kind: 'keyed', scope: 'root' },
+      sidebarPanellist: { kind: 'list', scope: 'root' },
+      settingsSection: { kind: 'list', scope: 'root' },
       localeNamespace: 'dsh-livery',
     },
     theme: { darkAttribute, themeSourceAttribute, observer: "ctx.on('theme/change')" },
