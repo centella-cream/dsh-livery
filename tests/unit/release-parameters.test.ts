@@ -74,6 +74,11 @@ describe('0.1.3 release parameterization', () => {
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json',
         ]))
+      } else if (entry.hostVersion === '0.2.2-rc.5') {
+        expect(entry.evidence).toEqual(expect.arrayContaining([
+          'contracts/dsh/evidence/0.2.0/0.2.2-rc.5-web-chrome.json',
+          'contracts/dsh/evidence/0.2.0/0.2.2-rc.5-desktop-macos.json',
+        ]))
       } else if (entry.hostVersion === '0.2.1-rc.2') {
         expect(entry.evidence).toEqual([
           'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
@@ -100,6 +105,7 @@ describe('0.1.3 release parameterization', () => {
     expect(files).toContain('contracts/dsh/0.2.2-rc.1')
     expect(files).toContain('contracts/dsh/0.2.2-rc.2')
     expect(files).toContain('contracts/dsh/0.2.2-rc.3')
+    expect(files).toContain('contracts/dsh/0.2.2-rc.5')
     expect(files).not.toContain('docs')
     expect(files).not.toContain('contracts/dsh/support-matrix.proposed.json')
     expect(files).not.toContain('contracts/dsh/0.2.0-rc.2')

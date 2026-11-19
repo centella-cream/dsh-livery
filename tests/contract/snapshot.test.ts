@@ -23,9 +23,9 @@ import type { AdapterManifest, ContractSnapshot, SupportMatrix } from '../../src
 const workspace = process.cwd()
 
 /** Every frozen contract snapshot stays on disk for audit/diff. */
-const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3']
+const HISTORICAL_VERSIONS = ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.5']
 /** Formal support matrix: these host builds are generated/shipped (0.1.3). */
-const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3']
+const SHIPPED_VERSIONS = ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5', '0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3', '0.2.2-rc.5']
 
 // Optional local verification: set DSH_INSTALL to a matching @deepseek-ai/dsh
 // package root (e.g. `.../node_modules/@deepseek-ai/dsh`). CI skips these checks.
@@ -356,6 +356,14 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
           { family: 'chromium', versions: ['152.0.7977.130'] },
         ],
       },
+      '0.2.2-rc.5': {
+        profiles: ['web', 'desktop'],
+        platforms: ['web', 'darwin'],
+        browsers: [
+          { family: 'chrome', versions: ['156.0.8078.48'] },
+          { family: 'chromium', versions: ['152.0.7977.130'] },
+        ],
+      },
     }
     for (const version of SHIPPED_VERSIONS) {
       const contract = await readContract(version)
@@ -396,7 +404,7 @@ describe('generated shipped registry', () => {
     expect(registry.ADAPTER_IDENTITIES.map((identity) => identity.hostVersion)).toEqual(SHIPPED_VERSIONS)
     expect(registry.SUPPORTED_HOST_VERSIONS).toEqual(SHIPPED_VERSIONS)
     expect(registry.SUPPORTED_HOST_VERSIONS_LITE).toEqual(SHIPPED_VERSIONS)
-    expect(registry.DEFAULT_ADAPTER.hostVersion).toBe('0.2.2-rc.3')
+    expect(registry.DEFAULT_ADAPTER.hostVersion).toBe('0.2.2-rc.5')
     expect(registry.adapterForVersion('0.2.1-rc.2')?.adapterId).toBe('dsh-0.2.1-rc.2-r1')
     expect(registry.adapterForVersion('0.2.1-rc.3')?.adapterId).toBe('dsh-0.2.1-rc.3-r1')
     expect(registry.adapterForVersion('0.2.1-rc.4')?.adapterId).toBe('dsh-0.2.1-rc.4-r1')
@@ -434,7 +442,7 @@ describe('generated shipped registry', () => {
     const oldProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.1-rc.2')!.catalogProfile]!
     const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.3')!.catalogProfile]!
     expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.3'])
+    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.3', '0.2.2-rc.5'])
     expect(oldProfile.liveries).toHaveLength(28)
     expect(newestProfile.liveries).toHaveLength(28)
   })
@@ -473,6 +481,7 @@ describe('generated shipped registry', () => {
       '0.2.2-rc.1': 'compatible',
       '0.2.2-rc.2': 'compatible-preview',
       '0.2.2-rc.3': 'compatible-preview',
+      '0.2.2-rc.5': 'compatible-preview',
     })
     expect(pkg.files).toContain('contracts/dsh/0.2.1-rc.4')
     expect(pkg.files).toContain('contracts/dsh/0.2.1-rc.5')
