@@ -22,8 +22,7 @@ export const CLIENT_CSS = `
 .livery-workspace>:not(.livery-studio-decoration){position:relative;z-index:1}
 .livery-studio-decoration{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .livery-studio-decoration__svg{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);opacity:.28}
-@container livery-studio (max-width:999px){.livery-studio-decoration__svg{opacity:.16}.livery-studio-decoration__svg>*:nth-child(n+2){display:none}}
-@container livery-studio (max-width:799px){.livery-studio-decoration__svg{opacity:.1}.livery-studio-decoration__svg>*:nth-child(n+3){display:none}}
+@container livery-studio (max-width:999px){.livery-studio-decoration__svg>*:nth-child(n+2){display:none}}
 @container livery-studio (max-width:599px){.livery-studio-decoration{display:none}}
 @media (forced-colors:active){.livery-studio-decoration{display:none}}
 
