@@ -260,22 +260,11 @@ describe('semantic manifest validation', () => {
     expect(validateManifest(source).map((diagnostic) => diagnostic.code)).toContain('schema.pattern')
   })
 
-  it('rejects required capabilities the certified host cannot provide', () => {
+  it('treats v1 compat as legacy metadata and does not gate on it', () => {
     const source = mutated(fjord, (copy) => {
       copy.compat = { requiredCapabilities: ['theme-css', 'host-font-family', 'host-density-tokens'], optionalCapabilities: [] }
     })
-    const diagnostics = validateManifest(source)
-    expect(diagnostics.map((diagnostic) => diagnostic.code)).toContain('capability.required-unavailable')
-  })
-
-  it('rejects a capability declared both required and optional', () => {
-    const source = mutated(fjord, (copy) => {
-      copy.compat = {
-        requiredCapabilities: ['theme-css', 'host-font-family'],
-        optionalCapabilities: ['host-font-family'],
-      }
-    })
-    expect(validateManifest(source).map((diagnostic) => diagnostic.code)).toContain('capability.overlap')
+    expect(validateManifest(source)).toEqual([])
   })
 
   it('accepts the shipped catalog for every committed host snapshot', () => {

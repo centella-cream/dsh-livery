@@ -320,12 +320,14 @@ function surfaceStyleForAxes(axes: { geometry: string; border: string; elevation
 }
 
 function derivedCompat(spec: PresentationSpec): LiveryManifest['compat'] {
-  const required: CapabilityId[] = [CAP.themeCss, CAP.hostFontFamily]
+  const required: CapabilityId[] = [CAP.themeCss]
   const optional: CapabilityId[] = [
-    CAP.hostFontRoleHooks, CAP.surfaceMaterial, CAP.hostDensity, CAP.hostTranscriptWidth,
-    CAP.hostMessageFlow, CAP.reducedTransparency, CAP.forcedColors, CAP.reducedMotion,
+    CAP.hostFontFamily, CAP.hostFontRoleHooks, CAP.reducedTransparency, CAP.forcedColors, CAP.reducedMotion,
   ]
-  if (spec.material !== 'solid') required.push(CAP.surfaceMaterial)
+  if (spec.material !== 'solid') optional.push(CAP.surfaceMaterial)
+  if (spec.density !== 'host') optional.push(CAP.hostDensity)
+  if (spec.transcriptWidth !== 'host') optional.push(CAP.hostTranscriptWidth)
+  if (spec.messages.flow !== 'stock') optional.push(CAP.hostMessageFlow)
   return { requiredCapabilities: required, optionalCapabilities: optional }
 }
 
@@ -361,5 +363,6 @@ export function normalizeManifest(raw: unknown): LiveryManifest {
     }
   }
   const v1 = record as unknown as LiveryManifest
-  return { ...v1, presentation: v1.presentation ?? presentationFromLayout(v1.layout) }
+  const presentation = v1.presentation ?? presentationFromLayout(v1.layout)
+  return { ...v1, presentation, compat: derivedCompat(presentation) }
 }

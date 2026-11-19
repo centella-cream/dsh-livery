@@ -18,7 +18,7 @@ export type CatalogProfile = CatalogProfileData
 
 export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
   "sha256:16691145cd9adc75b67ee37e612a89de7e6443150f78b3ae8614c337b547ddfc": {
-    "compiledAt": "2026-01-26T03:49:44.000Z",
+    "compiledAt": "2026-09-19T17:47:38.000Z",
     "liveries": [
       {
         "audit": {
@@ -34,18 +34,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -211,7 +200,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:a7b49c6e8ef6c1fe11da011998b2e5f2f1b08fe69fc1c8acabb815b69099b574",
+          "auditHash": "sha256:e51eb5264fcaaf3d22f2ee837f9601a4338086edb6257c6ed84b4e1385790494",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -1531,8 +1520,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -1658,9 +1647,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -1702,18 +1689,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -1879,7 +1855,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:acab22c551671674f1c8b3a6bde36d1bcba9f74afdb60053ee1fe40d3764c822",
+          "auditHash": "sha256:8b54cafa75c19ac90c7e9cd002281286d6e767e71e72085edbe8465755592329",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -3209,8 +3185,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -3336,9 +3312,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -3396,18 +3370,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -3573,7 +3536,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:0cf95bf7aa98843352be9e377112839e7214258d0caa6450652e5c6c206fddcc",
+          "auditHash": "sha256:4511954aa6a7479725ac7b9ecd2406e073f8afaef1d252bf45c8567bdca0913f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -4896,8 +4859,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -5023,9 +4986,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -5067,18 +5028,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -5244,7 +5194,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:f966dd19ee6a95116dc5b81ccec7bdf4704f11f6ae43d80fe5ff9cd1df718d21",
+          "auditHash": "sha256:0a93f80599d6eb025fab4f99a66d6acf46c99e0264a51353d717abd366f3a319",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -6572,8 +6522,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -6699,9 +6649,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -6743,23 +6691,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -6925,7 +6857,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:942995234ed18e727b79f5ee1fddef6b0b6229847d55843a6e8b51740da85dbf",
+          "auditHash": "sha256:4ff6e271e386f5df06ec3efa5af7aaac54c006efb02b268976d9155c9d8ac9e0",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -8263,11 +8195,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -8399,8 +8328,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -8458,23 +8386,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -8640,7 +8552,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:0343415a7718507e26b788672e50fb6a32929711860842f8828c8a716233ae14",
+          "auditHash": "sha256:ae2eddb37f736f0090199c040298d17a847279c77eb62fa4f087f88c12610e2f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -9979,11 +9891,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -10115,8 +10024,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -10174,18 +10082,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -10351,7 +10248,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:d1b387f476d7887eb6ed06cb039acc13bf16473a51122f37fae5e8be882add41",
+          "auditHash": "sha256:a3e6dcdbb9e2c836e70b9ff7594ffdd0dcbb1c6435393756d79a20ff567420cd",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -11674,11 +11571,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -11801,9 +11699,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -11845,18 +11741,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -12022,7 +11907,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:ea22e659b8c7de09d6cda1a160ccfc8cf77cde9fc5d193ab97fe5e9c4ee890f7",
+          "auditHash": "sha256:950161d276ef3ee716372c094896d600e41c2f36047e111912d66ac6a9fa7247",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -13352,8 +13237,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -13479,9 +13364,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -13523,18 +13406,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -13700,7 +13572,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:80e538b47e2f6a902a9f00b2725543ce1f7a79cd998a9a970b8f9f8b6cbbf3b6",
+          "auditHash": "sha256:94293807e7fa957685366febbb7d42866f8c12ab9b9e21b7f97d2bc25c058a80",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -15032,8 +14904,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -15159,9 +15031,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -15219,18 +15089,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -15396,7 +15255,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9d5dcb8275fc15a0d35ef75b9cd75c2c014bbbc71bd901f18eb7cf498de7237e",
+          "auditHash": "sha256:a976949e1d1c7ad4d774407fad0615294e5e4ef78ff3b2d966a2bd8f3da18baa",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -16724,8 +16583,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -16851,9 +16710,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -16895,18 +16752,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -17072,7 +16918,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:fd777f8ceb288fd681f1b7481cdf9737ce7e17ea102a5f619364d41f869bcf82",
+          "auditHash": "sha256:9633441ce81060aade64705d10470e6c3c7cad69ac627ff6dcd5eef2f873f17c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -18392,8 +18238,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -18519,9 +18365,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -18563,18 +18407,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -18740,7 +18573,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:286b31aa4a252fa123a23ebe1ba58bf3d4db9b61931322aa1a463033e8f3769b",
+          "auditHash": "sha256:024929c72dcc55a43dda1502ceabfc6b64f762192233fb23c4f3d793fc097804",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -20080,8 +19913,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -20207,9 +20040,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -20269,18 +20100,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -20446,7 +20266,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:196aa9c82e081bb724df7ff191ad3ef9a1366c71b4721eb91993ac5bf6ea8c75",
+          "auditHash": "sha256:90100308751a5a9178a600298eb4eae58cf0501d6131d7d18981bca7f2009f61",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -21773,8 +21593,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -21900,9 +21720,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -21944,18 +21762,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -22121,7 +21928,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:5d37519a019d0a7b61c5e2aee7fb1b9e0ec7146813566966200dc5aa8a07402b",
+          "auditHash": "sha256:0f5088ac9f83191018ed02a7732262094e9af19a5ea4244774fd2a5fbb3feaaa",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -23458,8 +23265,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -23585,9 +23392,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -23645,18 +23450,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -23822,7 +23616,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:921b17591c245905c6f74f600b356e9911dd2a74be68bb27ebfd8fac8679f5b2",
+          "auditHash": "sha256:7bbb06f93603e0324a01e6862f620fcdc5e347f11a226f7d85892148ad82f975",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -25145,8 +24939,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -25272,9 +25066,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -25316,18 +25108,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -25493,7 +25274,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:341de32141359f58411138557b565ca2ffac767195f08b37c19139836c376422",
+          "auditHash": "sha256:714ac6f92eda013d820b6362105be1119a472f729607bbd1cb1643dedb28cbd2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -26822,11 +26603,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -26949,9 +26731,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -27009,18 +26789,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -27186,7 +26955,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:bbd8286160b2f8fdb2e6e9f004d1796fd400b5e6dd88550160f7fc21c94f194d",
+          "auditHash": "sha256:ce8f436c00c928448fb3af27d5e7e9a3b11d65d91c975f66d73b92a67184a59f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -28508,8 +28277,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -28635,9 +28404,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -28679,18 +28446,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -28856,7 +28612,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:b8cfba9f286cc6cf87bd01ce111bfa92b9c5fb20a51fd895ddebd6bb7212e9e1",
+          "auditHash": "sha256:ee35e9422ec1ed689d4ad328a677c7f48eca60e0a14ee4b82bb3f838975bdbfa",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -30184,8 +29940,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -30311,9 +30067,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -30355,18 +30109,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -30532,7 +30275,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4abfe93d876a6dcd1135f0a8c26dd72bf401f041ec18394980b3a746a531459c",
+          "auditHash": "sha256:27b05aa177dc79005f3218288629e50e265f53055ea993df7e45d5f5366b0ff3",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -31871,8 +31614,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -31998,9 +31741,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -32058,18 +31799,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -32235,7 +31965,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:5218c91627ce6877bfe21347cd002364b7317d36cb496d691cf2c9d3c9029b48",
+          "auditHash": "sha256:3e584a8c518bdfff6250b7b571415c5dfb7db18b89f09773a685abe9404c8cc8",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -33568,8 +33298,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -33695,9 +33425,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -33755,18 +33483,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -33932,7 +33649,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:a041353c5a6309639d92f6ec5979016d5804feeff60c23cff3ffc1555e3caa44",
+          "auditHash": "sha256:83813466973e75969d9395aaff0eb832fbeb0db7871714a3d9100909612a3d91",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -35253,8 +34970,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -35380,9 +35097,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -35424,18 +35139,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -35601,7 +35305,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:f1d0a89ee9df3b657febaabf0d7bac826fb4f909dbbd19f4284c0d72f921b8a7",
+          "auditHash": "sha256:c4f43d127178d8b82324a3dfa8906c61a4b855e655044248d0843634561cae80",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -36938,8 +36642,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -37065,9 +36769,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -37125,18 +36827,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -37302,7 +36993,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:d5a1739d8f116e6fddbed1a6fb78944a9d3decdf4c24419a1522748473d897f3",
+          "auditHash": "sha256:457507f50c4ba30ef3d898f3ec571f17181627ad1d20253fe70c26e1dc37d7fa",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -38622,8 +38313,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -38749,9 +38440,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -38793,23 +38482,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -38975,7 +38648,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:bcf9579d0a7c013286dfd2644343ca9f4be1b5b96ae8d24986ececafa1463e5b",
+          "auditHash": "sha256:275f84afdd02e243a2ae7158f39331fe0f5b9241e260d1d0ab75e0cf238cda1f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -40322,11 +39995,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -40458,8 +40128,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -40519,18 +40188,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -40696,7 +40354,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:ca1ab9bc0385a842ba598dcfbfb399fa06514a8a3305d48fd7c889e0f64d6057",
+          "auditHash": "sha256:cf0814be01951d5a5f90536347aef2c6b013681963fa4b5e8a64f85fe9c51549",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -42034,8 +41692,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -42161,9 +41819,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -42221,18 +41877,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -42398,7 +42043,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9926360652a1b1db69f14457030b3a9c880f5c634cc8c06b3236155fd724fe29",
+          "auditHash": "sha256:bf3fca7ededf4ae881b157549404e1f3dee54fef67c734584bdfcad42f7f738c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -43745,8 +43390,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -43872,9 +43517,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -43934,23 +43577,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -44116,7 +43743,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:b6eeac3b815226cf6ada9a7d023c2a3a6f43e7f2203aa12d71544cd93ef21996",
+          "auditHash": "sha256:3a45d858b0ff027b18623d10b24d8580fd9220f9fe3dd25aa807ba8e50360eb4",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -45446,11 +45073,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -45582,8 +45206,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -45625,18 +45248,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -45802,7 +45414,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:5be9911067941718f987af3ea9705bf4d4d0a53b7b5ff8a3116217825f7a4ea4",
+          "auditHash": "sha256:c7fb66267a4434604f878339ecf0be2bc0437fd6cb8532f842a1a82624549db2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -47140,8 +46752,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -47267,9 +46879,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -47318,10 +46928,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.1"
     ],
-    "sourceHash": "sha256:12ed2e5810768152774b6e2ef8ce2d07bae9e8a250a5bc1b1df5456c47fcf03e"
+    "sourceHash": "sha256:5b92b9baa1125cb3bb6f60f6b5c02ed5508e6960c6161953dfc78cb2da3bf8f7"
   },
   "sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3": {
-    "compiledAt": "2026-09-08T15:55:57.000Z",
+    "compiledAt": "2026-09-09T23:46:43.000Z",
     "liveries": [
       {
         "audit": {
@@ -47337,18 +46947,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -47531,7 +47130,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c5bfaecf3d83c06f4d412a3354c8ef55c9203827e2874b468106e76ba1f0c3f9",
+          "auditHash": "sha256:5842e583088311c5859cbeba7141bc8369233c68c243889c7b529cf15c657875",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -48863,8 +48462,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -48990,9 +48589,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -49034,18 +48631,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -49228,7 +48814,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:3c317f537a2f699927d0d4c981820edda5c718d0a6698d8764464765874ea92a",
+          "auditHash": "sha256:4fd5e5d2904df9748413be9d486cf20292fd4a7db4cfbd801618546b5426d310",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -50570,8 +50156,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -50697,9 +50283,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -50757,18 +50341,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -50951,7 +50524,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:b6c34498a97a8c41414d5ff68e931f76fcf18779e348fe1feacf6e880849502e",
+          "auditHash": "sha256:0e7e28788d3cfe39dbd7d3be2a6b0c53662640b12869c0dfa1cfcfbf30cef90f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -52286,8 +51859,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -52413,9 +51986,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -52457,18 +52028,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -52651,7 +52211,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:fa4fc465d7d8938c20f7f02f109bdf8ea1c8e0b520cfcf1e6f06da9b2443f38b",
+          "auditHash": "sha256:cb49216a41ae62123fa75773b032ebf015715ea1d2c342ba4eac14169345ba8d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -53991,8 +53551,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -54118,9 +53678,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -54162,23 +53720,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -54361,7 +53903,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9519a6cd0677adbb704f411e9bb884df3520acd06a03926848f57a1bcb67b2a2",
+          "auditHash": "sha256:684f371b965342045250320e9e53592ae2634ac0253b97a6c4c09ac6eb49c581",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -55711,11 +55253,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -55847,8 +55386,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -55906,23 +55444,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -56105,7 +55627,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:dd1409398a5763407dd6d7f1230aa2274f3347de3fa854de9ba6a5915612e6d0",
+          "auditHash": "sha256:d9a4be77cbbc57b65882c649d779c6f451b97adb1886ecb02a9a6bfe3c53a7a2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -57456,11 +56978,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -57592,8 +57111,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -57651,18 +57169,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -57845,7 +57352,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:cd9bb3778cc5b91aa5d5ab5a34707e57ea8035f7ac81c5d423dba90bba965094",
+          "auditHash": "sha256:8ba33f3759066574a198151ee446824c4084039f4eec717f22b89b41dd99dcfd",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -59180,11 +58687,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -59307,9 +58815,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -59351,18 +58857,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -59545,7 +59040,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:93293a9675a24cc6ea8210d27ed5bc013aa0e09aded8a8f3dda7e8640083f9db",
+          "auditHash": "sha256:9ee894645d463a201faa35b7cf12af380438823a2b11ae8e35e35320ad0d3212",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -60887,8 +60382,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -61014,9 +60509,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -61058,18 +60551,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -61252,7 +60734,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:05c7e5b686315e9d689d6b8691437f952e1238cd6b2939d7a23722689e10e82e",
+          "auditHash": "sha256:8c2ca742854c595278ee5a807b85a215cfda13898340f218999b32408f69d0d9",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -62596,8 +62078,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -62723,9 +62205,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -62783,18 +62263,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -62977,7 +62446,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:a8894fd10fe349ecf9c7472aefa49d4abcbabac8e61fc08e12636dea9041ac8a",
+          "auditHash": "sha256:0ca2a15f258be5dfb51b067ba8c3834ea4dcbf10b931f51112c12b28d7ab5586",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -64317,8 +63786,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -64444,9 +63913,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -64488,18 +63955,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -64682,7 +64138,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:193eaeb0b38038d1d74bdbafdb5a3414aa2f063d804f4e00416d6f9e89fbbe9c",
+          "auditHash": "sha256:4c49321cb8f15a936081f6b4e37056dfe76be09311c5ec875c20e0da9cced08d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -66014,8 +65470,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -66141,9 +65597,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -66185,18 +65639,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -66379,7 +65822,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:67b88a46f293d39aa1577c593fb41c8b04ebf045eb8c96caac01ab97f60d5ab3",
+          "auditHash": "sha256:ed94be6e39ab38a8e3b6d55275351eaaad8f4eacdbd3640cbcf51ce0f985249c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -67731,8 +67174,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -67858,9 +67301,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -67920,18 +67361,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -68114,7 +67544,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:16c235040d78a458ec9e4935728f238dc8e4dea8cac7c15c310622a1896ee221",
+          "auditHash": "sha256:cf6704cae5b49879ee8848f70e8b34ebd7771e57bf2ce717f3cf8ba61bc33d8c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -69453,8 +68883,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -69580,9 +69010,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -69624,18 +69052,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -69818,7 +69235,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:6fb3ee917a4a25839bbd1719eca19b9895d36072ccdb39c588408105b2693f3d",
+          "auditHash": "sha256:b3cf3c5715f4ad137eaaba221e461649048ef3fa538d5efcf10e0cd6204d772a",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -71167,8 +70584,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -71294,9 +70711,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -71354,18 +70769,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -71548,7 +70952,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:47bb678b4bd34448382b8843ce7f0632c31bd0b6b674c36c0c8597939b76e4e8",
+          "auditHash": "sha256:1e13156d750befdb0edf9d1f95ba10e12b94d9e0527c002646537ff340afd08e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -72883,8 +72287,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -73010,9 +72414,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -73054,18 +72456,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -73248,7 +72639,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:46112540047e06320ca071f6e41afe2d325fbe37fa9cf42232435c4647b2e0ee",
+          "auditHash": "sha256:ca07883e3104041e31802e199a8beb6268fb5d2391307d82e2fa5c6109b9b4d7",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -74589,11 +73980,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -74716,9 +74108,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -74776,18 +74166,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -74970,7 +74349,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:f584e99805aab414e6abbc3f82a949bd81eb46de980e64c3761202825652e713",
+          "auditHash": "sha256:be48147d8461552e2459d346bce7dfd08109bad2cfb30d0cdfcf9e80e9da1d13",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -76304,8 +75683,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -76431,9 +75810,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -76475,18 +75852,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -76669,7 +76035,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9b3b40175cdef5177ddea226ec2dd5c6da207614ed63d386f5ce3d8708668742",
+          "auditHash": "sha256:f3ad73aef9b70db2793485a75d579a670f883a50a139e5a4224280e5cbb33dbb",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -78009,8 +77375,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -78136,9 +77502,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -78180,18 +77544,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -78374,7 +77727,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:ee189d2b92eab5822b69a2d6c49b4298f64af23262315d088c8db86c52f45fad",
+          "auditHash": "sha256:9ed7a9605e6369275a1d44c01614548997e15122e3d2b16161f06dfee8dee1ad",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -79725,8 +79078,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -79852,9 +79205,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -79912,18 +79263,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -80106,7 +79446,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:16c3581c4e0d36d832b4623987599a164adada501b22bdf3db065e39cf053389",
+          "auditHash": "sha256:dce6fd8f4ae7736cda88695ff36a8c0f9a69def2b4a9a2e8db67894eb9d34a21",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -81451,8 +80791,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -81578,9 +80918,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -81638,18 +80976,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -81832,7 +81159,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:555d53d784874617c0634e4c694f05d8c0ab2f4c755d79832476d1fbcdaba37a",
+          "auditHash": "sha256:bdada23aa7ae7c8a2d2846e36beb9511697a73803ecffd5259529e0528c59356",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -83165,8 +82492,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -83292,9 +82619,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -83336,18 +82661,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -83530,7 +82844,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c80cbf4db6efe5b4351eb71435030da75b90fdab9efd45e0c680f77c9b74a28f",
+          "auditHash": "sha256:0bf5c8b5303c39ce9f13aef7b9084db95a70cf3586d103b0da4f029c4228c754",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -84879,8 +84193,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -85006,9 +84320,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -85066,18 +84378,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -85260,7 +84561,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:359f2f7025470a8f89413e4cb4ebc05c2f7349e5a982916b8048ae6eabe60527",
+          "auditHash": "sha256:ca5c01aaccbdf031c0e730208435a7861b85af551663299af6703aaad217be3e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -86592,8 +85893,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -86719,9 +86020,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -86763,23 +86062,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -86962,7 +86245,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:0093ce1e437bd4ce5e081eb0c7d87b5af577ee9990f706fbfdf88efbc5be6c5b",
+          "auditHash": "sha256:b6af8b4a302b0532ac4a3122c4359745b0422b39f700ee42a0b362f5c72d2798",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -88321,11 +87604,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -88457,8 +87737,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -88518,18 +87797,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -88712,7 +87980,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9ae9df85b4115b614fdf51aa0b7b15bd493dc79ce39f33beb0764c1e6e338696",
+          "auditHash": "sha256:488b0a54ac9969c1514fff9225b8a8c4812b7194f460d1ad7ce9ddd356bc9f9d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -90062,8 +89330,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -90189,9 +89457,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -90249,18 +89515,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -90443,7 +89698,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:95b65b52fee3e44534e7f698dbee58f65caf212d5f9a7883ce6e748052c16050",
+          "auditHash": "sha256:f1ae4c965bf5a5a3922976b6cf31ffa0b3ae384e8173630564dc7a05481e322e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -91802,8 +91057,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -91929,9 +91184,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -91991,23 +91244,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -92190,7 +91427,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:3b13fc4cb0896a1f262165a526b3fc2a70e1cd8f41cc3a7fadfa6374b6acd451",
+          "auditHash": "sha256:1ce2411ac29f17b21dd78a432cd3173f1d32d7bae49cf85156c2215fe11d2968",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -93532,11 +92769,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -93668,8 +92902,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -93711,18 +92944,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -93905,7 +93127,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4068e0dc5d2903ca1d47b0a96b271095e9e53639420278a62947666858911276",
+          "auditHash": "sha256:032ede6d85793b13a164be3e80ddc6b184082c618572e3dcf100a452fb019ff0",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -95255,8 +94477,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -95382,9 +94604,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -95433,10 +94653,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.3"
     ],
-    "sourceHash": "sha256:35ec190d8a5d5df5dc8e5961346621a9006abafa13f5efb76dda6f61c97fbbc5"
+    "sourceHash": "sha256:46d8a863741dbbce72222d79a3ccb3c385eac241da7e3c766e5789252f2e5be1"
   },
   "sha256:607e5aea42096b4fb59b2a749381ef7259f955d72ae655d390c16754278b4c7c": {
-    "compiledAt": "2026-04-22T20:10:07.000Z",
+    "compiledAt": "2026-05-16T21:36:32.000Z",
     "liveries": [
       {
         "audit": {
@@ -95452,18 +94672,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -95646,7 +94855,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c5bfaecf3d83c06f4d412a3354c8ef55c9203827e2874b468106e76ba1f0c3f9",
+          "auditHash": "sha256:5842e583088311c5859cbeba7141bc8369233c68c243889c7b529cf15c657875",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -96978,8 +96187,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -97105,9 +96314,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -97149,18 +96356,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -97343,7 +96539,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:3c317f537a2f699927d0d4c981820edda5c718d0a6698d8764464765874ea92a",
+          "auditHash": "sha256:4fd5e5d2904df9748413be9d486cf20292fd4a7db4cfbd801618546b5426d310",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -98685,8 +97881,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -98812,9 +98008,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -98872,18 +98066,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -99066,7 +98249,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:b6c34498a97a8c41414d5ff68e931f76fcf18779e348fe1feacf6e880849502e",
+          "auditHash": "sha256:0e7e28788d3cfe39dbd7d3be2a6b0c53662640b12869c0dfa1cfcfbf30cef90f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -100401,8 +99584,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -100528,9 +99711,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -100572,18 +99753,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -100766,7 +99936,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:fa4fc465d7d8938c20f7f02f109bdf8ea1c8e0b520cfcf1e6f06da9b2443f38b",
+          "auditHash": "sha256:cb49216a41ae62123fa75773b032ebf015715ea1d2c342ba4eac14169345ba8d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -102106,8 +101276,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -102233,9 +101403,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -102277,23 +101445,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -102476,7 +101628,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9519a6cd0677adbb704f411e9bb884df3520acd06a03926848f57a1bcb67b2a2",
+          "auditHash": "sha256:684f371b965342045250320e9e53592ae2634ac0253b97a6c4c09ac6eb49c581",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -103826,11 +102978,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -103962,8 +103111,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -104021,23 +103169,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -104220,7 +103352,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:dd1409398a5763407dd6d7f1230aa2274f3347de3fa854de9ba6a5915612e6d0",
+          "auditHash": "sha256:d9a4be77cbbc57b65882c649d779c6f451b97adb1886ecb02a9a6bfe3c53a7a2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -105571,11 +104703,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -105707,8 +104836,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -105766,18 +104894,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -105960,7 +105077,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:cd9bb3778cc5b91aa5d5ab5a34707e57ea8035f7ac81c5d423dba90bba965094",
+          "auditHash": "sha256:8ba33f3759066574a198151ee446824c4084039f4eec717f22b89b41dd99dcfd",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -107295,11 +106412,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -107422,9 +106540,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -107466,18 +106582,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -107660,7 +106765,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:93293a9675a24cc6ea8210d27ed5bc013aa0e09aded8a8f3dda7e8640083f9db",
+          "auditHash": "sha256:9ee894645d463a201faa35b7cf12af380438823a2b11ae8e35e35320ad0d3212",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -109002,8 +108107,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -109129,9 +108234,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -109173,18 +108276,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -109367,7 +108459,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:05c7e5b686315e9d689d6b8691437f952e1238cd6b2939d7a23722689e10e82e",
+          "auditHash": "sha256:8c2ca742854c595278ee5a807b85a215cfda13898340f218999b32408f69d0d9",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -110711,8 +109803,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -110838,9 +109930,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -110898,18 +109988,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -111092,7 +110171,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:a8894fd10fe349ecf9c7472aefa49d4abcbabac8e61fc08e12636dea9041ac8a",
+          "auditHash": "sha256:0ca2a15f258be5dfb51b067ba8c3834ea4dcbf10b931f51112c12b28d7ab5586",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -112432,8 +111511,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -112559,9 +111638,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -112603,18 +111680,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -112797,7 +111863,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:193eaeb0b38038d1d74bdbafdb5a3414aa2f063d804f4e00416d6f9e89fbbe9c",
+          "auditHash": "sha256:4c49321cb8f15a936081f6b4e37056dfe76be09311c5ec875c20e0da9cced08d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -114129,8 +113195,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -114256,9 +113322,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -114300,18 +113364,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -114494,7 +113547,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:67b88a46f293d39aa1577c593fb41c8b04ebf045eb8c96caac01ab97f60d5ab3",
+          "auditHash": "sha256:ed94be6e39ab38a8e3b6d55275351eaaad8f4eacdbd3640cbcf51ce0f985249c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -115846,8 +114899,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -115973,9 +115026,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -116035,18 +115086,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -116229,7 +115269,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:16c235040d78a458ec9e4935728f238dc8e4dea8cac7c15c310622a1896ee221",
+          "auditHash": "sha256:cf6704cae5b49879ee8848f70e8b34ebd7771e57bf2ce717f3cf8ba61bc33d8c",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -117568,8 +116608,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -117695,9 +116735,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -117739,18 +116777,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -117933,7 +116960,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:6fb3ee917a4a25839bbd1719eca19b9895d36072ccdb39c588408105b2693f3d",
+          "auditHash": "sha256:b3cf3c5715f4ad137eaaba221e461649048ef3fa538d5efcf10e0cd6204d772a",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -119282,8 +118309,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -119409,9 +118436,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -119469,18 +118494,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -119663,7 +118677,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:47bb678b4bd34448382b8843ce7f0632c31bd0b6b674c36c0c8597939b76e4e8",
+          "auditHash": "sha256:1e13156d750befdb0edf9d1f95ba10e12b94d9e0527c002646537ff340afd08e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -120998,8 +120012,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -121125,9 +120139,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -121169,18 +120181,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -121363,7 +120364,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:46112540047e06320ca071f6e41afe2d325fbe37fa9cf42232435c4647b2e0ee",
+          "auditHash": "sha256:ca07883e3104041e31802e199a8beb6268fb5d2391307d82e2fa5c6109b9b4d7",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -122704,11 +121705,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -122831,9 +121833,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -122891,18 +121891,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -123085,7 +122074,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:f584e99805aab414e6abbc3f82a949bd81eb46de980e64c3761202825652e713",
+          "auditHash": "sha256:be48147d8461552e2459d346bce7dfd08109bad2cfb30d0cdfcf9e80e9da1d13",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -124419,8 +123408,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -124546,9 +123535,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -124590,18 +123577,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -124784,7 +123760,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9b3b40175cdef5177ddea226ec2dd5c6da207614ed63d386f5ce3d8708668742",
+          "auditHash": "sha256:f3ad73aef9b70db2793485a75d579a670f883a50a139e5a4224280e5cbb33dbb",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -126124,8 +125100,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -126251,9 +125227,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -126295,18 +125269,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -126489,7 +125452,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:ee189d2b92eab5822b69a2d6c49b4298f64af23262315d088c8db86c52f45fad",
+          "auditHash": "sha256:9ed7a9605e6369275a1d44c01614548997e15122e3d2b16161f06dfee8dee1ad",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -127840,8 +126803,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -127967,9 +126930,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -128027,18 +126988,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -128221,7 +127171,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:16c3581c4e0d36d832b4623987599a164adada501b22bdf3db065e39cf053389",
+          "auditHash": "sha256:dce6fd8f4ae7736cda88695ff36a8c0f9a69def2b4a9a2e8db67894eb9d34a21",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -129566,8 +128516,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -129693,9 +128643,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -129753,18 +128701,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -129947,7 +128884,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:555d53d784874617c0634e4c694f05d8c0ab2f4c755d79832476d1fbcdaba37a",
+          "auditHash": "sha256:bdada23aa7ae7c8a2d2846e36beb9511697a73803ecffd5259529e0528c59356",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -131280,8 +130217,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -131407,9 +130344,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -131451,18 +130386,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -131645,7 +130569,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c80cbf4db6efe5b4351eb71435030da75b90fdab9efd45e0c680f77c9b74a28f",
+          "auditHash": "sha256:0bf5c8b5303c39ce9f13aef7b9084db95a70cf3586d103b0da4f029c4228c754",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -132994,8 +131918,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -133121,9 +132045,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -133181,18 +132103,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -133375,7 +132286,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:359f2f7025470a8f89413e4cb4ebc05c2f7349e5a982916b8048ae6eabe60527",
+          "auditHash": "sha256:ca5c01aaccbdf031c0e730208435a7861b85af551663299af6703aaad217be3e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -134707,8 +133618,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -134834,9 +133745,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -134878,23 +133787,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -135077,7 +133970,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:0093ce1e437bd4ce5e081eb0c7d87b5af577ee9990f706fbfdf88efbc5be6c5b",
+          "auditHash": "sha256:b6af8b4a302b0532ac4a3122c4359745b0422b39f700ee42a0b362f5c72d2798",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -136436,11 +135329,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -136572,8 +135462,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -136633,18 +135522,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -136827,7 +135705,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9ae9df85b4115b614fdf51aa0b7b15bd493dc79ce39f33beb0764c1e6e338696",
+          "auditHash": "sha256:488b0a54ac9969c1514fff9225b8a8c4812b7194f460d1ad7ce9ddd356bc9f9d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -138177,8 +137055,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -138304,9 +137182,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -138364,18 +137240,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -138558,7 +137423,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:95b65b52fee3e44534e7f698dbee58f65caf212d5f9a7883ce6e748052c16050",
+          "auditHash": "sha256:f1ae4c965bf5a5a3922976b6cf31ffa0b3ae384e8173630564dc7a05481e322e",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -139917,8 +138782,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -140044,9 +138909,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -140106,23 +138969,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -140305,7 +139152,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:3b13fc4cb0896a1f262165a526b3fc2a70e1cd8f41cc3a7fadfa6374b6acd451",
+          "auditHash": "sha256:1ce2411ac29f17b21dd78a432cd3173f1d32d7bae49cf85156c2215fe11d2968",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -141647,11 +140494,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -141783,8 +140627,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -141826,18 +140669,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -142020,7 +140852,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4068e0dc5d2903ca1d47b0a96b271095e9e53639420278a62947666858911276",
+          "auditHash": "sha256:032ede6d85793b13a164be3e80ddc6b184082c618572e3dcf100a452fb019ff0",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -143370,8 +142202,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -143497,9 +142329,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -143548,10 +142378,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.2"
     ],
-    "sourceHash": "sha256:64331b9fb2a6b36359306246d2285732bb4d26f882b5417ddc80ab9d76198c79"
+    "sourceHash": "sha256:1922c7e0503ad4dcf13aaeebad677cd9a6f3d654a93ac47651cc06c9239ba59f"
   },
   "sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087": {
-    "compiledAt": "2026-07-01T23:11:32.000Z",
+    "compiledAt": "2026-06-02T14:16:50.000Z",
     "liveries": [
       {
         "audit": {
@@ -143567,18 +142397,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -143732,7 +142551,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:1b1fa197cb8fce974738b9d673428ea413297f095376b90c8dacbe3c531ade9d",
+          "auditHash": "sha256:cd98dba0b90a83ab337793c1930e072fb92bfd83b6b90c3dfbc2bbbeb737e929",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -145040,8 +143859,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -145167,9 +143986,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -145211,18 +144028,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -145376,7 +144182,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:3f19f557bb6e4b764cd4bf2914458a920940da1bf70a718779c70178c8434189",
+          "auditHash": "sha256:2d46db1c7f0f42c1a97d391e23c5b45105311edc1d2c96352e76456769082e62",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -146692,8 +145498,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -146819,9 +145625,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -146879,18 +145683,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -147044,7 +145837,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:766fee677e52ce982b247120eef6b95e7cc2889d7331001c23f1a5ff0585c5bf",
+          "auditHash": "sha256:7262b85b883cbc18ad56b86166c1daf48ab8e65e1dc3a14e3e7a870577cf7e06",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -148353,8 +147146,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -148480,9 +147273,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -148524,18 +147315,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -148689,7 +147469,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4ff0953e64d46d5d7dc1a4c8c20fc29b138d540c9e8aab62bfa3930ca280c962",
+          "auditHash": "sha256:d7793ece5cff37e892e494bf3757d179ea995608aeb50fe0e25960ed1e419bda",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -150005,8 +148785,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -150132,9 +148912,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -150176,23 +148954,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -150346,7 +149108,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:88787621419ac96373a90a267a9916db0df29eacd5d38f65f99e461078789bee",
+          "auditHash": "sha256:544cd3b24c65ab269010aa41a06ab95b1d88a217bc8c0825d4d925903994d8d3",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -151670,11 +150432,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -151806,8 +150565,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -151865,23 +150623,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -152035,7 +150777,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:44b9865a08cc35498128b64ead68dd3d36a7944b8ef047befb9ccbf90039276a",
+          "auditHash": "sha256:687386deb0e97ac600e257f2aadb49090f831ca8201e6007aa3c4c73f5097458",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -153360,11 +152102,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -153496,8 +152235,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -153555,18 +152293,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -153720,7 +152447,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:a1223b9e415014632bb8a3dd77141469421413c27337a2f68c3a30472309ade0",
+          "auditHash": "sha256:f0b9cc6db21e637581237b6f06f74b9577fa3ac2fd1a9b914e63959c54ea3833",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -155029,11 +153756,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -155156,9 +153884,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -155200,18 +153926,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -155365,7 +154080,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:54d2db03bbfab61a4fd9de7e387fbd6c6afc3e58c5e7cd28c9a8dbbd5af4a139",
+          "auditHash": "sha256:a1d8ab918bd9b1e63f9978644d549261b7469c0306033695ff30dd71f31e0970",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -156681,8 +155396,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -156808,9 +155523,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -156852,18 +155565,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -157017,7 +155719,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c15a91501114aabe38f241054ebaa2f1a9cf2f958305f2f7a37462d8444f5a12",
+          "auditHash": "sha256:a2b12e3584af588c51437ae676ae18ec4fec814e5e95f23e32119a57de2829c2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -158337,8 +157039,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -158464,9 +157166,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -158524,18 +157224,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -158689,7 +157378,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:392ab333ede9ec7edb616f1388ee81bb315655c120d192010829a71d30b89f08",
+          "auditHash": "sha256:de817a87a0bbe43fb4876394c9d81348b69f1671115a2229d59dfe4cf0f5a8b6",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -160005,8 +158694,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -160132,9 +158821,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -160176,18 +158863,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -160341,7 +159017,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:e545c404b20a2e5c93f9430bab04b74314acdf2c43cda0b71dd4a9268cf84cde",
+          "auditHash": "sha256:088b9d34c66f0e1855f31daaea84a3ad3f283b839ff84298bede0aa10169364d",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -161649,8 +160325,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -161776,9 +160452,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -161820,18 +160494,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -161985,7 +160648,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:49ff7c7c71c23b009c32d89962a2f72511a04c9180992a7daffa9886da8ac6ad",
+          "auditHash": "sha256:3805e6bebc11730472a943fe3675ffa9e9b5e9a45b2fcd7d001f48336c08c9f9",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -163311,8 +161974,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -163438,9 +162101,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -163500,18 +162161,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -163665,7 +162315,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9d8c09f9a355c2c75168fde8e76af47dbd0f2366e16813fea8fefba1232fee38",
+          "auditHash": "sha256:83d1878807995073cc122ee24e3f84991401144900e11c5a2c206aceb23529a2",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -164978,8 +163628,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -165105,9 +163755,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -165149,18 +163797,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -165314,7 +163951,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:af380beddea2945d7e30bea1897b0ff9610e0a9748e6b8c52e5ed9a9d6b49a52",
+          "auditHash": "sha256:6aecb258ef78026f6180a3ac2a27079587ccd70c9791a596652f8fb0f3a474df",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -166637,8 +165274,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -166764,9 +165401,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -166824,18 +165459,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -166989,7 +165613,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4b5b3cc8d77e80f9bd30fc4fcd77717f2d8d3562ce257524db8439111e1d2cf7",
+          "auditHash": "sha256:8c025c5c324a9957b69fcbad2ac0f7d0a479165dcc96f4a757c1fd9666ba035f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -168298,8 +166922,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -168425,9 +167049,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -168469,18 +167091,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -168634,7 +167245,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:fa96082c1a34b72afd6d2e3355d57d77c74f90f8d6dace059f936200d2b50351",
+          "auditHash": "sha256:c658ea8ef95e61791c6a1f83133af6d0d55bf6bc0c934f4a1ee8f17244aee242",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -169949,11 +168560,12 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
-          "reduced-motion"
+          "reduced-motion",
+          "surface-material"
         ],
         "presentation": {
           "axes": {
@@ -170076,9 +168688,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -170136,18 +168746,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -170301,7 +168900,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:c28aa678bc18ca0f9b080ce4711d385192d75e3e8bc068be1e309d0574dedb50",
+          "auditHash": "sha256:9daf61d9cbb2ac6e6e5b7738841ca5ec9a3febc7853375e59dac6aaaf2f5d2c0",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -171609,8 +170208,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -171736,9 +170335,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -171780,18 +170377,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -171945,7 +170531,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:ebd0a495b883a442606ab01b5843c2a44d5a1c1f1be280842381b65df9ad6cd1",
+          "auditHash": "sha256:d3147703f7ed005cfddbea4df57f4d8ae832ebe02d9d99bac223284e52d5978f",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -173261,8 +171847,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -173388,9 +171974,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -173432,18 +172016,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -173597,7 +172170,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:38f2bfb593249900b7ffa6b2cae72104f0d4a9f1101ceedd91a3aff059f698d8",
+          "auditHash": "sha256:c3c456c2e508a57cae3f8003535d2694525a8bbdedcb5d23e6f537b9c43f94ca",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -174922,8 +173495,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -175049,9 +173622,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -175109,18 +173680,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -175274,7 +173834,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9b7bf20fbab443fe5bca97de67cb2d1e1ef6b49250a6844f6db4f869c3ad468f",
+          "auditHash": "sha256:f9e23cf3ccbe22f2f3a5674e736dbf863eab2ee52cb0035715c1886ebd190271",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -176593,8 +175153,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -176720,9 +175280,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -176780,18 +175338,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -176945,7 +175492,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:105ad523255e0f4e67f7aac35aa04464f629c3208b5bc5f81f3a17a2b41e58a2",
+          "auditHash": "sha256:cfef3b5155e0976d515d6490e7fb259fdc5c766ee65061e737979cd409c8ccde",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -178254,8 +176801,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -178381,9 +176928,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -178425,18 +176970,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -178590,7 +177124,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:f40deeb00efb6d8186b157e60318b55fa95953d524e8e015389534e4ae5d4cce",
+          "auditHash": "sha256:d678ae37ee3ca4791ed61d6a05510bf61748dd6098fb6f4baa48f4d7937ce944",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -179913,8 +178447,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -180040,9 +178574,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -180100,18 +178632,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -180265,7 +178786,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:491de25ce80f47b8cf2fc56a000e8520eb22e0fa0a528321a39cc98049625e18",
+          "auditHash": "sha256:c25b49be9f19814400819ed16d0b49adc497103b9ec0b174106fe9ccaa600965",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -181573,8 +180094,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -181700,9 +180221,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -181744,23 +180263,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -181914,7 +180417,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:9a882d77e3b57760f15b53c6985de3d7771cd756bc3197b42352d58c96d98027",
+          "auditHash": "sha256:2f30c84f439b1464e885b39593abaf8fc830e788ea81fe2f95d7d4216fab7f5a",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -183247,11 +181750,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -183383,8 +181883,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -183444,18 +181943,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -183609,7 +182097,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:8a29afa85a6c16745b699674e4a4dd940331fc40d647312d352c91664aada6dd",
+          "auditHash": "sha256:68bba0894b1dee1d5278475927bb5c350ac5ed9b1153d72b22f1aed1b77c8300",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -184933,8 +183421,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -185060,9 +183548,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -185120,18 +183606,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -185285,7 +183760,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:445c1e8e1cf0bb1d948513cf7cd0c684376400312930cb3bf6fc084ca5438205",
+          "auditHash": "sha256:c29281296ddea3eddeea06b822dd12e68fd9ce1114289a9f5b7ef603e4888ffd",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -186618,8 +185093,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -186745,9 +185220,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -186807,23 +185280,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            },
-            {
-              "fallback": "stock",
-              "id": "host-message-flow",
-              "reason": "Flow gaps are declared on internal component containers; no documented public hook. Falls back to stock."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -186977,7 +185434,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:4adf81ec4a79cfed58d54f1fdbbf4ba9202864d5866f4d573145132929d13838",
+          "auditHash": "sha256:9e78d8b58b48ddbc6fc810771388d8c3fde90c674254ca9ca12ac6ab0651e500",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -188293,11 +186750,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
+          "host-font-family",
           "host-font-role-hooks",
-          "surface-material",
-          "host-density-tokens",
-          "host-transcript-width",
-          "host-message-flow",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -188429,8 +186883,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -188472,18 +186925,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
             "remoteUrls": 0,
             "unscopedTokens": 0
           },
-          "degraded": [
-            {
-              "fallback": "host",
-              "id": "host-density-tokens",
-              "reason": "No documented spacing/control token settable at document level; density falls back to host."
-            },
-            {
-              "fallback": "host",
-              "id": "host-transcript-width",
-              "reason": "Conversation width is a host-owned user-dragged preference published on component-local custom properties; no public document-level hook. Falls back to host."
-            }
-          ],
+          "degraded": [],
           "tokenCoverage": {
             "covered": [
               "--dsw-alias-bg-base",
@@ -188637,7 +187079,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "auditSummary": {
-          "auditHash": "sha256:fb2fbbb23f300cabf330efff89e507be67759070ed1cc54bdf9ff3dde0328c39",
+          "auditHash": "sha256:3bf99a42bea6cbff13883aa3fd456457a0850787f032ed76f7b2d41b8f6e17cf",
           "contrast": {
             "failed": 0,
             "pass": true,
@@ -189961,8 +188403,8 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           ]
         },
         "optionalCapabilities": [
-          "host-density-tokens",
-          "host-transcript-width",
+          "host-font-family",
+          "host-font-role-hooks",
           "reduced-transparency",
           "forced-colors",
           "reduced-motion"
@@ -190088,9 +188530,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
           }
         },
         "requiredCapabilities": [
-          "theme-css",
-          "host-font-family",
-          "surface-material"
+          "theme-css"
         ],
         "typography": {
           "code": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", \"Noto Sans Mono CJK SC\", monospace",
@@ -190142,7 +188582,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
       "0.2.1-rc.4",
       "0.2.1-rc.5"
     ],
-    "sourceHash": "sha256:485d8aa4c48a1dc380da2f1d791cdc6320a4e07987e14249c2abfb28362008f8"
+    "sourceHash": "sha256:9185aa522f0a836e05d9fbb9ba71391d5b3828b2b97a0fd36fffaa07448ef764"
   }
 }
 
