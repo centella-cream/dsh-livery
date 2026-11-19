@@ -480,6 +480,7 @@ function auditEnvelopeFor(
     profileId,
     sourceHash,
     catalogHash,
+    auditSummaryHash: sha256(canonicalJson(livery.auditSummary)),
     liveryId: livery.id,
     liveryHash: livery.hash,
     cssHash: livery.cssHash,
@@ -980,6 +981,7 @@ export function compileCatalog(options: CompileOptions): CompileResult {
       `${draft.previewDirectory}/index.json`,
       serializeJson(buildPreviewIndex(draft.previews.map((preview) => preview.file))),
     )
+    files.set(`lib/catalogs/${draft.report.profileId.replace(':', '-')}.json`, serializeJson(draft.catalog))
     files.set(`${draft.artifactDirectory}/report.json`, serializeJson(draft.report))
     files.set(`${draft.artifactDirectory}/contrast.json`, serializeJson(draft.contrast))
     files.set(`${draft.artifactDirectory}/token-coverage.json`, serializeJson(draft.tokenCoverage))

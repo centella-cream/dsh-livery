@@ -41,7 +41,8 @@
     "contracts/dsh/0.2.2-rc.1",
     "contracts/dsh/0.2.2-rc.2",
     "contracts/dsh/0.2.2-rc.3",
-    "contracts/dsh/support-matrix.json"
+    "contracts/dsh/support-matrix.json",
+    "lib/catalogs"
   ],
   "sideEffects": [
     "./lib/index.js",
