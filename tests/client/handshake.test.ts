@@ -181,6 +181,16 @@ describe('checkCatalog — certified identity + profile', () => {
     }
   })
 
+  it('rejects a livery without presentation or audit summary', () => {
+    const catalog = makeCatalog()
+    const withoutPresentation = structuredClone(catalog)
+    delete (withoutPresentation.liveries[0] as { presentation?: unknown }).presentation
+    expect(checkCatalog(withoutPresentation, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
+    const withoutSummary = structuredClone(catalog)
+    delete (withoutSummary.liveries[0] as { auditSummary?: unknown }).auditSummary
+    expect(checkCatalog(withoutSummary, { adapters: ADAPTER_IDENTITIES }).catalog).toBeUndefined()
+  })
+
   it('accepts a catalog that repeats the handshake identity', () => {
     const catalog = makeCatalog()
     const expected = bootIdentity(checkBoot(makeBootPayload(), ADAPTER_IDENTITIES))
