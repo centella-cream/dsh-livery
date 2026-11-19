@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "commit": "6a401959b8d192313d240a1e778e2453718b74bf",
+  "commit": "dce9bdfe3cfe3ad1a26c86ce229eeb7a596d95c6",
   "packageVersion": "0.2.0",
-  "tarballSha256": "ff7138478927c2242c4bd08779d667efbea9319443d3e4497c7bfc678c5c65a2",
-  "tarballBytes": 2816793,
-  "generatedAt": "2026-11-19T16:31:23.432Z",
+  "tarballSha256": "94a3ba46c43029e916b378b07261f9080ee9ffacaab12f91d3433efceb6f977f",
+  "tarballBytes": 2816865,
+  "generatedAt": "2026-11-19T17:33:36.841Z",
   "scope": {
     "hostVersion": "0.2.2-rc.1",
     "profile": "desktop",
@@ -96,16 +96,16 @@
   "auditEnvelopes": [
     {
       "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:16691145cd9adc75b67ee37e612a89de7e6443150f78b3ae8614c337b547ddfc-audit-envelope.json",
-      "sha256": "988cbc35fb7486995fb18bcd84a842e9c2c75309dd7b904c0dca30de18a666c5"
+      "sha256": "09f8373732626e6abf71df9b9329b0ac1d83eaec2c3e6d2827fac8eb8613b154"
     }
   ],
   "runs": [
     {
       "id": "0.2.2-rc.1-desktop",
-      "commit": "6a401959b8d192313d240a1e778e2453718b74bf",
+      "commit": "dce9bdfe3cfe3ad1a26c86ce229eeb7a596d95c6",
       "hostVersion": "0.2.2-rc.1",
       "adapterId": "dsh-0.2.2-rc.1-r1",
-      "tarballSha256": "ff7138478927c2242c4bd08779d667efbea9319443d3e4497c7bfc678c5c65a2",
+      "tarballSha256": "94a3ba46c43029e916b378b07261f9080ee9ffacaab12f91d3433efceb6f977f",
       "summary": {
         "pass": 35,
         "fail": 0,
@@ -114,9 +114,9 @@
         "total": 37
       },
       "probe": "contracts/dsh/evidence/0.2.0/probes/0.2.2-rc.1-desktop.json",
-      "probeSha256": "c2e367b9e27016bdecc50ca8fc4352f0ec1dacb4f354eb1c7be5a51bbfb12331",
+      "probeSha256": "8317c952a5e00e858ca74a10fb77907de4d9f508ee60ddd50cb489cac3b13ce1",
       "report": "contracts/dsh/evidence/0.2.0/reports/0.2.2-rc.1-desktop.md",
-      "reportSha256": "dfe2b036386fcc3507348d1a45944fec0000fdb5d53b219612210d9cb2ef367b"
+      "reportSha256": "0bd482345e2c960d90a8f0f403ef638e7ab99d337be2f9e389c3ca56da1e24c3"
     }
   ]
 }
