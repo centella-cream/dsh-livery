@@ -15,11 +15,13 @@ build commit are recorded in the committed evidence JSON under
 | DSH `0.2.2-rc.1` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.2-rc.2` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.2-rc.3` | Web, Chrome `156.0.8078.48` | Node `24.21.0` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.5` | Web, Chrome `156.0.8078.48` | Node `24.21.0` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 | DSH `0.2.1-rc.5` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 | DSH `0.2.2-rc.1` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 | DSH `0.2.2-rc.2` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 | DSH `0.2.2-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
+| DSH `0.2.2-rc.5` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
 
 Evidence:
 
@@ -27,7 +29,7 @@ Evidence:
   probes, reports and canonical audit envelopes.
 - Each evidence file binds the exact tarball sha256, probe/report sha256,
   critical check ids, build commit and audit envelope.
-- `pnpm prepublishOnly` verifies all 11 files against the final candidate.
+- `pnpm prepublishOnly` verifies all 13 declared-scope files against the final candidate.
 
 The Desktop probe records `desktop.sidebar-path` with the observed tint/fill
 surface alpha. The Web probe covers the merged preset/wallpaper checks and the
