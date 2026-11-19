@@ -443,7 +443,7 @@ export function makeLivery(
       },
       degraded: [],
     },
-  }
+  } as unknown as CompiledLivery
 }
 
 /** Build one catalog fixture for a certified adapter (default: the shipped build). */
