@@ -122,6 +122,9 @@ if (Number.parseInt(String(evidence.packageVersion).split('.')[0] ?? '0', 10) >=
       if (typeof envelope.auditHash !== 'string' || envelope.auditHash !== sha256Text(canonicalJson(payload))) {
         fail(`auditHash mismatch: ${entry.path}`)
       }
+      if (typeof payload.catalogHash !== 'string' || payload.catalogHash === '') fail(`audit catalogHash missing: ${entry.path}`)
+      const packed = execFileSync('tar', ['-xOzf', tarball, 'package/lib/index.js'], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
+      if (!packed.includes(payload.catalogHash)) fail(`audit catalogHash does not appear in the candidate Catalog: ${entry.path}`)
       if (typeof payload.liveryId !== 'string' || payload.liveryId === '') fail(`audit liveryId missing: ${entry.path}`)
       if (typeof payload.liveryHash !== 'string' || payload.liveryHash === '') fail(`audit liveryHash missing: ${entry.path}`)
       if (typeof payload.cssHash !== 'string' || payload.cssHash === '') fail(`audit cssHash missing: ${entry.path}`)

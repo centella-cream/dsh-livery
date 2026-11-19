@@ -1280,9 +1280,6 @@ export async function readCatalogProfileOverrides(workspace: string): Promise<Re
       if (target[hash] !== provider[hash]) throw new Error(`catalog-profile-overrides: ${hash} mismatch`)
     }
     if (target['clientSlotHash'] !== clientSlotHash()) throw new Error('catalog-profile-overrides: clientSlotHash is stale')
-    if (!(entry['compatibility'] as Record<string, unknown> | undefined)?.['diffHash']) {
-      throw new Error('catalog-profile-overrides: compatibility.diffHash is required')
-    }
     const targetSnapshot = JSON.parse(readFileSync(join(workspace, 'contracts', 'dsh', String(target['hostVersion']), 'contract.json'), 'utf8')) as ContractSnapshot
     for (const [field, hashKey] of [['loaderAbiHash', 'loaderAbi'], ['hostApiHash', 'hostApi'], ['clientApiHash', 'clientApi'], ['tokenHash', 'token'], ['layoutHash', 'layout']] as const) {
       if (target[field] !== targetSnapshot.hashes[hashKey]) throw new Error(`catalog-profile-overrides: target ${field} does not match snapshot`)
@@ -1298,6 +1295,35 @@ export async function readCatalogProfileOverrides(workspace: string): Promise<Re
     if (provider['compilerVersion'] !== CATALOG_COMPILER_VERSION) throw new Error('catalog-profile-overrides: provider compilerVersion is stale')
     const providerAvailable = Object.entries(providerSnapshot.capabilities).filter(([, value]) => value === true).map(([key]) => key).sort()
     if (JSON.stringify(provider['capabilityVector']) !== JSON.stringify(providerAvailable)) throw new Error('catalog-profile-overrides: provider capabilityVector is stale')
+    const compatibility = entry['compatibility'] as Record<string, unknown> | undefined
+    if (compatibility === undefined) throw new Error('catalog-profile-overrides: compatibility is required')
+    const tokenNames = (snapshot: ContractSnapshot): Set<string> => {
+      const names = new Set<string>()
+      for (const key of ['consumed', 'undeclaredButRead'] as const) for (const name of snapshot.tokens[key] ?? []) names.add(name)
+      for (const token of snapshot.tokens.tokens) names.add(typeof token === 'string' ? token : token.name)
+      return names
+    }
+    const targetTokens = tokenNames(targetSnapshot)
+    const providerTokens = tokenNames(providerSnapshot)
+    const tokenChanges: Array<{ kind: 'additive' | 'removed'; name: string }> = []
+    for (const name of providerTokens) if (!targetTokens.has(name)) tokenChanges.push({ kind: 'removed', name })
+    for (const name of targetTokens) if (!providerTokens.has(name)) tokenChanges.push({ kind: 'additive', name })
+    tokenChanges.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
+    const layoutKeys = new Set([...Object.keys(targetSnapshot.layout ?? {}), ...Object.keys(providerSnapshot.layout ?? {})])
+    const layoutChanges = [...layoutKeys]
+      .filter((key) => JSON.stringify((targetSnapshot.layout as unknown as Record<string, unknown>)[key]) !== JSON.stringify((providerSnapshot.layout as unknown as Record<string, unknown>)[key]))
+      .sort()
+      .map((name) => ({ kind: 'value-only' as const, name }))
+    const targetCaps = new Set(Object.entries(targetSnapshot.capabilities).filter(([, value]) => value === true).map(([key]) => key))
+    const providerCaps = new Set(Object.entries(providerSnapshot.capabilities).filter(([, value]) => value === true).map(([key]) => key))
+    const addedCapabilities = [...targetCaps].filter((id) => !providerCaps.has(id)).sort()
+    const removedCapabilities = [...providerCaps].filter((id) => !targetCaps.has(id)).sort()
+    const expectedDiff = { tokenChanges, layoutChanges, addedCapabilities, removedCapabilities }
+    if (JSON.stringify(compatibility['tokenChanges']) !== JSON.stringify(tokenChanges)) throw new Error('catalog-profile-overrides: tokenChanges do not match snapshots')
+    if (JSON.stringify(compatibility['layoutChanges']) !== JSON.stringify(layoutChanges)) throw new Error('catalog-profile-overrides: layoutChanges do not match snapshots')
+    if (JSON.stringify(compatibility['addedCapabilities']) !== JSON.stringify(addedCapabilities)) throw new Error('catalog-profile-overrides: addedCapabilities do not match snapshots')
+    if (JSON.stringify(compatibility['removedCapabilities']) !== JSON.stringify(removedCapabilities)) throw new Error('catalog-profile-overrides: removedCapabilities do not match snapshots')
+    if (compatibility['diffHash'] !== hashCanonical(expectedDiff)) throw new Error('catalog-profile-overrides: diffHash does not match snapshots')
     const host = target['hostVersion'] as string
     if (overrides.has(host)) throw new Error(`catalog-profile-overrides: duplicate hostVersion ${host}`)
     overrides.set(host, effective)

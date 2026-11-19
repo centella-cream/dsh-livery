@@ -269,17 +269,14 @@ export function resolveRuntimeAxis(
   if (staticAxis.declared !== 'host' && staticAxis.declared !== 'stock' && staticAxis.declared !== 'none') {
     const instance = staticAxis.declared as RecipeInstance
     if (instance.id.startsWith('studio-')) {
-      const status: AxisStatus = containerWidth > 999 && !media.forcedColors
-        ? 'Full'
-        : containerWidth > 599 && !media.forcedColors
-          ? 'Degraded'
-          : 'Degraded'
+      const tier = media.forcedColors ? 'none' : containerWidth > 999 ? 'full' : containerWidth > 799 ? 'reduced' : containerWidth > 599 ? 'minimal' : 'none'
+      const effective: RecipeRef = tier === 'none' ? 'none' : { id: instance.id, parameters: { ...instance.parameters, tier } }
       const result: RuntimeAxisPresentation = {
         ...staticAxis,
-        effective: status === 'Full' ? instance : 'none',
-        status,
+        effective,
+        status: tier === 'full' ? 'Full' : 'Degraded',
       }
-      return status === 'Full' ? result : { ...result, reason: 'container-too-narrow' }
+      return tier === 'full' ? result : { ...result, reason: tier === 'none' && media.forcedColors ? 'forced-colors' : 'container-too-narrow' }
     }
   }
   if (media.forcedColors && (staticAxis.declared === 'none' || String(staticAxis.declared) === 'none')) return staticAxis

@@ -31,12 +31,12 @@
       },
       "provider": {
         "profileIdentityVersion": 2,
-        "hostVersion": "0.2.2-rc.1",
+        "hostVersion": "0.2.2-rc.2",
         "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
         "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
         "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
-        "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
-        "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
+        "tokenHash": "sha256:b21122ac214e9a2c1768ef19047df45ed63ed19ccedeb795ce5a2bf345236565",
+        "layoutHash": "sha256:48075c6e98c1780e74b41b4b4417af5fad8448c8b241ae0f37d680681590ac6b",
         "compilerVersion": "0.2.0",
         "grammar": {
           "catalog": 2,
@@ -56,11 +56,177 @@
       },
       "effectiveCatalogProfile": "sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f",
       "compatibility": {
-        "tokenChanges": [],
-        "layoutChanges": [],
+        "tokenChanges": [
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-bg-elevated"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-border-selected"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-card-fill"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-card-fill-hover"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-card-tile-fill"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-chart-messages"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-chart-system"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-chart-tools"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-fill-tertiary"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-bg"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-label-primary"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-label-secondary"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-label-tertiary"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-state-done"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-hovercard-state-error"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-hover"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-icon"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-keyword"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-number"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-property"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-punctuation"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-json-tree-string"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-label-on-color"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-toast-action"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-tooltip-label"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-trajectory-accent"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-file-upload-track"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-guide-hero"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-glass-collapsed-fill"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-glass-collapsed-hover"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-glass-fill"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-glass-hover"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-right-flash"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-tint"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-wash-bottom"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-wash-bottom-clear"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-wash-top"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-specific-sidebar-wash-top-clear"
+          }
+        ],
+        "layoutChanges": [
+          {
+            "kind": "value-only",
+            "name": "documentedAttributes"
+          },
+          {
+            "kind": "value-only",
+            "name": "evidence"
+          },
+          {
+            "kind": "value-only",
+            "name": "hash"
+          }
+        ],
         "addedCapabilities": [],
         "removedCapabilities": [],
-        "diffHash": "sha256:dace03f733c689a59925a336b7c25714a5d92910e7b6adc6cb1102f4c37977f2"
+        "diffHash": "sha256:f2c0749845ecc1d2c3b0376564df3fbb37d964c86b056ebc6c07dc41b4de0b5d"
       },
       "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     },
@@ -120,19 +286,175 @@
       "compatibility": {
         "tokenChanges": [
           {
-            "kind": "value-only",
-            "name": "token-contract"
+            "kind": "additive",
+            "name": "--dsw-alias-bg-elevated"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-border-selected"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-fill-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-tile-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-messages"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-system"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-tools"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-fill-tertiary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-bg"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-primary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-secondary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-tertiary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-state-done"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-state-error"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-icon"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-keyword"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-number"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-property"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-punctuation"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-string"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-label-on-color"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-toast-action"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-tooltip-label"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-trajectory-accent"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-file-upload-track"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-guide-hero"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-collapsed-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-collapsed-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-right-flash"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-tint"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-bottom"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-bottom-clear"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-top"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-top-clear"
           }
         ],
         "layoutChanges": [
           {
             "kind": "value-only",
-            "name": "layout-contract"
+            "name": "documentedAttributes"
+          },
+          {
+            "kind": "value-only",
+            "name": "evidence"
+          },
+          {
+            "kind": "value-only",
+            "name": "hash"
           }
         ],
         "addedCapabilities": [],
         "removedCapabilities": [],
-        "diffHash": "sha256:2db4f1602e4191cb49321c7f6aad002fcf17b5b687011a9a6d4ec92175ce7c9d"
+        "diffHash": "sha256:0cda7c2038c5ae7a883ac6a545a72e9306955c32f7ac1460bd7aaa74bf43294b"
       },
       "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     },
@@ -192,19 +514,175 @@
       "compatibility": {
         "tokenChanges": [
           {
-            "kind": "value-only",
-            "name": "token-contract"
+            "kind": "additive",
+            "name": "--dsw-alias-bg-elevated"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-border-selected"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-fill-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-card-tile-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-messages"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-system"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-chart-tools"
+          },
+          {
+            "kind": "removed",
+            "name": "--dsw-alias-fill-tertiary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-bg"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-primary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-secondary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-label-tertiary"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-state-done"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-hovercard-state-error"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-icon"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-keyword"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-number"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-property"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-punctuation"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-json-tree-string"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-label-on-color"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-toast-action"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-tooltip-label"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-alias-trajectory-accent"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-file-upload-track"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-guide-hero"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-collapsed-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-collapsed-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-fill"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-glass-hover"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-right-flash"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-tint"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-bottom"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-bottom-clear"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-top"
+          },
+          {
+            "kind": "additive",
+            "name": "--dsw-specific-sidebar-wash-top-clear"
           }
         ],
         "layoutChanges": [
           {
             "kind": "value-only",
-            "name": "layout-contract"
+            "name": "documentedAttributes"
+          },
+          {
+            "kind": "value-only",
+            "name": "evidence"
+          },
+          {
+            "kind": "value-only",
+            "name": "hash"
           }
         ],
         "addedCapabilities": [],
         "removedCapabilities": [],
-        "diffHash": "sha256:2db4f1602e4191cb49321c7f6aad002fcf17b5b687011a9a6d4ec92175ce7c9d"
+        "diffHash": "sha256:0cda7c2038c5ae7a883ac6a545a72e9306955c32f7ac1460bd7aaa74bf43294b"
       },
       "reviewedReason": "0.2.2-rc.1/rc.2/rc.3 loader/host/client API hashes match; 0.2.0 compiler reuses the certified 0.2.2 render profile with additive/value-only token-layout changes."
     }

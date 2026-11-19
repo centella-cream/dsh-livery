@@ -394,6 +394,7 @@ export interface FullAuditPayloadV2 {
   readonly schemaVersion: 2
   readonly profileId: string
   readonly sourceHash: string
+  readonly catalogHash: string
   readonly liveryId: string
   readonly liveryHash: string
   readonly cssHash: string

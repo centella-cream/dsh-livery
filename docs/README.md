@@ -36,11 +36,12 @@ Edge and any other DSH build are not supported.
 - **[Design references](research/design-references.md)** — palette attributions
   and the machine-readable [28-style table](research/design-table.json).
 
-## Proposed
+## Current design
 
-- **[0.2.0 proposal](design/0.2.0-proposal.md)** — proposed multi-axis GUI style
+- **[0.2.0 proposal](design/0.2.0-proposal.md)** — 0.2.0 multi-axis GUI style
   engine, capability gating, manifest v2 and the host APIs needed for structural
-  layout. Not implemented; not a current support or acceptance claim.
+  layout. Implemented release candidate; acceptance evidence is under
+  `contracts/dsh/evidence/0.2.0/`.
 
 ## Archive (historical, not authoritative)
 

@@ -473,11 +473,13 @@ function auditEnvelopeFor(
   sourceHash: string,
   contractHash: string,
   tokenHash: string,
+  catalogHash: string,
 ): FullAuditEnvelopeV2 {
   const payload: FullAuditPayloadV2 = {
     schemaVersion: 2,
     profileId,
     sourceHash,
+    catalogHash,
     liveryId: livery.id,
     liveryHash: livery.hash,
     cssHash: livery.cssHash,
@@ -984,7 +986,7 @@ export function compileCatalog(options: CompileOptions): CompileResult {
     files.set(`${draft.artifactDirectory}/css-safety.json`, serializeJson(draft.cssSafety))
     files.set(
       `${draft.artifactDirectory}/audit-envelope.json`,
-      serializeJson(draft.cores.map((core) => auditEnvelopeFor(core.livery, draft.report.profileId, draft.report.sourceHash, draft.report.contractHash, draft.stock.tokenContractHash))),
+      serializeJson(draft.cores.map((core) => auditEnvelopeFor(core.livery, draft.report.profileId, draft.report.sourceHash, draft.report.contractHash, draft.stock.tokenContractHash, draft.catalog.catalogHash))),
     )
   }
   files.set(SUMMARY_PATH, serializeJson(summary))

@@ -4,12 +4,12 @@
 
 | Version | Supported |
 |---|---|
-| `0.1.x` (limited release) | Yes |
+| `0.2.x` implementation candidate | No (NO-GO) |
+| `0.1.x` (published release) | Yes |
 
-The supported scope is DSH `0.2.1-rc.2`/`0.2.1-rc.4`/`0.2.1-rc.5`/`0.2.2-rc.1` + Web Profile
-+ Chrome 156.0.8078.48, and DSH `0.2.1-rc.3`/`0.2.1-rc.5`/`0.2.2-rc.1` + macOS Desktop
-app + Electron/Node 24.21.0, as documented in
-[README.md](README.md#host-support-and-version-policy). Desktop Windows, Web Edge and
+The supported scope is the exact matrix in
+[contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json), documented in
+[README.md](README.md#supported-dsh-builds). Desktop Windows, Web Edge and
 other DSH builds are unsupported and receive no guarantee. Other host versions are
 rejected at install time; at runtime, uncertified payloads/contracts fail closed to
 the stock appearance. There is no default compatibility fallback.

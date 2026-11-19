@@ -1,6 +1,6 @@
 # Verification
 
-## Release `0.2.0` — accepted release candidate (unpublished)
+## Release `0.2.0` — historical candidate evidence (superseded, NO-GO)
 
 The 0.2.0 candidate is `dsh-livery-0.2.0.tgz`. Its exact sha256, byte size and
 build commit are recorded in the committed evidence JSON under
@@ -25,8 +25,9 @@ surface alpha. The full Web evidence includes the merged preset/wallpaper checks
 and the Settings floating-surface check; the Desktop probe covers the Electron
 renderer surface, not native window shell/vibrancy.
 
-Release-evidence verification passes for both files against the candidate
-tarball.
+These files were generated against the superseded `5099f96…` candidate at
+commit `cbc44e0`. Later review fixes changed code and docs; the evidence is no
+longer release evidence and must be regenerated for all 11 passed matrix scopes.
 
 > **Release `0.1.9` is published.** Full acceptance passed on Web `0.2.1-rc.2`,
 > `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and
