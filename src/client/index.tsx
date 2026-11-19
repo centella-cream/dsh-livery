@@ -26,6 +26,7 @@ import { ADAPTER_IDENTITIES } from '../generated/contract.js'
 import { dictionaries } from '../i18n/index.js'
 import { CLIENT_CSS } from '../styles/client.js'
 import { bootIdentity, checkBoot, checkCatalog, readBootPayload } from './handshake.js'
+import { canonicalJson } from '../core/presentation.js'
 import type { BootCheck } from './handshake.js'
 import { LiveryPanelIcon } from './LiveryPanelIcon.js'
 import { LiveryPanelPage } from './LiveryPanelPage.js'
@@ -88,7 +89,17 @@ async function fetchCatalog(expected: ReturnType<typeof bootIdentity>): Promise<
       signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
     })
     if (!response.ok) return undefined
-    return checkCatalog(await response.json(), { adapters: ADAPTER_IDENTITIES, expected }).catalog
+    const checked = checkCatalog(await response.json(), { adapters: ADAPTER_IDENTITIES, expected }).catalog
+    if (checked === undefined) return undefined
+    const { grammarHash, catalogHash, ...payload } = checked
+    const digest = async (value: string): Promise<string> => {
+      const bytes = new TextEncoder().encode(value)
+      const hash = await crypto.subtle.digest('SHA-256', bytes)
+      return `sha256:${[...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`
+    }
+    if (await digest(canonicalJson(checked.grammar)) !== grammarHash) return undefined
+    if (await digest(canonicalJson({ ...payload, grammarHash })) !== catalogHash) return undefined
+    return checked
   } catch {
     return undefined
   }
