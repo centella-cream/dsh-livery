@@ -91,15 +91,10 @@ async function fetchCatalog(expected: ReturnType<typeof bootIdentity>): Promise<
     if (!response.ok) return undefined
     const checked = checkCatalog(await response.json(), { adapters: ADAPTER_IDENTITIES, expected }).catalog
     if (checked === undefined) return undefined
-    const { grammarHash, catalogHash, ...payload } = checked
-    const digest = async (value: string): Promise<string> => {
-      const bytes = new TextEncoder().encode(value)
-      const hash = await crypto.subtle.digest('SHA-256', bytes)
-      return `sha256:${[...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')}`
-    }
-    if (await digest(canonicalJson(checked.grammar)) !== grammarHash) return undefined
-    if (await digest(canonicalJson({ ...payload, grammarHash })) !== catalogHash) return undefined
-    return checked
+    const { catalogHash, ...payload } = checked
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalJson(payload)))
+    const hex = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+    return `sha256:${hex}` === catalogHash ? checked : undefined
   } catch {
     return undefined
   }
