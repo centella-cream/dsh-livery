@@ -138,7 +138,7 @@
     ]
   },
   "clientApi": {
-    "hash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "hash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "services": [
       "configForms",
       "slots",
@@ -146,10 +146,17 @@
       "theme"
     ],
     "slots": {
+      "main": {
+        "kind": "keyed",
+        "scope": "root"
+      },
+      "sidebarPanellist": {
+        "kind": "list",
+        "scope": "root"
+      },
       "settingsSection": {
         "kind": "list",
-        "scope": "root",
-        "owner": "SettingsSectionOwnerProps"
+        "scope": "root"
       },
       "localeNamespace": "dsh-livery"
     },
@@ -5891,10 +5898,10 @@
   "hashes": {
     "loaderAbi": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApi": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
-    "clientApi": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApi": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "token": "sha256:f90b02b7152366bd6887065d5b80783c8ce84b7fb9ad55e01307addee78a57a0",
     "layout": "sha256:422d14c6ef755114b4ed175539b85a48736406ff52806e2764e9b7c7d3570c09",
     "profileSchema": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72"
   },
-  "contractHash": "sha256:0ac1b8dd8f1685384f6314c9f5299acd8afb7c1d5a52e055d0a7ce0c55a5cf72"
+  "contractHash": "sha256:0f583969a24ec4f76277ec1d52485335c3d58cca653b5e3c680977faecb80f94"
 }

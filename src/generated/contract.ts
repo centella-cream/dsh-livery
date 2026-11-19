@@ -46,10 +46,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
-    "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
+    "contractHash": "sha256:478c25e6ea37d18789f4514bbf569f2b534c97505f4967dc3f1379b7176679b0",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
     "layoutHash": "sha256:9a206b43972eae44b5361ed1f13cd5bd1dd7b2a611565105667f02040a5dbb23",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -153,10 +153,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
-    "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
+    "contractHash": "sha256:47b5cf24e19b5194676be7f037d7315dccab5d666cfc63350ae4f6ff11d6067b",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
     "layoutHash": "sha256:8fa63c1877a7bf5be42d03897d333ac7c6ec0a6607715a7e85192e89edd39415",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -260,10 +260,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
-    "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
+    "contractHash": "sha256:9e2320f31fe145945ac1f836c5468b5f5c3113f97e80cea7b1ab3976a079346f",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
     "layoutHash": "sha256:9a206b43972eae44b5361ed1f13cd5bd1dd7b2a611565105667f02040a5dbb23",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -367,10 +367,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
-    "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
+    "contractHash": "sha256:846aa7d51a291e5364def3a386aba19d3d9f5229354cd8030adf48b9c3f1b470",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:8fc77b1ae32ebe8dee3968c38809fcccdb9e0996b235a0190c53696bcac0a3e1",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:3896d0f8150fc8576b1213d6f790c42b6ead6c77e63018606c83d1372af6d4f4",
     "layoutHash": "sha256:9a206b43972eae44b5361ed1f13cd5bd1dd7b2a611565105667f02040a5dbb23",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -474,10 +474,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.2-rc.1",
     "adapterId": "dsh-0.2.2-rc.1-r1",
-    "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
+    "contractHash": "sha256:51e8eb37e1f9e0205ef33bd088dd8b36129de6432d36ada346ead8ad0346bca2",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:5d5e1b48a3dac234286c0c320da6093a8b1277f2591dcf4d59897f1557c4d434",
     "layoutHash": "sha256:38b64bc0e6a21944ac0904326392366825d16a1bea448e9c2dddbcf613f65d43",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -581,10 +581,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.2-rc.2",
     "adapterId": "dsh-0.2.2-rc.2-r1",
-    "contractHash": "sha256:597669eeb1ea75ffa93894ba223aeb0c61d79d6b16288f6e00867749b1909f2a",
+    "contractHash": "sha256:495f83fd4154adf11d739ebaf04fbfce14aaea07d91d30d14f1279599505d678",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:b21122ac214e9a2c1768ef19047df45ed63ed19ccedeb795ce5a2bf345236565",
     "layoutHash": "sha256:48075c6e98c1780e74b41b4b4417af5fad8448c8b241ae0f37d680681590ac6b",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -688,10 +688,10 @@ export const ADAPTERS: readonly AdapterRecord[] = [
   {
     "hostVersion": "0.2.2-rc.3",
     "adapterId": "dsh-0.2.2-rc.3-r1",
-    "contractHash": "sha256:0ac1b8dd8f1685384f6314c9f5299acd8afb7c1d5a52e055d0a7ce0c55a5cf72",
+    "contractHash": "sha256:0f583969a24ec4f76277ec1d52485335c3d58cca653b5e3c680977faecb80f94",
     "loaderAbiHash": "sha256:35f07f0944975c7e03de4e95f617efcf638247bf5e4af9fa4bd3da50032f8470",
     "hostApiHash": "sha256:1ce1640532781607b87af31de39b4d324deb237e1991ac30179c908cc0f36570",
-    "clientApiHash": "sha256:756129bac3ef1aec3d3f319de071b41ac22cff3983b36dc5411d0d9e74dff3f3",
+    "clientApiHash": "sha256:d4685a9a85e7181a986e6f81be85830d0e27b17d6e75d51aab0850b27b88f2c8",
     "tokenHash": "sha256:f90b02b7152366bd6887065d5b80783c8ce84b7fb9ad55e01307addee78a57a0",
     "layoutHash": "sha256:422d14c6ef755114b4ed175539b85a48736406ff52806e2764e9b7c7d3570c09",
     "profileSchemaHash": "sha256:c69037ab42d16630c0d316b67c8461bdb11032c43cdd3143b107ec47610f5a72",
@@ -812,43 +812,43 @@ export const ADAPTER_IDENTITIES: readonly AdapterIdentity[] = [
   {
     "hostVersion": "0.2.1-rc.2",
     "adapterId": "dsh-0.2.1-rc.2-r1",
-    "contractHash": "sha256:fc5ccff8885eccb6f947e729b10b8f0d6355a36be6ad5ebbb3a91b7577921b1d",
+    "contractHash": "sha256:478c25e6ea37d18789f4514bbf569f2b534c97505f4967dc3f1379b7176679b0",
     "catalogProfile": "sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087"
   },
   {
     "hostVersion": "0.2.1-rc.3",
     "adapterId": "dsh-0.2.1-rc.3-r1",
-    "contractHash": "sha256:d246181d261323398733ed0975f362d9dfe702f1256b1097397e794db38fdd60",
+    "contractHash": "sha256:47b5cf24e19b5194676be7f037d7315dccab5d666cfc63350ae4f6ff11d6067b",
     "catalogProfile": "sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087"
   },
   {
     "hostVersion": "0.2.1-rc.4",
     "adapterId": "dsh-0.2.1-rc.4-r1",
-    "contractHash": "sha256:18e63d003897b8485451218bf584f29ecfdaa5b6d07caafced77314eb29de7bf",
+    "contractHash": "sha256:9e2320f31fe145945ac1f836c5468b5f5c3113f97e80cea7b1ab3976a079346f",
     "catalogProfile": "sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087"
   },
   {
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
-    "contractHash": "sha256:f203caf1afe401afca12e1186797f46a3191fe6aeb4b226fc85a24c6d515a619",
+    "contractHash": "sha256:846aa7d51a291e5364def3a386aba19d3d9f5229354cd8030adf48b9c3f1b470",
     "catalogProfile": "sha256:6d303ba32419d0bda409b9a42f59eb587b0001e3676e3c2e38f784eb1e864087"
   },
   {
     "hostVersion": "0.2.2-rc.1",
     "adapterId": "dsh-0.2.2-rc.1-r1",
-    "contractHash": "sha256:cfba6d85aa26795d6410e117ff72b2280cab87b6350762f64be5485db5ba433a",
+    "contractHash": "sha256:51e8eb37e1f9e0205ef33bd088dd8b36129de6432d36ada346ead8ad0346bca2",
     "catalogProfile": "sha256:16691145cd9adc75b67ee37e612a89de7e6443150f78b3ae8614c337b547ddfc"
   },
   {
     "hostVersion": "0.2.2-rc.2",
     "adapterId": "dsh-0.2.2-rc.2-r1",
-    "contractHash": "sha256:597669eeb1ea75ffa93894ba223aeb0c61d79d6b16288f6e00867749b1909f2a",
+    "contractHash": "sha256:495f83fd4154adf11d739ebaf04fbfce14aaea07d91d30d14f1279599505d678",
     "catalogProfile": "sha256:607e5aea42096b4fb59b2a749381ef7259f955d72ae655d390c16754278b4c7c"
   },
   {
     "hostVersion": "0.2.2-rc.3",
     "adapterId": "dsh-0.2.2-rc.3-r1",
-    "contractHash": "sha256:0ac1b8dd8f1685384f6314c9f5299acd8afb7c1d5a52e055d0a7ce0c55a5cf72",
+    "contractHash": "sha256:0f583969a24ec4f76277ec1d52485335c3d58cca653b5e3c680977faecb80f94",
     "catalogProfile": "sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3"
   }
 ]
