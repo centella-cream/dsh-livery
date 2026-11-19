@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "commit": "17fdbb4ee581fadad869cf6a98e623268e6cd810",
+  "commit": "7227acad7ecef1bcb47ac3f2c2856e94400c62e4",
   "packageVersion": "0.2.0",
-  "tarballSha256": "9ab87d02c3e1e6f0a1ff3d127b130364923bca5b16fc11711aa963c5b5687658",
-  "tarballBytes": 2585706,
-  "generatedAt": "2026-11-19T10:56:31.472Z",
+  "tarballSha256": "b8ed53671b6f4e05ad7e4861bf78112d8a6954ef3cd80a285eca57634b42f585",
+  "tarballBytes": 2837107,
+  "generatedAt": "2026-11-19T11:52:40.519Z",
   "scope": {
     "hostVersion": "0.2.2-rc.3",
     "profile": "desktop",
@@ -94,17 +94,17 @@
   ],
   "auditEnvelopes": [
     {
-      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:6662e0e6b22f2db382106ba683ed7f8ac9be2ac1cd73f61b4abbea1ab3aaad9f-audit-envelope.json",
-      "sha256": "58684bb10db9a820775687615b697adff47ac6d1a02550a2a7a1ed3e54b0e00b"
+      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:3beca72de6230ef32fc4c44f60a243ca0e04b89713ec1004c575e6464ccc0df3-audit-envelope.json",
+      "sha256": "7149215e6e846be0b7cb6a092b8eec89293efd3d60df9aecba079b634661472f"
     }
   ],
   "runs": [
     {
       "id": "0.2.2-rc.3-desktop",
-      "commit": "17fdbb4ee581fadad869cf6a98e623268e6cd810",
+      "commit": "7227acad7ecef1bcb47ac3f2c2856e94400c62e4",
       "hostVersion": "0.2.2-rc.3",
       "adapterId": "dsh-0.2.2-rc.3-r1",
-      "tarballSha256": "9ab87d02c3e1e6f0a1ff3d127b130364923bca5b16fc11711aa963c5b5687658",
+      "tarballSha256": "b8ed53671b6f4e05ad7e4861bf78112d8a6954ef3cd80a285eca57634b42f585",
       "summary": {
         "pass": 35,
         "fail": 0,
@@ -113,9 +113,9 @@
         "total": 37
       },
       "probe": "contracts/dsh/evidence/0.2.0/probes/0.2.2-rc.3-desktop.json",
-      "probeSha256": "6e7e8d83e4df7d3c37649d149d6070fd2be126005ec90a5889c56c2993e9fae3",
+      "probeSha256": "318c877cfd39ad6ac1bfb60aeaf34d71158882e38cc7f8832bb557a2743a8a06",
       "report": "contracts/dsh/evidence/0.2.0/reports/0.2.2-rc.3-desktop.md",
-      "reportSha256": "441886fbfd4aabebd5a8950a7db1831cdb4c4129049a50933c6c8cb469bbbd34"
+      "reportSha256": "83512a59dd27113f7d762631b38f1a16697bfe2d7545ad8d866a5fbfb615c109"
     }
   ]
 }
