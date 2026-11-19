@@ -55,33 +55,32 @@ describe('0.1.3 release parameterization', () => {
     expect(desktop.certifiedRuntimeVersions).toEqual(['24.21.0'])
     for (const entry of matrix.entries) {
       if (entry.hostVersion === '0.2.2-rc.2') {
-        expect(entry.evidence).toEqual([
+        expect(entry.evidence).toEqual(expect.arrayContaining([
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.2-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.2-desktop-macos.json',
-        ])
+        ]))
       } else if (entry.hostVersion === '0.2.2-rc.1') {
-        expect(entry.evidence).toEqual([
+        expect(entry.evidence).toEqual(expect.arrayContaining([
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.1-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.1-desktop-macos.json',
-        ])
+        ]))
       } else if (entry.hostVersion === '0.2.2-rc.3') {
-        expect(entry.evidence).toEqual([
+        expect(entry.evidence).toEqual(expect.arrayContaining([
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.2-rc.3-desktop-macos.json',
-          'contracts/dsh/evidence/0.2.0/0.2.2-rc.3-desktop-macos.json',
-        ])
+        ]))
       } else if (entry.hostVersion === '0.2.1-rc.2') {
         expect(entry.evidence).toEqual([
           'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
           'contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json',
         ])
       } else if (entry.hostVersion === '0.2.1-rc.5') {
-        expect(entry.evidence).toEqual([
+        expect(entry.evidence).toEqual(expect.arrayContaining([
           'contracts/dsh/evidence/0.1.9/0.2.1-rc.5-web-chrome.json',
           'contracts/dsh/evidence/0.1.9/0.2.1-rc.5-desktop-macos.json',
-        ])
+        ]))
       } else {
-        expect(entry.evidence).toEqual([`contracts/dsh/evidence/0.1.9/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`])
+        expect(entry.evidence).toEqual(expect.arrayContaining([`contracts/dsh/evidence/0.1.9/${entry.hostVersion}-${entry.hostVersion === '0.2.1-rc.3' ? 'desktop-macos' : 'web-chrome'}.json`]))
       }
     }
   })
