@@ -756,24 +756,6 @@ async function main() {
       `patch skinId=${patchAfter.skinId ?? '(none)'} (before ${patchBefore.skinId ?? '(none)'}); rows=${patchAfter.liveryRows}`,
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-applied-desktop.png'), { label: 'desktop applied' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'applied' }))
-    const sidebarParity = await readSidebarParity()
-    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
-      ? 'macos-ordinary-tint'
-      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
-    const alphaTarget = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.remaining : sidebarParity.remaining
-    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
-    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - alphaTarget) <= 0.03
-    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
-    artifacts.sidebarObservation = sidebarObservation
-    expect(
-      runner,
-      'desktop.sidebar-path',
-      'desktop sidebar path and computed alpha match the frost remaining ratio',
-      parityOk,
-      JSON.stringify(sidebarObservation),
-      { sidebarObservation },
-    )
-
     // Desktop boot injection is delivered by the host's own boot-ready handshake
     // after window creation, so the meaningful first-frame evidence is a FRESH
     // APPLICATION LAUNCH with the persisted skin (a renderer reload keeps the
@@ -1059,6 +1041,38 @@ async function main() {
       `data-dsh-livery=${restored.bodyAttribute}; hash=${restored.bodyHash}; styles=${restored.liveryStyles.length}`,
     )
     await captureScreenshot(page, path.join(screensDir, 'zh-stock-restored-desktop.png'), { label: 'desktop stock restored' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'stock-restored' }))
+    // Independent, terminal sidebar-parity observation: apply a livery and
+    // wallpaper after every theme/stock assertion, so no later check sees the
+    // frosted background tokens.
+    await page.locator('[data-testid="livery-page-tab-style"]').click({ timeout: 10_000 }).catch(() => {})
+    await page.locator(`[data-testid="livery-card"][data-livery-id="${pair.applied}"]`).first().click({ timeout: 10_000 })
+    const parityApply = await findControl(page, { testId: 'livery-apply', names: [PAGE_LABELS.apply], exact: false })
+    await parityApply.locator.click({ timeout: 10_000 })
+    await page.waitForFunction((skin) => document.body.getAttribute('data-dsh-livery') === skin, pair.applied, { timeout: 10_000 }).catch(() => {})
+    await page.locator('[data-testid="livery-page-tab-wallpaper"]').click({ timeout: 10_000 })
+    await page.waitForSelector('[data-testid="wallpaper-panel"]', { timeout: 10_000 })
+    await selectDesktopWallpaperSource(page, 'builtin')
+    await page.locator('[data-testid="wallpaper-builtin"][data-wallpaper-id="aurora"]').click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      return document.body.hasAttribute('data-dsh-wallpaper') && style !== null && (style.textContent ?? '').includes('--dsw-specific-sidebar-fill')
+    }, undefined, { timeout: 10_000 }).catch(() => {})
+    const sidebarParity = await readSidebarParity()
+    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
+      ? 'macos-ordinary-tint'
+      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
+    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
+    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - sidebarParity.remaining) <= 0.03
+    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget: sidebarParity.remaining, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
+    artifacts.sidebarObservation = sidebarObservation
+    expect(
+      runner,
+      'desktop.sidebar-path',
+      'desktop sidebar path and computed alpha match the frost remaining ratio',
+      parityOk,
+      JSON.stringify(sidebarObservation),
+      { sidebarObservation },
+    )
   } catch (error) {
     runner.fail('desktop.probe', 'desktop probe completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
   } finally {
