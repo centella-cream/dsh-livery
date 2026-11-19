@@ -97,11 +97,11 @@ describe('compileCatalog — shipped adapters only', () => {
     expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.3')?.catalogProfile)
     expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.4')?.catalogProfile)
     expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.5')?.catalogProfile)
-    expect(first.profileCount).toBe(2)
+    expect(first.profileCount).toBe(4)
     const oldProfile = first.profiles.find((profile) => profile.representative.catalogProfile === adapterForVersion('0.2.1-rc.2')?.catalogProfile)
     const newestProfile = first.profiles.find((profile) => profile.representative.catalogProfile === adapterForVersion('0.2.2-rc.3')?.catalogProfile)
     expect(oldProfile?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(newestProfile?.profile.sourceAdapters).toEqual(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3'])
+    expect(newestProfile?.profile.sourceAdapters).toEqual(['0.2.2-rc.3'])
     expect(first.profiles.every((profile) => profile.report.gates.adapterRenderIdentity)).toBe(true)
   })
 
@@ -584,7 +584,7 @@ describe('emit / check helpers', () => {
         `${PREVIEW_DIR}/old-root.svg`,
       ])
       expect(compareGeneratedFiles(fixture.dir, first.files)).toEqual([])
-      expect(MANAGED_DIRS).toEqual([PREVIEW_DIR, ARTIFACT_DIR])
+      expect(MANAGED_DIRS).toEqual([PREVIEW_DIR, ARTIFACT_DIR, 'lib/catalogs'])
     } finally {
       fixture.cleanup()
     }

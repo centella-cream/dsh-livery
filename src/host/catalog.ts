@@ -14,7 +14,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -27,7 +27,7 @@ import {
   type LiveryCatalog,
 } from '../core/types.js'
 import { type AdapterRecord } from '../generated/contract.js'
-import { CATALOG_PROFILES, CATALOG_PROFILE_IDS } from '../generated/liveries.js'
+
 
 /** Generated catalog document version: the schema every consumer parses. */
 
@@ -76,8 +76,51 @@ export function previewsBaseFor(profileId: string): string {
  * @param adapter - certified adapter record.
  * @returns the generated profile, or `undefined` when the build has not emitted it.
  */
+const catalogCache = new Map<string, CatalogProfileData | undefined>()
+
+function catalogDirectoryUrl(): URL | undefined {
+  for (const candidate of [new URL('./catalogs/', import.meta.url), new URL('../../lib/catalogs/', import.meta.url)]) {
+    try {
+      if (existsSync(fileURLToPath(candidate))) return candidate
+    } catch { /* try next */ }
+  }
+  return undefined
+}
+
+/** Profile ids present in the packaged lazy catalog directory. */
+export function catalogProfileIds(): readonly string[] {
+  const directory = catalogDirectoryUrl()
+  if (directory === undefined) return []
+  return readdirSync(fileURLToPath(directory))
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => name.slice(0, -'.json'.length).replace(/^sha256-/, 'sha256:'))
+}
+
+/** Load one profile from the packaged JSON catalog, caching the parsed result. */
 export function catalogProfileFor(adapter: AdapterRecord): CatalogProfileData | undefined {
-  return CATALOG_PROFILES[adapter.catalogProfile]
+  const cached = catalogCache.get(adapter.catalogProfile)
+  if (cached !== undefined || catalogCache.has(adapter.catalogProfile)) return cached
+  const directory = catalogDirectoryUrl()
+  if (directory === undefined) {
+    catalogCache.set(adapter.catalogProfile, undefined)
+    return undefined
+  }
+  const path = join(fileURLToPath(directory), `${adapter.catalogProfile.replace(':', '-')}.json`)
+  try {
+    const document = JSON.parse(readFileSync(path, 'utf8')) as { liveries?: CompiledLivery[] }
+    const profile = {
+      profileId: adapter.catalogProfile,
+      compiledAt: '',
+      sourceHash: '',
+      sourceAdapters: [],
+      liveries: document.liveries ?? [],
+    } satisfies CatalogProfileData
+    catalogCache.set(adapter.catalogProfile, profile)
+    return profile
+  } catch {
+    catalogCache.set(adapter.catalogProfile, undefined)
+    return undefined
+  }
 }
 
 /**
@@ -281,7 +324,7 @@ export function bindProfilePreviews(
   options: ProfilePreviewBindingOptions = {},
 ): ReadonlyMap<string, ReadonlyMap<string, string>> {
   const bindings = new Map<string, ReadonlyMap<string, string>>()
-  for (const profileId of options.profileIds ?? CATALOG_PROFILE_IDS) {
+  for (const profileId of options.profileIds ?? catalogProfileIds()) {
     bindings.set(profileId, bindPreviews(profileId, options))
   }
   return bindings

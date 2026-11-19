@@ -93,7 +93,7 @@ export const ARTIFACT_DIR = 'artifacts/liveries'
 /** Repo-relative cross-profile summary artifact. */
 export const SUMMARY_PATH = `${ARTIFACT_DIR}/summary.json`
 /** Directories whose contents are fully generated and may be pruned/reported on. */
-export const MANAGED_DIRS: readonly string[] = [PREVIEW_DIR, ARTIFACT_DIR]
+export const MANAGED_DIRS: readonly string[] = [PREVIEW_DIR, ARTIFACT_DIR, 'lib/catalogs']
 
 export interface CompileOptions {
   readonly manifests: readonly ManifestSource[]

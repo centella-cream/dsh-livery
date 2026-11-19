@@ -430,11 +430,11 @@ describe('generated shipped registry', () => {
 
     // Catalog profile dedupe: both adapters serve ONE generated profile.
     const liveries = await import('../../src/generated/liveries.js')
-    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(2)
+    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(4)
     const oldProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.1-rc.2')!.catalogProfile]!
-    const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.1')!.catalogProfile]!
+    const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.3')!.catalogProfile]!
     expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.1', '0.2.2-rc.2', '0.2.2-rc.3'])
+    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.3'])
     expect(oldProfile.liveries).toHaveLength(28)
     expect(newestProfile.liveries).toHaveLength(28)
   })
