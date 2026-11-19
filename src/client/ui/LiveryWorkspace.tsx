@@ -126,7 +126,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
   const shownName = displayName(shownId)
   const studioAxis = shownLivery?.presentation?.axes.studioDecoration
   const studioRuntime = studioAxis === undefined ? undefined : resolveRuntimeAxis(studioAxis, typeof window === 'undefined' ? 0 : window.innerWidth, {
-    forcedColors: typeof matchMedia === 'function' && matchMedia('(forced-colors: active)').matches,
+    forcedColors: false,
     reducedTransparency: false,
     reducedMotion: false,
   })

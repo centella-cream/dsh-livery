@@ -145,6 +145,10 @@ if (Number.parseInt(String(evidence.packageVersion).split('.')[0] ?? '0', 10) >=
       if (livery.hash !== payload.liveryHash) fail(`audit liveryHash does not match packaged catalog: ${payload.liveryId}`)
       if (livery.cssHash !== payload.cssHash) fail(`audit cssHash does not match packaged catalog: ${payload.liveryId}`)
       if (sha256Text(canonicalJson(livery.auditSummary)) !== payload.auditSummaryHash) fail(`audit summary hash does not match packaged catalog: ${payload.liveryId}`)
+      if (!Array.isArray(payload.decorationAudits)) fail(`decoration audits missing: ${entry.path}`)
+      for (const audit of payload.decorationAudits) {
+        if (Array.isArray(audit.issues) && audit.issues.length > 0) fail(`decoration audit has issues: ${entry.path}`)
+      }
       if (typeof payload.liveryId !== 'string' || payload.liveryId === '') fail(`audit liveryId missing: ${entry.path}`)
       if (typeof payload.liveryHash !== 'string' || payload.liveryHash === '') fail(`audit liveryHash missing: ${entry.path}`)
       if (typeof payload.cssHash !== 'string' || payload.cssHash === '') fail(`audit cssHash missing: ${entry.path}`)
