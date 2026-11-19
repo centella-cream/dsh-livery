@@ -17,9 +17,9 @@ host theme takeover.
 > `dsh-livery@0.1.9` remains the current published artifact.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
-> DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop and DSH `0.2.2-rc.3`
- > Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease, so it remains
-> a preview claim. The `0.2.0` candidate is **exact-certified only**: unknown
+> DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
+> Web/Desktop and DSH `0.2.2-rc.5` Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease; `0.2.2-rc.5` is npm
+> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.0` candidate is **exact-certified only**: unknown
 > builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
 
@@ -112,6 +112,7 @@ version-string compatibility fallback.
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **Preview** (npm `next`) |
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`) |
+| DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `latest`, GitHub prerelease) |
 
 Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
 still fail closed. Stable support requires a non-prerelease official GitHub

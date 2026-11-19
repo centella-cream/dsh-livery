@@ -14,8 +14,9 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 > 11 个声明 scope 均已有当前验收证据，发布门禁通过；仍需关闭剩余协议审查项后再决定发布。`dsh-livery@0.1.9` 仍是当前已发布制品。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
-> Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop。
-> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease，因此仍是预览声明。`0.2.0`
+> Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop、DSH `0.2.2-rc.5` Web/Desktop。
+> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease；`0.2.2-rc.5` 是 npm
+> `latest` 但仍是 GitHub prerelease，因此两者都保持预览声明。`0.2.0`
 > 候选只接受 exact-certified 宿主：未知构建整体 fail closed；Windows Desktop、Edge
 > 和其他 DSH 构建不在支持范围内。
 
@@ -90,6 +91,7 @@ token；不写任何逐插件选择器或宿主 hashed class。
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`） |
+| DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `latest`，GitHub prerelease） |
 
 exact-only 不是安装范围承诺；未知构建仍会 fail closed。稳定支持
 要求官方 GitHub 非 prerelease 发布和 npm `latest` 上匹配的签名包；npm `next` 和 GitHub
