@@ -109,11 +109,12 @@ describe('checkBoot — certified adapter whitelist', () => {
 
   it('accepts an older boot payload after HMR and reports it as a warning', () => {
     const check = checkBoot(makeBootPayload({ pluginVersion: '9.9.9' }), ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('valid')
-    expect(check.reasons.join(' ')).toContain('plugin version changed by HMR')
+    expect(check.kind).toBe('mismatch')
+    expect(check.reloadRequired).toBe(true)
+    expect(check.reasons.join(' ')).toContain('reload required')
   })
 
-  it('accepts a catalog-profile change caused by an HMR version bump', () => {
+  it('rejects a catalog-profile change caused by a version bump', () => {
     const shipped = ADAPTER_IDENTITIES[0]!
     const previousProfile = `sha256:${'1'.repeat(64)}`
     const payload = makeBootPayload({
@@ -124,12 +125,9 @@ describe('checkBoot — certified adapter whitelist', () => {
       pluginVersion: '0.1.8',
     })
     const check = checkBoot(payload, ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('valid')
-    expect(check.reasons.join(' ')).toContain('plugin version changed by HMR')
-    expect(check.reasons.join(' ')).toContain('catalog profile changed by HMR')
-    // The stale boot profile must not leak into the live identity; the matched
-    // adapter is authoritative until the new catalog is fetched.
-    expect(bootIdentity(check)?.catalogProfile).toBe(shipped.catalogProfile)
+    expect(check.kind).toBe('mismatch')
+    expect(check.reloadRequired).toBe(true)
+    expect(check.reasons.join(' ')).toContain('reload required')
   })
 
   it('fails closed on an entry id mismatch', () => {

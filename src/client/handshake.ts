@@ -27,6 +27,8 @@ export interface HostIdentity {
 export interface BootCheck {
   /** `valid`: certified and accepted. `absent`: known host, no boot rows. `mismatch`: fail closed. */
   readonly kind: 'valid' | 'absent' | 'mismatch'
+  /** A plugin-version transition cannot be repaired in-process. */
+  readonly reloadRequired?: boolean
   /** The payload when its shape validated; undefined for a malformed global. */
   readonly payload: BootPayload | undefined
   /** Certified adapter identity whose triple the payload matched, when it matched one. */
@@ -138,27 +140,16 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
   }
   const reasons: string[] = []
   const warnings: string[] = []
-  let profileChangedByHmr = false
   if (payload.pluginVersion !== LIVERY_VERSION) {
-    // HMR replaces only the client module first. The new build sees the boot
-    // payload produced by the previous plugin build; the adapter identity is
-    // still the same build of this plugin, so re-fetch the live catalog and
-    // re-apply rather than fail closed to stock. A real host mismatch still
-    // fails through adapter/entry checks below.
-    warnings.push(`plugin version changed by HMR: boot=${payload.pluginVersion} build=${LIVERY_VERSION}`)
-    if (payload.catalogProfile !== adapter.catalogProfile) {
-      // A plugin release can change its catalog-profile id even when the host
-      // adapter is unchanged (the compiler/profile hash is part of the profile
-      // id). The boot payload belongs to the previous plugin build, so its
-      // profile is stale; the live catalog fetched after recomposition is the
-      // authority for the new profile. Do not fail closed to stock for this
-      // self-inflicted version transition.
-      profileChangedByHmr = true
-      warnings.push(
-        `catalog profile changed by HMR: boot=${payload.catalogProfile} build=${adapter.catalogProfile}`,
-      )
+    return {
+      kind: 'mismatch',
+      payload,
+      adapter,
+      reloadRequired: true,
+      reasons: [`plugin version changed: boot=${payload.pluginVersion} build=${LIVERY_VERSION}; reload required`],
     }
   }
+  const profileChangedByHmr = false
   if (payload.entryId !== ENTRY_ID) {
     reasons.push(`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`)
   }
