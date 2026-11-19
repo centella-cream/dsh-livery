@@ -233,7 +233,7 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
                   {capabilityLabel(t, entry.id)} ({entry.id}): {entry.fallback}
                 </p>
               ))}
-            {degraded.length > 0 && snapshot.missingRequired.length === 0 && (
+            {snapshot.missingRequired.length === 0 && (
               <p className="livery-check__value" data-testid="livery-optional-info">
                 {t('check.optionalInfo', {
                   items: formatList(locale, degraded.map(entry => capabilityLabel(t, entry.id))),
