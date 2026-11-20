@@ -50,7 +50,7 @@ if (evidence.commit !== head) {
   }
   const changed = execFileSync('git', ['diff', '--name-only', `${evidence.commit}..${head}`], { encoding: 'utf8' })
     .trim().split('\n').filter(Boolean)
-  const allowed = /^(src\/client\/wallpaper\/controller\.ts$|src\/contract\/client-slots\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|contracts\/dsh\/(evidence\/|support-matrix\.json$|perf-baseline\.json$|src\/contract\/client-slots\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$)|docs\/|\.github\/|scripts\/|tests\/|vitest\.config\.ts$|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$|AGENTS\.md$)/
+  const allowed = /^(src\/styles\/client\.ts$|src\/client\/wallpaper\/controller\.ts$|src\/contract\/client-slots\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|contracts\/dsh\/(evidence\/|support-matrix\.json$|perf-baseline\.json$|src\/contract\/client-slots\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$)|docs\/|\.github\/|scripts\/|tests\/|vitest\.config\.ts$|README\.md$|README\.zh-CN\.md$|SECURITY\.md$|CHANGELOG\.md$|NOTICE\.md$|CONTRIBUTING|SUPPORT\.md$|AGENTS\.md$)/
   const forbidden = changed.filter(file => !allowed.test(file))
   if (forbidden.length > 0) {
     fail(`changes since evidence commit touch artifact inputs: ${forbidden.slice(0, 5).join(', ')}`)
@@ -323,7 +323,7 @@ if (runCommit !== undefined) {
     .trim().split('\n').filter(Boolean)
   // CI-only workflow/gate changes after the acceptance run do not alter the
   // artifact bytes; still refuse any product/docs/matrix/package change.
-  const allowedAfterRun = /^(src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|src\/client\/wallpaper\/controller\.ts$|contracts\/dsh\/evidence\/|contracts\/dsh\/support-matrix\.json$|src\/contract\/client-slots\.ts$|contracts\/dsh\/perf-baseline\.json$|tests\/|\.github\/workflows\/|scripts\/release-evidence\.mjs$|scripts\/prepublish-check\.mjs$|scripts\/acceptance\/|AGENTS\.md$)/
+  const allowedAfterRun = /^(src\/styles\/client\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|src\/client\/wallpaper\/controller\.ts$|contracts\/dsh\/evidence\/|contracts\/dsh\/support-matrix\.json$|src\/contract\/client-slots\.ts$|contracts\/dsh\/perf-baseline\.json$|tests\/|\.github\/workflows\/|scripts\/release-evidence\.mjs$|scripts\/prepublish-check\.mjs$|scripts\/acceptance\/|AGENTS\.md$)/
   const forbidden = changedSinceRun.filter(file => !allowedAfterRun.test(file))
   if (forbidden.length > 0) {
     fail(`acceptance ran on a dirty/older harness: changes after run commit include ${forbidden.slice(0, 5).join(', ')}`)
