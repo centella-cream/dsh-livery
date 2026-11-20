@@ -49,7 +49,7 @@ describe('adapter capability maps', () => {
     expect(ADAPTER_020.hostVersion).toBe('0.2.0-rc.2')
     expect(ADAPTER_021_RC2.hostVersion).toBe('0.2.1-rc.2')
     expect(ADAPTER_021_RC3.hostVersion).toBe('0.2.1-rc.3')
-    expect(ADAPTER_021_RC2.catalogProfile).toBe(ADAPTER_021_RC3.catalogProfile)
+    expect(ADAPTER_021_RC2.catalogProfile).not.toBe(ADAPTER_021_RC3.catalogProfile)
     expect(ADAPTER_020.catalogProfile).not.toBe(ADAPTER_021_RC2.catalogProfile)
   })
 })

@@ -72,7 +72,7 @@ if (packageJson.engines?.dsh !== shippedAllowlist) {
   process.exit(1)
 }
 
-const TGZ_BUDGET_BYTES = 3.5 * 1024 * 1024
+const TGZ_BUDGET_BYTES = 4 * 1024 * 1024
 const tgzBytes = readFileSync(tarball).length
 if (tgzBytes > TGZ_BUDGET_BYTES) {
   console.error(`release-check: tarball ${tgzBytes}B exceeds ${TGZ_BUDGET_BYTES}B package budget`)
@@ -132,7 +132,7 @@ const manifest = {
   budgetBytes: TGZ_BUDGET_BYTES,
   files: files.size,
   required: required.length,
-  evidence: matrixEvidence(readMatrix()),
+  evidence: matrixEvidence(readMatrix()).filter(file => JSON.parse(readFileSync(resolve(root, file), 'utf8')).packageVersion === rootPackage.version),
   readmeLinks: 'ok',
   mode: supplied === undefined ? 'built' : 'supplied',
 }

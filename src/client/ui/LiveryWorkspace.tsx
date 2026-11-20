@@ -12,7 +12,7 @@
  * outside React lives in the presenter.
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { resolveRuntimeAxis } from '../../core/presentation.js'
+import { resolveRuntime, resolveRuntimeAxis } from '../../core/presentation.js'
 import { Button, Modal, Tag, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import {
   isStock,
@@ -70,6 +70,27 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
   const [tab, setTabState] = useState<PageTab>(() => initialTab ?? rememberedPageTab() ?? 'style')
   const tabIdBase = useId()
   const tabRefs = useRef<Record<PageTab, HTMLButtonElement | null>>({ style: null, wallpaper: null })
+  const workspaceRef = useRef<HTMLDivElement | null>(null)
+  const [studioWidth, setStudioWidth] = useState(0)
+  const [studioMedia, setStudioMedia] = useState({ forcedColors: false, reducedTransparency: false, reducedMotion: false })
+  useEffect(() => {
+    const node = workspaceRef.current
+    if (node === null || typeof ResizeObserver === 'undefined') return undefined
+    const measure = (): void => setStudioWidth(node.getBoundingClientRect().width)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(node)
+    const queries = [
+      ['forcedColors', '(forced-colors: active)'],
+      ['reducedTransparency', '(prefers-reduced-transparency: reduce)'],
+      ['reducedMotion', '(prefers-reduced-motion: reduce)'],
+    ] as const
+    const [forcedColors, reducedTransparency, reducedMotion] = queries.map(([, query]) => matchMedia(query))
+    const update = (): void => setStudioMedia({ forcedColors: forcedColors!.matches, reducedTransparency: reducedTransparency!.matches, reducedMotion: reducedMotion!.matches })
+    update()
+    for (const list of [forcedColors, reducedTransparency, reducedMotion]) list!.addEventListener('change', update)
+    return () => { observer.disconnect(); for (const list of [forcedColors, reducedTransparency, reducedMotion]) list!.removeEventListener('change', update) }
+  }, [])
   const setTab = (next: PageTab): void => {
     setTabState(next)
     rememberPageTab(next)
@@ -125,13 +146,12 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
     : liveries.find(candidate => candidate.id === shownId)
   const shownName = displayName(shownId)
   const studioAxis = shownLivery?.presentation?.axes.studioDecoration
-  const studioRuntime = studioAxis === undefined ? undefined : resolveRuntimeAxis(studioAxis, typeof window === 'undefined' ? 0 : window.innerWidth, {
-    forcedColors: false,
-    reducedTransparency: false,
-    reducedMotion: false,
-  })
+  const studioRuntime = studioAxis === undefined ? undefined : resolveRuntimeAxis(studioAxis, studioWidth, studioMedia)
+  const runtimePresentation = shownLivery?.presentation === undefined ? undefined : resolveRuntime(shownLivery.presentation, studioWidth, studioMedia)
   const studioRecipe = studioRuntime !== undefined && typeof studioRuntime.effective === 'object' ? studioRuntime.effective.id : 'none'
+  const studioTier = studioRuntime !== undefined && typeof studioRuntime.effective === 'object' ? String(studioRuntime.effective.parameters['tier'] ?? 'none') : 'none'
   const studioDensity = typeof studioAxis?.declared === 'object' ? String(studioAxis.declared.parameters['density'] ?? 'subtle') : 'subtle'
+  const studioWeight = typeof studioAxis?.declared === 'object' ? String(studioAxis.declared.parameters['weight'] ?? 'hairline') : 'hairline'
   const shownDescription = shownLivery === undefined
     ? t('current.stockDescription')
     : localizedDescription(shownLivery, locale)
@@ -157,10 +177,13 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
 
   return (
     <div
+      ref={workspaceRef}
       className="livery-workspace"
       data-testid="livery-section"
       data-studio-decoration={studioRecipe}
+      data-studio-tier={studioTier}
       data-density={studioDensity}
+      data-weight={studioWeight}
     >
       <div className="livery-filters" role="tablist" aria-label={t('tab.label')} data-testid="livery-page-tabs">
         {(['style', 'wallpaper'] as const).map(id => (
@@ -395,6 +418,7 @@ export function LiveryWorkspace({ runtime, t, initialTab }: LiveryWorkspaceProps
             <SelfCheck
               t={t}
               snapshot={snapshot}
+              runtime={runtimePresentation}
               onCopyResult={onCopyResult}
               copyFailed={copyFailed}
             />

@@ -57,7 +57,7 @@ import {
   writeRecentWallpapers,
 } from '../wallpaper/history.js'
 import type { RecentWallpaperEntry } from '../wallpaper/history.js'
-import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, loadCachedRemote, pruneRemoteCache } from '../wallpaper/cache.js'
+import { cacheRemoteImage, createRemoteCacheCancellation, deleteCachedRemote, isDecodableImage, loadCachedRemote, pruneRemoteCache } from '../wallpaper/cache.js'
 import { isCurrentRemoteSelection } from '../wallpaper/selection-guard.js'
 import { matchesPresetWallpaperState } from '../wallpaper/preset.js'
 import { isLocalOrPrivateHost } from '../wallpaper/host-safety.js'
@@ -106,6 +106,7 @@ const UPLOAD_PROBLEM_KEYS: Record<UploadProblem, LiveryKey> = {
   type: 'wallpaper.uploadError.type',
   size: 'wallpaper.uploadError.size',
   empty: 'wallpaper.uploadError.empty',
+  invalid: 'wallpaper.uploadError.invalid',
 }
 const SOURCE_TABS = ['online', 'builtin', 'recent', 'local'] as const
 type SourceTab = typeof SOURCE_TABS[number]
@@ -226,6 +227,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
   const [urlText, setUrlText] = useState('')
   const [problem, setProblem] = useState<WallpaperUrlProblem | undefined>(undefined)
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
+  const [activeResult, setActiveResult] = useState(0)
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [sourceTab, setSourceTab] = useState<SourceTab>('online')
@@ -740,6 +742,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
       setUploadProblem(check.problem)
       return
     }
+    if (!(await isDecodableImage(file))) {
+      setUploadProblem('invalid')
+      return
+    }
     const startSelectionVersion = controller?.getSelectionVersion()
     const key = `upload-${Date.now()}-${Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 10)}`
     // The IndexedDB put, the ticket/generation check, the selection commit and
@@ -1081,13 +1087,24 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
               </div>
             )}
             {online.results.length > 0 && (
-              <div className={GRID} role="listbox" aria-label={t('wallpaper.resultsLabel')}>
-                {boundedResults.map(result => (
+              <div
+                className={GRID}
+                role="listbox"
+                aria-label={t('wallpaper.resultsLabel')}
+                onKeyDown={(event) => {
+                  const buttons = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]')]
+                  const index = buttons.indexOf(event.target as HTMLButtonElement)
+                  const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : event.key === 'ArrowRight' || event.key === 'ArrowDown' ? index + 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? index - 1 : index
+                  if (next !== index && buttons[next] !== undefined) { event.preventDefault(); setActiveResult(next); buttons[next]!.focus() }
+                }}
+              >
+                {boundedResults.map((result, index) => (
                   <button
                     key={`${result.source}:${result.id}`}
                     type="button"
                     className={CARD}
                     role="option"
+                    tabIndex={index === activeResult ? 0 : -1}
                     aria-selected={selectedRemote === result.url}
                     aria-label={t('wallpaper.attribution', {
                       title: result.title,
@@ -1097,6 +1114,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     })}
                     data-testid="wallpaper-result"
                     data-wallpaper-url={result.url}
+                    onFocus={() => setActiveResult(index)}
                     onClick={() => selectResult(result)}
                   >
                     <ResultThumbnail src={result.thumbnail} />
@@ -1195,6 +1213,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
                     data-testid="wallpaper-recent-item"
                     data-url={entry.url}
                     data-cached={cachedUrls[entry.url] !== undefined ? 'true' : 'false'}
+                    aria-pressed={selectedRemote === entry.url}
                     aria-label={[entry.title ?? entry.source ?? entry.url, cachedUrls[entry.url] !== undefined ? t('wallpaper.recentCached') : ''].filter(Boolean).join(' · ')}
                     onClick={() => reapplyRecent(entry)}
                   >

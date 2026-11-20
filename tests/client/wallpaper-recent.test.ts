@@ -313,4 +313,6 @@ describe('selection changes invalidate pending local uploads', () => {
     await uploadCompletion
     expect(applied).toEqual([_kind])
   })
+
+globalThis.createImageBitmap = async () => ({ width: 1, height: 1, close() {} }) as unknown as ImageBitmap
 })

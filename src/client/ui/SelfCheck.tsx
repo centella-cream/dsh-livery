@@ -8,6 +8,7 @@
  */
 import { useMemo, useState } from 'react'
 import type { CompiledLivery } from '../../core/types.js'
+import type { RenderedPresentation } from '../../core/presentation.js'
 import { formatNumber, formatList, formatRatio } from '../../i18n/index.js'
 import { writeClipboard, Button, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import { formatDiagnostics } from '../diagnostics.js'
@@ -26,6 +27,8 @@ import { capabilityLabel } from './capability-names.js'
 export interface SelfCheckProps {
   readonly t: LiveryTranslate
   readonly snapshot: LiveryRuntimeSnapshot
+  /** Runtime axis resolution for the current container/media state. */
+  readonly runtime?: RenderedPresentation | undefined
   /** Report whether a copy attempt succeeded (the page owns the toast). */
   readonly onCopyResult: (ok: boolean) => void
   readonly copyFailed: boolean
@@ -45,7 +48,7 @@ function findPresented(snapshot: LiveryRuntimeSnapshot): CompiledLivery | undefi
  * @param props - panel properties; see {@link SelfCheckProps}.
  * @returns the panel element.
  */
-export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen = false }: SelfCheckProps): JSX.Element {
+export function SelfCheck({ t, snapshot, runtime, onCopyResult, copyFailed, defaultOpen = false }: SelfCheckProps): JSX.Element {
   const [open, setOpen] = useState(defaultOpen)
   const presented = useMemo(() => findPresented(snapshot), [snapshot])
   const counts = useMemo(() => countCapabilities(snapshot.capabilities), [snapshot.capabilities])
@@ -129,6 +132,17 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
               </p>
             </div>
 
+            {runtime !== undefined && (
+              <div className="livery-check__block">
+                <h4 className="livery-check__title">{t('check.runtime')}</h4>
+                <p className="livery-check__value" data-testid="livery-runtime-overall">{runtime.overall}</p>
+                {Object.entries(runtime.axes).map(([name, axis]) => (
+                  <p key={name} className="livery-check__value" data-testid={`livery-runtime-axis-${name}`}>
+                    {name}: {axis.status}
+                  </p>
+                ))}
+              </div>
+            )}
             <div className="livery-check__block">
               <h4 className="livery-check__title">{t('check.capabilities')}</h4>
               <p className="livery-check__value">
@@ -249,13 +263,16 @@ export function SelfCheck({ t, snapshot, onCopyResult, copyFailed, defaultOpen =
                 variant="outline"
                 size="sm"
                 data-testid="livery-copy-diagnostics"
+                aria-invalid={copyFailed}
+                aria-describedby={copyFailed ? 'livery-copy-error' : undefined}
+                aria-errormessage={copyFailed ? 'livery-copy-error' : undefined}
                 onClick={() => { void copy() }}
               >
                 {t('check.copy')}
               </Button>
             </div>
             {copyFailed && (
-              <p className="livery-notice__body" data-testid="livery-copy-error">
+              <p className="livery-notice__body" id="livery-copy-error" role="alert" aria-live="assertive" data-testid="livery-copy-error">
                 {t('check.copyFailed')}. {t('check.copyFailedHint')}
               </p>
             )}

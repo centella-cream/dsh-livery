@@ -190,7 +190,7 @@ describe.skipIf(!COMPILED)('generated adapter registry', () => {
     const desktop = adapterForVersion('0.2.1-rc.3')
     const legacy = adapterForVersion('0.2.0-rc.2')
     if (web !== undefined && desktop !== undefined) {
-      expect(web.catalogProfile).toBe(desktop.catalogProfile)
+      expect(web.catalogProfile).not.toBe(desktop.catalogProfile)
     }
     if (web !== undefined && legacy !== undefined) {
       expect(web.catalogProfile).not.toBe(legacy.catalogProfile)

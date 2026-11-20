@@ -12,8 +12,8 @@ build commit are recorded in the committed evidence JSON under
 | DSH `0.2.1-rc.2` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.1-rc.4` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.1-rc.5` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
-| DSH `0.2.2-rc.1` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
-| DSH `0.2.2-rc.2` | Web, Chrome `156.0.8078.48` | Node `24.22.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.1` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
+| DSH `0.2.2-rc.2` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.2-rc.3` | Web, Chrome `156.0.8078.48` | Node `24.21.0` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.2-rc.5` | Web, Chrome `156.0.8078.48` | Node `24.21.0` | **275 pass / 0 fail / 4 skip / 2 warn** |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **35 pass / 0 fail / 2 skip / 0 warn** |
@@ -55,8 +55,8 @@ as npm `latest` and GitHub Release `v0.1.9`. Eleven evidence files are bound und
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | Stable certified renderer surface |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Preview |
 | DSH `0.2.1-rc.5` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
-| DSH `0.2.2-rc.1` | Web + Desktop macOS | Node `24.22.1` / `24.21.0` | Preview |
-| DSH `0.2.2-rc.2` | Web + Desktop macOS | Node `24.22.1` / `24.21.0` | Preview |
+| DSH `0.2.2-rc.1` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
+| DSH `0.2.2-rc.2` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
 | DSH `0.2.2-rc.3` | Web + Desktop macOS | Node `24.21.0` / Electron `44.7.0` | Preview |
 
 Acceptance on the exact `0.1.9` artifact: Web `0.2.1-rc.2`, `0.2.1-rc.4`,
@@ -80,8 +80,8 @@ Release. `0.1.2` evidence is retained unchanged under
 | DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node `24.21.0` (Chromium `152.0.7977.130`) | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.5` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; reaccepted in 0.1.7 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `24.22.1` / `24.21.0` | Preview; Web+Desktop acceptance bound |
-| DSH `0.2.2-rc.2` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `24.22.1` / `24.21.0` | Preview; npm `next`, GitHub prerelease; shared rc.1 catalog profile; Web+Desktop acceptance bound |
+| DSH `0.2.2-rc.1` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; Web+Desktop acceptance bound |
+| DSH `0.2.2-rc.2` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; npm `next`, GitHub prerelease; Web+Desktop acceptance bound |
 | Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
 
 Compatible-preview mode is unclaimed and diagnosed; 0.3+ and API-divergent builds
@@ -124,7 +124,7 @@ from a self-reported list. The `0.1.2` evidence files are never rewritten.
 | Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 passed / 0 failed / 4 skipped / 2 warnings** |
 | Web isolated full run | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
 | Web isolated full run | DSH `0.2.1-rc.5`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
-| Web isolated full run | DSH `0.2.2-rc.1`, macOS arm64, Node `24.22.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
+| Web isolated full run | DSH `0.2.2-rc.1`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
 | Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
 | Desktop app renderer | DSH `0.2.1-rc.5`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
 | Desktop app renderer | DSH `0.2.2-rc.1`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
@@ -132,7 +132,7 @@ from a self-reported list. The `0.1.2` evidence files are never rewritten.
 A real-profile clone run remains a supplementary diagnostic and is intentionally
 not part of formal release evidence: only isolated-home runs are authoritative.
 The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
-22.23.1 for the 0.2.1 hosts and Node 24.22.1 for 0.2.2-rc.1, and Playwright with
+22.23.1 for the 0.2.1 hosts and Node 22.23.1 for 0.2.2-rc.1, and Playwright with
 the exact certified Chrome build 156.0.8078.48. When
 the system Chrome channel auto-updates to an uncertified build, the same official
 Chrome for Testing build for the certified version is provisioned explicitly;

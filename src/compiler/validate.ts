@@ -26,6 +26,7 @@ import type { StockSnapshot } from '../generated/stock.js'
 import manifestSchemaV2 from '../../schemas/livery.schema.json'
 import manifestSchemaV1 from '../../schemas/livery.v1.schema.json'
 import { normalizeManifest } from '../core/presentation.js'
+import { auditStudioDecoration } from '../core/decoration.js'
 
 /** One machine-readable validation problem. `path` is `<source file>#<JSON pointer>`. */
 export interface Diagnostic {
@@ -235,6 +236,14 @@ export function validateManifest(
         path: `${file}#/meta/tags`,
         message: `unknown tag id "${tag}"`,
       })
+    }
+  }
+
+  const studio = manifest.presentation?.studioDecoration
+  if (typeof studio === 'object' && studio !== null) {
+    const audit = auditStudioDecoration(studio.recipe, studio.parameters)
+    for (const issue of audit.issues) {
+      diagnostics.push({ code: issue.code, path: `${file}#/presentation/axes/studioDecoration/parameters${issue.path}`, message: issue.message })
     }
   }
 

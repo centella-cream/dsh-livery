@@ -485,7 +485,7 @@ function deriveVariant(
   const forced = new Set<string>([...overridden, ...Object.keys(roleOverrides)])
   // Style/metric tokens are emitted when they differ from stock (surface `solid`
   // and legacy metric profiles keep empty maps, so they add no bytes).
-  const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens), ...Object.keys(chrome)])
+  const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens), ...Object.keys(manifest.layout.surfaceTokens?.[mode] ?? {}), ...Object.keys(chrome)])
   const emitted: MutableTokens = {}
   for (const name of Object.keys(full)) {
     const value = full[name]

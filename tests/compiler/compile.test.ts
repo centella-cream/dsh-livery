@@ -95,14 +95,14 @@ describe('compileCatalog — shipped adapters only', () => {
     // Both shipped adapters point at committed contract snapshots.
     for (const adapter of ADAPTERS) expect(adapter.contractHash).toMatch(/^sha256:[0-9a-f]{64}$/u)
     // 0.2.1-rc.2 and rc.3 share the render-affecting token contract → one profile.
-    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.3')?.catalogProfile)
-    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.4')?.catalogProfile)
-    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).toBe(adapterForVersion('0.2.1-rc.5')?.catalogProfile)
-    expect(first.profileCount).toBe(4)
+    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).not.toBe(adapterForVersion('0.2.1-rc.3')?.catalogProfile)
+    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).not.toBe(adapterForVersion('0.2.1-rc.4')?.catalogProfile)
+    expect(adapterForVersion('0.2.1-rc.2')?.catalogProfile).not.toBe(adapterForVersion('0.2.1-rc.5')?.catalogProfile)
+    expect(first.profileCount).toBe(8)
     const oldProfile = first.profiles.find((profile) => profile.representative.catalogProfile === adapterForVersion('0.2.1-rc.2')?.catalogProfile)
     const newestProfile = first.profiles.find((profile) => profile.representative.catalogProfile === adapterForVersion('0.2.2-rc.3')?.catalogProfile)
-    expect(oldProfile?.profile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(newestProfile?.profile.sourceAdapters).toEqual(['0.2.2-rc.3', '0.2.2-rc.5'])
+    expect(oldProfile?.profile.sourceAdapters).toEqual(['0.2.1-rc.2'])
+    expect(newestProfile?.profile.sourceAdapters).toEqual(['0.2.2-rc.3'])
     expect(first.profiles.every((profile) => profile.report.gates.adapterRenderIdentity)).toBe(true)
   })
 

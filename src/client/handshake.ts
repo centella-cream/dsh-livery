@@ -276,7 +276,23 @@ function isCompiledLivery(value: unknown): boolean {
   }
   const css = value.css
   if (!isRecord(css) || typeof css.tokens !== 'string' || typeof css.typography !== 'string' || typeof css.layout !== 'string') return false
-  if (!isRecord(value.presentation) || !isRecord(value.presentation.axes) || !isRecord(value.auditSummary)) return false
+  if (!isRecord(value.presentation) || !isRecord(value.presentation.axes) || !isRecord(value.presentation.responsivePolicy)) return false
+  const axes = value.presentation.axes
+  if (Object.keys(axes).length !== 17) return false
+  for (const axis of Object.values(axes)) {
+    if (!isRecord(axis) || !('declared' in axis) || !('effective' in axis) || typeof axis.status !== 'string') return false
+  }
+  const summary = value.auditSummary
+  if (!isRecord(summary)
+    || !isRecord(summary.contrast)
+    || typeof summary.contrast.total !== 'number'
+    || typeof summary.contrast.failed !== 'number'
+    || typeof summary.degradedAxes !== 'number'
+    || typeof summary.unavailableAxes !== 'number'
+    || !isText(summary.auditHash)
+    || !isRecord(summary.tokenCoverage)
+    || !isRecord(summary.cssSafety)) return false
+  if (!isRecord(value.layout) || !isRecord(value.typography)) return false
   if (!isText(value.cssHash) || !isText(value.hash)) return false
   if (!isStringArray(value.requiredCapabilities) || !isStringArray(value.optionalCapabilities)) return false
   const audit = value.audit

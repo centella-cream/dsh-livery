@@ -267,9 +267,10 @@ export function resolveRuntimeAxis(
   media: MediaState,
 ): RuntimeAxisPresentation {
   if (staticAxis.status === 'Unavailable') return staticAxis
-  if (staticAxis.declared !== 'host' && staticAxis.declared !== 'stock' && staticAxis.declared !== 'none') {
-    const instance = staticAxis.declared as RecipeInstance
-    if (instance.id.startsWith('studio-')) {
+  const declared = staticAxis.declared
+  if (typeof declared === 'object' && declared !== null) {
+    const instance = declared as RecipeInstance
+    if (typeof instance.id === 'string' && instance.id.startsWith('studio-')) {
       const tier = media.forcedColors ? 'none' : containerWidth > 999 ? 'full' : containerWidth > 799 ? 'reduced' : containerWidth > 599 ? 'minimal' : 'none'
       const effective: RecipeRef = tier === 'none' ? 'none' : { id: instance.id, parameters: { ...instance.parameters, tier } }
       const result: RuntimeAxisPresentation = {
@@ -328,6 +329,13 @@ function surfaceTokenFamily(name: string): 'geometry' | 'border' | 'elevation' |
   return undefined
 }
 
+const AXIS_TOKEN_STYLE: Readonly<Record<'geometry' | 'border' | 'elevation' | 'material', Readonly<Record<string, SurfaceStyleId>>>> = {
+  geometry: { stock: 'solid', soft: 'soft', square: 'flat', sharp: 'sharp', rounded: 'rounded', paper: 'paper', pill: 'pill', editorial: 'editorial' },
+  border: { hairline: 'solid', strong: 'editorial', 'warm-hairline': 'paper', terminal: 'terminal', brutal: 'brutal' },
+  elevation: { stock: 'solid', soft: 'soft', flat: 'flat', 'hard-1px': 'sharp', 'hard-offset': 'brutal', elevated: 'elevated' },
+  material: { solid: 'solid', glass: 'glass' },
+}
+
 /** Compose independent geometry/border/elevation/material token families from matching styles. */
 export function compositeSurfaceTokens(spec: PresentationSpec): { light: Record<string, string>; dark: Record<string, string> } {
   const exact = surfaceStyleForAxes(spec)
@@ -339,8 +347,9 @@ export function compositeSurfaceTokens(spec: PresentationSpec): { light: Record<
   const light: Record<string, string> = {}
   const dark: Record<string, string> = {}
   for (const axis of ['geometry', 'border', 'elevation', 'material'] as const) {
-    const style = Object.values(SURFACE_STYLE_DEFINITIONS).find((candidate) => SURFACE_AXES[candidate.id][axis] === axes[axis])
-    if (style === undefined) continue
+    const styleId = AXIS_TOKEN_STYLE[axis][axes[axis]]
+    if (styleId === undefined) continue
+    const style = SURFACE_STYLE_DEFINITIONS[styleId]
     for (const [name, value] of Object.entries(style.light)) if (surfaceTokenFamily(name) === axis) light[name] = value
     for (const [name, value] of Object.entries(style.dark)) if (surfaceTokenFamily(name) === axis) dark[name] = value
   }

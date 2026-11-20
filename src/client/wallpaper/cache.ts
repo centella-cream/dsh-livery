@@ -512,10 +512,7 @@ export async function cacheRemoteImage(
  */
 async function readCappedBody(response: Response, type: string): Promise<Blob | undefined> {
   const body = response.body
-  if (body === null || typeof body.getReader !== 'function') {
-    const blob = await response.blob()
-    return blob.size > REMOTE_CACHE_MAX_BYTES ? undefined : blob
-  }
+  if (body === null || typeof body.getReader !== 'function') return undefined
   const reader = body.getReader()
   const chunks: Uint8Array[] = []
   let total = 0
@@ -538,9 +535,9 @@ async function readCappedBody(response: Response, type: string): Promise<Blob | 
 }
 
 /** Reject corrupt/forged image payloads when the platform can decode images. */
-async function isDecodableImage(blob: Blob): Promise<boolean> {
+export async function isDecodableImage(blob: Blob): Promise<boolean> {
   const createBitmap = (globalThis as unknown as { createImageBitmap?: (input: Blob) => Promise<{ close?: () => void }> }).createImageBitmap
-  if (typeof createBitmap !== 'function') return true
+  if (typeof createBitmap !== 'function') return false
   try {
     const bitmap = await createBitmap(blob)
     const width = (bitmap as unknown as { width?: number }).width ?? 0

@@ -62,7 +62,7 @@ export interface UploadCandidate {
 }
 
 /** Upload validation problem (mapped to i18n copy). */
-export type UploadProblem = 'type' | 'size' | 'empty'
+export type UploadProblem = 'type' | 'size' | 'empty' | 'invalid'
 
 /**
  * Validate a picked/dropped file before reading it.

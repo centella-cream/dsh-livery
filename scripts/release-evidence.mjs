@@ -274,6 +274,21 @@ for (const run of evidence.runs) {
   if (probe.target?.hostVersion !== run.hostVersion) fail(`${run.id}: probe hostVersion mismatch`)
   if (probe.target?.adapterId !== run.adapterId) fail(`${run.id}: probe adapterId mismatch`)
   if (probe.environment?.commit !== run.commit) fail(`${run.id}: probe commit mismatch`)
+  const runEntry = matrixEntryFor(run.hostVersion)
+  if (!runEntry) fail(`${run.id}: hostVersion is not in the formal matrix`)
+  const adapter = JSON.parse(readFileSync(resolve('contracts', 'dsh', run.hostVersion, 'adapter.json'), 'utf8'))
+  if (run.hostVersion !== evidence.scope?.hostVersion) fail(`${run.id}: run hostVersion does not match evidence scope`)
+  if (run.adapterId !== runEntry.adapterId) fail(`${run.id}: run adapterId does not match the matrix`)
+  if (probe.target?.contractHash !== adapter.contractHash) fail(`${run.id}: probe contractHash does not match the adapter`)
+  if (probe.target?.catalogProfile !== adapter.catalogProfile) fail(`${run.id}: probe catalogProfile does not match the adapter`)
+  const runScopeCert = runEntry.scopeCertification?.[profile]?.[profile === 'web' ? 'chrome' : 'macos']
+  const observedRuntime = profile === 'desktop'
+    ? (probe.environment?.windowElectronNode ?? '')
+    : (probe.environment?.nodeVersion ?? '')
+  const runtime = String(observedRuntime).replace(/^v/u, '')
+  if (runScopeCert !== undefined && !(runScopeCert.runtimeVersions ?? []).includes(runtime)) {
+    fail(`${run.id}: runtime ${runtime || '(missing)'} is not certified for ${profile} scope ${run.hostVersion}`)
+  }
   if (profile === 'web' && probe.target?.scope?.browserVersion !== evidence.target?.scope?.browserVersion) {
     fail(`${run.id}: probe browser version does not match evidence target`)
   }

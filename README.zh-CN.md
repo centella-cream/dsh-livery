@@ -11,7 +11,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带在线图片�
 以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
 > **发布状态：`0.2.0` 实现候选 — 尚未发布。**
-> 11 个声明 scope 均已有当前验收证据，发布门禁通过；仍需关闭剩余协议审查项后再决定发布。`dsh-livery@0.1.9` 仍是当前已发布制品。
+> 13 个声明 scope 均已有当前验收证据，发布门禁通过；仍需关闭剩余协议审查项后再决定发布。`dsh-livery@0.1.9` 仍是当前已发布制品。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop、DSH `0.2.2-rc.5` Web/Desktop。
@@ -88,8 +88,8 @@ token；不写任何逐插件选择器或宿主 hashed class。
 | DSH `0.2.1-rc.3` | macOS Desktop app | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **稳定认证**渲染器表面 |
 | DSH `0.2.1-rc.4` | Web Profile + Chrome `156.0.8078.48` | Node `22.23.1` | **next 预览** |
 | DSH `0.2.1-rc.5` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
-| DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览** |
-| DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `24.22.1` / `24.21.0` | **预览**（npm `next`） |
+| DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览** |
+| DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **预览**（npm `next`） |
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `next`） |
 | DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **预览**（npm `latest`，GitHub prerelease） |
 

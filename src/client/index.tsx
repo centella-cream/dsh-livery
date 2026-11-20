@@ -27,6 +27,26 @@ import { dictionaries } from '../i18n/index.js'
 import { CLIENT_CSS } from '../styles/client.js'
 import { bootIdentity, checkBoot, checkCatalog, readBootPayload } from './handshake.js'
 import { canonicalJson } from '../core/presentation.js'
+
+const CATALOG_MAX_BYTES = 4 * 1024 * 1024
+
+async function readCatalogJson(response: Response): Promise<unknown> {
+  if (response.body === null) return undefined
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    size += value.byteLength
+    if (size > CATALOG_MAX_BYTES) { await reader.cancel(); return undefined }
+    chunks.push(value)
+  }
+  const bytes = new Uint8Array(size)
+  let offset = 0
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength }
+  return JSON.parse(new TextDecoder().decode(bytes)) as unknown
+}
 import type { BootCheck } from './handshake.js'
 import { LiveryPanelIcon } from './LiveryPanelIcon.js'
 import { LiveryPanelPage } from './LiveryPanelPage.js'
@@ -89,7 +109,7 @@ async function fetchCatalog(expected: ReturnType<typeof bootIdentity>): Promise<
       signal: AbortSignal.timeout(CATALOG_TIMEOUT_MS),
     })
     if (!response.ok) return undefined
-    const checked = checkCatalog(await response.json(), { adapters: ADAPTER_IDENTITIES, expected }).catalog
+    const checked = checkCatalog(await readCatalogJson(response), { adapters: ADAPTER_IDENTITIES, expected }).catalog
     if (checked === undefined) return undefined
     const { catalogHash, ...payload } = checked
     const hex = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalJson(payload))))].map((byte) => byte.toString(16).padStart(2, '0')).join('')

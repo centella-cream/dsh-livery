@@ -417,8 +417,8 @@ describe('generated shipped registry', () => {
     const rc2Adapter = registry.adapterForVersion('0.2.1-rc.2')!
     const rc3Adapter = registry.adapterForVersion('0.2.1-rc.3')!
     const rc4Adapter = registry.adapterForVersion('0.2.1-rc.4')!
-    expect(rc2Adapter.catalogProfile).toBe(rc3Adapter.catalogProfile)
-    expect(rc2Adapter.catalogProfile).toBe(rc4Adapter.catalogProfile)
+    expect(rc2Adapter.catalogProfile).not.toBe(rc3Adapter.catalogProfile)
+    expect(rc2Adapter.catalogProfile).not.toBe(rc4Adapter.catalogProfile)
     expect(rc2Adapter.tokenHash).toBe(rc3Adapter.tokenHash)
     expect(rc2Adapter.tokenHash).toBe(rc4Adapter.tokenHash)
     // Every generated adapter is a formal-matrix shipped entry.
@@ -438,11 +438,11 @@ describe('generated shipped registry', () => {
 
     // Catalog profile dedupe: both adapters serve ONE generated profile.
     const liveries = await import('../../src/generated/liveries.js')
-    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(4)
+    expect(liveries.CATALOG_PROFILE_IDS).toHaveLength(8)
     const oldProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.1-rc.2')!.catalogProfile]!
     const newestProfile = liveries.CATALOG_PROFILES[adapterForVersion('0.2.2-rc.3')!.catalogProfile]!
-    expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5'])
-    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.3', '0.2.2-rc.5'])
+    expect(oldProfile.sourceAdapters).toEqual(['0.2.1-rc.2'])
+    expect(newestProfile.sourceAdapters).toEqual(['0.2.2-rc.3'])
     expect(oldProfile.liveries).toHaveLength(28)
     expect(newestProfile.liveries).toHaveLength(28)
   })

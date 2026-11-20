@@ -4,6 +4,8 @@
  * with its UI result contract.
  */
 import { describe, expect, it, vi } from 'vitest'
+
+globalThis.createImageBitmap = async () => ({ width: 1, height: 1, close() {} }) as unknown as ImageBitmap
 import { renderToStaticMarkup } from 'react-dom/server'
 
 vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {

@@ -599,6 +599,15 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   const darkAttribute = 'data-ds-dark-theme'
   const themeSourceAttribute = 'data-ds-theme-source'
 
+  const slotTypeEvidence: FileHash[] = []
+  for (const file of [
+    'dsh-client-ui-layout/lib/types/client/index.d.ts',
+    'dsh-client-ui-sidebar/lib/types/client/contract/slots.d.ts',
+    'dsh-client-ui-settings-general/lib/types/client/shell-contract.d.ts',
+  ]) {
+    const path = join(packagesRoot, file)
+    if (existsSync(path)) slotTypeEvidence.push(await sha256File(path))
+  }
   const payload = {
     services: ['configForms', 'slots', 'locale', 'theme'],
     slots: {
@@ -631,7 +640,7 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
       break
     }
   }
-  return { hash: hashCanonical(payload), ...payload, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence }
+  return { hash: hashCanonical({ ...payload, slotTypeEvidence }), ...payload, slotTypeEvidence, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence }
 }
 
 function readmeSetDocumentedAttributes(readmeTexts: readonly string[]): string[] {
@@ -1250,6 +1259,7 @@ export function catalogProfileId(snapshot: ContractSnapshot): string {
   return hashCanonical({
     schemaVersion: 1,
     compilerVersion: CATALOG_COMPILER_VERSION,
+    hostVersion: snapshot.hostVersion,
     tokenHash: snapshot.hashes.token,
     capabilities: {
       themeCss: snapshot.capabilities.themeCss === true,

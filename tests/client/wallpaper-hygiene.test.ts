@@ -1,5 +1,7 @@
 /** 0.1.3 client hygiene: upload lifecycle, remote LRU cache, streaming cap, a11y helpers. */
 import { describe, expect, it, vi } from 'vitest'
+
+globalThis.createImageBitmap = async () => ({ width: 1, height: 1, close() {} }) as unknown as ImageBitmap
 import { REMOTE_CACHE_MAX_BYTES, cacheRemoteImage, pruneRemoteCache, readRemoteCacheIndex, remoteCacheKey, writeRemoteCacheIndex } from '../../src/client/wallpaper/cache.js'
 import type { RemoteCacheStorage } from '../../src/client/wallpaper/cache.js'
 import { clearableRecentUrls, deleteStoredImage, evictedRecentUrls, obsoleteUploadKey } from '../../src/client/wallpaper/lifecycle.js'

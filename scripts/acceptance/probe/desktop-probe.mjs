@@ -594,12 +594,19 @@ async function main() {
       const base = read('--dsw-alias-bg-base')
       const frostInput = document.querySelector('[data-testid="wallpaper-frost"]')
       const frost = frostInput && 'value' in frostInput ? Number(frostInput.value) : 35
+      const toggle = document.querySelector('[data-sidebar-toggle]')
+      const sidebar = toggle?.closest('[class*="root"]')
+      const style = sidebar === undefined || sidebar === null ? undefined : getComputedStyle(sidebar)
       return {
         tint, fill, base,
         tintAlpha: alpha(tint), fillAlpha: alpha(fill), baseAlpha: alpha(base),
         frost,
         remaining: Math.max(0, Math.min(100, 100 - frost)) / 100,
         width: window.innerWidth,
+        domPath: sidebar === undefined || sidebar === null ? 'not-found' : 'sidebar-root',
+        domBackground: style?.backgroundColor ?? 'none',
+        domBackdrop: style?.backdropFilter ?? 'none',
+        domAlpha: style === undefined ? 0 : alpha(style.backgroundColor),
       }
     })
     expect(
@@ -1058,12 +1065,17 @@ async function main() {
       return document.body.hasAttribute('data-dsh-wallpaper') && style !== null && (style.textContent ?? '').includes('--dsw-specific-sidebar-fill')
     }, undefined, { timeout: 10_000 }).catch(() => {})
     const sidebarParity = await readSidebarParity()
-    const sidebarPath = sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
-      ? 'macos-ordinary-tint'
-      : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
-    const observedAlpha = sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
-    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - sidebarParity.remaining) <= 0.03
-    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget: sidebarParity.remaining, screenshot: 'zh-wallpaper-desktop.png', tolerance: 0.03 }
+    const domAlpha = Number(sidebarParity.domAlpha ?? 0)
+    const sidebarPath = domAlpha > 0
+      ? 'sidebar-dom-surface'
+      : sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
+        ? 'macos-ordinary-tint'
+        : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
+    const observedAlpha = domAlpha > 0 ? domAlpha : sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
+    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - sidebarParity.remaining) <= 0.03 &&
+      (sidebarParity.domPath === 'sidebar-root' || sidebarParity.domAlpha > 0)
+    await captureScreenshot(page, path.join(screensDir, 'zh-sidebar-parity-desktop.png'), { label: 'desktop sidebar parity after wallpaper reapply' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'sidebar-parity' }))
+    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget: sidebarParity.remaining, screenshot: 'zh-sidebar-parity-desktop.png', tolerance: 0.03 }
     artifacts.sidebarObservation = sidebarObservation
     expect(
       runner,

@@ -806,11 +806,7 @@ export const WALLPAPER_JSON_MAX_BYTES = 2 * 1024 * 1024
 async function readCappedJson(response: Response): Promise<unknown> {
   const max = WALLPAPER_JSON_MAX_BYTES
   const body = response.body
-  if (body === null || typeof body.getReader !== 'function') {
-    const text = await response.text()
-    if (new TextEncoder().encode(text).length > max) return undefined
-    return JSON.parse(text)
-  }
+  if (body === null || typeof body.getReader !== 'function') return undefined
   const reader = body.getReader()
   const chunks: Uint8Array[] = []
   let total = 0
