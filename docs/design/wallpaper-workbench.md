@@ -60,28 +60,30 @@ per-page selector override.
 
 ## Sidebar surface
 
-The host left navigation is painted through two different token paths, and both
-must produce the same wall-relative transparency as the main column:
+The host left navigation is painted through two different token paths. They do
+**not** produce identical alpha on macOS:
 
 | Host path | Painted value | Wallpaper treatment |
 |---|---|---|
 | Web, Windows, macOS drawer | `--dsw-specific-sidebar-fill` directly | Frost the fill once at `remaining%` (`100 - frost`). |
-| macOS ordinary sidebar | wash gradient over `--dsw-specific-sidebar-tint` (stock: 40% of the fill in light mode, 50% in dark mode; light mode adds a 3% `#7a9bf0` cast) | Author the tint at the same `remaining%`; do not let the host's 40/50% multiply the frosted fill again. |
+| macOS ordinary sidebar | wash gradient over `--dsw-specific-sidebar-tint` (stock: 40% of the fill in light mode, 50% in dark mode) | The host composes the final surface; Livery only supplies the frosted fill/tint inputs. |
 
-Frosting only the fill is not enough on macOS: the host would compose
-`40–50% × remaining%` (26–33% at the default 35% frost) for the sidebar while the
-main column uses `remaining%` (65%). Over a light wallpaper the left rail then reads as
-a pale sheet under white labels, and the two sides no longer look like one theme.
+On DSH 0.2.x the macOS ordinary sidebar's final DOM alpha is therefore
+`host tint factor × fill alpha` (about `0.4 × 0.65 = 0.26` in light mode at the
+default 35% frost). The main column remains at `remaining%` (0.65).
 
-The wallpaper stylesheet therefore emits
-`--dsw-specific-sidebar-tint: color-mix(in srgb, color-mix(in srgb, <fill> 97%, #7a9bf0) <remaining>%, transparent)`
-in light mode and `color-mix(in srgb, <fill> <remaining>%, transparent)` in dark
-mode. This is token-only (no host hashed classes), preserves the host's light-mode
-blue cast, and leaves the sidebar fill slightly distinct from the main base by
-colour rather than by opacity. The fill remains frosted for the other host paths
-and for the macOS drawer. With no wallpaper the host keeps its stock 40/50% vibrancy;
-under `prefers-reduced-transparency: reduce` or `forced-colors: active` the whole
-glass block is absent and the host paints its opaque fallback.
+This is a host-composition limitation, not a token that Livery can override
+without host selectors. Token-only styling cannot make the ordinary sidebar reach
+the main column's alpha on this host. The accepted 0.2.0 behavior is:
+
+- Web/Windows/drawer keep the frosted fill at `remaining%`;
+- macOS ordinary sidebar keeps the host's 40/50% composite;
+- `desktop.sidebar-path` measures the **real `sidebarCol` DOM background** and
+  compares it with `fillAlpha × hostTintFactor`, not with the tint token;
+- `prefers-reduced-transparency` and `forced-colors` keep their opaque host
+  fallbacks.
+
+No hashed host class selector or `!important` is used to force parity.
 
 ## Visual verification
 

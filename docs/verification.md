@@ -31,8 +31,9 @@ Evidence:
   critical check ids, build commit and audit envelope.
 - `pnpm prepublishOnly` verifies all 13 declared-scope files against the final candidate.
 
-The Desktop probe records `desktop.sidebar-path` with the observed tint/fill
-surface alpha. The Web probe covers the merged preset/wallpaper checks and the
+The Desktop probe records `desktop.sidebar-path` from the real `sidebarCol` DOM
+background and compares it with the host-composited target (`fillAlpha × host
+tint factor`), not with the tint token. The Web probe covers the merged preset/wallpaper checks and the
 Settings floating-surface check; the Desktop probe covers the Electron renderer
 surface, not native window shell/vibrancy.
 

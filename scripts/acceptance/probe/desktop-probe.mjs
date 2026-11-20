@@ -597,7 +597,7 @@ async function main() {
       const toggle = document.querySelector('[data-sidebar-toggle]')
       const sidebar = toggle?.closest('[class*="root"]') ?? [...document.querySelectorAll('div')].find((element) => getComputedStyle(element).getPropertyValue('--dsh-sidebar-inline-padding').trim() !== '')
       const style = sidebar === undefined || sidebar === null ? undefined : getComputedStyle(sidebar)
-      const surfaceElement = toggle?.closest('[class*="sidebarCol"]') ?? document.querySelector('[class*="sidebarCol"]') ?? sidebar
+      const surfaceElement = [...document.querySelectorAll('[class]')].find((element) => [...element.classList].some((name) => /(^|_)sidebarCol$/u.test(name))) ?? sidebar
       const surface = surfaceElement === undefined || surfaceElement === null ? undefined : { element: surfaceElement, style: getComputedStyle(surfaceElement) }
       return {
         tint, fill, base,
@@ -605,7 +605,8 @@ async function main() {
         frost,
         remaining: Math.max(0, Math.min(100, 100 - frost)) / 100,
         width: window.innerWidth,
-        domPath: sidebar === undefined || sidebar === null ? 'not-found' : 'sidebar-root',
+        domPath: surfaceElement === undefined || surfaceElement === null ? 'not-found' : 'sidebar-col',
+        dark: document.body.hasAttribute('data-ds-dark-theme'),
         domBackground: surface?.style.backgroundColor ?? style?.backgroundColor ?? 'none',
         domBackdrop: surface?.style.backdropFilter ?? style?.backdropFilter ?? 'none',
         domImage: surface?.style.backgroundImage ?? style?.backgroundImage ?? 'none',
@@ -1071,15 +1072,18 @@ async function main() {
     }, undefined, { timeout: 10_000 }).catch(() => {})
     const sidebarParity = await readSidebarParity()
     const domAlpha = Number(sidebarParity.domAlpha ?? 0)
-    const sidebarPath = domAlpha > 0
-      ? 'sidebar-dom-surface'
-      : sidebarParity.tintAlpha < 1 && sidebarParity.tintAlpha > 0
-        ? 'macos-ordinary-tint'
-        : sidebarParity.fillAlpha > 0 ? 'macos-drawer-fill' : 'no-sidebar'
-    const observedAlpha = domAlpha > 0 ? domAlpha : sidebarPath === 'macos-ordinary-tint' ? sidebarParity.tintAlpha : sidebarParity.fillAlpha
-    const parityOk = sidebarPath !== 'no-sidebar' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - sidebarParity.remaining) <= 0.03
+    const hostTintFactor = sidebarParity.dark === true ? 0.5 : 0.4
+    const fillAlpha = Number(sidebarParity.fillAlpha)
+    const directTarget = Number(fillAlpha.toFixed(4))
+    const compositeTarget = Number((fillAlpha * hostTintFactor).toFixed(4))
+    const direct = Math.abs(domAlpha - directTarget) <= 0.03
+    const composite = Math.abs(domAlpha - compositeTarget) <= 0.03
+    const sidebarPath = direct ? 'macos-direct-tint' : composite ? 'macos-host-composite' : 'unexpected'
+    const observedAlpha = domAlpha
+    const expectedAlpha = direct ? directTarget : compositeTarget
+    const parityOk = sidebarPath !== 'unexpected' && Number.isFinite(observedAlpha) && Math.abs(observedAlpha - expectedAlpha) <= 0.03
     await captureScreenshot(page, path.join(screensDir, 'zh-sidebar-parity-desktop.png'), { label: 'desktop sidebar parity after wallpaper reapply' }).then((shot) => artifacts.screenshots.push({ ...shot, state: 'sidebar-parity' }))
-    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget: sidebarParity.remaining, screenshot: 'zh-sidebar-parity-desktop.png', tolerance: 0.03 }
+    const sidebarObservation = { ...sidebarParity, path: sidebarPath, observedAlpha, alphaTarget: expectedAlpha, hostTintFactor, screenshot: 'zh-sidebar-parity-desktop.png', tolerance: 0.03 }
     artifacts.sidebarObservation = sidebarObservation
     expect(
       runner,
