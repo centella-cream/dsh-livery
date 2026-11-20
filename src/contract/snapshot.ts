@@ -599,6 +599,23 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   const darkAttribute = 'data-ds-dark-theme'
   const themeSourceAttribute = 'data-ds-theme-source'
 
+  const readType = async (relative: string): Promise<string | undefined> => {
+    const path = join(packagesRoot, relative)
+    return existsSync(path) ? readFile(path, 'utf8') : undefined
+  }
+  const layoutSlotTypes = await readType('dsh-client-ui-layout/lib/types/client/index.d.ts')
+  const sidebarSlotTypes = await readType('dsh-client-ui-sidebar/lib/types/client/contract/slots.d.ts')
+  const settingsTypes = await readType('dsh-client-ui-settings-general/lib/types/client/shell-contract.d.ts')
+  const declared = (text: string | undefined, name: string): { kind: string; scope: string } | undefined => {
+    if (text === undefined) return undefined
+    const match = new RegExp(`'${name.replaceAll('.', '\\.')}':\\s*\\{\\s*kind:\\s*'([^']+)';?\\s*scope:\\s*'([^']+)'`).exec(text)
+    return match === null ? undefined : { kind: match[1]!, scope: match[2]! }
+  }
+  const mainSlot = declared(layoutSlotTypes, 'main')
+  const sidebarSlot = declared(sidebarSlotTypes, 'sidebar.panellist')
+  if (mainSlot !== undefined && (mainSlot.kind !== 'keyed' || mainSlot.scope !== 'root')) throw new Error('host main slot declaration changed')
+  if (sidebarSlot !== undefined && (sidebarSlot.kind !== 'list' || sidebarSlot.scope !== 'root')) throw new Error('host sidebar.panellist declaration changed')
+  if (settingsTypes !== undefined && !settingsTypes.includes(`'settings.section'`)) throw new Error('host settings.section declaration missing')
   const slotTypeEvidence: FileHash[] = []
   for (const file of [
     'dsh-client-ui-layout/lib/types/client/index.d.ts',
@@ -611,8 +628,8 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   const payload = {
     services: ['configForms', 'slots', 'locale', 'theme'],
     slots: {
-      main: { kind: 'keyed', scope: 'root' },
-      sidebarPanellist: { kind: 'list', scope: 'root' },
+      main: mainSlot ?? { kind: 'keyed', scope: 'root' },
+      sidebarPanellist: sidebarSlot ?? { kind: 'list', scope: 'root' },
       settingsSection: { kind: 'list', scope: 'root' },
       localeNamespace: 'dsh-livery',
     },

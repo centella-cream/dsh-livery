@@ -595,8 +595,10 @@ async function main() {
       const frostInput = document.querySelector('[data-testid="wallpaper-frost"]')
       const frost = frostInput && 'value' in frostInput ? Number(frostInput.value) : 35
       const toggle = document.querySelector('[data-sidebar-toggle]')
-      const sidebar = toggle?.closest('[class*="root"]')
+      const sidebar = toggle?.closest('[class*="root"]') ?? [...document.querySelectorAll('div')].find((element) => getComputedStyle(element).getPropertyValue('--dsh-sidebar-inline-padding').trim() !== '')
       const style = sidebar === undefined || sidebar === null ? undefined : getComputedStyle(sidebar)
+      const surfaceElement = toggle?.closest('[class*="sidebarCol"]') ?? document.querySelector('[class*="sidebarCol"]') ?? sidebar
+      const surface = surfaceElement === undefined || surfaceElement === null ? undefined : { element: surfaceElement, style: getComputedStyle(surfaceElement) }
       return {
         tint, fill, base,
         tintAlpha: alpha(tint), fillAlpha: alpha(fill), baseAlpha: alpha(base),
@@ -604,9 +606,12 @@ async function main() {
         remaining: Math.max(0, Math.min(100, 100 - frost)) / 100,
         width: window.innerWidth,
         domPath: sidebar === undefined || sidebar === null ? 'not-found' : 'sidebar-root',
-        domBackground: style?.backgroundColor ?? 'none',
-        domBackdrop: style?.backdropFilter ?? 'none',
-        domAlpha: style === undefined ? 0 : alpha(style.backgroundColor),
+        domBackground: surface?.style.backgroundColor ?? style?.backgroundColor ?? 'none',
+        domBackdrop: surface?.style.backdropFilter ?? style?.backdropFilter ?? 'none',
+        domImage: surface?.style.backgroundImage ?? style?.backgroundImage ?? 'none',
+        domAlpha: surface === undefined
+          ? (style === undefined ? 0 : Math.max(alpha(style.backgroundColor), alpha(style.backgroundImage)))
+          : Math.max(alpha(surface.style.backgroundColor), alpha(surface.style.backgroundImage)),
       }
     })
     expect(
