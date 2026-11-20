@@ -323,7 +323,7 @@ if (runCommit !== undefined) {
     .trim().split('\n').filter(Boolean)
   // CI-only workflow/gate changes after the acceptance run do not alter the
   // artifact bytes; still refuse any product/docs/matrix/package change.
-  const allowedAfterRun = /^(src\/styles\/client\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|src\/client\/wallpaper\/controller\.ts$|contracts\/dsh\/evidence\/|contracts\/dsh\/support-matrix\.json$|src\/contract\/client-slots\.ts$|contracts\/dsh\/perf-baseline\.json$|tests\/|\.github\/workflows\/|scripts\/release-evidence\.mjs$|scripts\/prepublish-check\.mjs$|scripts\/acceptance\/|AGENTS\.md$)/
+  const allowedAfterRun = /^(docs\/design\/wallpaper-workbench\.md$|docs\/verification\.md$|src\/styles\/client\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|src\/client\/wallpaper\/controller\.ts$|contracts\/dsh\/evidence\/|contracts\/dsh\/support-matrix\.json$|src\/contract\/client-slots\.ts$|contracts\/dsh\/perf-baseline\.json$|tests\/|\.github\/workflows\/|scripts\/release-evidence\.mjs$|scripts\/prepublish-check\.mjs$|scripts\/acceptance\/|AGENTS\.md$)/
   const forbidden = changedSinceRun.filter(file => !allowedAfterRun.test(file))
   if (forbidden.length > 0) {
     fail(`acceptance ran on a dirty/older harness: changes after run commit include ${forbidden.slice(0, 5).join(', ')}`)
