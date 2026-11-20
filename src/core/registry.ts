@@ -53,6 +53,21 @@ export const FONT_STACKS: Readonly<Record<FontId, FontStackDefinition>> = {
     stack: '"Iowan Old Style", "Palatino", "Palatino Linotype", Georgia, "Times New Roman", serif',
     note: 'Local Latin serif book stack; no network font is loaded.',
   },
+  'kai-cjk': {
+    id: 'kai-cjk',
+    stack: '"Kaiti SC", "STKaiti", "KaiTi", "Noto Serif CJK SC", "Source Han Serif SC", serif',
+    note: 'Local CJK kai/brush stack; no network font is loaded.',
+  },
+  'fangsong-cjk': {
+    id: 'fangsong-cjk',
+    stack: '"FangSong", "STFangsong", "Songti SC", "Noto Serif CJK SC", serif',
+    note: 'Local CJK fangsong/print stack; no network font is loaded.',
+  },
+  'rounded-cjk': {
+    id: 'rounded-cjk',
+    stack: '"Yuanti SC", "Hannotate SC", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif',
+    note: 'Local CJK rounded stack; no network font is loaded.',
+  },
   'humanist-cjk': {
     id: 'humanist-cjk',
     stack: '"Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei UI", sans-serif',

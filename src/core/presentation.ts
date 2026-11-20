@@ -146,6 +146,21 @@ export function isStudioDecorationId(value: unknown): value is StudioDecorationI
   return typeof value === 'string' && (STUDIO_DECORATION_IDS as readonly string[]).includes(value)
 }
 
+const DECORATION_BY_SURFACE: Readonly<Record<SurfaceStyleId, StudioDecorationId>> = {
+  solid: 'none',
+  soft: 'studio-dots',
+  glass: 'none',
+  flat: 'studio-grid',
+  sharp: 'studio-frame',
+  rounded: 'studio-dots',
+  paper: 'studio-rules',
+  elevated: 'studio-frame',
+  terminal: 'studio-grid',
+  brutal: 'studio-dots',
+  pill: 'studio-dots',
+  editorial: 'studio-rules',
+}
+
 export function presentationFromLayout(layout: LiveryManifest['layout']): PresentationSpec {
   const axes = SURFACE_AXES[layout.surfaceStyle]
   return {
@@ -157,7 +172,7 @@ export function presentationFromLayout(layout: LiveryManifest['layout']): Presen
     density: layout.density,
     transcriptWidth: layout.conversationWidth,
     texture: 'none',
-    studioDecoration: { recipe: 'none', parameters: {} },
+    studioDecoration: { recipe: DECORATION_BY_SURFACE[layout.surfaceStyle], parameters: {} },
     navigation: { structure: 'host' },
     messages: { flow: layout.messageFlow, user: 'stock', assistant: 'stock' },
     ornament: 'none',

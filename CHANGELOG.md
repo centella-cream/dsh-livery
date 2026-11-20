@@ -11,6 +11,9 @@ packaging; they are folded into the `0.1.0` entry.
 
 ### Added
 
+- Visual language pass: 3 new local CJK stacks (`kai-cjk`, `fangsong-cjk`, `rounded-cjk`), per-style Chinese UI/content families, and stronger secondary/tertiary label hierarchy.
+- L5a Studio Decoration now covers 26 of 28 styles (grid/dots/rules/frame derived from the surface axis); `solid` and `glass` stay plain.
+- macOS sidebar legibility: sidebar fill is frosted at `min(94, 100 - frost + 20)` so the rail is distinct and readable while retaining a wallpaper trace; acceptance measures the real `sidebarCol` DOM composite.
 - v2 manifest protocol: `presentation` axes (geometry/border/elevation/material/chrome/density/transcriptWidth/texture/studioDecoration/navigation/messages/motion), v1→v2 normalization, and four v2 archetype manifests (`graphite`, `clay`, `cinnabar`, `rice-paper`); other 24 styles remain v1-normalized.
 - Catalog v2 envelope with full grammar identity, `grammarHash`/`catalogHash`, per-livery static presentation axes, compact audit summary and canonical recipe parameters.
 - L5a Studio Decoration on Livery-owned gallery/wallpaper/settings surfaces: `studio-grid`, `studio-dots`, `studio-frame`, `studio-rules`, with continuous 999/799/599 container tiers.

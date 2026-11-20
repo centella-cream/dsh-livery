@@ -36,11 +36,11 @@
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
+      "zh-CN": "rounded-cjk",
       "en-US": "rounded-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
+      "zh-CN": "rounded-cjk",
       "en-US": "rounded-latin"
     },
     "code": "system-mono",

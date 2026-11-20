@@ -75,6 +75,7 @@ not be cited as current support or behavior.
 ## 当前文档
 
 - **[验收总结](verification.md)**：发布范围、精确制品绑定、验收矩阵、已知限制与复现命令。
+- **[0.2.0 视觉语言](design/0.2.0-visual-language.md)**：中文字体、标签层级、L5a 装饰、边框边界与 sidebar 可读性策略。
 - **[壁纸工作台布局](design/wallpaper-workbench.md)**：响应式断点、等高规则和在线壁纸视觉策略。
 - **[接口与架构](design/interfaces.md)**：模块边界、冻结的 Host/Client 握手、生成产物与构建输出。
 - **[兼容架构](design/compatibility.md)** — API 兼容回退、共享 catalog profile 与 exact evidence 边界。

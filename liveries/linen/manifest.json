@@ -36,11 +36,11 @@
   },
   "typography": {
     "ui": {
-      "zh-CN": "humanist-cjk",
+      "zh-CN": "serif-cjk",
       "en-US": "humanist-latin"
     },
     "content": {
-      "zh-CN": "humanist-cjk",
+      "zh-CN": "fangsong-cjk",
       "en-US": "humanist-latin"
     },
     "code": "system-mono",

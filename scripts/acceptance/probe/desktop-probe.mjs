@@ -1074,7 +1074,7 @@ async function main() {
     const domAlpha = Number(sidebarParity.domAlpha ?? 0)
     const hostTintFactor = sidebarParity.dark === true ? 0.5 : 0.4
     const fillAlpha = Number(sidebarParity.fillAlpha)
-    const directTarget = Number(fillAlpha.toFixed(4))
+    const directTarget = Number(Number(sidebarParity.remaining).toFixed(4))
     const compositeTarget = Number((fillAlpha * hostTintFactor).toFixed(4))
     const direct = Math.abs(domAlpha - directTarget) <= 0.03
     const composite = Math.abs(domAlpha - compositeTarget) <= 0.03

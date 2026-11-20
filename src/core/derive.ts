@@ -372,10 +372,14 @@ function deriveVariant(
     if (onAccentRatio < 4.55) brandFill = adjustForContrast(brandFill, onAccent, 4.5)
     else brandFill = adjustForContrast(brandFill, basePole, 3)
   }
+  const secondaryLabel = formatHex(mixOklab(text, surface, 0.3))
+  const tertiaryLabel = formatHex(mixOklab(text, surface, 0.46))
   const roleOverrides: MutableTokens = {
     '--dsw-alias-brand-primary': brandFill,
     '--dsw-alias-brand-primary-new-colorprimary-new-color': brandFill,
     '--dsw-alias-label-primary-foreground': onAccent,
+    '--dsw-alias-label-secondary': secondaryLabel,
+    '--dsw-alias-label-tertiary': tertiaryLabel,
   }
   const hover = formatHex(mixOklab(parseColor(brandFill), text, 0.14))
   roleOverrides['--dsw-alias-button-primary-hover'] =

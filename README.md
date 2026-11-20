@@ -33,7 +33,7 @@ Livery follows the DSH host locale.
 ## Highlights
 
 - **28 styles across six visual axes.** Colour (OKLab seeds → complete light/dark
-  tokens), typography (10 local-only font stacks and 9 typography profiles), shape,
+  tokens), typography (13 local-only font stacks, including 6 CJK families, and 9 typography profiles), shape,
   elevation/material, border/focus treatment and component chrome. The set includes
   14 original designs, 12 permissively licensed palettes and 2 original Chinese
   designs.
@@ -56,9 +56,10 @@ Livery follows the DSH host locale.
 - **Presets and focal position.** Export/import style + wallpaper + effects +
   nine-grid focal point; remote/upload wallpapers support pointer and keyboard
   focal positioning. Presets never contain uploaded blobs, CSS, tokens or paths.
-- **macOS sidebar frost parity.** The wallpaper stylesheet authors
-  `--dsw-specific-sidebar-tint` at the same frost ratio as the main column, so a
-  light wallpaper no longer washes out the left rail.
+- **Legible, distinct macOS rail.** The sidebar fill is frosted slightly more than
+  the main column (`+20 %`, capped at 94 %) so labels stay readable over a light
+  wallpaper while the rail keeps a visible wallpaper trace. The host still owns
+  its final tint/wash composition; the probe measures the real DOM surface.
 - **Trust by construction.** Exact host allowlist, frozen contracts, token-only
   CSS, loader-ABI checks, contrast/CSS audits and committed acceptance evidence.
   Unknown hosts are rejected at install and fail closed to stock at runtime.

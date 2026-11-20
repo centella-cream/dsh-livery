@@ -329,9 +329,6 @@ export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
   '--dsw-alias-scrollbar-bg-l1',
   '--dsw-alias-scrollbar-bg-l2',
   '--dsw-alias-turn-trigger-bg',
-  // The left navigation is a host surface too; frost it with the same active
-  // livery semantics so the wallpaper is not cut off at the sidebar edge.
-  '--dsw-specific-sidebar-fill',
 ]
 
 /**
@@ -340,6 +337,7 @@ export const WALLPAPER_SURFACE_TOKENS: readonly string[] = [
  * makes that fill translucent, so the ramp must not stack a second multiplier.
  */
 export const WALLPAPER_SIDEBAR_TINT_TOKEN = '--dsw-specific-sidebar-tint' as const
+export const WALLPAPER_SIDEBAR_FILL_TOKEN = '--dsw-specific-sidebar-fill' as const
 
 /** Livery token maps needed for surface translucency (absent for stock/hydrating). */
 export interface WallpaperTokenContext {
@@ -375,6 +373,14 @@ function tokenOverrides(selector: string, tokens: TokenMap, frost: number): stri
     .filter(token => typeof tokens[token] === 'string' && tokens[token]!.length > 0)
     .map(token => `${token}:color-mix(in srgb, ${tokens[token]} ${remaining}%, transparent)`)
   return declarations.length === 0 ? '' : `${selector}{${declarations.join(';')}}`
+}
+
+function sidebarFillOverride(selector: string, tokens: TokenMap, frost: number): string {
+  const fill = tokens[WALLPAPER_SIDEBAR_FILL_TOKEN]
+  if (typeof fill !== 'string' || fill.length === 0) return ''
+  const remaining = Math.max(0, Math.min(100, 100 - frost))
+  const sidebarRemaining = Math.min(94, remaining + 20)
+  return `${selector}{${WALLPAPER_SIDEBAR_FILL_TOKEN}:color-mix(in srgb, ${fill} ${sidebarRemaining}%, transparent)}`
 }
 
 /**
@@ -476,13 +482,13 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     const lightSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`
     const darkSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]`
     const glass: string[] = []
-    const light = tokenOverrides(lightSelector, tokens.light, tokens.frost)
+    const light = tokenOverrides(lightSelector, tokens.light, tokens.frost) + sidebarFillOverride(lightSelector, tokens.light, tokens.frost)
     if (light.length > 0) glass.push(light)
     const lightTint = sidebarTintOverride(lightSelector, tokens.light, tokens.frost, 'light')
     if (lightTint.length > 0) glass.push(lightTint)
     const lightCard = cardSurfaceOverride(lightSelector, tokens.light, tokens.frost)
     if (lightCard.length > 0) glass.push(lightCard)
-    const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost)
+    const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost) + sidebarFillOverride(darkSelector, tokens.dark, tokens.frost)
     if (dark.length > 0) glass.push(dark)
     const darkTint = sidebarTintOverride(darkSelector, tokens.dark, tokens.frost, 'dark')
     if (darkTint.length > 0) glass.push(darkTint)

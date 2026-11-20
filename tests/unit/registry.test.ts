@@ -47,12 +47,12 @@ describe('font registry', () => {
     expect(fontStackOf('system-cjk')).toBe(LEGACY_CJK)
   })
 
-  it('registers the seven new local-only stacks exactly per the frozen contract', () => {
+  it('registers the local-only stacks exactly per the frozen contract', () => {
     for (const [id, stack] of Object.entries(V2_FONT_STACKS)) {
       expect(FONT_STACKS[id as FontId]).toBeDefined()
       expect(fontStackOf(id as FontId)).toBe(stack)
     }
-    expect(Object.keys(FONT_STACKS)).toHaveLength(10)
+    expect(Object.keys(FONT_STACKS)).toHaveLength(13)
   })
 
   it('every font id resolves and no stack loads a remote font', () => {

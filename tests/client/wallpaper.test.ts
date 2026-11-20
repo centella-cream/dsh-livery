@@ -365,7 +365,7 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).not.toContain('@font-face')
   })
 
-  it('phases the macOS sidebar tint to the same frost ratio as the main surfaces', () => {
+  it('keeps the macOS sidebar tint at frost and gives the fill a legibility boost', () => {
     const fillLight = '#ebeff2'
     const fillDark = '#1e2227'
     const css = buildWallpaperCss({
@@ -393,9 +393,9 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).toContain(
       `body[data-dsh-livery][data-dsh-wallpaper][data-ds-dark-theme]{${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, ${fillDark} 65%, transparent)}`,
     )
-    // The fill stays frosted for Web/Windows and the macOS drawer path.
-    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillLight} 65%, transparent)`)
-    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillDark} 65%, transparent)`)
+    // The fill is slightly more opaque than the main column for legibility.
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillLight} 85%, transparent)`)
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillDark} 85%, transparent)`)
     // No double frost: the tint is authored as a host token, not a surface token.
     expect(WALLPAPER_SURFACE_TOKENS).not.toContain(WALLPAPER_SIDEBAR_TINT_TOKEN)
   })
@@ -417,7 +417,7 @@ describe('wallpaper stylesheet builder', () => {
     // Dialog/modal panels use --dsw-alias-bg-layer-2; making it translucent
     // would leak the underlying page through the Settings overlay.
     expect(WALLPAPER_SURFACE_TOKENS).not.toContain('--dsw-alias-bg-layer-2')
-    expect(WALLPAPER_SURFACE_TOKENS).toContain('--dsw-specific-sidebar-fill')
+    expect(WALLPAPER_SURFACE_TOKENS).not.toContain('--dsw-specific-sidebar-fill')
     expect(WALLPAPER_SURFACE_TOKENS).not.toContain(WALLPAPER_SIDEBAR_TINT_TOKEN)
     const css = buildWallpaperCss({
       selection: { kind: 'builtin', id: 'dusk' },

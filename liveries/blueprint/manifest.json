@@ -20,11 +20,11 @@
   },
   "typography": {
     "ui": {
-      "zh-CN": "system-cjk",
+      "zh-CN": "fangsong-cjk",
       "en-US": "tech-latin"
     },
     "content": {
-      "zh-CN": "system-cjk",
+      "zh-CN": "fangsong-cjk",
       "en-US": "system-latin"
     },
     "code": "system-mono",
