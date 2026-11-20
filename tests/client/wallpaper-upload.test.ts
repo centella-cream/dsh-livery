@@ -3,6 +3,8 @@
  * object URL, persistence schema and object-URL revocation on replace/dispose.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+globalThis.createImageBitmap = async () => ({ width: 1, height: 1, close() {} }) as unknown as ImageBitmap
 import {
   DEFAULT_WALLPAPER_EFFECTS,
   DEFAULT_WALLPAPER_POSITION,
