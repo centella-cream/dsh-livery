@@ -611,7 +611,9 @@ async function main() {
     {
       const pluginErrors = session.record.console.filter((entry) => entry.type === 'error' && entry.liveryOwned)
       const ownedPageErrors = session.record.pageErrors.filter((entry) => /dsh-livery|\/livery\//.test(`${entry.message} ${entry.stack}`))
-      const ownedFailed = session.record.requestFailed.filter((entry) => entry.liveryOwned)
+      // Catalog requests aborted by a page navigation/reload are not product failures;
+      // a successful catalog response is asserted separately.
+      const ownedFailed = session.record.requestFailed.filter((entry) => entry.liveryOwned && !(entry.failure === 'net::ERR_ABORTED' && entry.url.includes('/livery/api/catalog')))
       const ownedHttpErrors = session.record.httpErrors.filter((entry) => entry.liveryOwned)
       const preview404 = session.record.liveryResponses.filter((entry) => entry.status === 404 && entry.url.includes('/livery/assets/previews/'))
       ctx.runner.add(

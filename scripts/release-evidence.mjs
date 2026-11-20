@@ -280,7 +280,9 @@ for (const run of evidence.runs) {
   if (run.hostVersion !== evidence.scope?.hostVersion) fail(`${run.id}: run hostVersion does not match evidence scope`)
   if (run.adapterId !== runEntry.adapterId) fail(`${run.id}: run adapterId does not match the matrix`)
   if (probe.target?.contractHash !== adapter.contractHash) fail(`${run.id}: probe contractHash does not match the adapter`)
-  if (probe.target?.catalogProfile !== adapter.catalogProfile) fail(`${run.id}: probe catalogProfile does not match the adapter`)
+  const identitiesText = readFileSync(resolve('src', 'generated', 'adapter-identities.ts'), 'utf8')
+  const identity = new RegExp(`"hostVersion": "${run.hostVersion}",\\s*"adapterId": "[^"]+",\\s*"contractHash": "[^"]+",\\s*"catalogProfile": "([^"]+)"`).exec(identitiesText)
+  if (identity === null || probe.target?.catalogProfile !== identity[1]) fail(`${run.id}: probe catalogProfile does not match the generated adapter identity`)
   const runScopeCert = runEntry.scopeCertification?.[profile]?.[profile === 'web' ? 'chrome' : 'macos']
   const observedRuntime = profile === 'desktop'
     ? (probe.environment?.windowElectronNode ?? '')
