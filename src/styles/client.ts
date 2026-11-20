@@ -248,7 +248,7 @@ body[data-dsh-livery]{
 
 
 .livery-summary__kicker{font-size:var(--lw-fs-caption);color:var(--lw-2);line-height:var(--lw-lh-control)}
-.livery-hero--compact{display:grid;grid-template-columns:minmax(240px,340px) minmax(0,1fr);align-items:stretch;gap:16px;padding:12px 14px}
+.livery-hero--compact{display:grid;grid-template-columns:minmax(220px,340px) minmax(0,1fr);align-items:stretch;gap:var(--lw-gap-card);padding:12px 14px}
 .livery-hero--compact .livery-hero__visual{display:flex;min-width:0}
 .livery-hero--compact .livery-hero__preview{width:100%;height:auto;max-height:none}
 .livery-hero--compact .livery-hero__preview--empty{min-height:120px}
@@ -256,7 +256,9 @@ body[data-dsh-livery]{
 .livery-hero--compact .livery-meta{margin:0}
 .livery-hero--compact .livery-previewbar{padding:6px 8px}
 .livery-hero--compact .livery-previewbar__body{display:none}
-.livery-hero__top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.livery-hero__top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--lw-gap-control);min-width:0}
+.livery-hero__top>.livery-actions{flex:0 0 auto;flex-wrap:nowrap}
+.livery-hero__top .livery-actions button{white-space:nowrap}
 .livery-hero__copy{min-width:0}
 .livery-hero__name{margin:0;font-size:var(--lw-fs-title);font-weight:600;line-height:var(--lw-lh-title)}
 .livery-hero__desc{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:0;color:var(--lw-2);font-size:var(--lw-fs-label);line-height:var(--lw-lh)}
@@ -268,6 +270,6 @@ body[data-dsh-livery]{
 @container livery-studio (max-width:999px){.livery-gallery-card .livery-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @container livery-studio (max-width:799px){.livery-gallery-card .livery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @container livery-studio (max-width:599px){.livery-gallery-card .livery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@container livery-studio (max-width:719px){.livery-hero--compact{grid-template-columns:minmax(0,1fr);gap:12px}.livery-hero--compact .livery-hero__preview{max-width:420px;height:auto;max-height:none;margin-inline:auto}.livery-hero__top{flex-wrap:wrap}}
+@container livery-studio (max-width:639px){.livery-hero--compact{grid-template-columns:minmax(0,1fr);gap:12px}.livery-hero--compact .livery-hero__preview{max-width:420px;height:auto;max-height:none;margin-inline:auto}.livery-hero__top{flex-wrap:wrap}}
 
 `
