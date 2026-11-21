@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/dsh-livery.svg)](https://www.npmjs.com/package/dsh-livery)
 [![Node](https://img.shields.io/badge/node-%5E22.23.1%20%7C%7C%20%5E24.21.0-339933.svg)](package.json)
-[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.2--rc.3%20Desktop-6d6df6.svg)](#supported-dsh-builds)
+[![DSH](https://img.shields.io/badge/DSH-0.2.1--rc.2%20Web%20%2B%200.2.2--rc.5%20Desktop-6d6df6.svg)](#supported-dsh-builds)
 
 > **Make your DSH beautiful to look at — and alive to use.**
 
@@ -11,10 +11,9 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: `0.2.0` implementation candidate — not published.**
+> **Release status: `0.2.0` — visual and protocol release.**
 > All 13 declared scopes have current acceptance evidence and the release gates
-> pass. Remaining protocol review items are tracked before a publish decision;
-> `dsh-livery@0.1.9` remains the current published artifact.
+> pass. The published artifact is `dsh-livery@0.2.0`.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
@@ -25,10 +24,30 @@ host theme takeover.
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery's Visual Style page with the Blueprint style applied and the compact 28-style catalog](docs/assets/hero-en.jpg)
+![DSH Livery 0.2.0 Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
 
 Screenshots are from the English UI; the Chinese README uses the Chinese UI.
 Livery follows the DSH host locale.
+
+## What's new in 0.2.0
+
+- **Chinese typography is now a real choice.** 13 local font stacks (up from 10),
+  including new `kai-cjk`, `fangsong-cjk` and `rounded-cjk` families. Chinese UI,
+  content and code can differ per style; Bauhaus, Blueprint, Linen, Sakura,
+  Celadon, Clay, Cinnabar, Plum and Rose Pine use different CJK families.
+- **A visible label hierarchy.** Secondary and tertiary labels are derived from
+  each style's text/surface seeds instead of one neutral host ramp, so captions,
+  metadata and links read as a family without hurting contrast.
+- **L5a Studio Decoration across 26 of 28 styles.** Grid, dots, rules and frame
+  patterns are derived from the surface axis and appear on Livery-owned surfaces;
+  only `solid` and `glass` stay plain.
+- **A calmer style page.** The live preview and current-style copy now share one
+  row on wide layouts; the restore action never wraps.
+- **A more legible macOS rail.** The sidebar is frosted slightly more than the main
+  column (`+20 %`, capped at 94 %), keeping labels readable while preserving a
+  wallpaper trace. The host still owns its final tint/wash composition.
+- **Protocol hardening.** v2 presentation axes, audit envelopes, exact-host
+  adapters, deep catalog validation and 13 reaccepted scopes.
 
 ## Highlights
 
@@ -37,9 +56,9 @@ Livery follows the DSH host locale.
   elevation/material, border/focus treatment and component chrome. The set includes
   14 original designs, 12 permissively licensed palettes and 2 original Chinese
   designs.
-- **A compact catalog, not a hero-plus-scroll.** The current style is a 220×138
-  summary bar; 28 styles sit in one continuous 6/4/3/2-column grid, with the
-  family chips as the only taxonomy.
+- **A live preview, not a hero-plus-scroll.** The current style shows a real DSH
+  surface beside its description; 28 styles sit in one continuous 6/4/3/2-column
+  grid, with the family chips as the only taxonomy.
 - **Style DNA on every card.** Each card names its surface recipe, component
   chrome and UI type family, so visually different designs are recognisable before
   applying them.
@@ -76,7 +95,7 @@ preview scenes.
 
 ![Built-in Aurora wallpaper with blur, dim, frost and atmosphere controls](docs/assets/wallpaper-studio-en.jpg)
 
-A built-in Aurora wallpaper with the four source tabs. Blur, dim, frost and the
+The 0.2.0 wallpaper studio with the live 16:9 preview and L5a dots. Blur, dim, frost and the
 global atmosphere controls apply to the whole interface. Focal positioning is
 available for remote and uploaded wallpapers, not for built-in designs. Opening
 a tab loads one batch of content; search, randomise, page or switch source
@@ -113,7 +132,7 @@ version-string compatibility fallback.
 | DSH `0.2.2-rc.1` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **Preview** |
 | DSH `0.2.2-rc.2` | Web + macOS Desktop | Node `22.23.1` / `24.21.0` | **Preview** (npm `next`) |
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`) |
-| DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `latest`, GitHub prerelease) |
+| DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `22.23.1` / `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `latest`, GitHub prerelease) |
 
 Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
 still fail closed. Stable support requires a non-prerelease official GitHub
@@ -124,19 +143,19 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.1.9`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.2.0`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.1.9
+dsh plugin --profile web add dsh-livery@0.2.0
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.1.9
+dsh plugin --profile desktop add dsh-livery@0.2.0
 ```
 
 Restart the app after the package changes. You can also install by package name
@@ -147,11 +166,12 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 ## Verification
 
-The published `0.1.9` artifact passed full isolated acceptance on Web `0.2.1-rc.2`,
-`0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with
-**275 passed / 0 failed each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`,
-`0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` with **34 / 0 each**. Evidence is bound
-under `contracts/dsh/evidence/0.1.9/`. Scope, counts and limitations:
+The `0.2.0` artifact passed full isolated acceptance on 13 Web/Desktop scopes:
+Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
+`0.2.2-rc.3`, `0.2.2-rc.5` with **275 passed / 0 failed each**, and Desktop
+`0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`,
+`0.2.2-rc.5` with **34 / 0 each**. Evidence is bound under
+`contracts/dsh/evidence/0.2.0/`. Scope, counts and limitations:
 [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
