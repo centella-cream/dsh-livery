@@ -32,22 +32,59 @@ function isPrivateIpv4(hostname: string): boolean {
     || a >= 224
 }
 
+/** Expand one IPv6 host into eight 16-bit groups (`undefined` when malformed). */
+function expandIpv6(address: string): readonly number[] | undefined {
+  const halves = address.split('::')
+  if (halves.length > 2) return undefined
+  const parse = (text: string): number[] | undefined => {
+    if (text.length === 0) return []
+    const groups: number[] = []
+    for (const group of text.split(':')) {
+      if (!/^[0-9a-f]{1,4}$/u.test(group)) return undefined
+      groups.push(Number.parseInt(group, 16))
+    }
+    return groups
+  }
+  const head = parse(halves[0] ?? '')
+  if (head === undefined) return undefined
+  if (halves.length === 1) return head.length === 8 ? head : undefined
+  const tail = parse(halves[1] ?? '')
+  if (tail === undefined) return undefined
+  const missing = 8 - head.length - tail.length
+  if (missing < 1) return undefined
+  return [...head, ...Array.from({ length: missing }, () => 0), ...tail]
+}
+
+function mappedIpv4Of(address: string): string | undefined {
+  const groups = expandIpv6(address)
+  if (groups === undefined) return undefined
+  const high = groups[6] ?? 0
+  const low = groups[7] ?? 0
+  const ipv4 = `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
+  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
+    && groups[4] === 0 && groups[5] === 0xffff) return ipv4
+  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
+    && groups[4] === 0xffff && groups[5] === 0) return ipv4
+  return undefined
+}
+
 function isPrivateIpv6(hostname: string): boolean {
   const address = hostname.replace(/^\[|\]$/gu, '').toLowerCase()
+  // A plain DNS hostname is never an IPv6 literal. Only bracketed literals or
+  // colon-containing addresses reach the IPv6 rules (fedora.org is public).
+  if (!address.includes(':')) return false
   if (address === '::' || address === '::1') return true
-  if (address.startsWith('fc') || address.startsWith('fd')) return true
-  if (/^fe[89ab]/u.test(address)) return true
-  // Site-local (fec0::/10) and multicast (ff00::/8).
-  if (/^fe[c-f]/u.test(address) || address.startsWith('ff')) return true
-  const mapped = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/u.exec(address)
-  if (mapped !== null) return isPrivateIpv4(mapped[1] as string)
-  const hexMapped = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/u.exec(address)
-  if (hexMapped !== null) {
-    const high = Number.parseInt(hexMapped[1] as string, 16)
-    const low = Number.parseInt(hexMapped[2] as string, 16)
-    return isPrivateIpv4(`${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`)
-  }
-  if (address.startsWith('::') && address !== '::' && address !== '::1') return true
+  const dotted = /^::ffff:(?:0:)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/u.exec(address)
+  if (dotted !== null) return isPrivateIpv4(dotted[1] as string)
+  const mapped = mappedIpv4Of(address)
+  if (mapped !== undefined) return isPrivateIpv4(mapped)
+  if (address.includes('.')) return true
+  const first = address.split(':')[0] ?? ''
+  if (first.startsWith('ff')) return true
+  if (/^fe[c-f]/u.test(first)) return true
+  if (/^fe[89ab]/u.test(first)) return true
+  if (first.startsWith('fc') || first.startsWith('fd')) return true
+  if (address.startsWith('::')) return true
   return false
 }
 

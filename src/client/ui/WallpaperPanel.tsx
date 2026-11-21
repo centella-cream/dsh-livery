@@ -281,9 +281,7 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     (safeResultPage + 1) * RESULT_PAGE_SIZE,
   )
   useEffect(() => { setResultPage(0); setActiveResult(0) }, [online.results])
-  useEffect(() => {
-    setActiveResult((current) => Math.max(0, Math.min(current, boundedResults.length - 1)))
-  }, [boundedResults.length, safeResultPage])
+  useEffect(() => { setActiveResult(0) }, [safeResultPage])
   const onSourceTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
     const index = SOURCE_TABS.indexOf(sourceTab)
     let next: number | undefined

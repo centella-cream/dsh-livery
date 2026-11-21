@@ -594,7 +594,16 @@ export async function loadCachedRemote(
     }
   }
   if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
-  if (!(await validateStoredImageBlob(record.blob))) return undefined
+  if (!(await validateStoredImageBlob(record.blob))) {
+    // A corrupt/oversized legacy row must not be decoded on every hydrate.
+    try {
+      if (typeof images.deleteIfGeneration === 'function' && record.generation !== undefined) await images.deleteIfGeneration(key, record.generation)
+      else await images.delete(key)
+    } catch {
+      /* best-effort cleanup; the record is still ignored below */
+    }
+    return undefined
+  }
   return record
 }
 

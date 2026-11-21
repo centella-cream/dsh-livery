@@ -15,6 +15,7 @@
  * through the small ports below.
  */
 import { STOCK_ID } from '../../core/types.js'
+import { isLocalOrPrivateHost } from './host-safety.js'
 import {
   DEFAULT_WALLPAPER_POSITION,
   WALLPAPER_EFFECT_BOUNDS,
@@ -329,116 +330,6 @@ const FORBIDDEN_CONTENT: readonly RegExp[] = [
 ]
 
 /** Named local-only zones; these are not portable with a preset. */
-const LOCAL_HOSTS: readonly RegExp[] = [
-  /^localhost\.?$/i,
-  /\.localhost\.?$/i,
-  /\.local\.?$/i,
-  /\.internal\.?$/i,
-  /\.home\.arpa\.?$/i,
-]
-
-/**
- * IPv4 ranges that must never be fetched from an imported preset.
- *
- * Only the standard non-portable ranges are rejected (RFC 6890 private,
- * loopback, link-local, CGNAT, benchmarking, documentation and multicast/
- * reserved). Broader guesses are avoided so legitimate public hosts keep
- * working: e.g. TEST-NET-2/3 are matched as /24s, not their whole /16s.
- */
-function isPrivateIpv4(hostname: string): boolean {
-  const match = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/u.exec(hostname)
-  if (match === null) return false
-  const octets = match.slice(1).map(Number)
-  if (octets.some(value => !Number.isInteger(value) || value < 0 || value > 255)) return true
-  const [a, b, c] = octets as [number, number, number, number]
-  return a === 0 // "this network"
-    || a === 10 // RFC 1918
-    || a === 127 // loopback
-    || (a === 100 && b >= 64 && b <= 127) // 100.64/10 CGNAT
-    || (a === 169 && b === 254) // 169.254/16 link-local
-    || (a === 172 && b >= 16 && b <= 31) // 172.16/12
-    || (a === 192 && b === 0 && (c === 0 || c === 2)) // 192.0.0/24 + TEST-NET-1
-    || (a === 192 && b === 168) // RFC 1918
-    || (a === 198 && (b === 18 || b === 19)) // 198.18/15 benchmarking
-    || (a === 198 && b === 51 && c === 100) // TEST-NET-2 /24
-    || (a === 203 && b === 0 && c === 113) // TEST-NET-3 /24
-    || a >= 224 // multicast + reserved
-}
-
-/** Expand one IPv6 host into eight 16-bit groups (`undefined` when malformed). */
-function expandIpv6(address: string): readonly number[] | undefined {
-  const halves = address.split('::')
-  if (halves.length > 2) return undefined
-  const parseGroups = (text: string): number[] | undefined => {
-    if (text.length === 0) return []
-    const groups: number[] = []
-    for (const group of text.split(':')) {
-      if (!/^[0-9a-f]{1,4}$/u.test(group)) return undefined
-      groups.push(Number.parseInt(group, 16))
-    }
-    return groups
-  }
-  const head = parseGroups(halves[0] ?? '')
-  if (head === undefined) return undefined
-  if (halves.length === 1) return head.length === 8 ? head : undefined
-  const tail = parseGroups(halves[1] ?? '')
-  if (tail === undefined) return undefined
-  const missing = 8 - head.length - tail.length
-  if (missing < 1) return undefined
-  return [...head, ...Array.from({ length: missing }, () => 0), ...tail]
-}
-
-/** IPv4 text of an IPv4-mapped (`::ffff:a.b.c.d`) or IPv4-translated address. */
-function mappedIpv4Of(address: string): string | undefined {
-  const groups = expandIpv6(address)
-  if (groups === undefined) return undefined
-  const high = groups[6] ?? 0
-  const low = groups[7] ?? 0
-  const ipv4 = `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`
-  // ::ffff:a.b.c.d (IPv4-mapped)
-  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
-    && groups[4] === 0 && groups[5] === 0xffff) return ipv4
-  // ::ffff:0:a.b.c.d (IPv4-translated)
-  if (groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0
-    && groups[4] === 0xffff && groups[5] === 0) return ipv4
-  return undefined
-}
-
-/** IPv6 loopback/ULA/link-local/site-local/multicast/mapped-private ranges. */
-function isPrivateIpv6(hostname: string): boolean {
-  const address = hostname.replace(/^\[|\]$/gu, '').toLowerCase()
-  // A plain DNS hostname is never an IPv6 literal (only bracketed literals or
-  // colon-containing addresses reach the IPv6 rules).
-  if (!address.includes(':')) return false
-  if (address === '::' || address === '::1') return true
-  // Mapped/translated addresses are private exactly when the embedded IPv4 is;
-  // a mapped public address stays a legitimate public destination.
-  const mapped = mappedIpv4Of(address)
-  if (mapped !== undefined) return isPrivateIpv4(mapped)
-  // Any other embedded dotted-quad form (deprecated IPv4-compatible literals).
-  if (address.includes('.')) return true
-  const first = address.split(':')[0] ?? ''
-  if (first.startsWith('ff')) return true // ff00::/8 multicast
-  if (/^fe[c-f]/u.test(first)) return true // fec0::/10 site-local
-  if (/^fe[89ab]/u.test(first)) return true // fe80::/10 link-local
-  if (first.startsWith('fc') || first.startsWith('fd')) return true // fc00::/7 ULA
-  // Deprecated IPv4-compatible `::x:y` and other ::-prefixed forms.
-  if (address.startsWith('::')) return true
-  return false
-}
-
-/** Whether one URL hostname is local-only, private, or otherwise non-portable. */
-export function isLocalOrPrivateHost(hostname: string): boolean {
-  const normalized = hostname.toLowerCase().replace(/\.$/u, '')
-  if (normalized.startsWith('[')) return isPrivateIpv6(normalized)
-  if (LOCAL_HOSTS.some(pattern => pattern.test(normalized))) return true
-  // A hostname without any dot is a single-label intranet/mDNS name: it cannot
-  // resolve from another device's network, so a shared preset must not carry it.
-  if (!normalized.includes('.')) return true
-  if (isPrivateIpv4(normalized)) return true
-  return isPrivateIpv6(normalized)
-}
-
 /** UTF-8 byte length of a string (pure fallback for exotic runtimes). */
 function utf8Bytes(text: string): number {
   try {

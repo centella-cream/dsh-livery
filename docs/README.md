@@ -1,6 +1,6 @@
 # Documentation
 
-**Release `0.1.9` (2026-11-16) is published; `dsh-livery@0.1.9` is npm `latest`.** The authoritative support policy is
+**`0.2.0` is the current implementation candidate (unpublished); `dsh-livery@0.1.9` remains the published artifact.** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -10,9 +10,10 @@
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged) |
 | DSH `0.2.1-rc.4` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Preview (npm `next`; GitHub prerelease tag exists) |
 | DSH `0.2.1-rc.5` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; reaccepted in 0.1.9 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; GitHub prerelease; Web+Desktop acceptance bound |
-| DSH `0.2.2-rc.2` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 24.22.1 / 24.21.0 | Preview; Web+Desktop acceptance bound |
+| DSH `0.2.2-rc.1` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; GitHub prerelease; Web+Desktop acceptance bound |
+| DSH `0.2.2-rc.2` | Web Profile + Desktop macOS, Chrome 156.0.8078.48 / Chromium 152.0.7977.130, Node 22.23.1 / 24.21.0 | Preview; Web+Desktop acceptance bound |
 | DSH `0.2.2-rc.3` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `next`); Web + Desktop accepted |
+| DSH `0.2.2-rc.5` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 22.23.1 / 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `latest`); Web + Desktop accepted |
 
 Stable claims require a non-prerelease official GitHub release and the signed npm
 package. A version that exists only on npm's `next` channel is documented as
@@ -40,7 +41,7 @@ Edge and any other DSH build are not supported.
 
 - **[0.2.0 proposal](design/0.2.0-proposal.md)** — 0.2.0 multi-axis GUI style
   engine, capability gating, manifest v2 and the host APIs needed for structural
-  layout. Implemented release candidate; acceptance evidence is under
+  layout. Implemented in the 0.2.0 candidate; acceptance evidence is under
   `contracts/dsh/evidence/0.2.0/`.
 
 ## Archive (historical, not authoritative)
@@ -54,7 +55,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**`0.1.9`（2026-11-16）已发布；`dsh-livery@0.1.9` 是 npm `latest`。** 支持策略以
+**`0.2.0` 是当前实现候选（未发布）；`dsh-livery@0.1.9` 仍是已发布制品。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 
@@ -64,9 +65,10 @@ not be cited as current support or behavior.
 | DSH `0.2.1-rc.3` | Desktop 应用、macOS、Electron/Node 24.21.0、Chromium 152.0.7977.130 | 稳定认证渲染器表面（GitHub 已 tag） |
 | DSH `0.2.1-rc.4` | Web Profile、Chrome 156.0.8078.48、Node 22.23.1 | next 通道预览（npm `next`；已有 GitHub prerelease tag） |
 | DSH `0.2.1-rc.5` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；0.1.9 重新验收 |
-| DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；GitHub prerelease；已通过 Web+Desktop 验收 |
-| DSH `0.2.2-rc.2` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 24.22.1 / 24.21.0 | 预览；已通过 Web+Desktop 验收 |
+| DSH `0.2.2-rc.1` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；GitHub prerelease；已通过 Web+Desktop 验收 |
+| DSH `0.2.2-rc.2` | Web + macOS Desktop，Chrome 156.0.8078.48 / Chromium 152.0.7977.130，Node 22.23.1 / 24.21.0 | 预览；已通过 Web+Desktop 验收 |
 | DSH `0.2.2-rc.3` | Web + Desktop macOS，Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | 预览（npm `next`）；Web + Desktop 已验收 |
+| DSH `0.2.2-rc.5` | Web + Desktop macOS，Chrome 156.0.8078.48 / Electron 44.7.0 / Node 22.23.1 / 24.21.0 / Chromium 152.0.7977.130 | 预览（npm `latest`）；Web + Desktop 已验收 |
 
 “稳定”要求非 prerelease 的官方 GitHub release 与签名 npm 包同时存在；只有 npm `next`
 通道的版本只作为预览兼容性记录，不承诺稳定性。DSH Desktop Windows、Web Edge
@@ -86,8 +88,7 @@ not be cited as current support or behavior.
 
 ## 方案稿
 
-- **[0.2.0 方案稿](design/0.2.0-proposal.md)**：提议中的多轴 GUI 风格引擎、
-  能力门禁、manifest v2，以及结构性布局所需的上游接口。尚未实现，不构成当前支持或验收声明。
+- **[0.2.0 视觉语言](design/0.2.0-visual-language.md)** 与 **[0.2.0 方案稿](design/0.2.0-proposal.md)**：已实现的字体/标签/L5a/sidebar 视觉语言，以及 manifest v2 多轴设计。
 
 ## 历史归档（非权威）
 

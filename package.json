@@ -127,7 +127,7 @@
     "release:check": "pnpm build:cli && node scripts/cli.mjs gate:support-matrix -- --all && node scripts/cli.mjs gate:release -- --all && node scripts/release-check.mjs",
     "prepublishOnly": "node scripts/prepublish-check.mjs",
     "pack:candidate": "node scripts/release-check.mjs",
-    "verify:artifact": "node scripts/release-check.mjs",
+    "verify:artifact": "node scripts/verify-artifact.mjs",
     "verify:evidence": "node scripts/release-evidence.mjs",
     "promote:release": "node scripts/promote-release.mjs",
     "release:prepare": "node scripts/release-prepare.mjs",

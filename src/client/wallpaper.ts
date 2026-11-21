@@ -730,11 +730,6 @@ export function picsumListUrl(page: number, limit = 12): string {
   return `${PICSUM_API}?page=${page}&limit=${limit}`
 }
 
-function httpsOnly(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined
-  return /^https:\/\//i.test(value) ? value : undefined
-}
-
 /**
  * Map one Openverse response document to result rows.
  * @param json - decoded response body.
@@ -748,7 +743,7 @@ export function parseOpenverseResults(json: unknown, limit = 12): readonly Wallp
   for (const entry of results) {
     if (typeof entry !== 'object' || entry === null) continue
     const row = entry as Record<string, unknown>
-    const url = httpsOnly(row.url)
+    const url = safeRemoteImageUrl(row.url)
     if (url === undefined) continue
     const safeThumbnail = safeRemoteImageUrl(row.thumbnail) ?? safeRemoteImageUrl(url)
     if (safeThumbnail === undefined) continue
