@@ -552,6 +552,18 @@ export async function isDecodableImage(blob: Blob): Promise<boolean> {
 }
 
 /**
+ * Re-validate an image blob read from persistent storage. Old/corrupt records
+ * must not bypass the download-path size, MIME, decode and pixel caps.
+ * @param blob - stored blob.
+ * @returns true when it is still a safe, decodable image.
+ */
+export async function validateStoredImageBlob(blob: Blob): Promise<boolean> {
+  if (blob.size <= 0 || blob.size > REMOTE_CACHE_MAX_BYTES) return false
+  if (typeof blob.type !== 'string' || !blob.type.toLowerCase().startsWith('image/')) return false
+  return isDecodableImage(blob)
+}
+
+/**
  * Load a previously cached remote image, verifying its source URL.
  *
  * The key is a 32-bit hash, so the stored `sourceUrl` must match exactly; a
@@ -582,6 +594,7 @@ export async function loadCachedRemote(
     }
   }
   if (record === undefined || record.kind !== 'remote' || record.sourceUrl !== url) return undefined
+  if (!(await validateStoredImageBlob(record.blob))) return undefined
   return record
 }
 

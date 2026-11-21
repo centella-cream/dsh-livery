@@ -10,6 +10,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { requiresAuditEnvelope } from './version-policy.mjs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { readMatrix } from './release-lib.mjs'
@@ -99,7 +100,7 @@ if (!Array.isArray(evidence.runs) || evidence.runs.length === 0) fail('evidence.
 // 0.2.0+ requires the canonical audit envelopes supplied by the compiler. This
 // proves the envelope corresponds to the accepted catalog identity and is not a
 // self-reported summary.
-if (Number.parseInt(String(evidence.packageVersion).split('.')[0] ?? '0', 10) >= 2) {
+if (requiresAuditEnvelope(evidence.packageVersion)) {
   if (!Array.isArray(evidence.auditEnvelopes) || evidence.auditEnvelopes.length === 0) {
     fail('0.2.0+ evidence must include auditEnvelopes')
   }
@@ -323,7 +324,10 @@ if (runCommit !== undefined) {
     .trim().split('\n').filter(Boolean)
   // CI-only workflow/gate changes after the acceptance run do not alter the
   // artifact bytes; still refuse any product/docs/matrix/package change.
-  const allowedAfterRun = /^(docs\/design\/wallpaper-workbench\.md$|docs\/verification\.md$|src\/styles\/client\.ts$|src\/contract\/snapshot\.ts$|src\/contract\/types\.ts$|src\/client\/wallpaper\/controller\.ts$|contracts\/dsh\/evidence\/|contracts\/dsh\/support-matrix\.json$|src\/contract\/client-slots\.ts$|contracts\/dsh\/perf-baseline\.json$|tests\/|\.github\/workflows\/|scripts\/release-evidence\.mjs$|scripts\/prepublish-check\.mjs$|scripts\/acceptance\/|AGENTS\.md$)/
+  // Only evidence bookkeeping may change after the accepted run. Any packaged
+  // source/docs/matrix/harness change changes the candidate or its meaning and
+  // must go through a fresh build + acceptance.
+  const allowedAfterRun = /^contracts\/dsh\/evidence\//
   const forbidden = changedSinceRun.filter(file => !allowedAfterRun.test(file))
   if (forbidden.length > 0) {
     fail(`acceptance ran on a dirty/older harness: changes after run commit include ${forbidden.slice(0, 5).join(', ')}`)

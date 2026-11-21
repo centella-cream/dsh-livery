@@ -12,6 +12,7 @@
  * `wallpaper/apply.ts`; orchestration lives in `wallpaper/controller.ts`.
  */
 import type { CompiledLivery, TokenMap } from '../core/types.js'
+import { safeRemoteImageUrl } from './wallpaper/host-safety.js'
 
 /** localStorage key holding the persisted wallpaper selection + effects. */
 export const WALLPAPER_STORAGE_KEY = 'dsh-livery.wallpaper.v1'
@@ -749,8 +750,10 @@ export function parseOpenverseResults(json: unknown, limit = 12): readonly Wallp
     const row = entry as Record<string, unknown>
     const url = httpsOnly(row.url)
     if (url === undefined) continue
+    const safeThumbnail = safeRemoteImageUrl(row.thumbnail) ?? safeRemoteImageUrl(url)
+    if (safeThumbnail === undefined) continue
     const id = typeof row.id === 'string' || typeof row.id === 'number' ? String(row.id) : url
-    const thumbnail = httpsOnly(row.thumbnail) ?? url
+    const thumbnail = safeThumbnail
     mapped.push({
       id,
       url,

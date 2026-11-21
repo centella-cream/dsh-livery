@@ -45,7 +45,7 @@ function contrastSection(
 ): readonly string[] {
   if (livery === undefined) return [line(t, t('check.contrast'), t('diag.none'))]
   const audit = livery.audit
-  const total = audit.contrast.length
+  const total = audit.contrastTotal ?? audit.contrast.length
   const failures = audit.contrastFailures
   const contrastLine = failures === 0
     ? t('check.contrastPass', { total: formatNumber(locale, total) })

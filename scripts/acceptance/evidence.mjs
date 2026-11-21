@@ -19,6 +19,7 @@
  *     --run web-isolated-full:0.2.1-rc.2:dsh-0.2.1-rc.2-r1:<probe>:<report>
  */
 
+import { requiresAuditEnvelope } from '../version-policy.mjs'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -84,7 +85,7 @@ const auditEnvelopeArgs = flags('--audit-envelope')
 if (!evidencePath || !tgzPath || !packageVersion || runArgs.length === 0) {
   fail('usage: evidence.mjs --evidence <out> --tgz <tgz> --package-version <v> --run <id>:<host>:<adapter>:<probe>:<report> [--audit-envelope <json> ...]')
 }
-if (Number.parseInt(String(packageVersion).split('.')[0] ?? '0', 10) >= 2 && auditEnvelopeArgs.length === 0) {
+if (requiresAuditEnvelope(packageVersion) && auditEnvelopeArgs.length === 0) {
   fail('0.2.0+ evidence requires at least one --audit-envelope')
 }
 

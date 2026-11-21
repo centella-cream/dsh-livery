@@ -15,7 +15,7 @@
  * boot payload is involved.
  */
 import type { TokenMap } from '../../core/types.js'
-import { isDecodableImage } from './cache.js'
+import { validateStoredImageBlob } from './cache.js'
 import {
   backgroundImageValue,
   buildWallpaperCss,
@@ -434,7 +434,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     }
     if (disposed || selectionVersion !== expectedSelectionVersion) return
     if (selection === undefined || selection.kind !== 'upload' || selection.key !== key) return
-    if (record === undefined || !(await isDecodableImage(record.blob))) {
+    if (record === undefined || !(await validateStoredImageBlob(record.blob))) {
       setState({ selection: undefined })
       return
     }

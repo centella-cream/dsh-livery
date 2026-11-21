@@ -12,6 +12,11 @@ function ResultThumbnail({ src }: { readonly src: string }): JSX.Element {
           alt=""
           loading="lazy"
           decoding="async"
+          referrerPolicy="no-referrer"
+          onLoad={(event) => {
+            const image = event.currentTarget
+            if (image.naturalWidth * image.naturalHeight > 40_000_000) setFailed(true)
+          }}
           onError={() => setFailed(true)}
         />
       )}
@@ -275,7 +280,10 @@ export function WallpaperPanel({ t, snapshot, runtime }: WallpaperPanelProps): J
     safeResultPage * RESULT_PAGE_SIZE,
     (safeResultPage + 1) * RESULT_PAGE_SIZE,
   )
-  useEffect(() => { setResultPage(0) }, [online.results])
+  useEffect(() => { setResultPage(0); setActiveResult(0) }, [online.results])
+  useEffect(() => {
+    setActiveResult((current) => Math.max(0, Math.min(current, boundedResults.length - 1)))
+  }, [boundedResults.length, safeResultPage])
   const onSourceTabKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
     const index = SOURCE_TABS.indexOf(sourceTab)
     let next: number | undefined
