@@ -9,7 +9,7 @@
  * The CLI entry is built by scripts/build.mjs.
  */
 import { createHash } from 'node:crypto'
-import { CONSUMED_CLIENT_SLOTS, clientSlotHash } from './client-slots.js'
+import { clientSlotHash } from './client-slots.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -616,15 +616,6 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
   if (mainSlot !== undefined && (mainSlot.kind !== 'keyed' || mainSlot.scope !== 'root')) throw new Error('host main slot declaration changed')
   if (sidebarSlot !== undefined && (sidebarSlot.kind !== 'list' || sidebarSlot.scope !== 'root')) throw new Error('host sidebar.panellist declaration changed')
   if (settingsTypes !== undefined && !settingsTypes.includes(`'settings.section'`)) throw new Error('host settings.section declaration missing')
-  const slotTypeEvidence: FileHash[] = []
-  for (const file of [
-    'dsh-client-ui-layout/lib/types/client/index.d.ts',
-    'dsh-client-ui-sidebar/lib/types/client/contract/slots.d.ts',
-    'dsh-client-ui-settings-general/lib/types/client/shell-contract.d.ts',
-  ]) {
-    const path = join(packagesRoot, file)
-    if (existsSync(path)) slotTypeEvidence.push(await sha256File(path))
-  }
   const payload = {
     services: ['configForms', 'slots', 'locale', 'theme'],
     slots: {
@@ -657,7 +648,7 @@ async function collectClientApi(packagesRoot: string): Promise<ClientApiContract
       break
     }
   }
-  return { hash: hashCanonical({ ...payload, slotTypeEvidence }), ...payload, slotTypeEvidence, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence }
+  return { hash: hashCanonical(payload), ...payload, evidence }
 }
 
 function readmeSetDocumentedAttributes(readmeTexts: readonly string[]): string[] {
@@ -797,7 +788,7 @@ export async function buildContractSnapshot(options: SnapshotOptions): Promise<C
   const rawHostApi = await collectHostApi(install.packagesRoot)
   const hostApi: HostApiContract = { ...rawHostApi, evidence: relativize(rawHostApi.evidence) }
   const rawClientApi = await collectClientApi(install.packagesRoot)
-  const clientApi: ClientApiContract = { ...rawClientApi, consumedSlots: CONSUMED_CLIENT_SLOTS, evidence: relativize(rawClientApi.evidence) }
+  const clientApi: ClientApiContract = { ...rawClientApi, evidence: relativize(rawClientApi.evidence) }
   const rawLayout = await collectLayoutContract(install.packagesRoot, tokens, dshVariables)
   const layout: LayoutContract = { ...rawLayout, evidence: relativize(rawLayout.evidence) }
   const rawProfileSchema = await collectProfileSchema(install.packagesRoot)

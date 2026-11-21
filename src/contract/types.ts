@@ -76,7 +76,7 @@ export interface ClientApiContract {
   /** Host type-declaration hashes backing the consumed slot declarations. */
   readonly slotTypeEvidence?: readonly { readonly path: string; readonly sha256: string }[]
   /** Every slot Livery actually consumes, including owner/register/inject semantics. */
-  readonly consumedSlots: readonly ConsumedClientSlot[]
+  readonly consumedSlots?: readonly ConsumedClientSlot[]
   readonly theme: {
     readonly darkAttribute: string
     readonly themeSourceAttribute: string
