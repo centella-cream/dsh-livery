@@ -131,8 +131,6 @@ if (requiresAuditEnvelope(evidence.packageVersion)) {
         fail(`auditHash mismatch: ${entry.path}`)
       }
       if (typeof payload.catalogHash !== 'string' || payload.catalogHash === '') fail(`audit catalogHash missing: ${entry.path}`)
-      const packed = execFileSync('tar', ['-xOzf', tarball, 'package/lib/index.js'], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
-      if (!packed.includes(payload.catalogHash)) fail(`audit catalogHash does not appear in the candidate Catalog: ${entry.path}`)
       if (typeof payload.auditSummaryHash !== 'string' || payload.auditSummaryHash === '') fail(`audit summary hash missing: ${entry.path}`)
       const catalogFile = `package/lib/catalogs/${String(payload.profileId).replace(':', '-')}.json`
       let catalog
@@ -141,6 +139,7 @@ if (requiresAuditEnvelope(evidence.packageVersion)) {
       } catch {
         fail(`packaged catalog missing: ${catalogFile}`)
       }
+      if (catalog.catalogHash !== payload.catalogHash) fail(`audit catalogHash does not match packaged catalog: ${payload.profileId}`)
       const livery = Array.isArray(catalog.liveries) ? catalog.liveries.find((candidate) => candidate.id === payload.liveryId) : undefined
       if (!livery) fail(`audit livery not present in packaged catalog: ${payload.liveryId}`)
       if (livery.hash !== payload.liveryHash) fail(`audit liveryHash does not match packaged catalog: ${payload.liveryId}`)
