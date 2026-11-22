@@ -106,22 +106,15 @@ describe('contrast matrix', () => {
     }
   })
 
-  it('composites translucent tokens over their surface before measuring', () => {
+  it('measures the opaque Livery menu surface directly', () => {
     const build = buildFixture(FIXTURE_MANIFESTS[0]!)
     const entries = auditContrast(build.light, 'light', build.stock)
     const menuEntry = entryFor(entries, 'label-primary/menu/default')
     const rawMenu = resolveTokenColor(build.light.tokens, CONTRAST_SURFACES.menu, 'light', build.stock)
     expect(rawMenu).not.toBeNull()
-    expect(rawMenu?.alpha).toBeLessThan(1)
-    // The audited background is the composited opaque colour, not the raw token.
+    expect(rawMenu?.alpha).toBe(1)
     expect(menuEntry.background).toMatch(/^#[0-9a-f]{6}$/)
-    const baseToken = build.light.tokens['--dsw-alias-bg-base']
-    expect(baseToken).toBeDefined()
-    const composited = compositeOver(rawMenu!, parseColor(baseToken as string))
-    const hex = `#${[composited.r, composited.g, composited.b]
-      .map((channel) => Math.round(channel).toString(16).padStart(2, '0'))
-      .join('')}`
-    expect(menuEntry.background).toBe(hex)
+    expect(menuEntry.background).toBe(build.light.tokens['--dsw-specific-menu'])
   })
 
   it('resolves inherited tokens from the explicit stock snapshot', () => {

@@ -407,13 +407,13 @@ describe('compiled catalog profiles (generated/liveries.ts)', () => {
 })
 
 describe('floating menu surface adaptation', () => {
-  it('keeps a blurless menu opaque so page text cannot show through', () => {
+  it('keeps every floating menu opaque so page text cannot show through', () => {
     const manifest = makeStyleManifest('fixture-terminal-menu', 'terminal', 'technical', 0)
     const stock = STOCK_BY_VERSION['0.2.2-rc.5']
     expect(stock).toBeDefined()
     const derived = deriveLivery(manifest, stock!)
     expect(derived.light.tokens['--dsw-menu-backdrop-filter']).toBe('none')
-    expect(derived.light.tokens['--dsw-specific-menu']).toBe(derived.light.tokens['--dsw-alias-bg-layer-2'])
-    expect(derived.dark.tokens['--dsw-specific-menu']).toBe(derived.dark.tokens['--dsw-alias-bg-layer-2'])
+    expect(derived.light.tokens['--dsw-specific-menu']).toBe(derived.light.tokens['--dsw-alias-bg-layer-1'])
+    expect(derived.dark.tokens['--dsw-specific-menu']).toBe(derived.dark.tokens['--dsw-alias-bg-layer-1'])
   })
 })
