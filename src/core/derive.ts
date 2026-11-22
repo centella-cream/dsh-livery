@@ -458,6 +458,13 @@ function deriveVariant(
   const layer3 = overridden.has('--dsw-alias-bg-layer-3') ? full['--dsw-alias-bg-layer-3'] : lift(layer2, mode === 'light' ? 0.055 : 0.08)
   if (layer3 !== undefined) full['--dsw-alias-bg-layer-3'] = layer3
 
+  // Floating menus rely on the host's backdrop blur to hide the page. Styles
+  // that intentionally disable that blur (terminal/brutal/editorial) must also
+  // make the menu surface opaque, or underlying text shows through the card.
+  if (full['--dsw-menu-backdrop-filter'] === 'none' && layer2 !== undefined && !overridden.has('--dsw-specific-menu')) {
+    full['--dsw-specific-menu'] = layer2
+  }
+
   // 6. Bounded WCAG repair pass over the foreground tokens of the audit matrix.
   let contrast: readonly ContrastEntry[] = []
   for (let pass = 0; pass < 6; pass += 1) {
