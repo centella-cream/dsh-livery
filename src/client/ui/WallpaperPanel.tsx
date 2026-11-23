@@ -217,6 +217,7 @@ function providerDisplayName(
 /** Normalize a recent-history mirror entry into selection provenance. */
 function provenanceOfRecentEntry(entry: RecentWallpaperEntry): WallpaperProvenance | undefined {
   return normalizeWallpaperProvenance({
+    providerId: entry.providerId,
     title: entry.title,
     creator: entry.creator,
     creatorUrl: entry.creatorUrl,
@@ -730,6 +731,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     void commitRemote({
       url: result.fullUrl,
       thumbnail: result.thumbUrl,
+      providerId: result.providerId,
       title: result.title,
       creator: result.creator,
       license: result.license.name,
@@ -950,6 +952,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   const presetAttribution: PresetAttribution | undefined = credit === undefined
     ? undefined
     : {
+      ...(credit.providerId === undefined ? {} : { providerId: credit.providerId }),
       ...(credit.title === undefined ? {} : { title: credit.title }),
       ...(credit.creator === undefined ? {} : { creator: credit.creator }),
       ...(credit.license === undefined ? {} : { license: credit.license }),
@@ -964,6 +967,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     const provenance = normalizeWallpaperProvenance(preset.attribution)
     recordRemoteHistory({
       url: preset.wallpaper.url,
+      providerId: preset.attribution?.providerId,
       title: preset.attribution?.title,
       creator: preset.attribution?.creator,
       license: preset.attribution?.license,

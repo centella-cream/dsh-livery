@@ -116,6 +116,8 @@ export type PresetWallpaper = PresetWallpaperBuiltin | PresetWallpaperRemote | P
 
 /** Optional image credit, carried only for human-readable attribution. */
 export interface PresetAttribution {
+  /** Registered provider id, so the ToS notice survives preset import/export. */
+  readonly providerId?: string | undefined
   readonly title?: string | undefined
   readonly creator?: string | undefined
   readonly license?: string | undefined
@@ -342,16 +344,19 @@ const EFFECT_KEYS: readonly (keyof WallpaperEffects)[] = ['blur', 'dim', 'frost'
 const POSITION_KEYS: readonly string[] = ['x', 'y']
 
 /** Attribution text key -> maximum accepted string length (schema v1). */
-const ATTRIBUTION_LIMITS: Readonly<Record<'title' | 'creator' | 'license' | 'source', number>> = {
+const ATTRIBUTION_LIMITS: Readonly<Record<'title' | 'creator' | 'license' | 'source' | 'providerId', number>> = {
   title: 200,
   creator: 120,
   license: 120,
   source: 200,
+  providerId: 64,
 }
+/** Plain-text attribution fields accepted by preset v1. */
+const ATTRIBUTION_V1_KEYS = ['title', 'creator', 'license', 'source'] as const
 /** Attribution URL fields added by schema v2 (validated as portable URLs). */
 const ATTRIBUTION_URL_FIELDS = ['creatorUrl', 'licenseUrl', 'sourceUrl'] as const
 /** Every attribution key, in export order. */
-const ATTRIBUTION_KEYS = [...Object.keys(ATTRIBUTION_LIMITS), ...ATTRIBUTION_URL_FIELDS] as readonly (keyof PresetAttribution)[]
+const ATTRIBUTION_KEYS = [...ATTRIBUTION_V1_KEYS, 'providerId', ...ATTRIBUTION_URL_FIELDS] as readonly (keyof PresetAttribution)[]
 
 /** Hard cap on JSON nesting accepted by preset validation (the schema needs 3). */
 export const PRESET_MAX_JSON_DEPTH = 8
@@ -679,7 +684,9 @@ function parseAttribution(
   if (value === undefined) return { attribution: undefined }
   const record = asRecord(value)
   if (record === undefined) return failed('attribution', 'attribution')
-  const keys: readonly (keyof PresetAttribution)[] = version >= PRESET_SCHEMA_VERSION ? ATTRIBUTION_KEYS : Object.keys(ATTRIBUTION_LIMITS) as readonly (keyof PresetAttribution)[]
+  const keys: readonly (keyof PresetAttribution)[] = version >= PRESET_SCHEMA_VERSION
+    ? ATTRIBUTION_KEYS
+    : ATTRIBUTION_V1_KEYS as readonly (keyof PresetAttribution)[]
   const unknown = firstUnknownKey(record, keys)
   if (unknown !== undefined) return failed('unknown-field', `attribution.${unknown}`)
   const attribution: Record<string, string> = {}
@@ -693,6 +700,9 @@ function parseAttribution(
       continue
     }
     if (typeof candidate !== 'string') return failed('attribution', `attribution.${key}`)
+    if (key === 'providerId' && !/^[a-z0-9][a-z0-9-]{0,63}$/u.test(candidate)) {
+      return failed('attribution', 'attribution.providerId')
+    }
     const checked = checkString(candidate, `attribution.${key}`, ATTRIBUTION_LIMITS[key as keyof typeof ATTRIBUTION_LIMITS])
     if ('ok' in checked && checked.ok === false) return checked
     const parsed = checked as { readonly value: string }
@@ -854,6 +864,7 @@ function sanitizeAttribution(input: PresetAttribution | undefined): PresetAttrib
     if (trimmed.length === 0) continue
     if (trimmed.length > limit) continue
     if (CONTROL_CHARACTERS.test(trimmed)) continue
+    if (key === 'providerId' && !/^[a-z0-9][a-z0-9-]{0,63}$/u.test(trimmed)) continue
     output[key] = trimmed
   }
   for (const key of ATTRIBUTION_URL_FIELDS) {
@@ -879,6 +890,9 @@ export function attributionFromProvenance(
   for (const key of textKeys) {
     const value = provenance[key]
     if (typeof value === 'string' && value.trim().length > 0) attribution[key] = value.trim()
+  }
+  if (typeof provenance.providerId === 'string' && /^[a-z0-9][a-z0-9-]{0,63}$/u.test(provenance.providerId)) {
+    attribution.providerId = provenance.providerId
   }
   for (const key of ATTRIBUTION_URL_FIELDS) {
     const value = normalizeWallpaperProvenanceUrl(provenance[key])

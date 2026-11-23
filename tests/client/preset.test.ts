@@ -286,6 +286,7 @@ describe('preset schema v1 — strict rejection', () => {
     expectProblem(parse({ ...makePreset(), attribution: { author: 'x' } }), 'unknown-field')
     expectProblem(parse({ ...makePreset(), attribution: { title: 'x'.repeat(201) } }), 'forbidden-content')
     expectProblem(parse({ ...makePreset(), attribution: { title: 42 } }), 'attribution')
+    expectProblem(parse({ ...makePreset(), attribution: { providerId: 'Not A Provider' } }), 'attribution')
     expectProblem(parse({ ...makePreset(), attribution: 'credit' }), 'attribution')
   })
 })
@@ -349,12 +350,12 @@ describe('preset export', () => {
     const result = exportPreset({
       ...base,
       selection: { kind: 'remote', url: 'https://images.example.com/a.jpg' },
-      attribution: { title: 'Dunes', creator: 'A. Photographer' },
+      attribution: { providerId: 'openverse', title: 'Dunes', creator: 'A. Photographer' },
     })
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.preset.wallpaper).toEqual({ kind: 'remote', url: 'https://images.example.com/a.jpg' })
-    expect(result.preset.attribution).toEqual({ title: 'Dunes', creator: 'A. Photographer' })
+    expect(result.preset.attribution).toEqual({ providerId: 'openverse', title: 'Dunes', creator: 'A. Photographer' })
     expect(expectOk(parsePresetText(result.json, { catalogIds: CATALOG_IDS }))).toEqual(result.preset)
   })
 
@@ -949,10 +950,8 @@ describe('preset schema v2 — style wallpaper and attribution URLs', () => {
     })
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    // providerId is not part of the portable preset attribution shape.
-    const { providerId: _providerId, ...portableAttribution } = provenance
-    expect(result.preset.attribution).toEqual(portableAttribution)
-    expect(attributionFromProvenance(provenance)).toEqual(portableAttribution)
+    expect(result.preset.attribution).toEqual(provenance)
+    expect(attributionFromProvenance(provenance)).toEqual(provenance)
     expect(attributionFromProvenance(undefined)).toBeUndefined()
   })
 

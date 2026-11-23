@@ -112,6 +112,18 @@ describe('recent wallpaper history', () => {
       sourceUrl: 'https://openverse.org/i/1',
     })
 
+    expect(parseRecentEntry({
+      url: 'https://cdn.example/d.jpg',
+      addedAt: 4,
+      providerId: 'openverse',
+      title: 'Sea',
+    })).toMatchObject({ providerId: 'openverse' })
+    expect(parseRecentEntry({
+      url: 'https://cdn.example/e.jpg',
+      addedAt: 5,
+      providerId: 'Not A Provider',
+    })).not.toHaveProperty('providerId')
+
     // Non-portable links are dropped per field; the rest of the entry survives.
     expect(parseRecentEntry({
       url: 'https://cdn.example/c.jpg',

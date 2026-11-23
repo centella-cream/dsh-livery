@@ -16,6 +16,8 @@ import { safeRemoteImageUrl } from './host-safety.js'
 export interface RecentWallpaperEntry {
   readonly url: string
   readonly thumbnail?: string | undefined
+  /** Registered provider id for the provenance-to-notice path. */
+  readonly providerId?: string | undefined
   readonly title?: string | undefined
   readonly creator?: string | undefined
   readonly license?: string | undefined
@@ -67,6 +69,10 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
   if (url === undefined || safeRemoteImageUrl(url) === undefined) return undefined
   const addedAt = typeof row.addedAt === 'number' && Number.isFinite(row.addedAt) ? row.addedAt : 0
   const thumbnail = safeRemoteImageUrl(row.thumbnail)
+  const providerIdValue = text(row.providerId)
+  const providerId = providerIdValue !== undefined && /^[a-z0-9][a-z0-9-]{0,63}$/u.test(providerIdValue)
+    ? providerIdValue
+    : undefined
   const title = text(row.title)
   const creator = text(row.creator)
   const license = text(row.license)
@@ -76,6 +82,7 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
   const sourceUrl = normalizeWallpaperProvenanceUrl(row.sourceUrl)
   return {
     url,
+    ...(providerId === undefined ? {} : { providerId }),
     ...(thumbnail === undefined ? {} : { thumbnail }),
     ...(title === undefined ? {} : { title }),
     ...(creator === undefined ? {} : { creator }),
