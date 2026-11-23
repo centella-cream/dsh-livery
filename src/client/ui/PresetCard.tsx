@@ -92,6 +92,11 @@ export interface PresetCardProps {
   readonly applyWallpaper: (target: PresetWallpaperTarget) => boolean | Promise<boolean>
   /** Live image credit of the current wallpaper, when one is shown. */
   readonly currentAttribution?: PresetAttribution | undefined
+  /**
+   * Whether the active catalog currently supplies the tokens a `style` wallpaper
+   * needs; `false` makes export fail with `style-unavailable`.
+   */
+  readonly styleAvailable?: boolean | undefined
   /** Optional localized livery name for readable diff rows. */
   readonly styleLabel?: ((id: string) => string) | undefined
   /** Clipboard writer (injectable in tests); defaults to the primitives helper. */
@@ -124,6 +129,7 @@ const IMPORT_ERROR_KEYS: Record<PresetProblem, LiveryKey> = {
   'wallpaper-kind': 'preset.error.wallpaperKind',
   'wallpaper-id': 'preset.error.wallpaperId',
   'wallpaper-url': 'preset.error.wallpaperUrl',
+  'wallpaper-variant': 'preset.error.wallpaperVariant',
   effects: 'preset.error.effects',
   position: 'preset.error.position',
   attribution: 'preset.error.attribution',
@@ -137,6 +143,7 @@ const EXPORT_ERROR_KEYS: Record<PresetExportProblem, LiveryKey> = {
   'invalid-wallpaper': 'preset.exportError.invalidWallpaper',
   'invalid-style': 'preset.exportError.invalidStyle',
   'invalid-version': 'preset.exportError.invalidVersion',
+  'style-unavailable': 'preset.exportError.styleUnavailable',
 }
 
 /** Localized copy for one apply failure code (`wallpaper` = partial failure). */
@@ -188,6 +195,7 @@ function wallpaperLabel(t: LiveryTranslate, wallpaper: PresetCurrentWallpaper): 
   if (wallpaper === null) return t('preset.wallpaper.none')
   if (wallpaper.kind === 'upload') return t('preset.wallpaper.upload')
   if (wallpaper.kind === 'builtin') return t(`wallpaper.builtin.${wallpaper.id}` as LiveryKey)
+  if (wallpaper.kind === 'style') return t('preset.wallpaper.style')
   try {
     return new URL(wallpaper.url).hostname
   } catch {
@@ -212,10 +220,23 @@ function positionLabel(t: LiveryTranslate, position: { readonly x: number; reado
   return t(POSITION_LABEL_KEYS[id])
 }
 
-/** Human-readable image credit for the diff preview. */
+/**
+ * Human-readable image credit for the diff preview.
+ *
+ * Plain text fields win; when only v2 attribution links are present the credit
+ * is still named (hostname) instead of silently reading as "no credit".
+ */
 function attributionLabel(t: LiveryTranslate, attribution: PresetAttribution | undefined): string {
   if (attribution === undefined) return t('preset.creditNone')
-  return attribution.title ?? attribution.creator ?? attribution.source ?? t('preset.creditNone')
+  const text = attribution.title ?? attribution.creator ?? attribution.source
+  if (text !== undefined) return text
+  const url = attribution.sourceUrl ?? attribution.licenseUrl ?? attribution.creatorUrl
+  if (url === undefined) return t('preset.creditNone')
+  try {
+    return t('preset.creditLink', { host: new URL(url).hostname })
+  } catch {
+    return t('preset.creditLink', { host: url })
+  }
 }
 
 /** Render one changed field as `{field}: {from} → {to}`. */
@@ -296,6 +317,7 @@ export function PresetCard({
   applyStyle,
   applyWallpaper,
   currentAttribution,
+  styleAvailable,
   styleLabel,
   writeClipboard,
   onApplyResult,
@@ -386,6 +408,7 @@ export function PresetCard({
       effects: currentWallpaper.effects,
       position: currentWallpaper.position,
       attribution: currentAttribution,
+      styleAvailable,
       pluginVersion,
     })
     if (!result.ok) {

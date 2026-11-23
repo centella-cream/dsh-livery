@@ -15,6 +15,8 @@
  */
 import { validateWallpaperUrl } from '../wallpaper.js'
 import { isLocalOrPrivateHost } from './host-safety.js'
+import { isAllowedHost } from './providers.js'
+import type { ImageHostPolicy } from './providers.js'
 import {
   createImageGeneration,
   createIndexedDbImageStore,
@@ -34,6 +36,25 @@ export const REMOTE_CACHE_MAX_TOTAL_BYTES = 128 * 1024 * 1024
 export const REMOTE_CACHE_TIMEOUT_MS = 8000
 /** localStorage key of the LRU metadata mirror. */
 export const REMOTE_CACHE_INDEX_KEY = 'dsh-livery.wallpaper.remote-cache.v1'
+
+/**
+ * Optional provider image-host policy for one download (0.2.2). Supplying it
+ * makes `cacheRemoteImage` enforce the same exact/wildcard host allowlist the
+ * provider registry declares for its results; omitting it keeps the historical
+ * 0.2.1 behaviour (including the legacy Picsum redirect hop).
+ */
+export type RemoteImagePolicy = ImageHostPolicy
+
+/**
+ * Legacy Picsum hosts for pre-0.2.2 remote selections. Picsum is NOT a listed
+ * provider (the gate rejected it for the Unsplash licence). An already-persisted
+ * 0.2.1 Picsum remote may still render from an existing IndexedDB blob, but a
+ * cache miss must fail closed: 0.2.2 makes no new Picsum request.
+ */
+const LEGACY_PICSUM_HOSTS: readonly string[] = Object.freeze([
+  'picsum.photos',
+  '*.picsum.photos',
+])
 
 /** One mirrored LRU index record (metadata only; never used to adopt a blob). */
 export interface RemoteCacheIndexEntry {
@@ -331,6 +352,14 @@ export async function pruneRemoteCache(deps: {
  * record stores the source URL so loads can reject 32-bit key collisions, and an
  * optional external signal cancels a download whose selection is no longer
  * current.
+ *
+ * When `deps.policy` is supplied, the initial URL host must match the provider's
+ * `imageHosts`; redirects are only followed when the provider declares
+ * `redirectHosts`, and the final URL must still be on a declared host. Without a
+ * policy, legacy Picsum hosts are rejected before any network request (cached
+ * legacy selections still load from IndexedDB elsewhere); other public https
+ * URLs keep the historical no-redirect behaviour. Whether a policy is supplied
+ * never changes the cache key.
  * @param url - remote https URL.
  * @param deps - injected store/fetch/timeout/signal/index (defaults: IndexedDB + fetch).
  * @returns ok with the stored record, or a non-fatal failure reason.
@@ -357,6 +386,8 @@ export async function cacheRemoteImage(
     /** Caller commits the selection first, then prunes with live protection. */
     readonly deferPrune?: boolean | undefined
     readonly protectedUrls?: readonly string[] | undefined
+    /** Provider image-host policy; omitted keeps the legacy 0.2.1 behaviour. */
+    readonly policy?: RemoteImagePolicy | undefined
   } = {},
 ): Promise<RemoteCacheResult> {
   const check = validateWallpaperUrl(url)
@@ -372,7 +403,20 @@ export async function cacheRemoteImage(
   // supersedes this one immediately (even while this one is mid-flight).
   const key = deps.key ?? remoteCacheKey(check.url)
   const initialHost = new URL(check.url).hostname.toLowerCase()
-  const picsumRedirectAllowed = initialHost === 'picsum.photos' || initialHost.endsWith('.picsum.photos')
+  const policy = deps.policy
+  if (policy !== undefined && !isAllowedHost(initialHost, policy.imageHosts)) {
+    return { ok: false, reason: 'invalid' }
+  }
+  // Legacy 0.2.1 Picsum remotes have no provider policy; keep their fixed CDN
+  // redirect working. Provider-policied URLs must match the declared lists.
+  if (policy === undefined && isAllowedHost(initialHost, LEGACY_PICSUM_HOSTS)) {
+    // Do not fetch a rejected provider again. A previously cached blob still
+    // hydrates through loadCachedRemote; a cache miss stays empty.
+    return { ok: false, reason: 'invalid' }
+  }
+  const followRedirects = policy !== undefined
+    && policy.redirectHosts !== undefined
+    && policy.redirectHosts.length > 0
   const operationToken = beginRemoteOperation(key)
   const controller = typeof AbortController === 'undefined' ? undefined : new AbortController()
   let cancelledExternally = false
@@ -395,9 +439,10 @@ export async function cacheRemoteImage(
       method: 'GET',
       cache: 'force-cache',
       credentials: 'omit',
-      // Only the known Picsum CDN path may redirect. Custom/Openverse URLs fail
-      // closed on any redirect so they can never trigger a private-network hop.
-      redirect: picsumRedirectAllowed ? 'follow' : 'error',
+      // A provider may only redirect when it declares redirect hosts; without a
+      // policy only the known legacy Picsum CDN path may redirect. Everything
+      // else fails closed so a redirect can never trigger a private-network hop.
+      redirect: followRedirects ? 'follow' : 'error',
       ...(controller === undefined ? {} : { signal: controller.signal }),
     })
     if (!response.ok) return { ok: false, reason: 'network' }
@@ -409,11 +454,13 @@ export async function cacheRemoteImage(
       if (finalUrl.protocol !== 'https:' || isLocalOrPrivateHost(finalUrl.hostname)) {
         return { ok: false, reason: 'invalid' }
       }
-      if (picsumRedirectAllowed) {
+      if (policy !== undefined) {
+        // A followed redirect may only end on a declared image or redirect host.
         const finalHost = finalUrl.hostname.toLowerCase()
-        if (finalHost !== 'picsum.photos' && !finalHost.endsWith('.picsum.photos')) {
-          return { ok: false, reason: 'invalid' }
-        }
+        const allowedFinalHosts = policy.redirectHosts === undefined
+          ? policy.imageHosts
+          : [...policy.imageHosts, ...policy.redirectHosts]
+        if (!isAllowedHost(finalHost, allowedFinalHosts)) return { ok: false, reason: 'invalid' }
       }
     }
     const type = (response.headers.get('content-type') ?? '').toLowerCase()

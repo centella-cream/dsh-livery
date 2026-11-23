@@ -12,10 +12,42 @@
  * `wallpaper/apply.ts`; orchestration lives in `wallpaper/controller.ts`.
  */
 import type { CompiledLivery, TokenMap } from '../core/types.js'
-import { safeRemoteImageUrl } from './wallpaper/host-safety.js'
+import { isLocalOrPrivateHost } from './wallpaper/host-safety.js'
+import { isStyleWallpaperVariant, styleWallpaperImage } from './wallpaper/style.js'
+import type { StyleWallpaperVariant } from './wallpaper/style.js'
+
+export type { StyleWallpaperVariant } from './wallpaper/style.js'
 
 /** localStorage key holding the persisted wallpaper selection + effects. */
 export const WALLPAPER_STORAGE_KEY = 'dsh-livery.wallpaper.v1'
+/**
+ * Sidecar localStorage key holding a `kind: 'style'` selection (unknown to
+ * 0.2.1 clients, which therefore never reject or delete it). The main record
+ * stays the only ordering signal; the sidecar is adopted only when its identity
+ * exactly matches the current main record.
+ */
+export const WALLPAPER_STYLE_STORAGE_KEY = 'dsh-livery.wallpaper.style.v1'
+/** Style sidecar schema version written by this client. */
+export const WALLPAPER_STYLE_SCHEMA_VERSION = 1
+
+/**
+ * Identity of one main-record write: its monotonic revision plus the per-tab
+ * source id (absent when the record was written before/without tab identity).
+ */
+export interface WallpaperStateIdentity {
+  readonly revision: number
+  readonly sourceId?: string | undefined
+}
+
+/** Persisted shape of the style sidecar (`WALLPAPER_STYLE_STORAGE_KEY`). */
+export interface StoredWallpaperStyle {
+  readonly schemaVersion: 1
+  readonly variant: StyleWallpaperVariant
+  /** Revision of the main-record tombstone this style belongs to. */
+  readonly revision: number
+  /** Source id of the main-record write (empty string when none was known). */
+  readonly sourceId: string
+}
 /** `data-plugin-css` marker of the plugin-owned wallpaper stylesheet. */
 export const WALLPAPER_CSS_FILE = 'dsh-livery/wallpaper'
 /** Public body attribute owning the wallpaper layer (only Livery writes it). */
@@ -75,6 +107,34 @@ export const BUILTIN_WALLPAPERS: Readonly<Record<BuiltinWallpaperId, string>> = 
   minimal: 'linear-gradient(160deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)',
 }
 
+/**
+ * The 8 curated built-ins shown in the wallpaper panel, in display order
+ * (0.2.2). Chosen from the existing 24 ids: four light, four dark. The other 16
+ * remain loadable as **Classic** with byte-identical ids and CSS — no id is
+ * remapped or removed.
+ */
+export const VISIBLE_BUILTIN_IDS = [
+  'paper', 'ink', 'aurora', 'cyber', 'dusk', 'minimal', 'mono', 'sand',
+] as const
+
+/** A curated built-in id rendered in the main 8-swatch grid. */
+export type VisibleBuiltinWallpaperId = typeof VISIBLE_BUILTIN_IDS[number]
+
+/** A bundled built-in id rendered inside the collapsed Classic group. */
+export type ClassicBuiltinWallpaperId = Exclude<BuiltinWallpaperId, VisibleBuiltinWallpaperId>
+
+/** Fast membership test backing {@link isVisibleBuiltinId}. */
+const VISIBLE_BUILTIN_ID_SET: ReadonlySet<string> = new Set(VISIBLE_BUILTIN_IDS)
+
+/**
+ * The remaining 16 built-ins in catalog order. Every id in
+ * {@link BUILTIN_WALLPAPER_IDS} belongs to exactly one of the visible set or
+ * this list, and both sets keep the original ordering.
+ */
+export const CLASSIC_BUILTIN_IDS: readonly ClassicBuiltinWallpaperId[] = Object.freeze(
+  BUILTIN_WALLPAPER_IDS.filter((id): id is ClassicBuiltinWallpaperId => !VISIBLE_BUILTIN_ID_SET.has(id)),
+)
+
 /** Effect slider values (integers). */
 export interface WallpaperEffects {
   /** Blur radius in px, 0–24. */
@@ -98,11 +158,146 @@ export const WALLPAPER_EFFECT_BOUNDS: Readonly<Record<keyof WallpaperEffects, { 
 /** Effects applied before any user change, and by the reset action. */
 export const DEFAULT_WALLPAPER_EFFECTS: WallpaperEffects = { blur: 8, dim: 25, frost: 35, atmosphere: 30 }
 
+/**
+ * Display attribution carried by one remote wallpaper selection (plan §4.6).
+ *
+ * This is the authoritative credit for the current image: recent history is only
+ * a display mirror. Text fields are plain display text (no HTML/CSS sanitizing
+ * beyond control characters); the URL fields are https public-host URLs and are
+ * the only clickable parts.
+ */
+export interface WallpaperProvenance {
+  readonly providerId?: string
+  readonly title?: string
+  readonly creator?: string
+  readonly creatorUrl?: string
+  /** Human-readable licence name, never a provider brand. */
+  readonly license?: string
+  readonly licenseUrl?: string
+  readonly source?: string
+  readonly sourceUrl?: string
+}
+
+/** Maximum accepted provenance text length per field (display text only). */
+const PROVENANCE_TEXT_LIMITS: Readonly<Record<string, number>> = {
+  providerId: 64,
+  title: 200,
+  creator: 120,
+  license: 120,
+  source: 200,
+}
+
+/** Provenance fields holding a https link (validated as portable URLs). */
+const PROVENANCE_URL_FIELDS = ['creatorUrl', 'licenseUrl', 'sourceUrl'] as const
+
+/** Control characters never belong in stored/displayed attribution text. */
+const PROVENANCE_CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/
+
+/** Normalize one provenance text field (trim, cap, drop control characters). */
+function provenanceText(value: unknown, maxLength: number): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  if (trimmed.length === 0 || trimmed.length > maxLength) return undefined
+  if (PROVENANCE_CONTROL_CHARACTERS.test(trimmed)) return undefined
+  return trimmed
+}
+
+/**
+ * Normalize one provenance URL: https, bounded length, no credentials, public
+ * host. Invalid URLs are dropped (never fail the whole selection).
+ * @param value - untrusted URL field.
+ * @returns the normalized URL, or undefined.
+ */
+export function normalizeWallpaperProvenanceUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const check = validateWallpaperUrl(value)
+  if (!check.ok) return undefined
+  try {
+    if (isLocalOrPrivateHost(new URL(check.url).hostname)) return undefined
+  } catch {
+    return undefined
+  }
+  return check.url
+}
+
+/**
+ * Normalize an untrusted provenance record: keep only the known fields, trim and
+ * bound text, and drop invalid/private/over-long URLs. Returns undefined when no
+ * usable field remains.
+ * @param raw - untrusted provenance (storage/preset/UI).
+ * @returns the sanitized provenance, or undefined.
+ */
+export function normalizeWallpaperProvenance(raw: unknown): WallpaperProvenance | undefined {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined
+  const record = raw as Record<string, unknown>
+  const output: Record<string, string> = {}
+  for (const [field, limit] of Object.entries(PROVENANCE_TEXT_LIMITS)) {
+    const value = provenanceText(record[field], limit)
+    if (value !== undefined) output[field] = value
+  }
+  for (const field of PROVENANCE_URL_FIELDS) {
+    const value = normalizeWallpaperProvenanceUrl(record[field])
+    if (value !== undefined) output[field] = value
+  }
+  return Object.keys(output).length === 0 ? undefined : output as WallpaperProvenance
+}
+
+/**
+ * Structural equality for normalized provenance records (undefined = empty).
+ * @param a - one provenance record.
+ * @param b - the other provenance record.
+ * @returns true when every known field matches.
+ */
+export function sameWallpaperProvenance(
+  a: WallpaperProvenance | undefined,
+  b: WallpaperProvenance | undefined,
+): boolean {
+  if (a === undefined || b === undefined) return a === b
+  for (const field of [...Object.keys(PROVENANCE_TEXT_LIMITS), ...PROVENANCE_URL_FIELDS] as (keyof WallpaperProvenance)[]) {
+    if ((a[field] ?? '') !== (b[field] ?? '')) return false
+  }
+  return true
+}
+
+/**
+ * The authoritative attribution of one selection: the remote selection's
+ * provenance (built-in/upload/style wallpapers carry none). The panel resolves
+ * the current credit from here instead of from history.
+ * @param selection - current wallpaper.
+ * @returns its provenance, or undefined.
+ */
+export function provenanceOfSelection(selection: WallpaperSelection): WallpaperProvenance | undefined {
+  return selection !== undefined && selection.kind === 'remote' ? selection.provenance : undefined
+}
+
+/**
+ * Normalize one in-memory selection before it enters controller state: only a
+ * remote selection can carry (sanitized) provenance; everything else is passed
+ * through unchanged.
+ * @param selection - untrusted selection built by UI/preset/storage code.
+ * @returns the normalized selection.
+ */
+export function normalizeWallpaperSelection(selection: WallpaperSelection): WallpaperSelection {
+  if (selection === undefined) return undefined
+  if (selection.kind === 'style') {
+    // Defence in depth for untrusted UI/preset construction: an unknown variant
+    // would be rejected by the sidecar parser on the next reload.
+    return isStyleWallpaperVariant(selection.variant) ? selection : undefined
+  }
+  if (selection.kind !== 'remote') return selection
+  const provenance = normalizeWallpaperProvenance(selection.provenance)
+  return provenance === undefined
+    ? { kind: 'remote', url: selection.url }
+    : { kind: 'remote', url: selection.url, provenance }
+}
+
 /** The selected wallpaper, or `undefined` for "no wallpaper". */
 export type WallpaperSelection =
   | { readonly kind: 'builtin'; readonly id: BuiltinWallpaperId }
-  | { readonly kind: 'remote'; readonly url: string }
+  | { readonly kind: 'remote'; readonly url: string; readonly provenance?: WallpaperProvenance }
   | { readonly kind: 'upload'; readonly key: string }
+  /** Generated "follow style" layer; persisted only in the style sidecar. */
+  | { readonly kind: 'style'; readonly variant: StyleWallpaperVariant }
   | undefined
 
 /** Persisted schema version written by this client (v1 flat records migrate on read). */
@@ -223,8 +418,8 @@ export function normalizeWallpaperRevision(value: unknown): number {
 
 /**
  * CSS `background-position` value for one selection + focal position.
- * Built-in designs and "no wallpaper" always stay centered; only remote and
- * uploaded images honour the nine-grid position.
+ * Built-in designs, the generated style layer and "no wallpaper" always stay
+ * centered; only remote and uploaded images honour the nine-grid position.
  * @param selection - current wallpaper.
  * @param position - persisted focal position (defaults to centered).
  * @returns the CSS value, e.g. `'center'` or `'0% 100%'`.
@@ -233,9 +428,20 @@ export function backgroundPositionValue(
   selection: WallpaperSelection,
   position: WallpaperPosition | undefined = DEFAULT_WALLPAPER_POSITION,
 ): string {
-  if (selection === undefined || selection.kind === 'builtin') return 'center'
+  if (!canRepositionWallpaper(selection)) return 'center'
   const point = normalizeWallpaperPosition(position)
   return `${point.x}% ${point.y}%`
+}
+
+/**
+ * Whether the nine-grid focal position applies to one selection. Only real
+ * images (remote/upload) can be repositioned: built-ins and the generated style
+ * layer are fixed recipes, and "no wallpaper" has no focal point.
+ * @param selection - current wallpaper.
+ * @returns true for remote/upload selections.
+ */
+export function canRepositionWallpaper(selection: WallpaperSelection): boolean {
+  return selection !== undefined && (selection.kind === 'remote' || selection.kind === 'upload')
 }
 
 /** Reasons a custom wallpaper URL can be rejected (mapped to i18n copy). */
@@ -277,6 +483,65 @@ export function isBuiltinWallpaperId(value: unknown): value is BuiltinWallpaperI
 }
 
 /**
+ * Whether a value is one of the 8 curated built-ins shown in the main grid.
+ * @param value - untrusted value.
+ * @returns true for a {@link VISIBLE_BUILTIN_IDS} member.
+ */
+export function isVisibleBuiltinId(value: unknown): value is VisibleBuiltinWallpaperId {
+  return typeof value === 'string' && VISIBLE_BUILTIN_ID_SET.has(value)
+}
+
+/**
+ * Whether a value is one of the 16 Classic built-ins in the collapsed group.
+ * @param value - untrusted value.
+ * @returns true for a {@link CLASSIC_BUILTIN_IDS} member.
+ */
+export function isClassicBuiltinId(value: unknown): value is ClassicBuiltinWallpaperId {
+  return typeof value === 'string' && !VISIBLE_BUILTIN_ID_SET.has(value) && isBuiltinWallpaperId(value)
+}
+
+/**
+ * Pinned-legacy rule: the id that must be rendered as a pinned "Current
+ * (Classic)" swatch above the 8-swatch grid. Only the *currently selected*
+ * built-in outside {@link VISIBLE_BUILTIN_IDS} pins; a merely previewed preset
+ * does not (it never becomes the selection).
+ * @param selection - current wallpaper selection.
+ * @returns the pinned Classic id, or undefined.
+ */
+export function pinnedClassicBuiltinId(selection: WallpaperSelection): ClassicBuiltinWallpaperId | undefined {
+  if (selection === undefined || selection.kind !== 'builtin') return undefined
+  return isClassicBuiltinId(selection.id) ? selection.id : undefined
+}
+
+/** Gallery groups the Built-in panel renders (the pinned id is excluded twice). */
+export interface BuiltinGalleryVisibility {
+  /** Classic id pinned above the grid, or undefined when none is selected. */
+  readonly pinnedClassic: ClassicBuiltinWallpaperId | undefined
+  /** The 8 curated swatches, in display order. */
+  readonly visible: readonly VisibleBuiltinWallpaperId[]
+  /** The 16 Classic ids in catalog order, minus a pinned id (never duplicated). */
+  readonly classic: readonly ClassicBuiltinWallpaperId[]
+}
+
+/**
+ * Pure pinned-legacy display decision for the Built-in panel: which swatch (if
+ * any) is pinned, and the exact visible/Classic groups with no duplicated
+ * `data-wallpaper-id`.
+ * @param selection - current wallpaper selection.
+ * @returns the pinned id and the two groups (never duplicates an id).
+ */
+export function builtinGalleryVisibility(selection: WallpaperSelection): BuiltinGalleryVisibility {
+  const pinnedClassic = pinnedClassicBuiltinId(selection)
+  return {
+    pinnedClassic,
+    visible: [...VISIBLE_BUILTIN_IDS],
+    classic: pinnedClassic === undefined
+      ? [...CLASSIC_BUILTIN_IDS]
+      : CLASSIC_BUILTIN_IDS.filter(id => id !== pinnedClassic),
+  }
+}
+
+/**
  * CSS `url()` token for one validated remote URL.
  *
  * Single-quoted so a value can never break out of the declaration; backslashes
@@ -295,12 +560,19 @@ export function cssUrlValue(url: string): string {
 
 /**
  * CSS background-image value for one selection.
+ *
+ * The generated `style` selection is intentionally NOT expressible here: its
+ * image depends on the active livery's mode-specific tokens, so
+ * {@link buildWallpaperCss} emits it per light/dark and the controller's
+ * `getRenderImage(mode)` resolves it for the UI preview.
  * @param selection - selected wallpaper.
- * @returns the CSS value, or undefined for "no wallpaper".
+ * @returns the CSS value, or undefined for "no wallpaper", style, or a remote/
+ * upload selection without a verified local object URL.
  */
 export function backgroundImageValue(selection: WallpaperSelection, overrideUrl?: string): string | undefined {
   if (selection === undefined) return undefined
   if (selection.kind === 'builtin') return BUILTIN_WALLPAPERS[selection.id]
+  if (selection.kind === 'style') return undefined
   if (selection.kind === 'upload') return overrideUrl === undefined ? undefined : cssUrlValue(overrideUrl)
   // Remote wallpapers are rendered ONLY from the verified local cache object URL.
   // Never put the raw remote URL in CSS: that would bypass the download's
@@ -445,22 +717,48 @@ function sidebarTintOverride(
  * veil), both behind content and non-interactive. Frost: translucent overrides
  * of the active livery's background tokens, scoped to the livery and the
  * wallpaper attributes, with a dark-scheme variant.
+ *
+ * A `style` selection has no URL: its image is generated from the active
+ * livery's light/dark token maps, so it is emitted once per mode (light as the
+ * base rule, dark as an attribute override) for both the body layer and the
+ * atmosphere layer. Without a token context a style selection paints nothing.
  * @param input - selection, effects and optional livery token maps.
  * @returns the stylesheet text ('' clears the layer).
  */
 export function buildWallpaperCss(input: WallpaperCssInput): string {
-  const image = backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
+  const styleSelection = input.selection !== undefined && input.selection.kind === 'style'
+    ? input.selection
+    : undefined
+  // Per-mode generated image; undefined when the livery has no token map (a
+  // style selection then hydrates as "no wallpaper", never an empty layer).
+  const styleLight = styleSelection === undefined || input.tokens === undefined
+    ? undefined
+    : styleWallpaperImage(input.tokens.light, styleSelection.variant)
+  const styleDark = styleSelection === undefined || input.tokens === undefined
+    ? undefined
+    : styleWallpaperImage(input.tokens.dark, styleSelection.variant)
+  if (styleSelection !== undefined && (styleLight === undefined || styleDark === undefined)) return ''
+  const image = styleSelection === undefined
+    ? backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
+    : styleLight
   if (image === undefined) return ''
+  const darkImage = styleDark !== undefined && styleDark !== image ? styleDark : undefined
   const { blur, dim, atmosphere } = input.effects
   const position = backgroundPositionValue(input.selection, input.position)
   const rules: string[] = [
     `body[${WALLPAPER_ATTRIBUTE}]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;`
     + `background-image:${image};background-position:${position};background-size:cover;filter:blur(${blur}px)}`,
+  ]
+  // Generated style image for dark mode: same layer recipe, dark token map.
+  if (darkImage !== undefined) {
+    rules.push(`body[${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]::before{background-image:${darkImage}}`)
+  }
+  rules.push(
     `body[${WALLPAPER_ATTRIBUTE}]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;`
     + `background:rgba(0,0,0,${(dim / 100).toFixed(2)})}`,
     // Let the under-content immersive layer show through the host's body canvas.
     `body[${WALLPAPER_ATTRIBUTE}]{background-color:transparent}`,
-  ]
+  )
   // Optional page tint for surfaces whose background can show it: a
   // non-interactive atmospheric copy above normal page content but below every
   // host floating layer. It is not a visual-coverage guarantee on opaque pages.
@@ -471,6 +769,9 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     rules.push(`.${WALLPAPER_OVERLAY_CLASS}{position:fixed;inset:0;z-index:90;pointer-events:none;`
       + `background-image:${image};background-size:cover;background-position:${position};filter:blur(${blur}px);`
       + `opacity:${(atmosphere / 100).toFixed(2)};mix-blend-mode:soft-light}`)
+    if (darkImage !== undefined) {
+      rules.push(`body[data-ds-dark-theme] .${WALLPAPER_OVERLAY_CLASS}{background-image:${darkImage}}`)
+    }
   }
   // OS accessibility modes: never paint the wallpaper over the app. The glass
   // effects are decorative and can hide or tint content in forced-colors mode.
@@ -519,12 +820,20 @@ export function tokenContextOf(
   return { light: livery.light.tokens, dark: livery.dark.tokens, frost }
 }
 
-/** Persisted selection in schema v2: only the kind-relevant identifier. */
+/**
+ * Persisted selection in schema v2: only the kind-relevant identifier.
+ *
+ * 0.2.1-readable: the kinds and the wire shape are unchanged. The single
+ * additive member is optional `remote.provenance` (0.2.1 ignores unknown members
+ * and drops it on its next write). `style` is NEVER part of this record — it
+ * lives in the `WALLPAPER_STYLE_STORAGE_KEY` sidecar so a 0.2.1 client cannot
+ * reject or overwrite it.
+ */
 export type StoredWallpaperSelection =
   | { readonly kind: 'builtin'; readonly id: BuiltinWallpaperId }
-  | { readonly kind: 'remote'; readonly url: string }
+  | { readonly kind: 'remote'; readonly url: string; readonly provenance?: WallpaperProvenance }
   | { readonly kind: 'upload'; readonly key: string }
-  /** Tombstone written by an intentional clear so other tabs can sync it. */
+  /** Tombstone written by an intentional clear (also the style main record). */
   | { readonly kind: 'none' }
 
 /** Persisted shape (schema v2): revisioned selection + effects + focal position. */
@@ -546,6 +855,8 @@ export interface HydratedWallpaperState {
 
 /**
  * Validate one stored selection object (shared by schema v1 migration and v2 reads).
+ * The additive `remote.provenance` member is parsed and normalized; `style` is
+ * never valid in the main record (it lives in the sidecar).
  * @param raw - unknown `selection`/flat v1 record fields.
  * @returns the validated selection, or undefined.
  */
@@ -560,7 +871,10 @@ function parseStoredSelection(raw: unknown): WallpaperSelection {
     if (typeof record.url !== 'string') return undefined
     const check = validateWallpaperUrl(record.url)
     if (!check.ok) return undefined
-    return { kind: 'remote', url: check.url }
+    const provenance = normalizeWallpaperProvenance(record.provenance)
+    return provenance === undefined
+      ? { kind: 'remote', url: check.url }
+      : { kind: 'remote', url: check.url, provenance }
   }
   if (record.kind === 'upload') {
     if (typeof record.key !== 'string' || !/^upload-[A-Za-z0-9-]{1,64}$/.test(record.key)) return undefined
@@ -571,18 +885,25 @@ function parseStoredSelection(raw: unknown): WallpaperSelection {
 
 /** Map one live selection to its persisted (schema v2) form. */
 function toStoredSelection(selection: WallpaperSelection): StoredWallpaperSelection | undefined {
-  if (selection === undefined) return undefined
+  if (selection === undefined || selection.kind === 'style') return undefined
   if (selection.kind === 'builtin') return { kind: 'builtin', id: selection.id }
   if (selection.kind === 'upload') return { kind: 'upload', key: selection.key }
-  return { kind: 'remote', url: selection.url }
+  const provenance = normalizeWallpaperProvenance(selection.provenance)
+  return provenance === undefined
+    ? { kind: 'remote', url: selection.url }
+    : { kind: 'remote', url: selection.url, provenance }
 }
 
-/** Persistable record for one selection + effects, or undefined when cleared. */
+/**
+ * Persistable record for one selection + effects, or undefined when cleared.
+ * The legacy v1 shape cannot express `style` (it persists through the sidecar),
+ * so a style selection maps to undefined here.
+ */
 export function toStoredWallpaper(
   selection: WallpaperSelection,
   effects: WallpaperEffects,
 ): StoredWallpaper | undefined {
-  if (selection === undefined) return undefined
+  if (selection === undefined || selection.kind === 'style') return undefined
   const clamped = clampEffects(effects)
   if (selection.kind === 'builtin') {
     return { kind: 'builtin', id: selection.id, ...clamped }
@@ -670,11 +991,15 @@ export function parseWallpaperState(raw: unknown): HydratedWallpaperState | unde
 
 /**
  * Serialize one wallpaper state as the persisted schema v2 record.
- * @param selection - current wallpaper (undefined removes the stored record).
+ *
+ * A `style` selection is written as the same revisioned `{kind:'none'}`
+ * tombstone as a clear: the main record is the ordering signal and the style
+ * variant lives only in the sidecar. Never write style bytes into this record.
+ * @param selection - current wallpaper (undefined/style remove the stored selection).
  * @param effects - current effect values (clamped).
  * @param position - current focal position (normalized to the nine-grid stops).
  * @param revision - monotonic state revision (0 when omitted).
- * @returns the JSON record to store; a cleared selection is a revisioned tombstone.
+ * @returns the JSON record to store; a cleared/style selection is a revisioned tombstone.
  */
 export function serializeWallpaperState(
   selection: WallpaperSelection,
@@ -682,211 +1007,15 @@ export function serializeWallpaperState(
   position: WallpaperPosition | undefined = DEFAULT_WALLPAPER_POSITION,
   revision = 0,
 ): StoredWallpaperState {
+  const stored = toStoredSelection(selection)
   return {
     schemaVersion: WALLPAPER_STATE_SCHEMA_VERSION,
     revision: normalizeWallpaperRevision(revision),
-    selection: selection === undefined ? { kind: 'none' } : toStoredSelection(selection)!,
+    selection: stored ?? { kind: 'none' },
     effects: clampEffects(effects),
     position: normalizeWallpaperPosition(position),
   }
 }
 
-/** One mapped remote wallpaper result. */
-export interface WallpaperRemoteResult {
-  readonly id: string
-  readonly url: string
-  readonly thumbnail: string
-  readonly title: string
-  readonly creator: string
-  readonly license: string
-  readonly source: string
-}
-
-/** Remote source family: Openverse search or Picsum random list. */
-export type WallpaperRemoteSource = 'openverse' | 'picsum'
-
-/** Openverse image search endpoint. */
-export const OPENVERSE_API = 'https://api.openverse.org/v1/images/'
-/** Picsum public list endpoint. */
-export const PICSUM_API = 'https://picsum.photos/v2/list'
-
-/**
- * Build the Openverse search URL (CC0/PDM only, 12 results).
- * @param query - user query (already trimmed; empty is allowed by the API).
- * @param page - 1-based result page.
- * @returns the absolute URL.
- */
-export function openverseUrl(query: string, page = 1): string {
-  const params = new URLSearchParams({
-    q: query,
-    license: 'cc0,pdm',
-    page_size: '12',
-    page: String(page),
-  })
-  return `${OPENVERSE_API}?${params.toString()}`
-}
-
-/**
- * Build the Picsum random-list URL.
- * @param page - 1-based page.
- * @param limit - page size.
- * @returns the absolute URL.
- */
-export function picsumListUrl(page: number, limit = 12): string {
-  return `${PICSUM_API}?page=${page}&limit=${limit}`
-}
-
-/**
- * Map one Openverse response document to result rows.
- * @param json - decoded response body.
- * @returns valid https results (max 12); malformed rows are skipped.
- */
-export function parseOpenverseResults(json: unknown, limit = 12): readonly WallpaperRemoteResult[] {
-  if (typeof json !== 'object' || json === null) return []
-  const results = (json as Record<string, unknown>).results
-  if (!Array.isArray(results)) return []
-  const mapped: WallpaperRemoteResult[] = []
-  for (const entry of results) {
-    if (typeof entry !== 'object' || entry === null) continue
-    const row = entry as Record<string, unknown>
-    const url = safeRemoteImageUrl(row.url)
-    if (url === undefined) continue
-    const safeThumbnail = safeRemoteImageUrl(row.thumbnail) ?? safeRemoteImageUrl(url)
-    if (safeThumbnail === undefined) continue
-    const id = typeof row.id === 'string' || typeof row.id === 'number' ? String(row.id) : url
-    const thumbnail = safeThumbnail
-    mapped.push({
-      id,
-      url,
-      thumbnail,
-      title: typeof row.title === 'string' && row.title.length > 0 ? row.title : 'Openverse image',
-      creator: typeof row.creator === 'string' ? row.creator : '',
-      license: typeof row.license === 'string' ? row.license : '',
-      source: 'openverse.org',
-    })
-    if (mapped.length === Math.max(1, limit)) break
-  }
-  return mapped
-}
-
-/**
- * Map one Picsum list response document to result rows (1600×900 renders).
- * @param json - decoded response body.
- * @returns valid https results (max 12).
- */
-export function parsePicsumResults(json: unknown): readonly WallpaperRemoteResult[] {
-  if (!Array.isArray(json)) return []
-  const mapped: WallpaperRemoteResult[] = []
-  for (const entry of json) {
-    if (typeof entry !== 'object' || entry === null) continue
-    const row = entry as Record<string, unknown>
-    const id = typeof row.id === 'string' || typeof row.id === 'number' ? String(row.id) : undefined
-    if (id === undefined) continue
-    const url = `https://picsum.photos/id/${encodeURIComponent(id)}/1600/900`
-    mapped.push({
-      id,
-      url,
-      thumbnail: `https://picsum.photos/id/${encodeURIComponent(id)}/400/225`,
-      title: `Picsum #${id}`,
-      creator: typeof row.author === 'string' ? row.author : '',
-      license: 'Picsum',
-      source: 'picsum.photos',
-    })
-    if (mapped.length === 12) break
-  }
-  return mapped
-}
-
-/** Result of one user-initiated remote fetch. */
-export type WallpaperFetchOutcome =
-  | { readonly ok: true; readonly results: readonly WallpaperRemoteResult[] }
-  | { readonly ok: false; readonly reason: 'offline' | 'error' }
-
-/** Timeout for one wallpaper network request. */
-export const WALLPAPER_FETCH_TIMEOUT_MS = 8000
-/** Maximum JSON response bytes materialized for a search/random listing. */
+/** Maximum JSON response bytes materialized for one provider listing. */
 export const WALLPAPER_JSON_MAX_BYTES = 2 * 1024 * 1024
-
-/**
- * Read and parse a JSON response with a streaming byte cap. The body is never
- * fully materialized when it exceeds the cap; the reader is cancelled.
- * @param response - fetch response.
- * @returns parsed JSON, or undefined when the cap is exceeded.
- */
-async function readCappedJson(response: Response): Promise<unknown> {
-  const max = WALLPAPER_JSON_MAX_BYTES
-  const body = response.body
-  if (body === null || typeof body.getReader !== 'function') return undefined
-  const reader = body.getReader()
-  const chunks: Uint8Array[] = []
-  let total = 0
-  try {
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-      if (value === undefined) continue
-      total += value.byteLength
-      if (total > max) {
-        await reader.cancel().catch(() => undefined)
-        return undefined
-      }
-      chunks.push(value)
-    }
-  } catch {
-    return undefined
-  }
-  const bytes = new Uint8Array(total)
-  let offset = 0
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset)
-    offset += chunk.byteLength
-  }
-  return JSON.parse(new TextDecoder().decode(bytes))
-}
-
-/**
- * Run one user-initiated wallpaper network request.
- *
- * Only called from explicit user actions; failures resolve to a typed outcome
- * instead of throwing so the panel can show loading/empty/offline states.
- * @param request - source and query/page.
- * @param fetchImpl - fetch implementation (global fetch in the browser; injected in tests).
- * @param timeoutMs - abort timeout in ms.
- * @returns results or a failure reason.
- */
-export async function requestWallpaperResults(
-  request: { readonly source: WallpaperRemoteSource; readonly query?: string; readonly page?: number },
-  fetchImpl: typeof fetch | undefined = typeof fetch === 'undefined' ? undefined : fetch,
-  timeoutMs = WALLPAPER_FETCH_TIMEOUT_MS,
-): Promise<WallpaperFetchOutcome> {
-  if (fetchImpl === undefined) return { ok: false, reason: 'offline' }
-  const url = request.source === 'openverse'
-    ? openverseUrl(request.query ?? '', request.page ?? 1)
-    : picsumListUrl(request.page ?? Math.floor(Math.random() * 8) + 1)
-  const controller = typeof AbortController === 'undefined' ? undefined : new AbortController()
-  const timer = controller === undefined
-    ? undefined
-    : setTimeout(() => { controller.abort() }, timeoutMs)
-  try {
-    const response = await fetchImpl(url, {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'omit',
-      headers: { accept: 'application/json' },
-      ...(controller === undefined ? {} : { signal: controller.signal }),
-    })
-    if (!response.ok) return { ok: false, reason: 'error' }
-    const declared = Number(response.headers.get('content-length') ?? '')
-    if (Number.isFinite(declared) && declared > WALLPAPER_JSON_MAX_BYTES) return { ok: false, reason: 'error' }
-    const json = await readCappedJson(response)
-    if (json === undefined) return { ok: false, reason: 'error' }
-    const results = request.source === 'openverse'
-      ? parseOpenverseResults(json)
-      : parsePicsumResults(json)
-    return { ok: true, results }
-  } catch {
-    return { ok: false, reason: 'offline' }
-  } finally {
-    if (timer !== undefined) clearTimeout(timer)
-  }
-}

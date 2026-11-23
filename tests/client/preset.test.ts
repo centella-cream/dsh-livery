@@ -11,11 +11,13 @@ import { DEFAULT_WALLPAPER_EFFECTS } from '../../src/client/wallpaper.js'
 import type { WallpaperEffects } from '../../src/client/wallpaper.js'
 import {
   DEFAULT_PRESET_POSITION,
+  LEGACY_PRESET_SCHEMA_VERSION,
   PRESET_FILE_MAX_BYTES,
   PRESET_POSITION_VALUES,
   PRESET_SCHEMA_VERSION,
   applyPreset,
   applyPresetWallpaper,
+  attributionFromProvenance,
   createdWithOf,
   currentPresetOf,
   diffPreset,
@@ -145,7 +147,8 @@ describe('preset schema v1 — strict rejection', () => {
   })
 
   it('rejects wrong schema versions and foreign producers', () => {
-    expectProblem(parse({ ...makePreset(), schemaVersion: 2 }), 'schema-version')
+    expectProblem(parse({ ...makePreset(), schemaVersion: 3 }), 'schema-version')
+    expectProblem(parse({ ...makePreset(), schemaVersion: '2' }), 'schema-version')
     expectProblem(parse({ ...makePreset(), createdWith: 'other-app/1.0.0' }), 'created-with')
     expectProblem(parse({ ...makePreset(), createdWith: 'dsh-livery/../../etc/passwd' }), 'created-with')
   })
@@ -332,7 +335,7 @@ describe('preset export', () => {
     const result = exportPreset(base)
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.preset.schemaVersion).toBe(1)
+    expect(result.preset.schemaVersion).toBe(2)
     expect(result.preset.createdWith).toBe('dsh-livery/0.1.3')
     expect(result.json.endsWith('\n')).toBe(true)
     expect(result.json).toBe(`${JSON.stringify(result.preset, null, 2)}\n`)
@@ -687,7 +690,8 @@ describe('preset helpers', () => {
 /** Export a couple of structural invariants the acceptance harness relies on. */
 describe('preset public constants', () => {
   it('keeps the documented size cap and schema version', () => {
-    expect(PRESET_SCHEMA_VERSION).toBe(1)
+    expect(PRESET_SCHEMA_VERSION).toBe(2)
+    expect(LEGACY_PRESET_SCHEMA_VERSION).toBe(1)
     expect(PRESET_FILE_MAX_BYTES).toBe(64 * 1024)
   })
 
@@ -777,5 +781,269 @@ describe('preset JSON safety (never throws)', () => {
       async text() { return text },
     }, { catalogIds: CATALOG_IDS })
     expect(result).toEqual({ ok: false, problem: 'invalid-json', detail: 'depth' })
+  })
+})
+
+describe('preset schema v2 — style wallpaper and attribution URLs', () => {
+  const stylePreset = makePreset({ schemaVersion: 2, wallpaper: { kind: 'style', variant: 'mesh' } })
+
+  function v1(patch: Partial<LiveryPreset> = {}): Record<string, unknown> {
+    return { ...makePreset(patch), schemaVersion: 1 }
+  }
+
+  it('keeps schema v1 importable with exactly builtin | remote | null', () => {
+    const builtin = expectOk(parsePresetText(JSON.stringify(v1()), { catalogIds: CATALOG_IDS }))
+    expect(builtin.schemaVersion).toBe(1)
+    expect(builtin.wallpaper).toEqual({ kind: 'builtin', id: 'aurora' })
+
+    const remote = expectOk(parsePresetText(JSON.stringify(v1({
+      wallpaper: { kind: 'remote', url: 'https://images.example.com/a.jpg' },
+    })), { catalogIds: CATALOG_IDS }))
+    expect(remote.schemaVersion).toBe(1)
+    expect(remote.wallpaper).toEqual({ kind: 'remote', url: 'https://images.example.com/a.jpg' })
+
+    const none = expectOk(parsePresetText(JSON.stringify(v1({ wallpaper: null })), { catalogIds: CATALOG_IDS }))
+    expect(none.wallpaper).toBeNull()
+  })
+
+  it('rejects a v1 file claiming style as wallpaper-kind so both clients agree', () => {
+    expectProblem(parse(v1({ wallpaper: { kind: 'style', variant: 'mesh' } })), 'wallpaper-kind')
+  })
+
+  it('does not accept v2 attribution URLs in a v1 file (strict version shape)', () => {
+    expectProblem(parse(v1({ attribution: { title: 'Dunes', creatorUrl: 'https://example.com/u' } })), 'unknown-field')
+  })
+
+  it('imports the exact v2 style wallpaper shape and rejects malformed variants', () => {
+    const parsed = expectOk(parsePresetText(JSON.stringify(stylePreset), { catalogIds: CATALOG_IDS }))
+    expect(parsed.schemaVersion).toBe(2)
+    expect(parsed.wallpaper).toEqual({ kind: 'style', variant: 'mesh' })
+
+    expectProblem(parse({ ...stylePreset, wallpaper: { kind: 'style', variant: 'grid' } }), 'wallpaper-variant')
+    expectProblem(parse({ ...stylePreset, wallpaper: { kind: 'style' } }), 'wallpaper-variant')
+    expectProblem(parse({ ...stylePreset, wallpaper: { kind: 'style', variant: 'mesh', css: 'x' } }), 'unknown-field')
+    expectProblem(parse({ ...stylePreset, wallpaper: { kind: 'style', variant: 1 } }), 'wallpaper-variant')
+    expectProblem(parse({ ...stylePreset, wallpaper: { kind: 'nope' } }), 'wallpaper-kind')
+  })
+
+  it('exports a style selection as preset v2 and round-trips it', () => {
+    const result = exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      pluginVersion: VERSION,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.preset.schemaVersion).toBe(2)
+    expect(result.preset.wallpaper).toEqual({ kind: 'style', variant: 'mesh' })
+    const roundTrip = expectOk(parsePresetText(result.json, { catalogIds: CATALOG_IDS }))
+    expect(roundTrip).toEqual(result.preset)
+  })
+
+  it('reports style-unavailable when style is selected without a catalog livery/tokens', () => {
+    for (const styleId of [undefined, '', STOCK_ID]) {
+      expect(exportPreset({
+        styleId,
+        selection: { kind: 'style', variant: 'mesh' },
+        effects: effects(),
+        position: { x: 50, y: 50 },
+        pluginVersion: VERSION,
+      })).toEqual({ ok: false, problem: 'style-unavailable' })
+    }
+    // A degraded catalog (no tokens) is reported explicitly too.
+    expect(exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      styleAvailable: false,
+      pluginVersion: VERSION,
+    })).toEqual({ ok: false, problem: 'style-unavailable' })
+    expect(exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      styleAvailable: true,
+      pluginVersion: VERSION,
+    }).ok).toBe(true)
+  })
+
+  it('accepts and preserves v2 attribution URLs under https/public-host rules', () => {
+    const attribution = {
+      title: 'Dunes',
+      creator: 'A. Photographer',
+      creatorUrl: 'https://example.com/u/a',
+      license: 'CC0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      source: 'Example',
+      sourceUrl: 'https://example.com/i/1',
+    }
+    const parsed = expectOk(parsePresetText(JSON.stringify(makePreset({
+      wallpaper: { kind: 'remote', url: 'https://images.example.com/a.jpg' },
+      attribution,
+    })), { catalogIds: CATALOG_IDS }))
+    expect(parsed.attribution).toEqual(attribution)
+
+    // Non-portable URL fields fail the import with the attribution problem and a
+    // detail naming the field (never silently dropped on import).
+    for (const creatorUrl of [
+      'http://example.com/u',
+      'https://localhost/u',
+      'https://192.168.1.1/u',
+      'https://printer/u',
+      'https://user:pw@example.com/u',
+      'not-a-url',
+    ]) {
+      const result = parse({ ...makePreset(), attribution: { creatorUrl } })
+      expect(result.ok, creatorUrl).toBe(false)
+      if (!result.ok) {
+        expect(result.problem).toBe('attribution')
+        expect(result.detail).toBe('attribution.creatorUrl')
+      }
+    }
+    expectProblem(parse({ ...makePreset(), attribution: { licenseUrl: 42 } }), 'attribution')
+    expectProblem(parse({ ...makePreset(), attribution: { sourceUrl: 'https://example.com/x', extra: 'y' } }), 'unknown-field')
+  })
+
+  it('drops unportable attribution URLs on export instead of failing it', () => {
+    const result = exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'remote', url: 'https://images.example.com/a.jpg' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      attribution: {
+        title: 'Dunes',
+        creatorUrl: 'http://insecure.example/u',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      },
+      pluginVersion: VERSION,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.preset.attribution).toEqual({
+      title: 'Dunes',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    })
+  })
+
+  it('falls back to the selection provenance when the caller passes no attribution', () => {
+    const provenance = {
+      providerId: 'openverse',
+      title: 'Dunes',
+      creator: 'Ann',
+      creatorUrl: 'https://example.com/u/ann',
+      license: 'CC0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      source: 'Example',
+      sourceUrl: 'https://example.com/i/1',
+    }
+    const result = exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'remote', url: 'https://images.example.com/a.jpg', provenance },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      pluginVersion: VERSION,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    // providerId is not part of the portable preset attribution shape.
+    const { providerId: _providerId, ...portableAttribution } = provenance
+    expect(result.preset.attribution).toEqual(portableAttribution)
+    expect(attributionFromProvenance(provenance)).toEqual(portableAttribution)
+    expect(attributionFromProvenance(undefined)).toBeUndefined()
+  })
+
+  it('rejects a v2 file with a foreign producer and reports v2 as the downgrade boundary', () => {
+    // 0.2.1 rejects this exact document with its own `schema-version` guard
+    // (`schemaVersion !== 1`), so the downgrade limitation is data-preserving.
+    const exported = exportPreset({
+      styleId: 'fjord',
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      pluginVersion: VERSION,
+    })
+    expect(exported.ok).toBe(true)
+    if (!exported.ok) return
+    expect(JSON.parse(exported.json).schemaVersion).toBe(2)
+    expectProblem(parsePresetText(JSON.stringify({ ...JSON.parse(exported.json), createdWith: 'other/1.0.0' }), {
+      catalogIds: CATALOG_IDS,
+    }), 'created-with')
+  })
+})
+
+describe('preset v2 style diff/apply helpers', () => {
+  const stylePreset = makePreset({ schemaVersion: 2, wallpaper: { kind: 'style', variant: 'mesh' } })
+
+  it('represents a live style selection in the current/diff view', () => {
+    const current = currentPresetOf({
+      styleId: 'fjord',
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    })
+    expect(current.wallpaper).toEqual({ kind: 'style', variant: 'mesh' })
+    expect(diffPreset(current, stylePreset)).toEqual({ changed: false, changes: [] })
+
+    const image = currentPresetOf({
+      styleId: 'fjord',
+      selection: { kind: 'builtin', id: 'aurora' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    })
+    const diff = diffPreset(image, stylePreset)
+    expect(diff.changed).toBe(true)
+    expect(diff.changes[0]).toEqual({
+      field: 'wallpaper',
+      from: { kind: 'builtin', id: 'aurora' },
+      to: { kind: 'style', variant: 'mesh' },
+    })
+    expect(sameWallpaperView({ kind: 'style', variant: 'mesh' }, { kind: 'style', variant: 'mesh' })).toBe(true)
+    expect(sameWallpaperView({ kind: 'style', variant: 'mesh' }, { kind: 'builtin', id: 'aurora' })).toBe(false)
+  })
+
+  it('normalizes attribution URLs in the live diff view', () => {
+    const withLinks = currentPresetOf({
+      styleId: 'fjord',
+      selection: { kind: 'remote', url: 'https://images.example.com/a.jpg' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+      attribution: {
+        title: 'Dunes',
+        creatorUrl: 'https://example.com/u/ann',
+        licenseUrl: 'http://insecure.example/license',
+      },
+    })
+    expect(withLinks.attribution).toEqual({ title: 'Dunes', creatorUrl: 'https://example.com/u/ann' })
+    expect(sameAttribution(withLinks.attribution, { title: 'Dunes' })).toBe(false)
+    expect(sameAttribution({ title: 'Dunes', creatorUrl: 'https://example.com/u/ann' }, withLinks.attribution)).toBe(true)
+  })
+
+  it('carries style through the batch target and success comparison', () => {
+    const target = presetWallpaperTarget(stylePreset)
+    expect(target.selection).toEqual({ kind: 'style', variant: 'mesh' })
+    expect(matchesPresetWallpaperState({
+      selection: { kind: 'style', variant: 'mesh' },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    }, target)).toBe(true)
+    expect(matchesPresetWallpaperState({
+      selection: undefined,
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    }, target)).toBe(false)
+  })
+
+  it('applies a style preset through the same batch port (applied success)', async () => {
+    const applied: unknown[] = []
+    const result = await applyPreset(stylePreset, {
+      applyStyle: async () => ({ ok: true }),
+      applyWallpaper(target) { applied.push(target); return true },
+    })
+    expect(result).toEqual({ status: 'applied' })
+    expect(applied).toEqual([presetWallpaperTarget(stylePreset)])
   })
 })

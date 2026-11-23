@@ -7,9 +7,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   BUILTIN_WALLPAPERS,
   BUILTIN_WALLPAPER_IDS,
+  CLASSIC_BUILTIN_IDS,
   DEFAULT_WALLPAPER_EFFECTS,
   DEFAULT_WALLPAPER_POSITION,
   MAX_WALLPAPER_URL_LENGTH,
+  VISIBLE_BUILTIN_IDS,
   WALLPAPER_POSITION_OPTIONS,
   WALLPAPER_POSITION_VALUES,
   WALLPAPER_SIDEBAR_TINT_TOKEN,
@@ -19,18 +21,23 @@ import {
   backgroundImageValue,
   backgroundPositionValue,
   buildWallpaperCss,
+  builtinGalleryVisibility,
+  canRepositionWallpaper,
   clampEffects,
   cssUrlValue,
   isBuiltinWallpaperId,
+  isClassicBuiltinId,
+  isVisibleBuiltinId,
+  normalizeWallpaperProvenance,
+  normalizeWallpaperProvenanceUrl,
+  normalizeWallpaperSelection,
+  pinnedClassicBuiltinId,
+  provenanceOfSelection,
+  sameWallpaperProvenance,
   normalizeWallpaperPosition,
   normalizeWallpaperRevision,
-  openverseUrl,
-  parseOpenverseResults,
-  parsePicsumResults,
   parseStoredWallpaper,
   parseWallpaperState,
-  picsumListUrl,
-  requestWallpaperResults,
   serializeWallpaper,
   serializeWallpaperState,
   toStoredWallpaper,
@@ -145,6 +152,225 @@ describe('wallpaper persistence schema', () => {
     }
     expect(isBuiltinWallpaperId('nope')).toBe(false)
     expect(backgroundImageValue(undefined)).toBeUndefined()
+  })
+})
+
+describe('built-in visibility (0.2.2)', () => {
+  it('exposes exactly the 8 curated ids in the frozen order', () => {
+    expect(VISIBLE_BUILTIN_IDS).toEqual(['paper', 'ink', 'aurora', 'cyber', 'dusk', 'minimal', 'mono', 'sand'])
+    expect(new Set(VISIBLE_BUILTIN_IDS).size).toBe(8)
+    for (const id of VISIBLE_BUILTIN_IDS) {
+      expect(isVisibleBuiltinId(id)).toBe(true)
+      expect(isClassicBuiltinId(id)).toBe(false)
+      expect(isBuiltinWallpaperId(id)).toBe(true)
+    }
+  })
+
+  it('keeps the remaining 16 in catalog order without remapping any id', () => {
+    expect(CLASSIC_BUILTIN_IDS).toEqual([
+      'mist', 'ember', 'sea', 'forest', 'desert', 'ocean', 'sky', 'snow',
+      'bloom', 'neon', 'retro', 'rose', 'violet', 'midnight', 'sunrise', 'glacier',
+    ])
+    expect(VISIBLE_BUILTIN_IDS.length + CLASSIC_BUILTIN_IDS.length).toBe(24)
+    const partition = [...VISIBLE_BUILTIN_IDS, ...CLASSIC_BUILTIN_IDS].sort()
+    expect(partition).toEqual([...BUILTIN_WALLPAPER_IDS].sort())
+    // Classic ids preserve their relative order from the catalog list.
+    const catalogClassic = BUILTIN_WALLPAPER_IDS.filter(id => !(VISIBLE_BUILTIN_IDS as readonly string[]).includes(id))
+    expect(CLASSIC_BUILTIN_IDS).toEqual(catalogClassic)
+    for (const id of CLASSIC_BUILTIN_IDS) {
+      expect(isClassicBuiltinId(id)).toBe(true)
+      expect(isVisibleBuiltinId(id)).toBe(false)
+    }
+    expect(isClassicBuiltinId('nope')).toBe(false)
+    expect(isVisibleBuiltinId('mist')).toBe(false)
+  })
+
+  it('keeps all 24 ids and CSS bytes unchanged (no design remap)', () => {
+    expect(BUILTIN_WALLPAPER_IDS).toHaveLength(24)
+    // The exact catalog payload is pinned so no id/CSS can silently change in a
+    // refactor that only touches visibility.
+    expect(JSON.stringify(Object.fromEntries(BUILTIN_WALLPAPER_IDS.map(id => [id, BUILTIN_WALLPAPERS[id]]))))
+      .toMatchInlineSnapshot(`"{"aurora":"radial-gradient(120% 130% at 8% 0%, #5eead4 0%, transparent 55%), radial-gradient(110% 130% at 92% 12%, #818cf8 0%, transparent 60%), linear-gradient(160deg, #0b1026 0%, #111a3a 100%)","dusk":"linear-gradient(160deg, #2d1b3d 0%, #6b2d5c 48%, #e07a5f 100%)","mist":"linear-gradient(180deg, #e8eef2 0%, #c9d6dd 55%, #9fb3bd 100%)","paper":"repeating-linear-gradient(0deg, #f6f1e7 0 22px, #efe8da 22px 23px)","ink":"radial-gradient(90% 130% at 14% 0%, #3b3b3b 0%, transparent 62%), linear-gradient(180deg, #f2eee6 0%, #d9d2c4 100%)","ember":"radial-gradient(110% 120% at 20% 100%, #f59e0b 0%, transparent 55%), linear-gradient(160deg, #3a0d0d 0%, #7c2d12 58%, #f59e0b 100%)","sea":"linear-gradient(180deg, #0f172a 0%, #0e7490 55%, #67e8f9 100%)","mono":"linear-gradient(160deg, #111111 0%, #333333 50%, #111111 100%)","forest":"radial-gradient(90% 120% at 20% 0%, #14532d 0%, transparent 60%), linear-gradient(170deg, #052e16 0%, #166534 55%, #4ade80 100%)","desert":"linear-gradient(165deg, #78350f 0%, #d97706 45%, #fde68a 100%)","ocean":"radial-gradient(100% 120% at 80% 10%, #0ea5e9 0%, transparent 55%), linear-gradient(180deg, #082f49 0%, #0369a1 55%, #67e8f9 100%)","sky":"linear-gradient(180deg, #38bdf8 0%, #bae6fd 55%, #f0f9ff 100%)","snow":"radial-gradient(80% 90% at 30% 10%, #ffffff 0%, transparent 65%), linear-gradient(170deg, #dbeafe 0%, #e2e8f0 60%, #94a3b8 100%)","bloom":"radial-gradient(60% 70% at 25% 20%, #fbcfe8 0%, transparent 60%), radial-gradient(60% 70% at 80% 75%, #fde68a 0%, transparent 60%), linear-gradient(150deg, #831843 0%, #be185d 60%, #fb7185 100%)","neon":"linear-gradient(120deg, #0f172a 0%, #4c1d95 40%, #db2777 70%, #22d3ee 100%)","cyber":"repeating-linear-gradient(90deg, #0b1026 0 14px, #111a3a 14px 28px), radial-gradient(80% 100% at 50% 120%, #22d3ee 0%, transparent 60%)","retro":"linear-gradient(160deg, #7c2d12 0%, #c2410c 35%, #fbbf24 70%, #fde68a 100%)","sand":"linear-gradient(170deg, #d6c3a5 0%, #e7d7bd 50%, #b49a72 100%)","rose":"linear-gradient(160deg, #4c0519 0%, #9f1239 45%, #fda4af 100%)","violet":"radial-gradient(90% 120% at 15% 10%, #7c3aed 0%, transparent 60%), linear-gradient(170deg, #1e1b4b 0%, #4c1d95 55%, #c4b5fd 100%)","midnight":"linear-gradient(180deg, #020617 0%, #0f172a 55%, #1e293b 100%)","sunrise":"radial-gradient(80% 100% at 80% 100%, #f97316 0%, transparent 60%), linear-gradient(180deg, #1e1b4b 0%, #7c2d12 45%, #fbbf24 100%)","glacier":"radial-gradient(90% 110% at 25% 0%, #e0f2fe 0%, transparent 60%), linear-gradient(170deg, #0f172a 0%, #0369a1 50%, #7dd3fc 100%)","minimal":"linear-gradient(160deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)"}"`)
+  })
+
+  it('hydrates and renders every one of the 24 built-ins', () => {
+    for (const id of BUILTIN_WALLPAPER_IDS) {
+      const stored = serializeWallpaperState({ kind: 'builtin', id }, DEFAULT_WALLPAPER_EFFECTS)
+      expect(parseWallpaperState(stored)?.selection).toEqual({ kind: 'builtin', id })
+      expect(backgroundImageValue({ kind: 'builtin', id })).toBe(BUILTIN_WALLPAPERS[id])
+    }
+  })
+
+  it('decides the pinned-legacy swatch from the current selection only', () => {
+    expect(pinnedClassicBuiltinId(undefined)).toBeUndefined()
+    expect(pinnedClassicBuiltinId({ kind: 'builtin', id: 'sand' })).toBeUndefined()
+    expect(pinnedClassicBuiltinId({ kind: 'builtin', id: 'mist' })).toBe('mist')
+    expect(pinnedClassicBuiltinId({ kind: 'builtin', id: 'glacier' })).toBe('glacier')
+    expect(pinnedClassicBuiltinId({ kind: 'remote', url: 'https://example.com/a.jpg' })).toBeUndefined()
+    expect(pinnedClassicBuiltinId({ kind: 'upload', key: 'upload-1-a' })).toBeUndefined()
+    expect(pinnedClassicBuiltinId({ kind: 'style', variant: 'mesh' })).toBeUndefined()
+  })
+
+  it('groups the gallery without duplicating the pinned Classic id', () => {
+    const plain = builtinGalleryVisibility(undefined)
+    expect(plain.pinnedClassic).toBeUndefined()
+    expect(plain.visible).toEqual([...VISIBLE_BUILTIN_IDS])
+    expect(plain.classic).toEqual([...CLASSIC_BUILTIN_IDS])
+
+    const pinned = builtinGalleryVisibility({ kind: 'builtin', id: 'forest' })
+    expect(pinned.pinnedClassic).toBe('forest')
+    expect(pinned.visible).toEqual([...VISIBLE_BUILTIN_IDS])
+    expect(pinned.classic).toHaveLength(15)
+    expect(pinned.classic).not.toContain('forest')
+    const allIds = [...pinned.visible, ...pinned.classic, pinned.pinnedClassic]
+    expect(new Set(allIds).size).toBe(24)
+  })
+})
+
+describe('wallpaper provenance', () => {
+  const provenance = {
+    providerId: 'openverse',
+    title: 'Quiet sea',
+    creator: 'A. Photographer',
+    creatorUrl: 'https://openverse.org/u/a',
+    license: 'CC0',
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    source: 'Openverse',
+    sourceUrl: 'https://openverse.org/i/1',
+  } as const
+
+  it('normalizes valid provenance and trims display text', () => {
+    expect(normalizeWallpaperProvenance({ ...provenance, title: '  Quiet sea  ' })).toEqual(provenance)
+    expect(normalizeWallpaperProvenance({ title: 'Only text' })).toEqual({ title: 'Only text' })
+    expect(normalizeWallpaperProvenance({ creatorUrl: 'https://EXAMPLE.com/u/a' })).toEqual({
+      creatorUrl: 'https://example.com/u/a',
+    })
+  })
+
+  it('rejects non-objects/empty records and drops unusable fields', () => {
+    expect(normalizeWallpaperProvenance(undefined)).toBeUndefined()
+    expect(normalizeWallpaperProvenance(null)).toBeUndefined()
+    expect(normalizeWallpaperProvenance('credit')).toBeUndefined()
+    expect(normalizeWallpaperProvenance({})).toBeUndefined()
+    expect(normalizeWallpaperProvenance({ title: 'x'.repeat(201) })).toBeUndefined()
+    expect(normalizeWallpaperProvenance({ providerId: 'p'.repeat(65) })).toBeUndefined()
+    expect(normalizeWallpaperProvenance({ title: 'bad\u0000title' })).toBeUndefined()
+    // Invalid URLs are dropped individually; the rest of the credit survives.
+    expect(normalizeWallpaperProvenance({
+      title: 'Dunes',
+      creatorUrl: 'http://example.com/a',
+      licenseUrl: 'https://localhost/a',
+      sourceUrl: 'not-a-url',
+    })).toEqual({ title: 'Dunes' })
+  })
+
+  it('requires https, public-host, bounded provenance URLs', () => {
+    for (const url of [
+      'http://example.com/a.jpg',
+      'https://localhost/a.jpg',
+      'https://127.0.0.1/a.jpg',
+      'https://192.168.1.1/a.jpg',
+      'https://printer/a.jpg',
+      'https://user:pw@example.com/a.jpg',
+      `https://example.com/${'a'.repeat(MAX_WALLPAPER_URL_LENGTH)}.jpg`,
+      'javascript:alert(1)',
+    ]) {
+      expect(normalizeWallpaperProvenanceUrl(url), url).toBeUndefined()
+    }
+    expect(normalizeWallpaperProvenanceUrl('https://cdn.example.com/a.jpg')).toBe('https://cdn.example.com/a.jpg')
+  })
+
+  it('compares normalized provenance structurally', () => {
+    expect(sameWallpaperProvenance(undefined, undefined)).toBe(true)
+    expect(sameWallpaperProvenance(undefined, {})).toBe(false)
+    expect(sameWallpaperProvenance(provenance, { ...provenance })).toBe(true)
+    expect(sameWallpaperProvenance(provenance, { ...provenance, creator: 'Other' })).toBe(false)
+  })
+
+  it('exposes provenance only for remote selections', () => {
+    expect(provenanceOfSelection({ kind: 'remote', url: 'https://example.com/a.jpg', provenance })).toEqual(provenance)
+    expect(provenanceOfSelection({ kind: 'remote', url: 'https://example.com/a.jpg' })).toBeUndefined()
+    expect(provenanceOfSelection({ kind: 'builtin', id: 'mist' })).toBeUndefined()
+    expect(provenanceOfSelection({ kind: 'upload', key: 'upload-1-a' })).toBeUndefined()
+    expect(provenanceOfSelection({ kind: 'style', variant: 'mesh' })).toBeUndefined()
+    expect(provenanceOfSelection(undefined)).toBeUndefined()
+  })
+
+  it('sanitizes remote selection provenance before it enters state', () => {
+    expect(normalizeWallpaperSelection({
+      kind: 'remote',
+      url: 'https://example.com/a.jpg',
+      provenance: { title: 'Dunes', creatorUrl: 'https://example.com/u' },
+    })).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg', provenance: { title: 'Dunes', creatorUrl: 'https://example.com/u' } })
+    // An entirely invalid provenance record is dropped, the image stays.
+    expect(normalizeWallpaperSelection({
+      kind: 'remote',
+      url: 'https://example.com/a.jpg',
+      provenance: { creatorUrl: 'http://insecure.example/u' },
+    })).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg' })
+    expect(normalizeWallpaperSelection({ kind: 'builtin', id: 'mist' })).toEqual({ kind: 'builtin', id: 'mist' })
+    expect(normalizeWallpaperSelection(undefined)).toBeUndefined()
+    // Defensive: an unknown style variant never enters state.
+    expect(normalizeWallpaperSelection({ kind: 'style', variant: 'grid' } as never)).toBeUndefined()
+    expect(normalizeWallpaperSelection({ kind: 'style', variant: 'mesh' })).toEqual({ kind: 'style', variant: 'mesh' })
+  })
+
+  it('round-trips provenance through the main remote selection', () => {
+    const stored = serializeWallpaperState(
+      { kind: 'remote', url: 'https://example.com/a.jpg', provenance },
+      DEFAULT_WALLPAPER_EFFECTS,
+    )
+    expect(stored.selection).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg', provenance })
+    expect(parseWallpaperState(stored)).toEqual({
+      revision: 0,
+      selection: { kind: 'remote', url: 'https://example.com/a.jpg', provenance },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: DEFAULT_WALLPAPER_POSITION,
+    })
+  })
+
+  it('drops invalid URLs on write while keeping the image and text credit', () => {
+    const stored = serializeWallpaperState(
+      {
+        kind: 'remote',
+        url: 'https://example.com/a.jpg',
+        provenance: { title: 'Dunes', creator: 'Ann', creatorUrl: 'http://insecure.example/u' },
+      },
+      DEFAULT_WALLPAPER_EFFECTS,
+    )
+    expect(stored.selection).toEqual({
+      kind: 'remote',
+      url: 'https://example.com/a.jpg',
+      provenance: { title: 'Dunes', creator: 'Ann' },
+    })
+  })
+
+  it('survives a 0.2.1-shaped rewrite that drops provenance but keeps the image', () => {
+    // 0.2.1 ignores the unknown `provenance` member on read and rebuilds a
+    // compact remote selection on its next write.
+    const rewritten = { schemaVersion: 2, revision: 3, selection: { kind: 'remote', url: 'https://example.com/a.jpg' }, effects: DEFAULT_WALLPAPER_EFFECTS, position: DEFAULT_WALLPAPER_POSITION }
+    const parsed = parseWallpaperState(rewritten)
+    expect(parsed?.selection).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg' })
+    // The cached image still renders (remote CSS always comes from the verified local URL).
+    expect(buildWallpaperCss({
+      selection: parsed!.selection,
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      imageOverride: 'blob:cached',
+    })).toContain("url('blob:cached')")
+  })
+
+  it('carries provenance through controller state and persistence', () => {
+    const storage = new MemoryStorage()
+    const controller = createWallpaperController({ storage, document: fakeDoc() as never })
+    controller.start()
+    controller.setSelection({ kind: 'remote', url: 'https://example.com/a.jpg', provenance })
+    const selection = controller.getSnapshot().selection
+    expect(selection).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg', provenance })
+    expect(controller.flushState()).toBe(true)
+    const raw = JSON.parse(storage.getItem(WALLPAPER_STORAGE_KEY) ?? 'null')
+    expect(raw.selection.provenance).toEqual(provenance)
+    expect(controller.getPersistedSelection()).toEqual({ kind: 'remote', url: 'https://example.com/a.jpg', provenance })
+    controller.dispose()
   })
 })
 
@@ -325,8 +551,17 @@ describe('wallpaper stylesheet builder', () => {
 
     expect(backgroundPositionValue(undefined, { x: 0, y: 0 })).toBe('center')
     expect(backgroundPositionValue({ kind: 'builtin', id: 'ocean' }, { x: 0, y: 0 })).toBe('center')
+    // The generated style layer is a fixed recipe: always centered.
+    expect(backgroundPositionValue({ kind: 'style', variant: 'mesh' }, { x: 100, y: 100 })).toBe('center')
     expect(backgroundPositionValue({ kind: 'remote', url: 'https://example.com/w.jpg' })).toBe('50% 50%')
     expect(backgroundPositionValue({ kind: 'upload', key: 'upload-1-abc' }, { x: 0, y: 0 })).toBe('0% 0%')
+
+    // Repositioning applies to real images only.
+    expect(canRepositionWallpaper({ kind: 'remote', url: 'https://example.com/w.jpg' })).toBe(true)
+    expect(canRepositionWallpaper({ kind: 'upload', key: 'upload-1-abc' })).toBe(true)
+    expect(canRepositionWallpaper({ kind: 'builtin', id: 'ocean' })).toBe(false)
+    expect(canRepositionWallpaper({ kind: 'style', variant: 'mesh' })).toBe(false)
+    expect(canRepositionWallpaper(undefined)).toBe(false)
   })
 
   it('escapes remote URLs inside single-quoted url()', () => {
@@ -465,72 +700,6 @@ describe('wallpaper stylesheet builder', () => {
       tokens: { light: {}, dark: {}, frost: 35 },
     })
     expect(css).not.toContain('color-mix')
-  })
-})
-
-describe('remote wallpaper mapping', () => {
-  it('builds the documented Openverse and Picsum URLs', () => {
-    const url = new URL(openverseUrl('quiet sea', 2))
-    expect(url.origin + url.pathname).toBe('https://api.openverse.org/v1/images/')
-    expect(url.searchParams.get('q')).toBe('quiet sea')
-    expect(url.searchParams.get('license')).toBe('cc0,pdm')
-    expect(url.searchParams.get('page_size')).toBe('12')
-    expect(url.searchParams.get('page')).toBe('2')
-    expect(picsumListUrl(3)).toBe('https://picsum.photos/v2/list?page=3&limit=12')
-  })
-
-  it('maps Openverse rows, filtering non-https and malformed entries', () => {
-    const results = parseOpenverseResults({
-      results: [
-        { id: 'a', url: 'https://cdn.example/a.jpg', thumbnail: 'https://cdn.example/a-small.jpg', title: 'Sea', creator: 'Ann', license: 'cc0' },
-        { id: 'b', url: 'http://insecure.example/b.jpg', title: 'Bad' },
-        { url: 'https://cdn.example/c.jpg' },
-        { id: 7 },
-      ],
-    })
-    expect(results).toHaveLength(2)
-    expect(results[0]).toMatchObject({ id: 'a', source: 'openverse.org', license: 'cc0', creator: 'Ann' })
-    expect(results[1]).toMatchObject({ id: 'https://cdn.example/c.jpg', title: 'Openverse image', thumbnail: 'https://cdn.example/c.jpg' })
-    expect(parseOpenverseResults({})).toEqual([])
-    expect(parseOpenverseResults(null)).toEqual([])
-  })
-
-  it('maps Picsum rows to 1600x900 renders', () => {
-    const results = parsePicsumResults([{ id: '10', author: 'Ann' }, { bad: true }])
-    expect(results).toHaveLength(1)
-    expect(results[0]).toEqual({
-      id: '10',
-      url: 'https://picsum.photos/id/10/1600/900',
-      thumbnail: 'https://picsum.photos/id/10/400/225',
-      title: 'Picsum #10',
-      creator: 'Ann',
-      license: 'Picsum',
-      source: 'picsum.photos',
-    })
-    expect(parsePicsumResults({})).toEqual([])
-  })
-})
-
-describe('user-initiated wallpaper requests', () => {
-  it('returns mapped results for a successful Openverse search', async () => {
-    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
-      expect(String(input)).toContain('q=sea')
-      return new Response(JSON.stringify({ results: [{ id: 'x', url: 'https://cdn.example/x.jpg' }] }), { status: 200 })
-    })
-    const outcome = await requestWallpaperResults({ source: 'openverse', query: 'sea' }, fetchImpl as unknown as typeof fetch)
-    expect(outcome.ok).toBe(true)
-    if (outcome.ok) expect(outcome.results[0]?.url).toBe('https://cdn.example/x.jpg')
-  })
-
-  it('maps non-ok responses to an error and thrown requests to offline', async () => {
-    const failing = vi.fn(async () => new Response('nope', { status: 500 }))
-    expect(await requestWallpaperResults({ source: 'picsum' }, failing as unknown as typeof fetch))
-      .toEqual({ ok: false, reason: 'error' })
-    const throwing = vi.fn(async () => { throw new TypeError('offline') })
-    expect(await requestWallpaperResults({ source: 'openverse', query: 'x' }, throwing as unknown as typeof fetch))
-      .toEqual({ ok: false, reason: 'offline' })
-    vi.stubGlobal('fetch', undefined)
-    expect(await requestWallpaperResults({ source: 'picsum' })).toEqual({ ok: false, reason: 'offline' })
   })
 })
 

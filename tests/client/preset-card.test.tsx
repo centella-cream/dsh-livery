@@ -174,6 +174,37 @@ describe('preset card — import diff preview', () => {
     expect(markup).not.toContain('data-testid="preset-diff-row"')
   })
 
+  it('renders the v2 Follow style wallpaper and its changed attribution links', () => {
+    const markup = render({
+      currentAttribution: { title: 'Current credit' },
+      initialPreset: makePreset({
+        schemaVersion: 2,
+        styleId: 'fjord',
+        wallpaper: { kind: 'style', variant: 'mesh' },
+        effects: { ...DEFAULT_WALLPAPER_EFFECTS },
+        position: { x: 50, y: 50 },
+        attribution: {
+          source: 'Openverse',
+          sourceUrl: 'https://openverse.org/image/1',
+          licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+        },
+      }),
+    })
+    expect(markup).toContain('data-field="wallpaper"')
+    expect(markup).toContain('Follow style')
+    expect(markup).toContain('data-field="attribution"')
+    expect(markup).toContain('Current credit')
+    expect(markup).not.toContain('!preset.')
+  })
+
+  it('names a credit that only carries v2 attribution links by its hostname', () => {
+    const markup = render({
+      currentAttribution: { sourceUrl: 'https://openverse.org/image/1' },
+      initialPreset: makePreset({ attribution: undefined }),
+    })
+    expect(markup).toContain('Credit link: openverse.org')
+  })
+
   it('renders a remote wallpaper hostname and the credit change', () => {
     const markup = render({
       currentAttribution: { title: 'Dunes' },
@@ -223,6 +254,20 @@ describe('preset card — stable error region and ARIA', () => {
     expect(markup).toContain('Uploaded images stay on this device')
   })
 
+  it('wires the unsupported style-variant import error', () => {
+    const error: PresetCardError = { kind: 'import', code: 'wallpaper-variant' }
+    const markup = render({ initialError: error })
+    expectErrorWiring(markup, 'preset-import', error)
+    expect(markup).toContain('unsupported style wallpaper variant')
+  })
+
+  it('wires the style-unavailable export error', () => {
+    const error: PresetCardError = { kind: 'export', code: 'style-unavailable' }
+    const markup = render({ initialError: error })
+    expectErrorWiring(markup, 'preset-export', error)
+    expect(markup).toContain('Follow style wallpaper needs an applied visual style')
+  })
+
   it('wires a copy failure to the export control', () => {
     const error: PresetCardError = { kind: 'copy', code: 'clipboard' }
     const markup = render({ initialError: error })
@@ -268,9 +313,9 @@ describe('preset card — i18n key coverage', () => {
     'unreadable', 'too-large', 'invalid-json', 'not-object', 'schema-version',
     'created-with', 'unknown-field', 'style-id', 'unknown-style',
     'catalog-unavailable', 'wallpaper-kind', 'wallpaper-id', 'wallpaper-url',
-    'effects', 'position', 'attribution', 'forbidden-content',
+    'wallpaper-variant', 'effects', 'position', 'attribution', 'forbidden-content',
   ]
-  const exportProblems = ['upload', 'invalid-url', 'invalid-wallpaper', 'invalid-style', 'invalid-version'] as const
+  const exportProblems = ['upload', 'invalid-url', 'invalid-wallpaper', 'invalid-style', 'invalid-version', 'style-unavailable'] as const
   const applyProblems = ['refused', 'transport', 'unknown', 'unavailable', 'busy', 'wallpaper'] as const
 
   function expectKey(key: LiveryKey): void {

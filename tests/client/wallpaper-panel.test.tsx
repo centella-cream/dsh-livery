@@ -24,13 +24,22 @@ import { LiveryPanelPage } from '../../src/client/LiveryPanelPage.js'
 import type { LiveryPanelPageProps } from '../../src/client/platform.js'
 import { LiveryWorkspace } from '../../src/client/ui/LiveryWorkspace.js'
 import type { LiveryWorkspaceProps } from '../../src/client/ui/LiveryWorkspace.js'
-import { WallpaperPanel } from '../../src/client/ui/WallpaperPanel.js'
-import { createAutoRandomLoader } from '../../src/client/ui/online-auto.js'
+import { STYLE_DISABLED_REASON_ID, WallpaperPanel, sourceTabForKeyboard } from '../../src/client/ui/WallpaperPanel.js'
+import { createOnlineStudio } from '../../src/client/ui/wallpaper-online.js'
+import type { OnlineStudio } from '../../src/client/ui/wallpaper-online.js'
 import { RECENT_WALLPAPER_KEY } from '../../src/client/wallpaper/history.js'
 import type { WallpaperPanelProps } from '../../src/client/ui/WallpaperPanel.js'
 import type { LiveryRuntimeApi, LiveryRuntimeSnapshot } from '../../src/client/model.js'
 import { createInitialSnapshot } from '../../src/client/model.js'
-import { BUILTIN_WALLPAPER_IDS, DEFAULT_WALLPAPER_EFFECTS, WALLPAPER_STORAGE_KEY } from '../../src/client/wallpaper.js'
+import {
+  BUILTIN_WALLPAPER_IDS,
+  CLASSIC_BUILTIN_IDS,
+  DEFAULT_WALLPAPER_EFFECTS,
+  VISIBLE_BUILTIN_IDS,
+  WALLPAPER_STORAGE_KEY,
+} from '../../src/client/wallpaper.js'
+import type { TokenMap } from '../../src/core/types.js'
+import type { OnlinePageFailure, OnlinePageOk, WallpaperProviderResult } from '../../src/client/wallpaper/providers.js'
 import { createWallpaperController, setWallpaperController } from '../../src/client/wallpaper/controller.js'
 import { rememberedPageTab, rememberPageTab, resetRememberedPageTab } from '../../src/client/ui/tabs.js'
 import type { WallpaperStorage } from '../../src/client/wallpaper/controller.js'
@@ -46,6 +55,7 @@ const IDENTITY = {
 
 type Dict = Record<string, string>
 type Translate = (key: string, params?: Record<string, unknown>) => string
+type OnlinePageOutcome = OnlinePageOk | OnlinePageFailure
 
 function translate(dict: Dict): Translate {
   return (key: string, params?: Record<string, unknown>): string => {
@@ -105,8 +115,70 @@ function fakeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
   }
 }
 
-function renderPanel(dict: Dict = enUS as unknown as Dict, snapshot: LiveryRuntimeSnapshot = READY): string {
-  const props = { t: translate(dict), snapshot } as unknown as WallpaperPanelProps
+/** Light/dark token maps with every style-wallpaper recipe token present. */
+const LIGHT_TOKENS: TokenMap = {
+  '--dsw-alias-brand-primary': '#b46000',
+  '--dsw-alias-bg-layer-3': '#ededed',
+  '--dsw-alias-bg-base': '#fafafa',
+  '--dsw-alias-bg-layer-2': '#f5f5f5',
+}
+const DARK_TOKENS: TokenMap = {
+  '--dsw-alias-brand-primary': '#ffcc66',
+  '--dsw-alias-bg-layer-3': '#2a2a2a',
+  '--dsw-alias-bg-base': '#0b0e14',
+  '--dsw-alias-bg-layer-2': '#11151d',
+}
+/** Snapshot with a non-stock applied livery but no catalog tokens yet. */
+const NO_TOKENS: LiveryRuntimeSnapshot = {
+  ...READY,
+  catalog: undefined,
+  catalogStatus: 'idle',
+  confirmedId: undefined,
+  effectiveId: undefined,
+}
+/** Dark-mode snapshot for the mode-specific style preview. */
+const READY_DARK: LiveryRuntimeSnapshot = { ...READY, themeMode: 'dark' }
+/** Chinese-locale snapshot (provider names follow the runtime locale). */
+const READY_ZH: LiveryRuntimeSnapshot = { ...READY, locale: 'zh' }
+
+/** One online provider result fixture in the frozen registry shape. */
+function resultFixture(patch: Partial<WallpaperProviderResult> = {}): WallpaperProviderResult {
+  return {
+    providerId: 'wikimedia',
+    id: 'file-7',
+    title: 'Harbour at dusk',
+    creator: 'A. Photographer',
+    creatorUrl: 'https://commons.wikimedia.org/wiki/User:A',
+    license: { name: 'CC BY-SA 4.0', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Harbour.jpg',
+    fullUrl: 'https://upload.wikimedia.org/harbour.jpg',
+    thumbUrl: 'https://upload.wikimedia.org/harbour-thumb.jpg',
+    ...patch,
+  }
+}
+
+/** Build an activated studio with one scripted page outcome. */
+async function activatedStudio(
+  outcome: OnlinePageOutcome,
+  options: { readonly provider?: string; readonly query?: string } = {},
+): Promise<OnlineStudio> {
+  const studio = createOnlineStudio({ fetchPage: async () => outcome })
+  if (options.provider !== undefined) studio.setProvider(options.provider)
+  if (options.query !== undefined) studio.setQuery(options.query)
+  await studio.activate()
+  return studio
+}
+
+function renderPanel(
+  dict: Dict = enUS as unknown as Dict,
+  snapshot: LiveryRuntimeSnapshot = READY,
+  options: { readonly onlineStudio?: OnlineStudio } = {},
+): string {
+  const props = {
+    t: translate(dict),
+    snapshot,
+    ...(options.onlineStudio === undefined ? {} : { onlineStudio: options.onlineStudio }),
+  } as unknown as WallpaperPanelProps
   return renderToStaticMarkup(<WallpaperPanel {...props} />)
 }
 
@@ -219,14 +291,172 @@ describe('page tabs', () => {
   })
 })
 
-describe('online auto batch', () => {
-  it('fires exactly one random batch per wallpaper-tab mount', () => {
-    const calls: number[] = []
-    const loader = createAutoRandomLoader(page => calls.push(page), () => 4)
-    loader.trigger()
-    loader.trigger()
-    loader.trigger()
-    expect(calls).toEqual([4])
+describe('online request policy (panel)', () => {
+  it('opens on Built-in with no request state and no network trigger', () => {
+    const html = renderPanel()
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="false"/)
+    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden/)
+    expect(html).toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden=""/)
+    // A request that never ran has no state at all.
+    expect(html).not.toContain('data-testid="wallpaper-status"')
+    expect(html).not.toContain('data-testid="wallpaper-result"')
+    expect(html).not.toContain('data-testid="wallpaper-served-by"')
+    expect(html).not.toContain('data-testid="wallpaper-online-error"')
+  })
+
+  it('renders no state for an idle injected studio', () => {
+    const studio = createOnlineStudio({
+      fetchPage: async () => { throw new Error('a request must not run on mount') },
+    })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(studio.getSnapshot().status).toBe('idle')
+    expect(html).not.toContain('data-testid="wallpaper-status"')
+  })
+
+  it('renders the ready results, served-by provider and result thumbnails only', async () => {
+    const studio = await activatedStudio({ ok: true, results: [resultFixture()], servedBy: 'wikimedia' })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(html).toMatch(/data-testid="wallpaper-status"[^>]*data-status="ready"/)
+    expect(html).toContain('data-testid="wallpaper-served-by"')
+    expect(html).toContain('Served by Wikimedia Commons')
+    expect(html.match(/data-testid="wallpaper-result"/g)).toHaveLength(1)
+    expect(html.match(/data-testid="wallpaper-result-thumb"/g)).toHaveLength(1)
+    expect(html).toContain('data-provider="wikimedia"')
+    expect(html).toContain('data-wallpaper-url="https://upload.wikimedia.org/harbour.jpg"')
+    expect(html).toContain('src="https://upload.wikimedia.org/harbour-thumb.jpg"')
+  })
+
+  it('renders one failure block with Retry and Built-in/None escape links', async () => {
+    const studio = await activatedStudio({
+      ok: false,
+      failure: 'rate-limited',
+      retryAfterMs: 21_000,
+      tried: ['openverse', 'wikimedia'],
+    })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(html).toMatch(/data-testid="wallpaper-status"[^>]*data-status="rate-limited"/)
+    expect(html).toMatch(/data-testid="wallpaper-online-error"[^>]*role="alert"/)
+    expect(html).toContain('data-testid="wallpaper-online-retry"')
+    expect(html).toContain('data-testid="wallpaper-online-builtin"')
+    expect(html).toContain('data-testid="wallpaper-online-none"')
+    expect(html).toContain('data-testid="wallpaper-retry-after"')
+    expect(html).toContain('21 seconds')
+    expect(html).not.toContain('data-testid="wallpaper-result"')
+  })
+
+  it('renders the explicit empty state as settled, not a failure', async () => {
+    const studio = await activatedStudio({ ok: true, results: [], servedBy: 'openverse' })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(html).toMatch(/data-testid="wallpaper-status"[^>]*data-status="empty"/)
+    expect(html).toContain('data-testid="wallpaper-online-empty"')
+    expect(html).not.toContain('data-testid="wallpaper-online-error"')
+    expect(html).not.toContain('data-testid="wallpaper-result"')
+  })
+
+  it('renders a native provider select labelled Source with Auto first', () => {
+    const html = renderPanel()
+    expect(html).toContain('id="wallpaper-provider"')
+    expect(html).toContain('data-testid="wallpaper-provider"')
+    expect(html).toContain('for="wallpaper-provider"')
+    expect(html).toContain('>Source<')
+    expect(html).toContain('data-testid="wallpaper-provider"')
+    const autoIndex = html.indexOf('value="auto"')
+    const openverseIndex = html.indexOf('value="openverse"')
+    const wikimediaIndex = html.indexOf('value="wikimedia"')
+    expect(autoIndex).toBeGreaterThan(-1)
+    expect(autoIndex).toBeLessThan(openverseIndex)
+    expect(openverseIndex).toBeLessThan(wikimediaIndex)
+    expect(html).toContain('>Openverse<')
+    expect(html).toContain('>Wikimedia Commons<')
+  })
+
+  it('disables capability-gated actions and describes the reason', () => {
+    const studio = createOnlineStudio({
+      fetchPage: async () => ({ ok: true, results: [], servedBy: 'openverse' }),
+    })
+    studio.setProvider('openverse')
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    // Openverse declares search but not random; the pinned source gates Random.
+    expect(html).not.toMatch(/data-testid="wallpaper-search-go"[^>]*disabled/)
+    expect(html).toMatch(/data-testid="wallpaper-random"[^>]*disabled/)
+    expect(html).toMatch(/data-testid="wallpaper-random"[^>]*aria-describedby="wallpaper-capability-reason"/)
+    expect(html).toContain('id="wallpaper-capability-reason"')
+    expect(html).toContain('This source has no random images')
+    // Refresh has nothing to repeat before a request runs.
+    expect(html).toMatch(/data-testid="wallpaper-refresh"[^>]*disabled/)
+  })
+
+  it('shows the Openverse non-endorsement notice when Openverse is selected or serves Auto', async () => {
+    // Auto idle: nothing selected or served, so no notice.
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-openverse-notice"')
+
+    // Selected explicitly: always visible, even before a request runs.
+    const selected = createOnlineStudio({
+      fetchPage: async () => ({ ok: true, results: [resultFixture()], servedBy: 'wikimedia' }),
+    })
+    selected.setProvider('openverse')
+    const selectedHtml = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: selected })
+    expect(selectedHtml).toContain('data-testid="wallpaper-openverse-notice"')
+    expect(selectedHtml).toContain('Made using Openverse. Not endorsed or certified by Openverse.')
+
+    // Served by Auto: shown for Openverse ...
+    const servedOpenverse = await activatedStudio({
+      ok: true,
+      results: [resultFixture({ providerId: 'openverse' })],
+      servedBy: 'openverse',
+    })
+    expect(renderPanel(enUS as unknown as Dict, READY, { onlineStudio: servedOpenverse }))
+      .toContain('data-testid="wallpaper-openverse-notice"')
+
+    // ... and not misleadingly for Wikimedia-only Auto results.
+    const servedWikimedia = await activatedStudio({
+      ok: true,
+      results: [resultFixture()],
+      servedBy: 'wikimedia',
+    })
+    expect(renderPanel(enUS as unknown as Dict, READY, { onlineStudio: servedWikimedia }))
+      .not.toContain('data-testid="wallpaper-openverse-notice"')
+  })
+
+  it('localizes the Openverse notice in Chinese', () => {
+    const studio = createOnlineStudio({
+      fetchPage: async () => ({ ok: true, results: [], servedBy: 'openverse' }),
+    })
+    studio.setProvider('openverse')
+    const html = renderPanel(zhCN as unknown as Dict, READY_ZH, { onlineStudio: studio })
+    expect(html).toContain('data-testid="wallpaper-openverse-notice"')
+    expect(html).toContain('使用 Openverse 制作，未获得 Openverse 认可或认证。')
+  })
+
+  it('renders licence-less results as readable but non-selectable', async () => {
+    const studio = await activatedStudio({
+      ok: true,
+      results: [resultFixture({ license: null })],
+      servedBy: 'wikimedia',
+    })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(html).toMatch(/data-testid="wallpaper-result"[^>]*data-selectable="false"/)
+    expect(html).toMatch(/aria-disabled="true"[^>]*data-testid="wallpaper-result"/)
+    expect(html).toContain('No reusable licence, so this image cannot be applied.')
+    expect(html).not.toMatch(/data-testid="wallpaper-result"[^>]*disabled/)
+  })
+
+  it('associates a provider failure with the search control and a stable error id', async () => {
+    const studio = await activatedStudio({ ok: false, failure: 'unavailable', tried: ['openverse'] })
+    const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
+    expect(html).toContain('id="wallpaper-online-error"')
+    expect(html).toMatch(/data-testid="wallpaper-search"[^>]*aria-invalid="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-search"[^>]*aria-describedby="wallpaper-online-error"/)
+    expect(html).toMatch(/data-testid="wallpaper-search"[^>]*aria-errormessage="wallpaper-online-error"/)
+  })
+
+  it('localizes the online states in Chinese', async () => {
+    const studio = await activatedStudio({ ok: true, results: [resultFixture()], servedBy: 'wikimedia' })
+    const html = renderPanel(zhCN as unknown as Dict, READY_ZH, { onlineStudio: studio })
+    expect(html).toContain('由 维基共享资源 提供')
+    expect(html).toContain('来源')
+    expect(html).not.toContain('!wallpaper.')
   })
 })
 
@@ -359,14 +589,39 @@ describe('wallpaper error accessibility', () => {
 })
 
 describe('wallpaper studio render', () => {
-  it('renders the search-first online card, 24 built-in wallpapers, effects, upload and URL controls', () => {
+  it('renders the preset cards, the default Built-in gallery, effects, upload and URL controls', () => {
     const html = renderPanel()
     expect(html).toContain('data-testid="preset-card"')
     expect(html).toContain('data-testid="wallpaper-panel"')
-    expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(24)
-    for (const id of BUILTIN_WALLPAPER_IDS) {
+    // Background preset cards sit above the four source tabs.
+    expect(html).toContain('data-testid="wallpaper-presets"')
+    expect(html).toContain('Background presets')
+    expect(html).toMatch(/data-testid="wallpaper-preset-none"[^>]*aria-pressed="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-preset-style"[^>]*aria-pressed="false"/)
+    expect(html).not.toMatch(/data-testid="wallpaper-preset-style"[^>]*disabled/)
+    expect(html).toContain('Or choose an image')
+    expect(html.indexOf('data-testid="wallpaper-presets"')).toBeLessThan(html.indexOf('data-testid="wallpaper-source-tabs"'))
+    // Default image tab is Built-in: 8 curated swatches + a collapsed 16-design group.
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="false"/)
+    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden/)
+    expect(html).toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden=""/)
+    expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(8)
+    for (const id of VISIBLE_BUILTIN_IDS) {
       expect(html).toContain(`data-wallpaper-id="${id}"`)
     }
+    expect(html.match(/data-testid="wallpaper-builtin-classic-swatch"/g)).toHaveLength(16)
+    for (const id of CLASSIC_BUILTIN_IDS) {
+      expect(html).toContain(`data-wallpaper-id="${id}"`)
+    }
+    // All 24 ids still render exactly once.
+    for (const id of BUILTIN_WALLPAPER_IDS) {
+      expect(html.match(new RegExp(`data-wallpaper-id="${id}"`, 'g'))).toHaveLength(1)
+    }
+    expect(html).toContain('data-testid="wallpaper-builtin-classic"')
+    expect(html).toContain('Classic built-in designs (16)')
+    expect(html).not.toContain('data-testid="wallpaper-builtin-pinned"')
+    expect(html).toContain('data-testid="wallpaper-no-request-hint"')
     expect(html).toContain('data-testid="wallpaper-blur"')
     expect(html).toContain('data-testid="wallpaper-dim"')
     expect(html).toContain('data-testid="wallpaper-frost"')
@@ -383,6 +638,7 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-effects-card"')
     expect(html).toContain('data-testid="wallpaper-effects-grid"')
     expect(html).toContain('data-testid="wallpaper-source-card"')
+    expect(html).toContain('data-testid="wallpaper-source-tabs"')
     expect(html).toContain('data-testid="wallpaper-source-tab-online"')
     expect(html).toContain('data-testid="wallpaper-source-tab-builtin"')
     expect(html).toContain('data-testid="wallpaper-source-tab-recent"')
@@ -391,9 +647,6 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-custom-card"')
     expect(html).toContain('data-testid="wallpaper-builtins-card"')
     expect(html.match(/role="tab"/g)?.length).toBeGreaterThanOrEqual(4)
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="true"/)
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="false"/)
-    expect(html).toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden=""/)
     expect(html).toContain('data-testid="wallpaper-manage"')
     expect(html).not.toContain('wallpaper-rail')
     expect(html.indexOf('data-testid="wallpaper-hero"')).toBeLessThan(html.indexOf('data-testid="wallpaper-effects-card"'))
@@ -401,7 +654,7 @@ describe('wallpaper studio render', () => {
     expect(html.indexOf('data-testid="wallpaper-source-card"')).toBeLessThan(html.indexOf('data-testid="wallpaper-manage"'))
     expect(html).toContain('Current wallpaper')
     expect(html).toContain('Online wallpapers')
-    // Status/results appear only after the auto batch resolves; SSR shows idle.
+    // Status/results appear only after an explicit request; the page opens idle.
     expect(html).not.toContain('data-testid="wallpaper-status"')
     expect(html.match(/data-testid="wallpaper-result"/g)).toBeNull()
     // Upload section: hidden file input + picker button + drop zone.
@@ -485,5 +738,212 @@ describe('wallpaper studio render', () => {
     expect(DEFAULT_WALLPAPER_EFFECTS).toEqual({ blur: 8, dim: 25, frost: 35, atmosphere: 30 })
     const html = renderPanel()
     expect(html).toContain('value="8"')
+  })
+})
+
+describe('background preset cards', () => {
+  it('marks No wallpaper pressed while the selection is empty and Follow style not pressed', () => {
+    const html = renderPanel()
+    expect(html).toMatch(/data-testid="wallpaper-preset-none"[^>]*aria-pressed="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-preset-style"[^>]*aria-pressed="false"/)
+    // Both preset cards are real buttons, not clickable divs.
+    const cards = html.split('<button').filter(chunk => chunk.includes('data-testid="wallpaper-preset-'))
+    expect(cards.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('disables Follow style with a visible, programmatically-described reason without tokens', () => {
+    const html = renderPanel(enUS as unknown as Dict, NO_TOKENS)
+    expect(html).toMatch(/data-testid="wallpaper-preset-style"[^>]*disabled/)
+    expect(html).toMatch(new RegExp(`data-testid="wallpaper-preset-style"[^>]*aria-describedby="${STYLE_DISABLED_REASON_ID}"`))
+    expect(html).toContain(`id="${STYLE_DISABLED_REASON_ID}"`)
+    expect(html).toContain('data-testid="wallpaper-style-disabled"')
+    expect(html).toContain('Apply a visual style first')
+    expect(html).not.toContain('!wallpaper.')
+  })
+
+  it('selects Follow style (aria-pressed) and renders the mode-specific hero preview', () => {
+    controller.setTokens(LIGHT_TOKENS, DARK_TOKENS)
+    controller.setSelection({ kind: 'style', variant: 'mesh' })
+    const light = renderPanel()
+    expect(light).toMatch(/data-testid="wallpaper-preset-style"[^>]*aria-pressed="true"/)
+    expect(light).toMatch(/data-testid="wallpaper-preset-none"[^>]*aria-pressed="false"/)
+    expect(light).not.toMatch(/data-testid="wallpaper-preset-style"[^>]*disabled/)
+    expect(light).toContain('data-testid="wallpaper-hero-preview"')
+    expect(light).toContain('data-kind="style"')
+    expect(light).toContain('Following the applied visual style.')
+    // The light generated recipe mixes the light brand token ...
+    expect(light).toContain('#b46000')
+    expect(light).not.toContain('#ffcc66')
+    // ... and the dark snapshot uses the dark token map, not a stored image.
+    const dark = renderPanel(enUS as unknown as Dict, READY_DARK)
+    expect(dark).toContain('#ffcc66')
+    expect(dark).not.toContain('#b46000')
+    // The generated layer is fixed: no focal-point control and no network image.
+    expect(light).not.toContain('data-testid="wallpaper-position"')
+    expect(light).not.toContain('url(')
+  })
+})
+
+describe('built-in gallery visibility', () => {
+  it('pins the selected Classic design once, above the grid, with a dynamic summary', () => {
+    controller.setSelection({ kind: 'builtin', id: 'mist' })
+    const html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-builtin-pinned"')
+    expect(html.match(/data-testid="wallpaper-builtin-pinned-swatch"/g)).toHaveLength(1)
+    expect(html).toMatch(/data-testid="wallpaper-builtin-pinned-swatch"[^>]*data-wallpaper-id="mist"/)
+    expect(html).toMatch(/data-testid="wallpaper-builtin-pinned-swatch"[^>]*aria-pressed="true"/)
+    expect(html).toContain('Current (Classic)')
+    expect(html).toContain('Classic built-in designs (16 total; 1 pinned above)')
+    // The pinned id is not duplicated in the grid or the Classic group.
+    expect(html.match(/data-wallpaper-id="mist"/g)).toHaveLength(1)
+    expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(8)
+    expect(html.match(/data-testid="wallpaper-builtin-classic-swatch"/g)).toHaveLength(15)
+    for (const id of BUILTIN_WALLPAPER_IDS) {
+      expect(html.match(new RegExp(`data-wallpaper-id="${id}"`, 'g'))).toHaveLength(1)
+    }
+    // Pinned row renders before the curated grid.
+    expect(html.indexOf('data-testid="wallpaper-builtin-pinned"'))
+      .toBeLessThan(html.indexOf('data-testid="wallpaper-builtin-grid"'))
+  })
+
+  it('does not pin a curated built-in and keeps the 16 total summary', () => {
+    controller.setSelection({ kind: 'builtin', id: 'paper' })
+    const html = renderPanel()
+    expect(html).not.toContain('data-testid="wallpaper-builtin-pinned"')
+    expect(html).toContain('Classic built-in designs (16)')
+    expect(html).toMatch(/data-testid="wallpaper-builtin" data-wallpaper-id="paper"[^>]*aria-pressed="true"/)
+    expect(html.match(/data-testid="wallpaper-builtin-classic-swatch"/g)).toHaveLength(16)
+    for (const id of BUILTIN_WALLPAPER_IDS) {
+      expect(html.match(new RegExp(`data-wallpaper-id="${id}"`, 'g'))).toHaveLength(1)
+    }
+  })
+
+  it('never pins for remote/upload/style selections', () => {
+    controller.setSelection({ kind: 'remote', url: 'https://example.com/w.jpg' })
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-builtin-pinned"')
+    controller.setSelection({ kind: 'upload', key: 'upload-1-abc' })
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-builtin-pinned"')
+    controller.setTokens(LIGHT_TOKENS, DARK_TOKENS)
+    controller.setSelection({ kind: 'style', variant: 'mesh' })
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-builtin-pinned"')
+  })
+})
+
+describe('source tabs — roving tabindex and keyboard mapping', () => {
+  it('maps arrow/home/end keys with wraparound', () => {
+    expect(sourceTabForKeyboard('online', 'ArrowRight')).toBe('builtin')
+    expect(sourceTabForKeyboard('local', 'ArrowRight')).toBe('online')
+    expect(sourceTabForKeyboard('online', 'ArrowLeft')).toBe('local')
+    expect(sourceTabForKeyboard('recent', 'ArrowUp')).toBe('builtin')
+    expect(sourceTabForKeyboard('builtin', 'Home')).toBe('online')
+    expect(sourceTabForKeyboard('builtin', 'End')).toBe('local')
+    expect(sourceTabForKeyboard('builtin', 'Enter')).toBeUndefined()
+  })
+
+  it('keeps exactly the active tab in the tab order', () => {
+    const html = renderPanel()
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*tabindex="0"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*tabindex="-1"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-recent"[^>]*tabindex="-1"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-local"[^>]*tabindex="-1"/)
+    expect(html.match(/role="tab"/g)?.length).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('attribution resolution', () => {
+  it('renders the selection provenance as plain text plus safe links', () => {
+    controller.setSelection({
+      kind: 'remote',
+      url: 'https://cdn.example.org/photo.jpg',
+      provenance: {
+        providerId: 'wikimedia',
+        title: 'Harbour at dusk',
+        creator: 'A. Photographer',
+        creatorUrl: 'https://commons.wikimedia.org/wiki/User:A',
+        license: 'CC BY-SA 4.0',
+        licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+        source: 'Wikimedia Commons',
+        sourceUrl: 'https://commons.wikimedia.org/wiki/File:Harbour.jpg',
+      },
+    })
+    const html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-hero-attribution"')
+    expect(html).toContain('Harbour at dusk by A. Photographer')
+    expect(html).toContain('CC BY-SA 4.0')
+    const links = html.match(/<a [^>]*data-testid="wallpaper-attribution-link"[^>]*>/g) ?? []
+    expect(links).toHaveLength(3)
+    for (const link of links) {
+      expect(link).toContain('rel="noreferrer noopener"')
+      expect(link).toContain('target="_blank"')
+      expect(link).toContain('href="https://')
+    }
+    expect(html).toContain('data-kind="creator"')
+    expect(html).toContain('data-kind="license"')
+    expect(html).toContain('data-kind="source"')
+    // The source link shows the localized provider name, not the raw URL.
+    expect(html).toContain('>Wikimedia Commons</a>')
+  })
+
+  it('renders plain text without links when the credit has no usable URL', () => {
+    controller.setSelection({
+      kind: 'remote',
+      url: 'https://cdn.example.org/photo.jpg',
+      provenance: {
+        creator: 'Only text',
+        creatorUrl: 'http://insecure.example/creator',
+        license: 'CC0',
+      },
+    })
+    const html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-hero-attribution"')
+    expect(html).toContain('Only text')
+    expect(html).toContain('CC0')
+    expect(html).not.toContain('data-testid="wallpaper-attribution-link"')
+  })
+
+  it('falls back to the matching recent-history entry for legacy records', () => {
+    const store = {
+      value: JSON.stringify([{
+        url: 'https://cdn.example.org/photo.jpg',
+        title: 'Legacy title',
+        creator: 'Legacy creator',
+        creatorUrl: 'https://example.org/creator',
+        license: 'CC0',
+        source: 'openverse.org',
+        sourceUrl: 'https://openverse.org/image/1',
+        addedAt: 1,
+      }]),
+      getItem(key: string): string | null { return key === RECENT_WALLPAPER_KEY ? this.value : null },
+      setItem(): void { /* no-op */ },
+      removeItem(): void { this.value = '' },
+    }
+    vi.stubGlobal('localStorage', store)
+    controller.setSelection({ kind: 'remote', url: 'https://cdn.example.org/photo.jpg' })
+    const html = renderPanel()
+    vi.unstubAllGlobals()
+    expect(html).toContain('Legacy title')
+    expect(html).toContain('data-testid="wallpaper-attribution-link"')
+    expect(html).toContain('href="https://example.org/creator"')
+    expect(html).toContain('href="https://openverse.org/image/1"')
+  })
+
+  it('never renders attribution for built-in/upload/style selections', () => {
+    controller.setSelection({ kind: 'builtin', id: 'paper' })
+    const builtin = renderPanel()
+    expect(builtin).not.toContain('data-testid="wallpaper-hero-attribution"')
+    expect(builtin).not.toContain('data-testid="wallpaper-attribution-link"')
+    controller.setTokens(LIGHT_TOKENS, DARK_TOKENS)
+    controller.setSelection({ kind: 'style', variant: 'mesh' })
+    expect(renderPanel()).not.toContain('data-testid="wallpaper-hero-attribution"')
+  })
+
+  it('does not own a second attribution store any more', () => {
+    const panelSource = readFileSync(new URL('../../src/client/ui/WallpaperPanel.tsx', import.meta.url), 'utf8')
+    expect(panelSource).not.toContain('attribution.v1')
+    expect(panelSource).not.toContain('setItem(ATTRIBUTION')
+    expect(panelSource).toContain('migrateLegacyAttribution')
+    const creditSource = readFileSync(new URL('../../src/client/ui/wallpaper-credit.ts', import.meta.url), 'utf8')
+    expect(creditSource).not.toContain('setItem(LEGACY_ATTRIBUTION_STORAGE_KEY')
+    expect(creditSource).toContain('removeItem(LEGACY_ATTRIBUTION_STORAGE_KEY)')
   })
 })

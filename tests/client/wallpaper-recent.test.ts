@@ -5,6 +5,7 @@ import {
   RECENT_WALLPAPER_KEY,
   addRecentEntry,
   clearRecentWallpapers,
+  mergeRecentEntries,
   parseRecentEntry,
   readRecentWallpapers,
   rememberRecentWallpaper,
@@ -90,6 +91,60 @@ describe('recent wallpaper history', () => {
     expect(parseRecentEntry({ url: 'https://example.com/a.jpg', title: 42, addedAt: 'x' }))
       .toMatchObject({ url: 'https://example.com/a.jpg', addedAt: 0 })
     expect(parseRecentEntry('nope')).toBeUndefined()
+  })
+
+  it('parses optional attribution links (old entries without them stay valid)', () => {
+    const legacy = parseRecentEntry({ url: 'https://cdn.example/a.jpg', title: 'Old', addedAt: 1 })
+    expect(legacy).toEqual({ url: 'https://cdn.example/a.jpg', title: 'Old', addedAt: 1 })
+    expect(legacy).not.toHaveProperty('creatorUrl')
+
+    const withLinks = parseRecentEntry({
+      url: 'https://cdn.example/b.jpg',
+      addedAt: 2,
+      creatorUrl: 'https://example.com/u/ann',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      sourceUrl: 'https://openverse.org/i/1',
+      title: 'Sea',
+    })
+    expect(withLinks).toMatchObject({
+      creatorUrl: 'https://example.com/u/ann',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      sourceUrl: 'https://openverse.org/i/1',
+    })
+
+    // Non-portable links are dropped per field; the rest of the entry survives.
+    expect(parseRecentEntry({
+      url: 'https://cdn.example/c.jpg',
+      addedAt: 3,
+      creatorUrl: 'http://insecure.example/u',
+      licenseUrl: 'https://localhost/u',
+      sourceUrl: 'javascript:alert(1)',
+      title: 'Dunes',
+    })).toEqual({ url: 'https://cdn.example/c.jpg', addedAt: 3, title: 'Dunes' })
+  })
+
+  it('merges attribution links when the same URL is refreshed', () => {
+    const first = addRecentEntry([], {
+      url: 'https://cdn.example/a.jpg',
+      addedAt: 1,
+      creatorUrl: 'https://example.com/u/ann',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      sourceUrl: 'https://openverse.org/i/1',
+    })
+    // Re-adding the same URL with sparse metadata keeps the known links.
+    const second = addRecentEntry(first, { url: 'https://cdn.example/a.jpg', addedAt: 2, title: 'Sea' })
+    expect(second[0]).toMatchObject({
+      title: 'Sea',
+      addedAt: 2,
+      creatorUrl: 'https://example.com/u/ann',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      sourceUrl: 'https://openverse.org/i/1',
+    })
+    const merged = mergeRecentEntries(first, second)
+    expect(merged[0]).toMatchObject({
+      creatorUrl: 'https://example.com/u/ann',
+      sourceUrl: 'https://openverse.org/i/1',
+    })
   })
 
   it('persists, reads, and clears (corrupt JSON ignored)', () => {

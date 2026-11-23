@@ -3,8 +3,13 @@
  *
  * Stored in localStorage (never uploaded, independent of the DSH profile):
  * newest first, deduped by URL, capped at 24, https-only, corrupt records ignored.
+ *
+ * The persisted remote selection's provenance is the authoritative credit; this
+ * history is only a display mirror. It may therefore lack attribution links that
+ * the selection carries, and old entries without the optional URL fields stay
+ * valid.
  */
-import { validateWallpaperUrl } from '../wallpaper.js'
+import { normalizeWallpaperProvenanceUrl, validateWallpaperUrl } from '../wallpaper.js'
 import { safeRemoteImageUrl } from './host-safety.js'
 
 /** One remembered online wallpaper. */
@@ -15,6 +20,10 @@ export interface RecentWallpaperEntry {
   readonly creator?: string | undefined
   readonly license?: string | undefined
   readonly source?: string | undefined
+  /** Optional credit links (schema-compatible additive fields; old entries lack them). */
+  readonly creatorUrl?: string | undefined
+  readonly licenseUrl?: string | undefined
+  readonly sourceUrl?: string | undefined
   readonly addedAt: number
 }
 
@@ -57,13 +66,24 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
   const url = https(row.url)
   if (url === undefined || safeRemoteImageUrl(url) === undefined) return undefined
   const addedAt = typeof row.addedAt === 'number' && Number.isFinite(row.addedAt) ? row.addedAt : 0
+  const thumbnail = safeRemoteImageUrl(row.thumbnail)
+  const title = text(row.title)
+  const creator = text(row.creator)
+  const license = text(row.license)
+  const source = text(row.source)
+  const creatorUrl = normalizeWallpaperProvenanceUrl(row.creatorUrl)
+  const licenseUrl = normalizeWallpaperProvenanceUrl(row.licenseUrl)
+  const sourceUrl = normalizeWallpaperProvenanceUrl(row.sourceUrl)
   return {
     url,
-    ...(safeRemoteImageUrl(row.thumbnail) === undefined ? {} : { thumbnail: safeRemoteImageUrl(row.thumbnail) }),
-    ...(text(row.title) === undefined ? {} : { title: text(row.title) }),
-    ...(text(row.creator) === undefined ? {} : { creator: text(row.creator) }),
-    ...(text(row.license) === undefined ? {} : { license: text(row.license) }),
-    ...(text(row.source) === undefined ? {} : { source: text(row.source) }),
+    ...(thumbnail === undefined ? {} : { thumbnail }),
+    ...(title === undefined ? {} : { title }),
+    ...(creator === undefined ? {} : { creator }),
+    ...(license === undefined ? {} : { license }),
+    ...(source === undefined ? {} : { source }),
+    ...(creatorUrl === undefined ? {} : { creatorUrl }),
+    ...(licenseUrl === undefined ? {} : { licenseUrl }),
+    ...(sourceUrl === undefined ? {} : { sourceUrl }),
     addedAt,
   }
 }
@@ -110,6 +130,9 @@ export function addRecentEntry(
     ...(sanitized.creator ?? previous?.creator) === undefined ? {} : { creator: sanitized.creator ?? previous?.creator },
     ...(sanitized.license ?? previous?.license) === undefined ? {} : { license: sanitized.license ?? previous?.license },
     ...(sanitized.source ?? previous?.source) === undefined ? {} : { source: sanitized.source ?? previous?.source },
+    ...(sanitized.creatorUrl ?? previous?.creatorUrl) === undefined ? {} : { creatorUrl: sanitized.creatorUrl ?? previous?.creatorUrl },
+    ...(sanitized.licenseUrl ?? previous?.licenseUrl) === undefined ? {} : { licenseUrl: sanitized.licenseUrl ?? previous?.licenseUrl },
+    ...(sanitized.sourceUrl ?? previous?.sourceUrl) === undefined ? {} : { sourceUrl: sanitized.sourceUrl ?? previous?.sourceUrl },
   }
   return [merged, ...entries.filter(candidate => candidate.url !== sanitized.url)]
     .slice(0, MAX_RECENT_WALLPAPERS)
@@ -147,6 +170,9 @@ export function mergeRecentEntries(
       ...(newer.creator ?? older.creator) === undefined ? {} : { creator: newer.creator ?? older.creator },
       ...(newer.license ?? older.license) === undefined ? {} : { license: newer.license ?? older.license },
       ...(newer.source ?? older.source) === undefined ? {} : { source: newer.source ?? older.source },
+      ...(newer.creatorUrl ?? older.creatorUrl) === undefined ? {} : { creatorUrl: newer.creatorUrl ?? older.creatorUrl },
+      ...(newer.licenseUrl ?? older.licenseUrl) === undefined ? {} : { licenseUrl: newer.licenseUrl ?? older.licenseUrl },
+      ...(newer.sourceUrl ?? older.sourceUrl) === undefined ? {} : { sourceUrl: newer.sourceUrl ?? older.sourceUrl },
     }
     byUrl.set(parsed.url, parseRecentEntry(merged) as RecentWallpaperEntry)
   }

@@ -13,8 +13,13 @@
  * more tabs converge to the deterministic maximum `(revision, sourceId)`. The UI
  * talks to it through the module singleton accessor below; no host config or
  * boot payload is involved.
+ *
+ * `kind: 'style'` is stored in a separate sidecar key (never in the main record)
+ * and is adopted only while the sidecar's `(revision, sourceId)` identity exactly
+ * matches the current main record (see `wallpaper/style-store.ts`).
  */
 import type { TokenMap } from '../../core/types.js'
+import type { LiveryMode } from '../model.js'
 import { validateStoredImageBlob } from './cache.js'
 import {
   backgroundImageValue,
@@ -24,6 +29,8 @@ import {
   DEFAULT_WALLPAPER_POSITION,
   normalizeWallpaperPosition,
   normalizeWallpaperRevision,
+  normalizeWallpaperSelection,
+  sameWallpaperProvenance,
   serializeWallpaperState,
   WALLPAPER_STORAGE_KEY,
 } from '../wallpaper.js'
@@ -37,10 +44,18 @@ import {
   parseExternalWallpaperState,
   shouldApplyExternalState,
 } from './sync.js'
-import type { StorageEventTarget } from './sync.js'
+import type { ExternalWallpaperState, StorageEventTarget } from './sync.js'
 import type { StoredImageRecord, WallpaperImageStore } from './storage.js'
 import { removeWallpaperRefs, writeWallpaperRefs } from './refs.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
+import { styleWallpaperImage } from './style.js'
+import {
+  readStoredWallpaperStyle,
+  removeStoredWallpaperStyleIfOwn,
+  wallpaperStateIdentityOf,
+  writeStoredWallpaperStyle,
+} from './style-store.js'
+import type { WallpaperStateIdentity } from './style-store.js'
 
 /** Reactive wallpaper state consumed by the studio UI. */
 export interface WallpaperState {
@@ -98,13 +113,15 @@ export interface WallpaperControllerApi {
    * Selection last confirmed written to localStorage by this controller (also
    * seeded from the stored record on hydrate/start). This is the selection that
    * a reload can still recover after a failed persist, so callers that delete an
-   * upload blob it may reference must check this first.
+   * upload blob it may reference must check this first. A `style` selection is
+   * exposed only while the style sidecar's identity still matches the main record.
    */
   getDurableSelection(): WallpaperSelection
   /**
    * Selection currently recoverable from localStorage, parsed defensively at
    * call time. Undefined when the key is absent, corrupt, unknown-version, or a
-   * revisioned clear tombstone.
+   * revisioned clear tombstone. A cleared main record whose style sidecar
+   * identity matches resolves to `{kind:'style'}`.
    */
   getPersistedSelection(): WallpaperSelection
   /**
@@ -140,8 +157,13 @@ export interface WallpaperControllerApi {
   clear(): void
   /** Provide the active livery's background-token maps (undefined for stock). */
   setTokens(light: TokenMap | undefined, dark: TokenMap | undefined): void
-  /** CSS background-image value of the current selection (hero preview). */
-  getRenderImage(): string | undefined
+  /**
+   * Mode-specific CSS background-image value of the current selection (hero
+   * preview). Built-ins/remote/upload ignore `mode`; a `style` selection resolves
+   * the generated recipe against that mode's token map and returns undefined
+   * when no catalog tokens are available (the card is disabled in that state).
+   */
+  getRenderImage(mode?: LiveryMode): string | undefined
   /** Hydrate from localStorage and apply. */
   start(): void
   /**
@@ -313,18 +335,100 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     }
   }
 
+  /** Identity `(revision, sourceId)` of one parsed main record. */
+  const identityOf = (stored: ExternalWallpaperState): WallpaperStateIdentity =>
+    wallpaperStateIdentityOf(stored.state.revision, stored.sourceId)
+
+  /**
+   * Resolve the effective selection of one parsed main record under the style
+   * identity rule: a cleared main selection adopts the sidecar variant only when
+   * the sidecar's identity exactly matches this record's identity.
+   */
+  const resolveStoredSelection = (stored: ExternalWallpaperState): WallpaperSelection => {
+    if (stored.state.selection !== undefined) return stored.state.selection
+    const variant = readStoredWallpaperStyle(storage, identityOf(stored))
+    return variant === undefined ? undefined : { kind: 'style', variant }
+  }
+
+  /** Selection currently recoverable from localStorage (defensive, never throws). */
+  const persistedSelection = (): WallpaperSelection => {
+    if (storage === undefined) return undefined
+    try {
+      const stored = parseExternalWallpaperState(storage.getItem(WALLPAPER_STORAGE_KEY))
+      return stored === undefined ? undefined : resolveStoredSelection(stored)
+    } catch {
+      return undefined
+    }
+  }
+
+  // A local write may only replace an older/equal stored identity. A behind tab
+  // whose revision/source lost the deterministic `(revision, sourceId)` ordering
+  // must not clobber the winner's main record (or its sidecar) just because it
+  // still had a pending save.
+  const canPublishIdentity = (identity: WallpaperStateIdentity): boolean => {
+    if (storage === undefined) return false
+    let stored: ReturnType<typeof parseExternalWallpaperState>
+    try {
+      stored = parseExternalWallpaperState(storage.getItem(WALLPAPER_STORAGE_KEY))
+    } catch {
+      return false
+    }
+    if (stored === undefined) return true
+    const current = wallpaperStateIdentityOf(stored.state.revision, stored.sourceId)
+    if (identity.revision !== current.revision) return identity.revision > current.revision
+    return (identity.sourceId ?? '') >= (current.sourceId ?? '')
+  }
+
   const persist = (): boolean => {
     if (storage === undefined) return false
     try {
-      // A clear is written as a revisioned tombstone (kind:'none') so other
-      // tabs can synchronize the clear through the same revision ordering.
+      if (selection !== undefined && selection.kind === 'style') {
+        // Style ordering: main tombstone with the new identity FIRST, then the
+        // sidecar refresh guarded by that identity. A failure after the main
+        // write leaves "no wallpaper" on reload, never a half-style.
+        const record = serializeWallpaperState(undefined, effects, position, revision)
+        const identity = wallpaperStateIdentityOf(record.revision, publishSourceId ? sourceId : undefined)
+        if (!canPublishIdentity(identity)) return false
+        const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
+        storage.setItem(WALLPAPER_STORAGE_KEY, raw)
+        lastPublishedRaw = raw
+        const sidecarWritten = writeStoredWallpaperStyle(storage, { variant: selection.variant, identity })
+        // The guard skipped the sidecar because a newer tab's main record won:
+        // leave that tab's sidecar untouched and let storage-event adoption
+        // re-sync this tab; do not claim this style is the durable state.
+        if (!sidecarWritten) return false
+        durableSelection = selection
+        publishRefs()
+        return true
+      }
+      if (selection === undefined) {
+        // Clear ordering: write the main tombstone FIRST, then remove the
+        // sidecar only if this writer still owns the main record. A stale
+        // sidecar left by a losing writer has a different identity from the
+        // new tombstone, so hydration ignores it; the removal guard stops a
+        // behind tab from deleting a newer tab's winner sidecar.
+        const record = serializeWallpaperState(undefined, effects, position, revision)
+        const identity = wallpaperStateIdentityOf(record.revision, publishSourceId ? sourceId : undefined)
+        if (!canPublishIdentity(identity)) return false
+        const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
+        storage.setItem(WALLPAPER_STORAGE_KEY, raw)
+        lastPublishedRaw = raw
+        if (!removeStoredWallpaperStyleIfOwn(storage, identity)) return false
+        durableSelection = undefined
+        publishRefs()
+        return true
+      }
+      // Image/builtin ordering: write the main selection FIRST (so a 0.2.1
+      // reader never sees a stale style identity), then remove the sidecar only
+      // if this writer still owns the main record.
       const record = serializeWallpaperState(selection, effects, position, revision)
+      const identity = wallpaperStateIdentityOf(record.revision, publishSourceId ? sourceId : undefined)
+      if (!canPublishIdentity(identity)) return false
       const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
       storage.setItem(WALLPAPER_STORAGE_KEY, raw)
-      // Durable state only advances once the bytes are actually in storage: a
-      // quota/disabled failure must leave the previous recoverable selection.
-      durableSelection = selection
       lastPublishedRaw = raw
+      if (!removeStoredWallpaperStyleIfOwn(storage, identity)) return false
+      durableSelection = selection
       publishRefs()
       return true
     } catch {
@@ -368,7 +472,10 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (a === undefined || b === undefined) return a === b
     if (a.kind !== b.kind) return false
     if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
-    if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
+    if (a.kind === 'remote') {
+      return b.kind === 'remote' && a.url === b.url && sameWallpaperProvenance(a.provenance, b.provenance)
+    }
+    if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
     return b.kind === 'upload' && a.key === b.key
   }
 
@@ -385,12 +492,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     // never cleared just because a stored record failed to parse.
     const stored = parseExternalWallpaperState(text)
     if (stored === undefined) return
-    if (!sameSelection(selection, stored.state.selection)) selectionVersion += 1
-    selection = stored.state.selection
+    const storedSelection = resolveStoredSelection(stored)
+    if (!sameSelection(selection, storedSelection)) selectionVersion += 1
+    selection = storedSelection
     effects = stored.state.effects
     position = stored.state.position
     revision = stored.state.revision
-    durableSelection = stored.state.selection
+    durableSelection = storedSelection
     winnerSourceId = stored.sourceId
     selectionPersistable = true
     persistable = true
@@ -467,8 +575,12 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     // A newer tab wins: drop the pending local save so it cannot overwrite it.
     cancelPendingSave()
     const tie = external.state.revision === revision
-    if (!sameSelection(selection, external.state.selection)) selectionVersion += 1
-    selection = external.state.selection
+    // Re-read the sidecar AFTER adopting the main record instead of keeping this
+    // tab's remembered style: the adopted `(revision, sourceId)` identity is the
+    // only one the sidecar may match.
+    const adoptedSelection = resolveStoredSelection(external)
+    if (!sameSelection(selection, adoptedSelection)) selectionVersion += 1
+    selection = adoptedSelection
     effects = external.state.effects
     position = external.state.position
     revision = external.state.revision
@@ -484,7 +596,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       // later reload cannot resurrect the losing branch.
       try {
         storage.setItem(WALLPAPER_STORAGE_KEY, external.raw)
-        durableSelection = selection
+        durableSelection = adoptedSelection
         lastPublishedRaw = external.raw
       } catch {
         /* convergence write is best effort */
@@ -500,7 +612,14 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const setState = (patch: WallpaperStatePatch, stateOptions: WallpaperStateOptions = {}): WallpaperState => {
     if (disposed) return snapshot
     const hasSelection = Object.prototype.hasOwnProperty.call(patch, 'selection')
-    const nextSelection = hasSelection ? patch.selection : selection
+    const nextSelection = hasSelection ? normalizeWallpaperSelection(patch.selection) : selection
+    // Following the style is only possible with an active catalog token context:
+    // reject the transition instead of painting an empty layer. Changes while a
+    // style is already selected (effects/position) stay allowed even if the
+    // catalog is temporarily degraded before tokens arrive.
+    const enteringStyle = nextSelection !== undefined && nextSelection.kind === 'style'
+      && (selection === undefined || selection.kind !== 'style')
+    if (enteringStyle && tokenContext() === undefined) return snapshot
     const nextEffects = patch.effects === undefined ? effects : clampEffects({ ...effects, ...patch.effects })
     const nextPosition = patch.position === undefined ? position : normalizeWallpaperPosition(patch.position)
     const selectionChanged = !sameSelection(selection, nextSelection)
@@ -549,16 +668,15 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
         listeners.delete(listener)
       }
     },
-    getDurableSelection: () => durableSelection,
-    getPersistedSelection: () => {
-      if (storage === undefined) return undefined
-      try {
-        const text = storage.getItem(WALLPAPER_STORAGE_KEY)
-        return parseExternalWallpaperState(text)?.state.selection
-      } catch {
-        return undefined
-      }
+    getDurableSelection: () => {
+      // A style durable selection is only truthful while the identity rule still
+      // holds; once another tab moves the main record on it is no longer
+      // recoverable as style.
+      if (durableSelection === undefined || durableSelection.kind !== 'style') return durableSelection
+      const persisted = persistedSelection()
+      return persisted !== undefined && persisted.kind === 'style' ? persisted : undefined
     },
+    getPersistedSelection: persistedSelection,
     getSelectionVersion: () => selectionVersion,
     setSelection: (next: WallpaperSelection, blob?: Blob) => {
       if (disposed) return
@@ -582,7 +700,13 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       tokens = { light, dark }
       apply()
     },
-    getRenderImage: () => backgroundImageValue(selection, localImageUrl),
+    getRenderImage: (mode: LiveryMode = 'light') => {
+      if (selection !== undefined && selection.kind === 'style') {
+        const map = mode === 'dark' ? tokens.dark : tokens.light
+        return map === undefined ? undefined : styleWallpaperImage(map, selection.variant)
+      }
+      return backgroundImageValue(selection, localImageUrl)
+    },
     start: () => {
       if (disposed || started) return
       started = true

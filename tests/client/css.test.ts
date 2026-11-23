@@ -3,11 +3,13 @@ import { readFileSync } from 'node:fs'
 import { CLIENT_CSS } from '../../src/styles/client.js'
 
 describe('client stylesheet (plan §18.3 / §18.8)', () => {
-  it('stays inside the 25.2KB layout budget', () => {
-    // 0.1.3 merged scope (nine-grid focal position + storage/preset UI) grows
-    // the stylesheet past the old 14KB ceiling; 16KB is the approved working
-    // budget for this feature round (Lead owns the final accepted number).
-    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(25.2 * 1024)
+  it('stays inside the 30KB layout budget', () => {
+    // 0.1.3 merged scope (nine-grid focal position + storage/preset UI) grew
+    // the stylesheet past the old 14KB ceiling; 0.2.2 adds the wallpaper preset
+    // cards, Classic group, provider row and attribution links. 30KB is the
+    // working budget for this feature round (Lead owns the final accepted number;
+    // the packed client gzip cap is 72 KiB).
+    expect(new TextEncoder().encode(CLIENT_CSS).length).toBeLessThanOrEqual(30 * 1024)
   })
 
   it('contains no !important', () => {

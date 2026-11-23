@@ -31,18 +31,22 @@ describe('dictionary key parity', () => {
   it('declares every key the client sources reference', () => {
     const files = [
       'src/client/index.tsx',
+      'src/client/detail.tsx',
       'src/client/diagnostics.ts',
       'src/client/ui/Gallery.tsx',
       'src/client/ui/SelfCheck.tsx',
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
       'src/client/ui/WallpaperPanel.tsx',
+      'src/client/ui/PresetCard.tsx',
+      'src/client/ui/wallpaper-online.ts',
+      'src/client/ui/wallpaper-credit.ts',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
       'src/client/ui/families.ts',
     ]
-    const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability|family|wallpaper|tab'
+    const prefixes = 'section|panel|current|search|filter|gallery|empty|card|preview|action|write|state|check|about|mode|tag|hint|diag|capability|family|wallpaper|tab|detail|preset'
     const pattern = new RegExp(`['"]((?:${prefixes})\\.[A-Za-z0-9.]+)['"]`, 'g')
     const known = new Set(EN_KEYS)
     const referenced = new Map<string, string>()
@@ -59,6 +63,7 @@ describe('dictionary key parity', () => {
   it('does not hard-code Chinese copy in client sources', () => {
     const files = [
       'src/client/index.tsx',
+      'src/client/detail.tsx',
       'src/client/model.ts',
       'src/client/runtime.ts',
       'src/client/presenter.ts',
@@ -68,6 +73,9 @@ describe('dictionary key parity', () => {
       'src/client/ui/LiverySettingsPage.tsx',
       'src/client/ui/LiveryWorkspace.tsx',
       'src/client/ui/WallpaperPanel.tsx',
+      'src/client/ui/PresetCard.tsx',
+      'src/client/ui/wallpaper-online.ts',
+      'src/client/ui/wallpaper-credit.ts',
       'src/client/LiveryPanelPage.tsx',
       'src/client/LiveryPanelIcon.tsx',
       'src/client/ui/capability-names.ts',
@@ -144,8 +152,20 @@ describe('entry rename — 视觉风格 / Visual Style', () => {
   it('leaves no retired entry name in user-visible copy', () => {
     const retiredZh = Object.entries(zhCN).filter(([, value]) => value.includes('皮肤'))
     expect(retiredZh).toEqual([])
-    // Product/package identity may keep the plugin's own name.
-    const productCopy = new Set(['about.plugin', 'diag.header'])
+    // Product/package identity may keep the plugin's own name, including the
+    // plugin-detail surface that explains the Host's install/update boundary.
+    const productCopy = new Set([
+      'about.plugin',
+      'diag.header',
+      'detail.badge.label',
+      'detail.section.title',
+      'detail.action.open',
+      'detail.boundary.valid',
+      'detail.boundary.staleDegraded',
+      'detail.boundary.mismatch',
+      'detail.boundary.mismatchUnsupported',
+      'detail.boundary.absent',
+    ])
     const retiredEn = Object.entries(enUS)
       .filter(([key, value]) => !productCopy.has(key) && /\blivery\b/i.test(value))
     expect(retiredEn).toEqual([])

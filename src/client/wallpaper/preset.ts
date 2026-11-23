@@ -1,5 +1,5 @@
 /**
- * Preset v1 — portable, strictly validated snapshot of the user-visible visual
+ * Preset v2 — portable, strictly validated snapshot of the user-visible visual
  * setup: livery id, wallpaper selection, effects, focal point and the optional
  * image credit.
  *
@@ -8,7 +8,13 @@
  * those are either executable/stylesheet payloads or device-local state that
  * must never travel in a shareable file. Uploaded images are not exportable at
  * all (they only exist on the device that picked them); the exported wallpaper
- * is exactly `builtin | remote | null`.
+ * is exactly `builtin | remote | style | null`.
+ *
+ * Schema v2 adds the generated `{kind:'style', variant:'mesh'}` wallpaper and
+ * attribution URLs (`creatorUrl`/`licenseUrl`/`sourceUrl`). Schema v1 files stay
+ * importable (v1 has no style kind and no attribution URLs); export always
+ * writes v2. 0.2.1 clients reject a v2 file with their existing
+ * `schema-version` error — that documented downgrade limitation is expected.
  *
  * This module is pure: no React, no Cordis, no DOM. The studio UI maps problem
  * codes to localized copy; the runtime and the state-v2 controller are injected
@@ -16,6 +22,7 @@
  */
 import { STOCK_ID } from '../../core/types.js'
 import { isLocalOrPrivateHost } from './host-safety.js'
+import { isStyleWallpaperVariant } from './style.js'
 import {
   DEFAULT_WALLPAPER_POSITION,
   WALLPAPER_EFFECT_BOUNDS,
@@ -24,20 +31,28 @@ import {
   clampEffects,
   isBuiltinWallpaperId,
   normalizeWallpaperPosition,
+  normalizeWallpaperProvenanceUrl,
+  provenanceOfSelection,
   validateWallpaperUrl,
 } from '../wallpaper.js'
 import type {
   BuiltinWallpaperId,
+  StyleWallpaperVariant,
   WallpaperEffects,
   WallpaperPosition,
   WallpaperPositionId,
   WallpaperPositionValue,
+  WallpaperProvenance,
   WallpaperSelection,
 } from '../wallpaper.js'
 import type { StyleApplyFailure, StyleApplyOutcome } from '../model.js'
 
-/** Schema version of the shipped preset format. */
-export const PRESET_SCHEMA_VERSION = 1 as const
+/** Schema version written by this build (export always writes the current one). */
+export const PRESET_SCHEMA_VERSION = 2 as const
+/** Legacy schema version still accepted on import (builtin | remote | null only). */
+export const LEGACY_PRESET_SCHEMA_VERSION = 1 as const
+/** Schema versions accepted by the import path. */
+export type PresetSchemaVersion = typeof LEGACY_PRESET_SCHEMA_VERSION | typeof PRESET_SCHEMA_VERSION
 
 /** Hard cap for a preset file / JSON payload (64 KiB). */
 export const PRESET_FILE_MAX_BYTES = 64 * 1024
@@ -82,8 +97,22 @@ export interface PresetWallpaperRemote {
   readonly url: string
 }
 
-/** Wallpaper reference a preset may carry; `null` means "no wallpaper". */
-export type PresetWallpaper = PresetWallpaperBuiltin | PresetWallpaperRemote
+/**
+ * One generated "follow style" wallpaper reference (schema v2 only). The layer
+ * itself is generated from the receiving machine's active livery tokens; a
+ * preset carries only the variant id.
+ */
+export interface PresetWallpaperStyle {
+  readonly kind: 'style'
+  readonly variant: StyleWallpaperVariant
+}
+
+/**
+ * Wallpaper reference a preset may carry; `null` means "no wallpaper".
+ * A schema v1 file can only carry `builtin | remote | null` (a v1 `style` claim
+ * is rejected as `wallpaper-kind` so both clients agree).
+ */
+export type PresetWallpaper = PresetWallpaperBuiltin | PresetWallpaperRemote | PresetWallpaperStyle
 
 /** Optional image credit, carried only for human-readable attribution. */
 export interface PresetAttribution {
@@ -91,11 +120,15 @@ export interface PresetAttribution {
   readonly creator?: string | undefined
   readonly license?: string | undefined
   readonly source?: string | undefined
+  /** Schema v2: optional attribution links (https, public host, ≤2048 chars). */
+  readonly creatorUrl?: string | undefined
+  readonly licenseUrl?: string | undefined
+  readonly sourceUrl?: string | undefined
 }
 
-/** One complete preset (schema v1). */
+/** One complete preset. `schemaVersion` records the shape the file was authored in. */
 export interface LiveryPreset {
-  readonly schemaVersion: typeof PRESET_SCHEMA_VERSION
+  readonly schemaVersion: PresetSchemaVersion
   readonly createdWith: string
   readonly styleId: string
   readonly wallpaper: PresetWallpaper | null
@@ -119,6 +152,7 @@ export type PresetProblem =
   | 'wallpaper-kind'
   | 'wallpaper-id'
   | 'wallpaper-url'
+  | 'wallpaper-variant'
   | 'effects'
   | 'position'
   | 'attribution'
@@ -164,6 +198,8 @@ export type PresetExportProblem =
   | 'invalid-wallpaper'
   | 'invalid-style'
   | 'invalid-version'
+  /** `style` is selected but no catalog livery/tokens are active to generate it. */
+  | 'style-unavailable'
 
 /** Live setup read by the export action. */
 export interface PresetExportSource {
@@ -174,7 +210,17 @@ export interface PresetExportSource {
   readonly effects: WallpaperEffects
   /** State-v2 focal point; normalized defensively (never fails an export). */
   readonly position: unknown
+  /**
+   * Explicit image credit. When omitted, the export falls back to the current
+   * remote selection's provenance (the authoritative credit store).
+   */
   readonly attribution?: PresetAttribution | undefined
+  /**
+   * Whether the active catalog currently supplies the style tokens a `style`
+   * wallpaper needs. `false` fails the export with `style-unavailable` even when
+   * a livery id is applied (degraded catalog); omitted means "assume available".
+   */
+  readonly styleAvailable?: boolean | undefined
   /** Running plugin version for `createdWith`. */
   readonly pluginVersion: string
 }
@@ -278,7 +324,7 @@ const VERSION_PATTERN = /^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$/
 /** Pattern for a catalog livery id (kebab-case, bounded). */
 const STYLE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}$/
 
-/** Exact top-level key set of schema v1. */
+/** Exact top-level key set (shared by schema v1 and v2). */
 const ROOT_KEYS: readonly string[] = [
   'schemaVersion',
   'createdWith',
@@ -295,13 +341,17 @@ const EFFECT_KEYS: readonly (keyof WallpaperEffects)[] = ['blur', 'dim', 'frost'
 /** Exact key set of a focal-point object. */
 const POSITION_KEYS: readonly string[] = ['x', 'y']
 
-/** Attribution key -> maximum accepted string length. */
-const ATTRIBUTION_LIMITS: Readonly<Record<keyof PresetAttribution, number>> = {
+/** Attribution text key -> maximum accepted string length (schema v1). */
+const ATTRIBUTION_LIMITS: Readonly<Record<'title' | 'creator' | 'license' | 'source', number>> = {
   title: 200,
   creator: 120,
   license: 120,
   source: 200,
 }
+/** Attribution URL fields added by schema v2 (validated as portable URLs). */
+const ATTRIBUTION_URL_FIELDS = ['creatorUrl', 'licenseUrl', 'sourceUrl'] as const
+/** Every attribution key, in export order. */
+const ATTRIBUTION_KEYS = [...Object.keys(ATTRIBUTION_LIMITS), ...ATTRIBUTION_URL_FIELDS] as readonly (keyof PresetAttribution)[]
 
 /** Hard cap on JSON nesting accepted by preset validation (the schema needs 3). */
 export const PRESET_MAX_JSON_DEPTH = 8
@@ -529,8 +579,18 @@ function portableWallpaperUrl(raw: unknown): PortableUrlResult {
   return { ok: true, url: check.url }
 }
 
-/** Parse the `wallpaper` member of a preset. */
-function parseWallpaper(value: unknown): { readonly wallpaper: PresetWallpaper | null } | PresetImportFailure {
+/**
+ * Parse the `wallpaper` member of a preset for one schema version.
+ *
+ * v1 keeps exactly `builtin | remote | null`; a v1 file claiming `kind:'style'`
+ * is rejected as `wallpaper-kind` so both clients agree. v2 adds the generated
+ * `{kind:'style', variant}` reference with an exact key set and a dedicated
+ * `wallpaper-variant` problem code.
+ */
+function parseWallpaper(
+  value: unknown,
+  version: PresetSchemaVersion,
+): { readonly wallpaper: PresetWallpaper | null } | PresetImportFailure {
   if (value === null) return { wallpaper: null }
   const record = asRecord(value)
   if (record === undefined) return failed('wallpaper-kind', 'wallpaper')
@@ -552,7 +612,30 @@ function parseWallpaper(value: unknown): { readonly wallpaper: PresetWallpaper |
     }
     return { wallpaper: { kind: 'remote', url: portable.url } }
   }
+  if (kind === 'style' && version >= PRESET_SCHEMA_VERSION) {
+    const unknown = firstUnknownKey(record, ['kind', 'variant'])
+    if (unknown !== undefined) return failed('unknown-field', `wallpaper.${unknown}`)
+    if (!isStyleWallpaperVariant(record.variant)) return failed('wallpaper-variant', 'wallpaper.variant')
+    return { wallpaper: { kind: 'style', variant: record.variant } }
+  }
   return failed('wallpaper-kind', 'wallpaper.kind')
+}
+
+/**
+ * Validate one attribution URL: https, public host, ≤2048 chars (shared with the
+ * persisted provenance rule so a preset can never carry an unportable link).
+ * @param value - untrusted URL field.
+ * @param field - field name for the failure detail.
+ * @returns the normalized URL or an `attribution` failure.
+ */
+function parseAttributionUrl(
+  value: unknown,
+  field: string,
+): { readonly url: string } | PresetImportFailure {
+  if (typeof value !== 'string') return failed('attribution', field)
+  const url = normalizeWallpaperProvenanceUrl(value)
+  if (url === undefined) return failed('attribution', field)
+  return { url }
 }
 
 /** Parse the `effects` member of a preset (clamped into the supported ranges). */
@@ -580,20 +663,37 @@ function parsePosition(value: unknown): { readonly position: PresetPosition } | 
   return { position: { x: record.x as PresetPositionValue, y: record.y as PresetPositionValue } }
 }
 
-/** Parse the optional `attribution` member of a preset. */
-function parseAttribution(value: unknown): { readonly attribution: PresetAttribution | undefined } | PresetImportFailure {
+/**
+ * Parse the optional `attribution` member of a preset.
+ *
+ * v1 accepts only the four plain-text fields; a v1 file carrying a v2 URL field
+ * is rejected as `unknown-field` (strict version shape). v2 adds the three URL
+ * fields under the portable-URL rule; a malformed URL fails with the
+ * `attribution` problem and a `detail` naming the field (never silently dropped
+ * on import — only export drops unportable links).
+ */
+function parseAttribution(
+  value: unknown,
+  version: PresetSchemaVersion,
+): { readonly attribution: PresetAttribution | undefined } | PresetImportFailure {
   if (value === undefined) return { attribution: undefined }
   const record = asRecord(value)
   if (record === undefined) return failed('attribution', 'attribution')
-  const keys = Object.keys(ATTRIBUTION_LIMITS) as (keyof PresetAttribution)[]
+  const keys: readonly (keyof PresetAttribution)[] = version >= PRESET_SCHEMA_VERSION ? ATTRIBUTION_KEYS : Object.keys(ATTRIBUTION_LIMITS) as readonly (keyof PresetAttribution)[]
   const unknown = firstUnknownKey(record, keys)
   if (unknown !== undefined) return failed('unknown-field', `attribution.${unknown}`)
   const attribution: Record<string, string> = {}
   for (const key of keys) {
     const candidate = record[key]
     if (candidate === undefined) continue
+    if ((ATTRIBUTION_URL_FIELDS as readonly string[]).includes(key)) {
+      const parsedUrl = parseAttributionUrl(candidate, `attribution.${key}`)
+      if ('ok' in parsedUrl && parsedUrl.ok === false) return parsedUrl
+      attribution[key] = (parsedUrl as { readonly url: string }).url
+      continue
+    }
     if (typeof candidate !== 'string') return failed('attribution', `attribution.${key}`)
-    const checked = checkString(candidate, `attribution.${key}`, ATTRIBUTION_LIMITS[key])
+    const checked = checkString(candidate, `attribution.${key}`, ATTRIBUTION_LIMITS[key as keyof typeof ATTRIBUTION_LIMITS])
     if ('ok' in checked && checked.ok === false) return checked
     const parsed = checked as { readonly value: string }
     if (parsed.value.length > 0) attribution[key] = parsed.value
@@ -601,7 +701,7 @@ function parseAttribution(value: unknown): { readonly attribution: PresetAttribu
   return { attribution: Object.keys(attribution).length === 0 ? undefined : attribution as PresetAttribution }
 }
 
-/** Validate an already-parsed JSON value (`JSON.parse` output) as preset v1. */
+/** Validate an already-parsed JSON value as a preset (schema v1 or v2). */
 function validatePresetValue(value: unknown, options: PresetImportOptions): PresetImportResult {
   const maxBytes = options.maxBytes ?? PRESET_FILE_MAX_BYTES
   const measured = measureJsonValue(value, maxBytes)
@@ -612,7 +712,10 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
   const unknownRoot = firstUnknownKey(record, ROOT_KEYS)
   if (unknownRoot !== undefined) return failed('unknown-field', unknownRoot)
 
-  if (record.schemaVersion !== PRESET_SCHEMA_VERSION) return failed('schema-version', 'schemaVersion')
+  const version = record.schemaVersion
+  if (version !== LEGACY_PRESET_SCHEMA_VERSION && version !== PRESET_SCHEMA_VERSION) {
+    return failed('schema-version', 'schemaVersion')
+  }
 
   if (!isCreatedWith(record.createdWith)) return failed('created-with', 'createdWith')
   const createdWith = record.createdWith as string
@@ -628,18 +731,18 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
     if (!options.catalogIds.includes(styleId)) return failed('unknown-style', 'styleId')
   }
 
-  const wallpaper = parseWallpaper(record.wallpaper)
+  const wallpaper = parseWallpaper(record.wallpaper, version)
   if ('ok' in wallpaper && wallpaper.ok === false) return wallpaper
   const effects = parseEffects(record.effects)
   if ('ok' in effects && effects.ok === false) return effects
   const position = parsePosition(record.position)
   if ('ok' in position && position.ok === false) return position
-  const attribution = parseAttribution(record.attribution)
+  const attribution = parseAttribution(record.attribution, version)
   if ('ok' in attribution && attribution.ok === false) return attribution
 
   const attributionValue = (attribution as { readonly attribution: PresetAttribution | undefined }).attribution
   const preset: LiveryPreset = {
-    schemaVersion: PRESET_SCHEMA_VERSION,
+    schemaVersion: version,
     createdWith,
     styleId,
     wallpaper: (wallpaper as { readonly wallpaper: PresetWallpaper | null }).wallpaper,
@@ -651,7 +754,7 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
 }
 
 /**
- * Validate an already-parsed JSON value as preset v1.
+ * Validate an already-parsed JSON value as a preset (schema v1 or v2).
  *
  * Never throws: deep/cyclic/unserializable input and oversized payloads become
  * stable `invalid-json` / `too-large` results (the caller-visible contract of
@@ -669,7 +772,7 @@ export function validatePreset(value: unknown, options: PresetImportOptions): Pr
 }
 
 /**
- * Validate one preset JSON text (strict schema v1).
+ * Validate one preset JSON text (schema v1 or v2; export always writes v2).
  *
  * Never throws: malformed JSON, deeply nested JSON and oversized input all map
  * to stable problem codes. A leading UTF-8 BOM is tolerated.
@@ -731,27 +834,63 @@ export async function importPresetFile(file: PresetFileLike, options: PresetImpo
   }
 }
 
-/** Keep only attribution strings that would pass import validation. */
+/**
+ * Keep only attribution values that would pass import validation. Text fields
+ * keep plain display text (length/control-character bounded); URL fields are
+ * dropped when they are not portable https public-host links. Export drops
+ * invalid URLs instead of failing the whole export (plan §4.6).
+ */
 function sanitizeAttribution(input: PresetAttribution | undefined): PresetAttribution | undefined {
   if (input === undefined) return undefined
   const output: Record<string, string> = {}
-  for (const key of Object.keys(ATTRIBUTION_LIMITS) as (keyof PresetAttribution)[]) {
-    const candidate = input[key]
+  for (const [key, limit] of Object.entries(ATTRIBUTION_LIMITS)) {
+    const candidate = input[key as keyof PresetAttribution]
     if (typeof candidate !== 'string') continue
     const trimmed = candidate.trim()
     if (trimmed.length === 0) continue
-    if (trimmed.length > ATTRIBUTION_LIMITS[key]) continue
+    if (trimmed.length > limit) continue
     if (CONTROL_CHARACTERS.test(trimmed)) continue
     output[key] = trimmed
+  }
+  for (const key of ATTRIBUTION_URL_FIELDS) {
+    const url = normalizeWallpaperProvenanceUrl(input[key])
+    if (url !== undefined) output[key] = url
   }
   return Object.keys(output).length === 0 ? undefined : output as PresetAttribution
 }
 
 /**
- * Export the live setup as a preset v1 object + deterministic JSON text.
+ * Map the authoritative remote-selection provenance onto preset attribution
+ * fields. Used as the export fallback when the caller does not pass an explicit
+ * attribution record, so a re-exported image keeps its credit links.
+ * @param provenance - current remote selection provenance.
+ * @returns the attribution record, or undefined when nothing is known.
+ */
+export function attributionFromProvenance(
+  provenance: WallpaperProvenance | undefined,
+): PresetAttribution | undefined {
+  if (provenance === undefined) return undefined
+  const attribution: Record<string, string> = {}
+  const textKeys = ['title', 'creator', 'license', 'source'] as const
+  for (const key of textKeys) {
+    const value = provenance[key]
+    if (typeof value === 'string' && value.trim().length > 0) attribution[key] = value.trim()
+  }
+  for (const key of ATTRIBUTION_URL_FIELDS) {
+    const value = normalizeWallpaperProvenanceUrl(provenance[key])
+    if (value !== undefined) attribution[key] = value
+  }
+  return Object.keys(attribution).length === 0 ? undefined : attribution as PresetAttribution
+}
+
+/**
+ * Export the live setup as a preset v2 object + deterministic JSON text.
  *
  * Uploads are refused (device-local blobs are not portable); remote URLs are
  * re-validated as https; effects are clamped; the focal point is normalized.
+ * The generated `style` wallpaper exports only when a catalog livery is active
+ * (a stock/no-token state has nothing to follow, so it fails
+ * `style-unavailable`). Attribution falls back to the selection provenance.
  * @param source - live setup read from the runtime + wallpaper controller.
  * @returns ok with preset/json/bytes, or a stable export problem.
  */
@@ -760,9 +899,9 @@ export function exportPreset(source: PresetExportSource): PresetExportResult {
   if (styleId !== STOCK_ID && (styleId.length > PRESET_MAX_STYLE_ID_LENGTH || !STYLE_ID_PATTERN.test(styleId))) {
     return exportFailed('invalid-style')
   }
-  const version = source.pluginVersion.trim()
-  if (!VERSION_PATTERN.test(version)) return exportFailed('invalid-version')
-  const createdWith = createdWithOf(version)
+  const pluginVersion = source.pluginVersion.trim()
+  if (!VERSION_PATTERN.test(pluginVersion)) return exportFailed('invalid-version')
+  const createdWith = createdWithOf(pluginVersion)
 
   let wallpaper: PresetWallpaper | null = null
   const selection = source.selection
@@ -771,6 +910,14 @@ export function exportPreset(source: PresetExportSource): PresetExportResult {
     if (selection.kind === 'builtin') {
       if (!isBuiltinWallpaperId(selection.id)) return exportFailed('invalid-wallpaper')
       wallpaper = { kind: 'builtin', id: selection.id }
+    } else if (selection.kind === 'style') {
+      // A style layer can only be reproduced on a machine with catalog tokens;
+      // stock/no-style or an explicitly unavailable token context means there is
+      // nothing to follow.
+      if (styleId === STOCK_ID || source.styleAvailable === false || !isStyleWallpaperVariant(selection.variant)) {
+        return exportFailed('style-unavailable')
+      }
+      wallpaper = { kind: 'style', variant: selection.variant }
     } else {
       const portable = portableWallpaperUrl(selection.url)
       if (!portable.ok) return exportFailed('invalid-url')
@@ -778,7 +925,7 @@ export function exportPreset(source: PresetExportSource): PresetExportResult {
     }
   }
 
-  const attribution = sanitizeAttribution(source.attribution)
+  const attribution = sanitizeAttribution(source.attribution ?? attributionFromProvenance(provenanceOfSelection(selection)))
   const preset: LiveryPreset = {
     schemaVersion: PRESET_SCHEMA_VERSION,
     createdWith,
@@ -797,6 +944,7 @@ function currentWallpaperOf(selection: WallpaperSelection): PresetCurrentWallpap
   if (selection === undefined) return null
   if (selection.kind === 'builtin') return { kind: 'builtin', id: selection.id }
   if (selection.kind === 'remote') return { kind: 'remote', url: selection.url }
+  if (selection.kind === 'style') return { kind: 'style', variant: selection.variant }
   return { kind: 'upload', key: selection.key }
 }
 
@@ -831,13 +979,13 @@ export function sameWallpaperView(a: PresetCurrentWallpaper, b: PresetCurrentWal
   if (a.kind !== b.kind) return false
   if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
   if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
+  if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
   return b.kind === 'upload' && a.key === b.key
 }
 
 /** Compare two normalized attribution records (undefined/empty considered equal). */
 export function sameAttribution(a: PresetAttribution | undefined, b: PresetAttribution | undefined): boolean {
-  const fields = Object.keys(ATTRIBUTION_LIMITS) as (keyof PresetAttribution)[]
-  return fields.every(field => (a?.[field] ?? '') === (b?.[field] ?? ''))
+  return ATTRIBUTION_KEYS.every(field => (a?.[field] ?? '') === (b?.[field] ?? ''))
 }
 
 /**
