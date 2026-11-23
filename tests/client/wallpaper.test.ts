@@ -393,7 +393,10 @@ describe('wallpaper stylesheet builder', () => {
     expect(css).toContain(
       `body[data-dsh-livery][data-dsh-wallpaper][data-ds-dark-theme]{${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, ${fillDark} 65%, transparent)}`,
     )
-    // The fill is slightly more opaque than the main column for legibility.
+    // Direct-paint paths (Web/Windows/drawer) use the same effective alpha as
+    // the host-composited macOS rail (85% fill × 40/50%).
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillLight} 34%, transparent)`)
+    expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillDark} 42.5%, transparent)`)
     expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillLight} 85%, transparent)`)
     expect(css).toContain(`--dsw-specific-sidebar-fill:color-mix(in srgb, ${fillDark} 85%, transparent)`)
     // No double frost: the tint is authored as a host token, not a surface token.

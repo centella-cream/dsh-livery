@@ -376,12 +376,18 @@ function tokenOverrides(selector: string, tokens: TokenMap, frost: number): stri
   return declarations.length === 0 ? '' : `${selector}{${declarations.join(';')}}`
 }
 
-function sidebarFillOverride(selector: string, tokens: TokenMap, frost: number): string {
+function sidebarFillOverride(selector: string, tokens: TokenMap, frost: number, mode: 'light' | 'dark'): string {
   const fill = tokens[WALLPAPER_SIDEBAR_FILL_TOKEN]
   if (typeof fill !== 'string' || fill.length === 0) return ''
   const remaining = Math.max(0, Math.min(100, 100 - frost))
-  const sidebarRemaining = Math.min(94, remaining + 20)
-  return `${selector}{${WALLPAPER_SIDEBAR_FILL_TOKEN}:color-mix(in srgb, ${fill} ${sidebarRemaining}%, transparent)}`
+  // macOS ordinary sidebars multiply the fill by the host wash (40/50%). Web,
+  // Windows and the macOS drawer paint the fill directly. Match the *effective*
+  // alpha on the direct paths so the same style does not look opaque on Web and
+  // translucent on Desktop.
+  const hostFill = Math.min(94, remaining + 20)
+  const directFill = Math.max(0, Math.min(100, hostFill * (mode === 'light' ? 0.4 : 0.5)))
+  return `${selector}{${WALLPAPER_SIDEBAR_FILL_TOKEN}:color-mix(in srgb, ${fill} ${directFill}%, transparent)}` +
+    `html[data-platform="darwin"] ${selector}{${WALLPAPER_SIDEBAR_FILL_TOKEN}:color-mix(in srgb, ${fill} ${hostFill}%, transparent)}`
 }
 
 /**
@@ -483,13 +489,13 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     const lightSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}]`
     const darkSelector = `body[data-dsh-livery][${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]`
     const glass: string[] = []
-    const light = tokenOverrides(lightSelector, tokens.light, tokens.frost) + sidebarFillOverride(lightSelector, tokens.light, tokens.frost)
+    const light = tokenOverrides(lightSelector, tokens.light, tokens.frost) + sidebarFillOverride(lightSelector, tokens.light, tokens.frost, 'light')
     if (light.length > 0) glass.push(light)
     const lightTint = sidebarTintOverride(lightSelector, tokens.light, tokens.frost, 'light')
     if (lightTint.length > 0) glass.push(lightTint)
     const lightCard = cardSurfaceOverride(lightSelector, tokens.light, tokens.frost)
     if (lightCard.length > 0) glass.push(lightCard)
-    const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost) + sidebarFillOverride(darkSelector, tokens.dark, tokens.frost)
+    const dark = tokenOverrides(darkSelector, tokens.dark, tokens.frost) + sidebarFillOverride(darkSelector, tokens.dark, tokens.frost, 'dark')
     if (dark.length > 0) glass.push(dark)
     const darkTint = sidebarTintOverride(darkSelector, tokens.dark, tokens.frost, 'dark')
     if (darkTint.length > 0) glass.push(darkTint)
