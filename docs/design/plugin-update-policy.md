@@ -24,6 +24,24 @@ HMR. Its description is not custom: the Host renders `meta.description` (or a
 `--dsw-font-family`. Livery therefore styles that description indirectly through
 theme tokens, not through a per-plugin detail page.
 
+## Observed profile behavior
+
+Measured on DSH `0.2.2-rc.5` with the real Web profile and the real Desktop app
+(Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130):
+
+| Profile | dsh-context | Detail body | Description styling |
+| --- | --- | --- | --- |
+| Web | `0.73.0` | custom `plugins.bundle.config` form; no feature image | Host `detailDesc`, Yuanti/Livery label-secondary |
+| Desktop | `0.85.1` | custom `plugins.bundle.config` form; localized README detail image | Host `detailDesc`, same font/color after class-hash change |
+
+The Web/Desktop difference is the installed dsh-context version, not a different
+detail-page implementation. `0.85.1` declares `meta.detail: README.md` (localized
+README files); `0.73.0` does not, so only Desktop shows the feature image. Both
+profiles use the same Host detail page, the same `plugins.bundle.config` slot and
+the same Livery tokens. The host class hash differs between builds
+(`X_2TxG_detailDesc` on Web, `w6M7KW_detailDesc` on Desktop), so tests and
+selectors must use stable semantics, never the hash.
+
 ## Goals
 
 1. Decide before a confirmed update whether it is expected to be hot-live or to
