@@ -58,14 +58,14 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.url.credentials': '不允许在地址中携带账号密码。',
   'wallpaper.url.invalid': '这不是有效的图片链接。',
   'wallpaper.onlineTitle': '在线壁纸',
-  'wallpaper.onlineHint': '打开这个标签页会加载一批壁纸；搜索、随机、换一批和重试只在点击时联网。',
+  'wallpaper.onlineHint': '打开此页签加载一批；其他操作点击时请求。',
   'wallpaper.searchPlaceholder': '搜索 CC0 图片…',
   'wallpaper.search': '搜索',
   'wallpaper.refresh': '换一批',
   'wallpaper.random': '随机',
   'wallpaper.providerLabel': '来源',
   'wallpaper.providerAuto': '自动',
-  'wallpaper.providerHint': 'Auto 按顺序尝试来源；切换来源会清空结果，只有请求操作才会加载。',
+  'wallpaper.providerHint': 'Auto 按顺序尝试来源；切换会清空结果。',
   'wallpaper.online.openverseNotice': '使用 Openverse 制作，未获得 Openverse 认可或认证。',
   'wallpaper.searchUnavailable': '当前来源不支持搜索。请选择“自动”或支持搜索的来源。',
   'wallpaper.randomUnavailable': '当前来源没有随机图片。请选择“自动”或支持随机的来源。',
@@ -90,7 +90,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.customSelected': '自定义地址',
   'wallpaper.resultsLabel': '在线壁纸结果',
   'wallpaper.atmosphere': '全局氛围',
-  'wallpaper.atmosphereHint': '0 时壁纸只从透明处透出；调高后，所有页面都会罩上一层壁纸。',
+  'wallpaper.atmosphereHint': '为 0 时壁纸只透过透明表面显示。',
   'wallpaper.positionTitle': '焦点位置',
   'wallpaper.positionHint': '只有在线和上传的图片可以调整位置，内置壁纸始终居中。',
   'wallpaper.position.topLeft': '左上',
@@ -179,12 +179,12 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // 本地数据清理（上传/在线缓存/历史；当前壁纸保留）。
   'wallpaper.clearLocal.title': '本地壁纸数据',
-  'wallpaper.clearLocal.hint': '清理缓存的在线图片、壁纸历史和不再使用的上传图片；当前壁纸会保留。',
+  'wallpaper.clearLocal.hint': '清理缓存图片、历史和未用上传。',
   'wallpaper.clearLocal.button': '清理本地数据',
   'wallpaper.clearLocal.working': '正在清理…',
   'wallpaper.clearLocal.done': '已清理 {count} 个本地图片文件，当前壁纸已保留。',
   'wallpaper.clearLocal.empty': '没有可清理的本地数据。',
-  'wallpaper.clearLocal.partial': '已清理 {count} 个本地图片文件，但有些数据未能删除，请稍后再试。',
+  'wallpaper.clearLocal.partial': '已清理 {count} 个图片文件；部分数据未能删除。',
   // Search and tag filters.
   'search.label': '搜索视觉风格',
   'search.placeholder': '按名称、ID 或标签搜索',
@@ -342,7 +342,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'about.title': '关于',
   'about.plugin': 'DSH Livery {version}',
   'about.certified': '已适配 DeepSeek Harness {hostVersion}',
-  'about.note': '画廊预览图按固定场景生成，用于展示风格差异，不是宿主界面截图。',
+  'about.note': '画廊预览使用固定场景，不是宿主界面截图。',
 
   // Modes.
   'mode.light': '浅色',
@@ -410,7 +410,7 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // Portable presets: export/import of style + wallpaper + effects.
   'preset.title': '预设',
-  'preset.hint': '把当前风格、壁纸、效果和焦点位置保存为 JSON 预设，或导入预设。',
+  'preset.hint': '把风格、壁纸、效果和焦点保存为 JSON 预设，或导入。',
   'preset.export': '导出预设',
   'preset.import': '导入预设',
   'preset.importHint': '仅支持 JSON 预设，最大 {max} KB。确认之前不会改动任何设置。',
@@ -472,7 +472,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'preset.applyError.unknown': '预设的视觉风格不在当前目录中，未做任何改动。',
   'preset.applyError.unavailable': '当前宿主不支持预设的视觉风格，未做任何改动。',
   'preset.applyError.busy': '另一项改动仍在保存，未做任何改动，请稍后重试。',
-  'preset.applyError.wallpaper': '风格已应用，但壁纸未能保存。请重试或保留新风格。',
+  'preset.applyError.wallpaper': '风格已应用；壁纸未能保存。',
 
   // 插件管理器的插件详情页：Livery 的操作、徽标与事实区块。
   'detail.badge.label': 'Livery 版本 {version}',

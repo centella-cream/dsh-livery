@@ -265,7 +265,7 @@ describe('preset card — stable error region and ARIA', () => {
     const error: PresetCardError = { kind: 'export', code: 'style-unavailable' }
     const markup = render({ initialError: error })
     expectErrorWiring(markup, 'preset-export', error)
-    expect(markup).toContain('Follow style wallpaper needs an applied visual style')
+    expect(markup).toContain('Follow style needs an applied style to export')
   })
 
   it('wires a copy failure to the export control', () => {
@@ -284,7 +284,7 @@ describe('preset card — stable error region and ARIA', () => {
     // The apply button is described by both the diff region and the error.
     const apply = markup.split('<button').find(chunk => chunk.includes('data-testid="preset-apply"'))
     expect(apply).toContain(`aria-describedby="${PRESET_ERROR_ID} ${PRESET_DIFF_ID}"`)
-    expect(markup).toContain('style was applied, but the wallpaper could not be saved')
+    expect(markup).toContain('Style applied; wallpaper could not be saved')
   })
 
   it('offers a full retry for a style-apply failure', () => {
@@ -292,7 +292,7 @@ describe('preset card — stable error region and ARIA', () => {
     const markup = render({ initialPreset: makePreset(), initialError: error })
     expectErrorWiring(markup, 'preset-apply', error)
     expect(markup).toContain('data-testid="preset-retry"')
-    expect(markup).toContain('The host refused the visual style change')
+    expect(markup).toContain('Host refused the style change')
   })
 
   it('localizes errors in Chinese', () => {

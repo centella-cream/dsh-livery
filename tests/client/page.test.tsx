@@ -170,7 +170,7 @@ describe('settings page server render', () => {
     const html = render(READY)
     expect(html).toContain('DSH Livery')
     expect(html).toContain(`Certified for DeepSeek Harness ${TEST_ADAPTER.hostVersion}`)
-    expect(html).toContain('Gallery previews are generated from fixed scenes')
+    expect(html).toContain('Gallery previews use fixed scenes')
     expect(html).not.toContain('Contract ')
     expect(html).not.toContain('Adapter ')
     expect(html).not.toMatch(/契约|适配器/)
