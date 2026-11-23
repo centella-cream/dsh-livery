@@ -14,10 +14,31 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { matrixEvidence, readMatrix, readPackageJson, tarballName } from './release-lib.mjs'
+import { PROOF_PATH, readCommittedProof, validateClientSlotProof } from './client-slots-proof.mjs'
+import { verifyProviderGate } from './verify-provider-gate.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const work = join(root, '.tmp', 'release-check')
 const rootPackage = readPackageJson()
+
+// Repository-only proof artifacts: the provider gate decides which keyless
+// providers may ship, and the client-slot proof must match the consumed-slot
+// contract this build actually has.
+const gateProblems = verifyProviderGate(root, rootPackage.version)
+if (gateProblems.length > 0) {
+  for (const problem of gateProblems) console.error(`release-check: ${problem}`)
+  process.exit(1)
+}
+const slotProof = readCommittedProof(root)
+if (slotProof === undefined) {
+  console.error(`release-check: missing ${PROOF_PATH}; run node scripts/client-slots-proof.mjs`)
+  process.exit(1)
+}
+const slotProofProblems = validateClientSlotProof(slotProof, { root })
+if (slotProofProblems.length > 0) {
+  for (const problem of slotProofProblems) console.error(`release-check: ${problem}`)
+  process.exit(1)
+}
 const argv = process.argv.slice(2)
 const flag = (name) => {
   const index = argv.indexOf(name)

@@ -120,8 +120,10 @@ async function buildClient() {
 }
 
 async function checkSizes() {
-  // Performance budgets from docs/design/implementation-plan.md §18.8, per catalog profile.
-  const CLIENT_GZIP_BUDGET = 60 * 1024
+  // Performance budgets from docs/design/interfaces.md / style-system.md, per
+  // catalog profile. The client cap was explicitly raised to 72 KiB for the
+  // 0.2.2 wallpaper studio + provider registry + detail surface content.
+  const CLIENT_GZIP_BUDGET = 72 * 1024
   const HOST_GZIP_BUDGET = 360 * 1024
   const PER_LIVERY_CSS_BUDGET = 13 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))

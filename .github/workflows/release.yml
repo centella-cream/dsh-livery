@@ -52,7 +52,12 @@ jobs:
         run: |
           RUN_ID="${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}"
           PRODUCER_SHA=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq .head_sha)
-          EVIDENCE_SHA=$(node -e "const fs=require('fs');const p='contracts/dsh/evidence/0.2.1/0.2.1-rc.2-web-chrome.json';process.stdout.write(JSON.parse(fs.readFileSync(p,'utf8')).commit)")
+          EVIDENCE_FILE=$(node scripts/release-evidence-list.mjs | head -n 1)
+          test -n "$EVIDENCE_FILE" || {
+            echo "no current-version evidence file found; run acceptance first" >&2
+            exit 1
+          }
+          EVIDENCE_SHA=$(node -e "const fs=require('fs');process.stdout.write(JSON.parse(fs.readFileSync(process.argv[1],'utf8')).commit)" "$EVIDENCE_FILE")
           test "$PRODUCER_SHA" = "$EVIDENCE_SHA" || {
             echo "producer run $RUN_ID headSha=$PRODUCER_SHA != evidence commit $EVIDENCE_SHA" >&2
             exit 1
