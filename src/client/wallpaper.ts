@@ -759,6 +759,19 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     // Let the under-content immersive layer show through the host's body canvas.
     `body[${WALLPAPER_ATTRIBUTE}]{background-color:transparent}`,
   )
+  // Stock style + wallpaper: Livery owns no livery tokens there, so the host
+  // MenuSurface material would stay translucent over the wallpaper. Pin the
+  // same surface/fill tokens to the opaque stock layer ladder while a wallpaper
+  // is active (the Livery-style branch below owns its own values).
+  if (input.tokens === undefined) {
+    rules.push(
+      `body[${WALLPAPER_ATTRIBUTE}]:not([data-dsh-livery]){`
+      + '--dsw-menu-surface-fill:var(--dsw-alias-bg-layer-1);'
+      + '--dsw-specific-menu:var(--dsw-alias-bg-layer-1);'
+      + '--dsw-alias-fill-l1:var(--dsw-alias-bg-layer-1);'
+      + '--dsw-alias-fill-l2:var(--dsw-alias-bg-layer-2)}',
+    )
+  }
   // Optional page tint for surfaces whose background can show it: a
   // non-interactive atmospheric copy above normal page content but below every
   // host floating layer. It is not a visual-coverage guarantee on opaque pages.

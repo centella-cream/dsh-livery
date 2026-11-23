@@ -167,7 +167,7 @@ export const enUS = {
   'wallpaper.builtinCurrentClassic': 'Current (Classic)',
   'wallpaper.classicSummary': 'Classic built-in designs ({count})',
   'wallpaper.classicSummaryPinned': 'Classic built-in designs ({count} total; 1 pinned above)',
-  'wallpaper.noRequestHint': 'Built-in designs load offline; a saved online image may load through the guarded cache.',
+  'wallpaper.noRequestHint': 'Built-in designs load offline; saved online images use the cache.',
   'wallpaper.credit.creator': 'Creator',
   'wallpaper.credit.license': 'Licence',
   'wallpaper.credit.source': 'Source',
@@ -412,7 +412,7 @@ export const enUS = {
 
   // Portable presets: export/import of style + wallpaper + effects.
   'preset.title': 'Presets',
-  'preset.hint': 'Save the current visual style, wallpaper, effects and focal point as a JSON preset, or import one to preview its changes first.',
+  'preset.hint': 'Save the current style, wallpaper, effects and focal point as a JSON preset, or import one.',
   'preset.export': 'Export preset',
   'preset.import': 'Import preset',
   'preset.importHint': 'JSON presets only, up to {max} KB. Nothing changes until you confirm.',
@@ -463,7 +463,7 @@ export const enUS = {
   'preset.error.position': 'The preset focal point is invalid.',
   'preset.error.attribution': 'The preset image credit is invalid.',
   'preset.error.forbiddenContent': 'The preset contains disallowed content ({field}).',
-  'preset.exportError.upload': 'Uploaded images stay on this device, so they cannot be exported. Remove the wallpaper or pick a built-in or online image first.',
+  'preset.exportError.upload': 'Uploaded images stay on this device and cannot be exported. Remove the wallpaper first.',
   'preset.exportError.invalidUrl': 'The current wallpaper URL cannot be exported.',
   'preset.exportError.invalidWallpaper': 'The current wallpaper cannot be exported.',
   'preset.exportError.invalidStyle': 'The current visual style id cannot be exported.',
@@ -474,7 +474,7 @@ export const enUS = {
   'preset.applyError.unknown': 'The preset visual style is not in the current catalog, so nothing was applied.',
   'preset.applyError.unavailable': 'The preset visual style is not available on this host, so nothing was applied.',
   'preset.applyError.busy': 'Another change is still being saved. Nothing was applied; try again in a moment.',
-  'preset.applyError.wallpaper': 'The visual style was applied, but the wallpaper could not be changed on this device. Retry the wallpaper, or close this message to keep the new style.',
+  'preset.applyError.wallpaper': 'The style was applied, but the wallpaper could not be saved. Retry or keep the new style.',
 
   // Plugin-manager detail page: Livery's actions, badge and facts section.
   'detail.badge.label': 'Livery {version}',

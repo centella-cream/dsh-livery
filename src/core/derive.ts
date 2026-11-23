@@ -72,8 +72,19 @@ const ROLE_TOKEN_NAMES: readonly string[] = [
  * host rebinding points, onboarding brand art and the semantic diff palette
  * (not re-themed).
  */
-export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
+/**
+ * Host-read surface tokens Livery owns explicitly even though the frozen
+ * contract may not declare them or may treat the public menu material as
+ * inherited. The derive step and the compiler's emission/safety gate share this
+ * list so a token cannot be emitted but rejected (or vice versa).
+ */
+export const FORCED_HOST_READ_TOKENS: readonly string[] = Object.freeze([
   '--dsw-menu-surface-fill',
+  '--dsw-alias-fill-l1',
+  '--dsw-alias-fill-l2',
+])
+
+export const DELIBERATELY_INHERITED_TOKENS: readonly string[] = [
   '--dsw-focus-ring-color',
   '--dsw-elevation-stroke-color',
   '--dsw-gradient-onboarding-violet-stops',
@@ -460,11 +471,19 @@ function deriveVariant(
 
   // Floating menus must never show page text through them. Host stock uses a
   // translucent menu surface plus a backdrop blur; nested popovers/detail cards
-  // do not reliably receive that blur, so the Livery menu surface is opaque
-  // layer-2 for every style. The page/wallpaper remain visible around it.
-  if (layer2 !== undefined && !overridden.has('--dsw-specific-menu')) {
-    full['--dsw-specific-menu'] = layer1 ?? layer2
+  // do not reliably receive that blur, so every Livery style owns the real
+  // MenuSurface token as an opaque layer-1 surface. `--dsw-specific-menu` stays
+  // synchronized for the older Livery consumers that read the alias.
+  const menuSurface = layer1 ?? layer2
+  if (menuSurface !== undefined) {
+    if (!overridden.has('--dsw-menu-surface-fill')) full['--dsw-menu-surface-fill'] = menuSurface
+    if (!overridden.has('--dsw-specific-menu')) full['--dsw-specific-menu'] = menuSurface
   }
+  // Host components also read fill-l1/l2 directly (for example the jobs live
+  // row) even though the frozen contract lists them as undeclaredButRead. Give
+  // them the same opaque layer ladder so those surfaces cannot be transparent.
+  if (layer1 !== undefined && !overridden.has('--dsw-alias-fill-l1')) full['--dsw-alias-fill-l1'] = layer1
+  if (layer2 !== undefined && !overridden.has('--dsw-alias-fill-l2')) full['--dsw-alias-fill-l2'] = layer2
 
   // 6. Bounded WCAG repair pass over the foreground tokens of the audit matrix.
   let contrast: readonly ContrastEntry[] = []
@@ -494,7 +513,14 @@ function deriveVariant(
   // 7. Emission policy (§8.2): consumed tokens only; everything else inherits
   //    stock and is reported by the compiler as a non-blocking diagnostic.
   const emittedNames = emittedTokenNames(stock)
-  const forced = new Set<string>([...overridden, ...Object.keys(roleOverrides)])
+  const forced = new Set<string>([
+    ...overridden,
+    ...Object.keys(roleOverrides),
+    // Host-read surfaces Livery now owns explicitly; their stock declarations
+    // may be absent (undeclaredButRead), so force emission instead of relying
+    // on the consumed-token set.
+    ...FORCED_HOST_READ_TOKENS,
+  ])
   // Style/metric tokens are emitted when they differ from stock (surface `solid`
   // and legacy metric profiles keep empty maps, so they add no bytes).
   const extraAllowed = new Set<string>([...Object.keys(metricTokens), ...Object.keys(styleTokens), ...Object.keys(manifest.layout.surfaceTokens?.[mode] ?? {}), ...Object.keys(chrome)])

@@ -692,6 +692,25 @@ describe('wallpaper stylesheet builder', () => {
     expect(opaque).toContain(`${WALLPAPER_SIDEBAR_TINT_TOKEN}:color-mix(in srgb, color-mix(in srgb, #f0f0f0 97%, #7a9bf0) 0%, transparent)`)
   })
 
+  it('pins opaque menu/fill surfaces for stock style with an active wallpaper', () => {
+    const css = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'ink' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+    })
+    expect(css).toContain(
+      'body[data-dsh-wallpaper]:not([data-dsh-livery]){--dsw-menu-surface-fill:var(--dsw-alias-bg-layer-1);',
+    )
+    expect(css).toContain('--dsw-specific-menu:var(--dsw-alias-bg-layer-1)')
+    expect(css).toContain('--dsw-alias-fill-l1:var(--dsw-alias-bg-layer-1)')
+    expect(css).toContain('--dsw-alias-fill-l2:var(--dsw-alias-bg-layer-2)')
+    const livery = buildWallpaperCss({
+      selection: { kind: 'builtin', id: 'ink' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      tokens: { light: { '--dsw-alias-bg-base': '#fff' }, dark: { '--dsw-alias-bg-base': '#000' }, frost: 35 },
+    })
+    expect(livery).not.toContain(':not([data-dsh-livery])')
+  })
+
   it('omits token overrides for stock appearance or empty token maps', () => {
     expect(tokenContextOf(undefined, 35)).toBeUndefined()
     const css = buildWallpaperCss({

@@ -284,7 +284,7 @@ describe('preset card — stable error region and ARIA', () => {
     // The apply button is described by both the diff region and the error.
     const apply = markup.split('<button').find(chunk => chunk.includes('data-testid="preset-apply"'))
     expect(apply).toContain(`aria-describedby="${PRESET_ERROR_ID} ${PRESET_DIFF_ID}"`)
-    expect(markup).toContain('visual style was applied, but the wallpaper could not be changed')
+    expect(markup).toContain('style was applied, but the wallpaper could not be saved')
   })
 
   it('offers a full retry for a style-apply failure', () => {

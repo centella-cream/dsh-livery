@@ -14,7 +14,7 @@ import {
   isStyleTokenName,
 } from '../../src/core/audit.js'
 import { METRICS, SURFACE_STYLE_DEFINITIONS, SURFACE_STYLES, surfaceStyleOf } from '../../src/core/registry.js'
-import { formatHex, parseColor } from '../../src/core/color.js'
+import { formatHex, parseColor, parseColorWithAlpha } from '../../src/core/color.js'
 import { summarizeContrast } from '../../src/core/contrast.js'
 import { hashCss, hashLivery, renderLiveryCss, styleTextFromFragments } from '../../src/core/render.js'
 import * as generatedLiveries from '../../src/generated/liveries.js'
@@ -111,7 +111,14 @@ describe('deriveLivery — determinism and version binding', () => {
         const derived = deriveLivery(manifest, stock)
         for (const mode of MODES) {
           for (const name of tokenNamesFor(derived[mode].tokens)) {
-            expect(declared[name]).toBeDefined()
+            // These host-read aliases are missing from the frozen contract on
+            // purpose (`undeclaredButRead`); Livery emits them explicitly.
+            const hostReadAlias = name === '--dsw-alias-fill-l1' || name === '--dsw-alias-fill-l2'
+            expect(declared[name] !== undefined || hostReadAlias).toBe(true)
+            if (declared[name] === undefined) {
+              expect(DELIBERATELY_INHERITED_TOKENS.includes(name)).toBe(false)
+              continue
+            }
             const isAliasLike =
               declared[name]?.category === 'alias' || declared[name]?.category === 'specific'
             if (isAliasLike) {
@@ -378,7 +385,7 @@ describe('compiled catalog profiles (generated/liveries.ts)', () => {
           mismatches += 1
           continue
         }
-        expect(Buffer.byteLength(cssText, 'utf8')).toBeLessThanOrEqual(13 * 1024)
+        expect(Buffer.byteLength(cssText, 'utf8')).toBeLessThanOrEqual(14 * 1024)
         for (const variant of [livery.light, livery.dark]) {
           for (const [name, value] of Object.entries(variant.tokens)) {
             expect(isAllowedTokenValue(name, value), `${name}=${value}`).toBe(true)
@@ -407,13 +414,39 @@ describe('compiled catalog profiles (generated/liveries.ts)', () => {
 })
 
 describe('floating menu surface adaptation', () => {
-  it('keeps every floating menu opaque so page text cannot show through', () => {
+  it('owns the real MenuSurface fill and jobs fill aliases opaquely', () => {
     const manifest = makeStyleManifest('fixture-terminal-menu', 'terminal', 'technical', 0)
     const stock = STOCK_BY_VERSION['0.2.2-rc.5']
     expect(stock).toBeDefined()
     const derived = deriveLivery(manifest, stock!)
     expect(derived.light.tokens['--dsw-menu-backdrop-filter']).toBe('none')
-    expect(derived.light.tokens['--dsw-specific-menu']).toBe(derived.light.tokens['--dsw-alias-bg-layer-1'])
-    expect(derived.dark.tokens['--dsw-specific-menu']).toBe(derived.dark.tokens['--dsw-alias-bg-layer-1'])
+    for (const mode of MODES) {
+      const tokens = derived[mode].tokens
+      const layer1 = tokens['--dsw-alias-bg-layer-1']!
+      const layer2 = tokens['--dsw-alias-bg-layer-2']!
+      expect(tokens['--dsw-menu-surface-fill']).toBe(layer1)
+      expect(tokens['--dsw-specific-menu']).toBe(layer1)
+      expect(tokens['--dsw-alias-fill-l1']).toBe(layer1)
+      expect(tokens['--dsw-alias-fill-l2']).toBe(layer2)
+      expect(parseColorWithAlpha(layer1).alpha).toBe(1)
+      expect(parseColorWithAlpha(tokens['--dsw-menu-surface-fill']!).alpha).toBe(1)
+      expect(parseColorWithAlpha(tokens['--dsw-alias-fill-l1']!).alpha).toBe(1)
+      expect(parseColorWithAlpha(tokens['--dsw-alias-fill-l2']!).alpha).toBe(1)
+    }
+    expect(DELIBERATELY_INHERITED_TOKENS).not.toContain('--dsw-menu-surface-fill')
+  })
+
+  it('keeps every shipped livery MenuSurface fill opaque in both modes', () => {
+    for (const profile of Object.values(generatedLiveries.CATALOG_PROFILES)) {
+      for (const livery of profile.liveries) {
+        for (const mode of MODES) {
+          const tokens = livery[mode].tokens
+          expect(parseColorWithAlpha(tokens['--dsw-menu-surface-fill']!).alpha).toBe(1)
+          expect(tokens['--dsw-menu-surface-fill']).toBe(tokens['--dsw-alias-bg-layer-1'])
+          expect(parseColorWithAlpha(tokens['--dsw-alias-fill-l1']!).alpha).toBe(1)
+          expect(parseColorWithAlpha(tokens['--dsw-alias-fill-l2']!).alpha).toBe(1)
+        }
+      }
+    }
   })
 })

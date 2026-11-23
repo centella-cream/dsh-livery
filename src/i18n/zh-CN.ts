@@ -165,7 +165,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.builtinCurrentClassic': '当前（经典）',
   'wallpaper.classicSummary': '经典内置设计（{count}）',
   'wallpaper.classicSummaryPinned': '经典内置设计（共 {count} 个；1 个已置顶）',
-  'wallpaper.noRequestHint': '内置壁纸可离线加载；已保存在线壁纸可能通过受控缓存加载。',
+  'wallpaper.noRequestHint': '内置壁纸离线加载；已保存在线壁纸使用缓存。',
   'wallpaper.credit.creator': '作者',
   'wallpaper.credit.license': '许可',
   'wallpaper.credit.source': '来源',
@@ -410,7 +410,7 @@ export const zhCN: Record<LiveryKey, string> = {
 
   // Portable presets: export/import of style + wallpaper + effects.
   'preset.title': '预设',
-  'preset.hint': '把当前视觉风格、壁纸、效果和焦点位置保存为 JSON 预设，或导入预设先预览改动。',
+  'preset.hint': '把当前风格、壁纸、效果和焦点位置保存为 JSON 预设，或导入预设。',
   'preset.export': '导出预设',
   'preset.import': '导入预设',
   'preset.importHint': '仅支持 JSON 预设，最大 {max} KB。确认之前不会改动任何设置。',
@@ -461,7 +461,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'preset.error.position': '预设的焦点位置无效。',
   'preset.error.attribution': '预设的图片署名无效。',
   'preset.error.forbiddenContent': '预设包含不允许的内容（{field}）。',
-  'preset.exportError.upload': '上传的图片只保存在本设备，无法导出。请先移除壁纸，或改用内置或在线壁纸。',
+  'preset.exportError.upload': '上传图片只保存在本设备，无法导出。请先移除壁纸。',
   'preset.exportError.invalidUrl': '当前壁纸地址无法导出。',
   'preset.exportError.invalidWallpaper': '当前壁纸无法导出。',
   'preset.exportError.invalidStyle': '当前视觉风格 ID 无法导出。',
@@ -472,7 +472,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'preset.applyError.unknown': '预设的视觉风格不在当前目录中，未做任何改动。',
   'preset.applyError.unavailable': '当前宿主不支持预设的视觉风格，未做任何改动。',
   'preset.applyError.busy': '另一项改动仍在保存，未做任何改动，请稍后重试。',
-  'preset.applyError.wallpaper': '视觉风格已应用，但本设备未能更改壁纸。可重试壁纸，或关闭提示保留新风格。',
+  'preset.applyError.wallpaper': '风格已应用，但壁纸未能保存。请重试或保留新风格。',
 
   // 插件管理器的插件详情页：Livery 的操作、徽标与事实区块。
   'detail.badge.label': 'Livery 版本 {version}',

@@ -26,7 +26,7 @@ import type {
 } from '../core/types.js'
 import { LIVERY_VERSION } from '../core/types.js'
 import { summarizeContrast } from '../core/contrast.js'
-import { DELIBERATELY_INHERITED_TOKENS } from '../core/derive.js'
+import { DELIBERATELY_INHERITED_TOKENS, FORCED_HOST_READ_TOKENS } from '../core/derive.js'
 import { CHROME_TOKEN_NAMES } from '../core/chrome.js'
 import {
   CONSUMED_METRIC_FONT_TOKENS,
@@ -40,9 +40,9 @@ import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from './previews.js'
 /** Size budgets from docs/design/implementation-plan.md §18.8 (bytes, UTF-8). */
 export const SIZE_BUDGETS = {
   /** First-frame boot CSS. */
-  bootBytes: 13 * 1024,
+  bootBytes: 14 * 1024,
   /** One livery's full rendered CSS (tokens + typography + layout). */
-  liveryBytes: 13 * 1024,
+  liveryBytes: 14 * 1024,
 } as const
 
 /** Fixed z-index budget from docs/design/implementation-plan.md §18.3: no value above 20. */
@@ -96,7 +96,6 @@ const ALPHA_INHERITANCE: readonly TokenExemption[] = [
 
 /** Reasons for the core's deliberately-inherited tokens. */
 const CORE_INHERITANCE_REASONS: Readonly<Record<string, string>> = {
-  '--dsw-menu-surface-fill': 'public menu-material contract; the host composes it over its own backdrop and Livery must not re-author it',
   '--dsw-menu-backdrop-filter': 'public menu-material contract; host-owned backdrop filter',
   '--dsw-mask-blur': 'public menu-material blur helper; host-owned',
   '--dsw-focus-ring-color': 'host rebind seam: the focus rule keeps `var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary))`, so overriding the alias is correct and the token itself must stay undeclared',
@@ -226,7 +225,12 @@ export function tokenSetsFor(stock: StockSnapshot): StockTokenSets {
   }
 
   const style = styleTokenNames(stock)
-  const emissionAllowed = new Set<string>([...emitted, ...style, ...CHROME_TOKEN_NAMES])
+  const emissionAllowed = new Set<string>([
+    ...emitted,
+    ...style,
+    ...CHROME_TOKEN_NAMES,
+    ...FORCED_HOST_READ_TOKENS,
+  ])
   const sets: StockTokenSets = {
     version: stock.version,
     tokenContractHash: stock.tokenContractHash,
