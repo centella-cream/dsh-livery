@@ -107,6 +107,20 @@ describe('formatDiagnostics', () => {
     expect(text).toContain('refused')
   })
 
+  it('renders the stale (HMR) handshake copy instead of the rejected copy', () => {
+    const stale: LiveryRuntimeSnapshot = {
+      ...READY,
+      bootStatus: 'stale',
+      bootReason: 'stale boot payload: boot=0.2.1 build=0.2.2; catalog will be re-fetched',
+    }
+    const en = formatDiagnostics(makeT(enUS), stale, 'en')
+    expect(en).toContain(enUS['check.bootStale'])
+    expect(en).toContain('stale boot payload')
+    expect(en).not.toContain(enUS['check.bootRejected'])
+    const zh = formatDiagnostics(makeT(zhCN), stale, 'zh')
+    expect(zh).toContain(zhCN['check.bootStale'])
+  })
+
   it('renders the same dictionary for both shipped locale ids', () => {
     const zh = formatDiagnostics(makeT(dictionaries.zh), READY, 'zh')
     const en = formatDiagnostics(makeT(dictionaries.en), READY, 'en')

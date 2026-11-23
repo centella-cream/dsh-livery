@@ -4,8 +4,11 @@
  * Compatibility is decided by an exact `(hostVersion, adapterId, contractHash)`
  * triple from the generated certified-adapter registry — never by semver
  * inference or a version string in UI logic. A payload whose triple is unknown
- * fails closed to stock; a fetched catalog must repeat the same certified triple
- * and its `catalogProfile`, and preview assets must live under the base the host
+ * fails closed to stock. The one in-process repair path is `stale`: an exact
+ * allowlisted previous build's first frame (an in-place HMR update) keeps its
+ * certified triple but contributes no CSS — the client refetches the catalog
+ * and applies it. A fetched catalog must repeat the same certified triple and
+ * its `catalogProfile`, and preview assets must live under the base the host
  * declared for that profile.
  *
  * Pure functions — no DOM, no fetch, no Cordis.
@@ -23,19 +26,51 @@ export interface HostIdentity {
   readonly catalogProfile: string
 }
 
-/** Result of inspecting one handshake payload. */
-export interface BootCheck {
-  /** `valid`: certified and accepted. `absent`: known host, no boot rows. `mismatch`: fail closed. */
-  readonly kind: 'valid' | 'absent' | 'mismatch'
-  /** A plugin-version transition cannot be repaired in-process. */
-  readonly reloadRequired?: boolean
+/**
+ * Exact previous plugin builds whose first-frame payload may be accepted as
+ * `stale` after an in-place client update.
+ *
+ * Membership is exact string equality only (no semver/prefix/range inference),
+ * and a payload can never influence which catalog/profile is fetched. Extending
+ * this list is a reviewed release change tied to an accepted update transition.
+ */
+export const STALE_BOOT_VERSIONS: readonly string[] = Object.freeze(['0.2.1'])
+
+/**
+ * Fields every handshake classification carries.
+ *
+ * `reloadRequired` marks a plugin-version transition the client cannot repair
+ * in process; the plugin-detail surface consumes it for the reload copy.
+ */
+interface BootCheckBase {
   /** The payload when its shape validated; undefined for a malformed global. */
   readonly payload: BootPayload | undefined
   /** Certified adapter identity whose triple the payload matched, when it matched one. */
   readonly adapter: AdapterIdentity | undefined
   /** Human-readable reasons, used for diagnostics only. */
   readonly reasons: readonly string[]
+  /** A plugin-version transition cannot be repaired in-process. */
+  readonly reloadRequired?: boolean
 }
+
+/**
+ * Result of inspecting one handshake payload.
+ *
+ * - `valid`: exact current build, certified triple, matching profile, accepted.
+ * - `stale`: an exact allowlisted previous build's first frame (HMR); trusted
+ *   for its certified triple only — the client refetches the catalog.
+ * - `absent`: known host, no boot rows (gate rejected or stock).
+ * - `mismatch`: fail closed.
+ */
+export type BootCheck =
+  | (BootCheckBase & { readonly kind: 'valid' })
+  | (BootCheckBase & {
+    readonly kind: 'stale'
+    /** Exact previous build the first frame came from. */
+    readonly staleFrom: string
+  })
+  | (BootCheckBase & { readonly kind: 'absent' })
+  | (BootCheckBase & { readonly kind: 'mismatch' })
 
 /** Result of inspecting one fetched catalog document. */
 export interface CatalogCheck {
@@ -105,10 +140,17 @@ export function findAdapter(
 /**
  * Validate one handshake payload against the certified-adapter registry.
  *
+ * Checks run in the frozen order: shape → certified `(hostVersion, adapterId,
+ * contractHash)` triple → `entryId` → plugin version → `catalogProfile` →
+ * `accepted`.
+ *
  * `mismatch` is the fail-closed outcome: the client must not adopt or apply
- * anything from a host it was not compiled and certified against. `absent` means
- * a certified host deliberately injected no first-frame rows (gate rejected or
- * stock), so the client may still work from the served catalog and config.
+ * anything from a host it was not compiled and certified against. `stale` is the
+ * one in-process repair path: an exact allowlisted previous plugin build (the
+ * first frame survived an HMR update), which keeps only its certified triple —
+ * the client refetches the catalog and applies that. `absent` means a certified
+ * host deliberately injected no first-frame rows (gate rejected or stock), so
+ * the client may still work from the served catalog and config.
  * @param raw - value read from the boot global (unknown shape).
  * @param adapters - generated certified-adapter identity registry.
  * @returns classification, matched adapter and reasons.
@@ -138,26 +180,34 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
       ],
     }
   }
-  const reasons: string[] = []
-  const warnings: string[] = []
-  if (payload.pluginVersion !== LIVERY_VERSION) {
+  if (payload.entryId !== ENTRY_ID) {
     return {
       kind: 'mismatch',
       payload,
       adapter,
-      reloadRequired: true,
-      reasons: [`plugin version changed: boot=${payload.pluginVersion} build=${LIVERY_VERSION}; reload required`],
+      reasons: [`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`],
     }
   }
-  const profileChangedByHmr = false
-  if (payload.entryId !== ENTRY_ID) {
-    reasons.push(`entry mismatch: host=${payload.entryId} build=${ENTRY_ID}`)
+  let staleFrom: string | undefined
+  if (payload.pluginVersion !== LIVERY_VERSION) {
+    if (!STALE_BOOT_VERSIONS.includes(payload.pluginVersion)) {
+      return {
+        kind: 'mismatch',
+        payload,
+        adapter,
+        reloadRequired: true,
+        reasons: [`plugin version mismatch: boot=${payload.pluginVersion} build=${LIVERY_VERSION}; reload required`],
+      }
+    }
+    staleFrom = payload.pluginVersion
   }
-  if (!profileChangedByHmr && payload.catalogProfile !== adapter.catalogProfile) {
-    reasons.push(`catalog profile mismatch: host=${payload.catalogProfile} certified=${adapter.catalogProfile}`)
-  }
-  if (reasons.length > 0) {
-    return { kind: 'mismatch', payload, adapter, reasons }
+  if (payload.catalogProfile !== adapter.catalogProfile) {
+    return {
+      kind: 'mismatch',
+      payload,
+      adapter,
+      reasons: [`catalog profile mismatch: host=${payload.catalogProfile} certified=${adapter.catalogProfile}`],
+    }
   }
   if (!payload.accepted) {
     return {
@@ -167,37 +217,39 @@ export function checkBoot(raw: unknown, adapters: readonly AdapterIdentity[]): B
       reasons: ['host gate did not accept first-frame injection'],
     }
   }
-  return { kind: 'valid', payload, adapter, reasons: warnings }
+  if (staleFrom !== undefined) {
+    // The startup frame is from a previous build: only its certified triple is
+    // trusted. Its CSS/skin are never adopted; the runtime refetches the
+    // catalog and applies that instead.
+    return {
+      kind: 'stale',
+      staleFrom,
+      payload,
+      adapter,
+      reasons: [`stale boot payload: boot=${staleFrom} build=${LIVERY_VERSION}; catalog will be re-fetched`],
+    }
+  }
+  return { kind: 'valid', payload, adapter, reasons: [] }
 }
 
 /**
  * Identity the accepted handshake promises the catalog must repeat.
+ *
+ * The certified adapter record is authoritative in every non-`mismatch` case:
+ * a stale payload came from the previous build, so neither its own profile id
+ * nor any other payload string can influence catalog selection.
  * @param boot - handshake result.
  * @returns the certified identity, or undefined when no certified host is known.
  */
 export function bootIdentity(boot: BootCheck): HostIdentity | undefined {
   if (boot.kind === 'mismatch') return undefined
-  const payload = boot.payload
-  if (payload !== undefined) {
-    // On HMR the boot payload is from the previous plugin build; its catalog
-    // profile id may be stale. Use the matched adapter's profile so the live
-    // catalog check validates the profile the new build actually serves.
-    const catalogProfile = payload.pluginVersion !== LIVERY_VERSION
-      ? boot.adapter?.catalogProfile ?? payload.catalogProfile
-      : payload.catalogProfile
-    return {
-      hostVersion: payload.hostVersion,
-      adapterId: payload.adapterId,
-      contractHash: payload.contractHash,
-      catalogProfile,
-    }
-  }
-  if (boot.adapter === undefined) return undefined
+  const adapter = boot.adapter
+  if (adapter === undefined) return undefined
   return {
-    hostVersion: boot.adapter.hostVersion,
-    adapterId: boot.adapter.adapterId,
-    contractHash: boot.adapter.contractHash,
-    catalogProfile: boot.adapter.catalogProfile,
+    hostVersion: adapter.hostVersion,
+    adapterId: adapter.adapterId,
+    contractHash: adapter.contractHash,
+    catalogProfile: adapter.catalogProfile,
   }
 }
 

@@ -7,7 +7,8 @@
  *
  * 1. the `dsh-livery` locale dictionaries (zh/en),
  * 2. the settings-page stylesheet,
- * 3. the runtime (state machine + presenter) and the `settings.section` page.
+ * 3. the runtime (state machine + presenter) and the `settings.section` page,
+ * 4. the plugin-manager detail contributions (actions, badge, facts section).
  *
  * Host compatibility is decided once, by the generated certified-adapter
  * registry: the first-frame payload and the fetched catalog must agree on an
@@ -26,6 +27,7 @@ import { ADAPTER_IDENTITIES } from '../generated/adapter-identities.js'
 import { dictionaries } from '../i18n/index.js'
 import { CLIENT_CSS } from '../styles/client.js'
 import { bootIdentity, checkBoot, checkCatalog, readBootPayload } from './handshake.js'
+import { installDetailSlots } from './detail.js'
 import { canonicalJson } from '../core/presentation.js'
 
 const CATALOG_MAX_BYTES = 4 * 1024 * 1024
@@ -262,12 +264,23 @@ export function apply(ctx: Context): void {
   }
 
   const navigationEffects: Array<() => void> = []
+  // Lifetime of Livery's own `main` panel registration: the Open Livery detail
+  // action is only rendered while it is live (selecting an unregistered key
+  // throws). Set inside the inject/register callback, cleared in its disposer.
+  let mainPanelRegistered = false
   try {
-    navigationEffects.push(ctx.effect(() => ctx.slots.inject('main', () => ctx.slots.register({
-      name: 'main',
-      key: PANEL_ID,
-      locale: LOCALE_NS,
-    }, props => <LiveryPanelPage {...props} runtime={runtime} />)), 'livery: main panel page'))
+    navigationEffects.push(ctx.effect(() => ctx.slots.inject('main', () => {
+      const dispose = ctx.slots.register({
+        name: 'main',
+        key: PANEL_ID,
+        locale: LOCALE_NS,
+      }, props => <LiveryPanelPage {...props} runtime={runtime} />)
+      mainPanelRegistered = true
+      return () => {
+        mainPanelRegistered = false
+        dispose()
+      }
+    }), 'livery: main panel page'))
     navigationEffects.push(ctx.effect(() => ctx.slots.inject('sidebar.panellist', () => {
       const dispose = ctx.slots.register({
         name: 'sidebar.panellist',
@@ -312,4 +325,25 @@ export function apply(ctx: Context): void {
       pending?.()
     }
   }, 'livery: settings fallback grace')
+
+  // Plugin-manager detail page: register Livery's actions/badge/section entries
+  // after the panel/settings composition is set up. Each contribution goes
+  // through `slots.inject`, so a host without the plugin-manager page (or with
+  // a layout that never declares the slots) contributes nothing and throws
+  // nothing. Disposing the plugin disposes all three inject subscriptions.
+  ctx.effect(() => {
+    const disposers = installDetailSlots(ctx, {
+      runtime,
+      isMainPanelRegistered: () => mainPanelRegistered,
+    })
+    return () => {
+      for (const dispose of [...disposers].reverse()) {
+        try {
+          dispose()
+        } catch {
+          /* unload keeps tearing down; a stale inject disposer is not fatal */
+        }
+      }
+    }
+  }, 'livery: plugin detail slots')
 }

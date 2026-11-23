@@ -80,6 +80,83 @@ export interface LiverySidebarRegistration {
 }
 
 /**
+ * The three plugin-manager detail slots Livery contributes to.
+ *
+ * Declared by `@deepseek-ai/dsh-client-ui-plugin-manager/client` on certified
+ * hosts; vendored here as literal keys so this bundle never imports that host
+ * package. The declarations are proven per host by
+ * `contracts/dsh/client-slot-declarations.json`.
+ */
+export type LiveryDetailSlotKey =
+  | 'plugins.detail.actions'
+  | 'plugins.detail.badge'
+  | 'plugins.detail.section'
+
+/** One row of a bundle as the plugin-manager detail page exposes it. */
+export interface PluginRowRef {
+  readonly rowId: string
+  readonly moduleName: string
+  readonly enabled: boolean
+}
+
+/** One bundle as the plugin-manager detail page exposes it (facts only). */
+export interface PluginPackageRef {
+  readonly name: string
+  /** Installed version, when the Host reports one. */
+  readonly version?: string
+  /** Whether the profile declares the package dependency. */
+  readonly installed: boolean
+  /** Host-reported package location/availability (opaque to this plugin). */
+  readonly availability: unknown
+  /** Whether the installation offers this package in Official. */
+  readonly official: boolean
+  /** Whether the bundle is switched on. */
+  readonly enabled: boolean
+  /** Rows the bundle declares. */
+  readonly rows: readonly PluginRowRef[]
+}
+
+/**
+ * What a plugin-manager detail page is about: a bundle, one row of a bundle,
+ * or an official plugin listed by its `plugins.item` id. Structural copy of
+ * the host's `PluginsSubject`.
+ */
+export type PluginsSubject =
+  | { readonly kind: 'bundle'; readonly pkg: PluginPackageRef }
+  | { readonly kind: 'row'; readonly pkg: PluginPackageRef; readonly row: PluginRowRef }
+  | { readonly kind: 'item'; readonly id: string }
+
+/**
+ * Owner props every `plugins.detail.*` entry renders with. Structural copy of
+ * the host's `PluginDetailProps`; the host renders every entry for every
+ * subject, so a registrant returns null for subjects it does not own.
+ */
+export interface PluginDetailProps {
+  readonly subject: PluginsSubject
+}
+
+/** Options accepted by `slots.register` for one `plugins.detail.*` entry. */
+export interface LiveryDetailRegistration {
+  readonly name: LiveryDetailSlotKey
+  readonly id: string
+  readonly order: number
+  readonly locale: 'dsh-livery'
+}
+
+/** Props a `plugins.detail.*` entry receives: owner subject + locale seat. */
+export type LiveryDetailProps = PluginDetailProps & PropsLocale<'dsh-livery'>
+
+/**
+ * Structural face of the public `layout` service: panel navigation only.
+ * `ctx.layout.selectPanel` throws for a key that is not registered, so callers
+ * gate the action on Livery's own `main` panel registration first.
+ */
+export interface LayoutService {
+  /** Select a registered central panel key. */
+  selectPanel(key: string): void
+}
+
+/**
  * Structural face of the `slots` service used by this plugin. Mirrors the
  * shipped registry (`client-contract.md` §3/§4): `inject(key, cb)` runs the
  * callback whenever the slot's declaring owner becomes live, and `register`
@@ -100,9 +177,14 @@ export interface SlotsService {
     options: LiverySidebarRegistration,
     component: (props: LiveryPanelIconProps) => ReactNode,
   ): () => void
+  register(
+    options: LiveryDetailRegistration,
+    component: (props: LiveryDetailProps) => ReactNode,
+  ): () => void
   inject(key: 'settings.section', callback: () => () => void): () => void
   inject(key: 'main', callback: () => () => void): () => void
   inject(key: 'sidebar.panellist', callback: () => () => void): () => void
+  inject(key: LiveryDetailSlotKey, callback: () => () => void): () => void
 }
 
 declare module '@deepseek-ai/cordis' {

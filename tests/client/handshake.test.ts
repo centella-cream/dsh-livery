@@ -7,10 +7,11 @@ import {
   isDshLocale,
   normalizeLocale,
   readBootPayload,
+  STALE_BOOT_VERSIONS,
   validateCatalog,
 } from '../../src/client/handshake.js'
 import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
-import { PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
+import { LIVERY_VERSION, PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
 import {
   ADAPTER_020,
   adapterRecordOf,
@@ -107,27 +108,56 @@ describe('checkBoot — certified adapter whitelist', () => {
     expect(check.reasons.join(' ')).toContain('catalog profile mismatch')
   })
 
-  it('accepts an older boot payload after HMR and reports it as a warning', () => {
-    const check = checkBoot(makeBootPayload({ pluginVersion: '9.9.9' }), ADAPTER_IDENTITIES)
-    expect(check.kind).toBe('mismatch')
-    expect(check.reloadRequired).toBe(true)
-    expect(check.reasons.join(' ')).toContain('reload required')
+  it('accepts the exact allowlisted previous build as stale with its certified adapter', () => {
+    for (const staleVersion of STALE_BOOT_VERSIONS) {
+      const check = checkBoot(makeBootPayload({ pluginVersion: staleVersion }), ADAPTER_IDENTITIES)
+      expect(check.kind, staleVersion).toBe('stale')
+      if (check.kind !== 'stale') throw new Error('unreachable')
+      expect(check.staleFrom).toBe(staleVersion)
+      expect(check.adapter).toBe(ADAPTER_020)
+      expect(check.reloadRequired).toBeUndefined()
+      expect(check.reasons.join(' ')).toContain('stale boot payload')
+      expect(check.reasons.join(' ')).toContain(staleVersion)
+    }
   })
 
-  it('rejects a catalog-profile change caused by a version bump', () => {
-    const shipped = ADAPTER_IDENTITIES[0]!
-    const previousProfile = `sha256:${'1'.repeat(64)}`
-    const payload = makeBootPayload({
-      hostVersion: shipped.hostVersion,
-      adapterId: shipped.adapterId,
-      contractHash: shipped.contractHash,
-      catalogProfile: previousProfile,
-      pluginVersion: '0.1.8',
-    })
-    const check = checkBoot(payload, ADAPTER_IDENTITIES)
+  it('freezes the stale allowlist to an exact previous-build list', () => {
+    expect(Object.isFrozen(STALE_BOOT_VERSIONS)).toBe(true)
+    expect([...STALE_BOOT_VERSIONS]).toEqual(['0.2.1'])
+    expect(STALE_BOOT_VERSIONS).not.toContain(LIVERY_VERSION)
+    expect(() => (STALE_BOOT_VERSIONS as string[]).push('0.2.2')).toThrow(TypeError)
+  })
+
+  it('fails closed for any non-current, non-allowlisted plugin version (exact equality only)', () => {
+    for (const pluginVersion of ['9.9.9', '0.2.10', '0.2.0', '0.2.1-rc.2', '0.2.2-rc.1', ' 0.2.1', '0.2.2 ']) {
+      const check = checkBoot(makeBootPayload({ pluginVersion }), ADAPTER_IDENTITIES)
+      expect(check.kind, pluginVersion).toBe('mismatch')
+      expect(check.reloadRequired, pluginVersion).toBe(true)
+      expect(check.reasons.join(' '), pluginVersion).toContain('plugin version mismatch')
+    }
+  })
+
+  it('rejects a stale payload whose catalog profile is not the certified one', () => {
+    const check = checkBoot(
+      makeBootPayload({ pluginVersion: '0.2.1', catalogProfile: `sha256:${'1'.repeat(64)}` }),
+      ADAPTER_IDENTITIES,
+    )
     expect(check.kind).toBe('mismatch')
-    expect(check.reloadRequired).toBe(true)
-    expect(check.reasons.join(' ')).toContain('reload required')
+    expect(check.reasons.join(' ')).toContain('catalog profile mismatch')
+  })
+
+  it('treats a stale payload the host gate rejected as absent', () => {
+    const check = checkBoot(makeBootPayload({ pluginVersion: '0.2.1', accepted: false }), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('absent')
+    expect(check.adapter).toBe(ADAPTER_020)
+    expect(check.reasons.join(' ')).toContain('gate')
+  })
+
+  it('checks entryId before the plugin version', () => {
+    const check = checkBoot(makeBootPayload({ pluginVersion: '0.2.1', entryId: 'other' }), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('mismatch')
+    expect(check.reasons.join(' ')).toContain('entry mismatch')
+    expect(check.reloadRequired).toBeUndefined()
   })
 
   it('fails closed on an entry id mismatch', () => {
@@ -155,18 +185,35 @@ describe('checkBoot — certified adapter whitelist', () => {
 })
 
 describe('bootIdentity', () => {
+  const certifiedIdentity = {
+    hostVersion: ADAPTER_020.hostVersion,
+    adapterId: ADAPTER_020.adapterId,
+    contractHash: ADAPTER_020.contractHash,
+    catalogProfile: ADAPTER_020.catalogProfile,
+  }
+
   it('derives the certified identity from the matched adapter', () => {
-    const check = checkBoot(makeBootPayload(), ADAPTER_IDENTITIES)
-    expect(bootIdentity(check)).toEqual({
-      hostVersion: ADAPTER_020.hostVersion,
-      adapterId: ADAPTER_020.adapterId,
-      contractHash: ADAPTER_020.contractHash,
-      catalogProfile: ADAPTER_020.catalogProfile,
-    })
+    expect(bootIdentity(checkBoot(makeBootPayload(), ADAPTER_IDENTITIES))).toEqual(certifiedIdentity)
+  })
+
+  it('uses the certified adapter profile for a stale boot payload', () => {
+    const check = checkBoot(makeBootPayload({ pluginVersion: '0.2.1' }), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('stale')
+    expect(bootIdentity(check)).toEqual(certifiedIdentity)
+  })
+
+  it('derives the certified identity for a gate-rejected (absent) payload', () => {
+    const check = checkBoot(makeBootPayload({ accepted: false }), ADAPTER_IDENTITIES)
+    expect(check.kind).toBe('absent')
+    expect(bootIdentity(check)).toEqual(certifiedIdentity)
   })
 
   it('is undefined without a certified adapter', () => {
     expect(bootIdentity(checkBoot(undefined, ADAPTER_IDENTITIES))).toBeUndefined()
+    const mismatch = checkBoot(makeBootPayload({ pluginVersion: '9.9.9' }), ADAPTER_IDENTITIES)
+    expect(mismatch.kind).toBe('mismatch')
+    expect(mismatch.adapter).toBe(ADAPTER_020)
+    expect(bootIdentity(mismatch)).toBeUndefined()
   })
 })
 

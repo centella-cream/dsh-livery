@@ -13,6 +13,7 @@ import { formatNumber, formatList, formatRatio } from '../../i18n/index.js'
 import { writeClipboard, Button, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import { formatDiagnostics } from '../diagnostics.js'
 import {
+  bootStatusCopyKey,
   countCapabilities,
   isStock,
   liveryAvailability,
@@ -89,11 +90,7 @@ export function SelfCheck({ t, snapshot, runtime, onCopyResult, copyFailed, defa
             <div className="livery-check__block">
               <h4 className="livery-check__title">{t('check.boot')}</h4>
               <p className="livery-check__value">
-                {snapshot.bootStatus === 'valid'
-                  ? t('check.bootAccepted')
-                  : snapshot.bootStatus === 'absent'
-                    ? t('check.bootAbsent')
-                    : t('check.bootRejected')}
+                {t(bootStatusCopyKey(snapshot.bootStatus))}
               </p>
               {snapshot.bootReason !== undefined && (
                 <p className="livery-check__value">{snapshot.bootReason}</p>

@@ -18,8 +18,36 @@ import { LIVERY_VERSION, STOCK_ID } from '../core/types.js'
 /** Lifecycle states from implementation-plan.md §6.3. */
 export type LiveryPhase = 'boot' | 'loading' | 'ready' | 'previewing' | 'degraded' | 'disposed'
 
-/** Outcome of the first-frame handshake. */
-export type BootStatus = 'valid' | 'absent' | 'mismatch'
+/**
+ * Outcome of the first-frame handshake.
+ *
+ * `stale` is an in-place HMR update: the startup frame came from an exact
+ * allowlisted previous build, so the client keeps stock-stable behavior until
+ * the refetched catalog is applied. It must never present the old boot skin.
+ */
+export type BootStatus = 'valid' | 'stale' | 'absent' | 'mismatch'
+
+/** Dictionary keys describing one handshake state (copy lives in `src/i18n`). */
+export type BootStatusCopyKey =
+  | 'check.bootAccepted'
+  | 'check.bootStale'
+  | 'check.bootAbsent'
+  | 'check.bootRejected'
+
+/**
+ * Map a handshake state to its dictionary key. Exhaustive so a new state cannot
+ * silently fall back to another state's copy.
+ * @param status - handshake outcome.
+ * @returns the dictionary key describing it.
+ */
+export function bootStatusCopyKey(status: BootStatus): BootStatusCopyKey {
+  switch (status) {
+    case 'valid': return 'check.bootAccepted'
+    case 'stale': return 'check.bootStale'
+    case 'absent': return 'check.bootAbsent'
+    case 'mismatch': return 'check.bootRejected'
+  }
+}
 
 /** State of the one lazy catalog fetch. */
 export type CatalogStatus = 'idle' | 'loading' | 'ready' | 'unavailable'
@@ -64,6 +92,8 @@ export interface LiveryRuntimeSnapshot {
   readonly bootStatus: BootStatus
   /** Why the handshake was degraded/rejected, when it was. */
   readonly bootReason: string | undefined
+  /** A plugin-version mismatch that only a page reload can repair. */
+  readonly reloadRequired?: boolean
   /** Structured diagnostics the host attached to the boot payload. */
   readonly bootDiagnostics: readonly string[]
   readonly catalogStatus: CatalogStatus
@@ -491,6 +521,7 @@ export function createInitialSnapshot(
     readonly status: BootStatus
     readonly reason: string | undefined
     readonly diagnostics: readonly string[]
+    readonly reloadRequired?: boolean | undefined
     readonly catalogProfile?: string | undefined
   },
 ): LiveryRuntimeSnapshot {
@@ -499,6 +530,7 @@ export function createInitialSnapshot(
     phase: 'boot',
     bootStatus: boot.status,
     bootReason: boot.reason,
+    reloadRequired: boot.reloadRequired === true,
     bootDiagnostics: boot.diagnostics,
     catalogStatus: 'idle',
     catalog: undefined,

@@ -16,6 +16,7 @@ import { CATALOG_GRAMMAR, CATALOG_SCHEMA_VERSION, LIVERY_VERSION, PREVIEW_ROUTE_
 import type { AdapterIdentity, AdapterRecord } from '../../src/generated/contract.js'
 import { ADAPTERS, ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
 import type { ConfigFormLike, ConfigFormSnapshotLike, CoreApi, LocaleSource, ThemeSource } from '../../src/client/runtime.js'
+import { STALE_BOOT_VERSIONS } from '../../src/client/handshake.js'
 import type { Presenter, PresenterSnapshot, SkinCss } from '../../src/client/presenter.js'
 
 /**
@@ -53,6 +54,13 @@ export function adapterRecordOf(identity: AdapterIdentity): AdapterRecord {
 
 /** Contract hash the default fixtures describe (from the certified adapter). */
 export const TEST_CONTRACT_HASH = TEST_ADAPTER.contractHash
+
+/**
+ * Exact previous plugin build the stale-boot (HMR) fixtures emulate: the oldest
+ * entry of the frozen allowlist, so a reviewed allowlist extension keeps these
+ * fixtures meaningful.
+ */
+export const STALE_PLUGIN_VERSION: string = STALE_BOOT_VERSIONS[0]!
 
 /** Catalog profile + preview base for the default fixtures. */
 export const TEST_PROFILE = TEST_ADAPTER.catalogProfile

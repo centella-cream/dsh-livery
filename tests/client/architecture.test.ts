@@ -3,7 +3,8 @@
  *
  * - no certified host version literal may appear in `src/client` (compatibility
  *   is decided by the generated adapter registry and capability facts, never by
- *   `if (version === …)` logic);
+ *   `if (version === …)` logic); the single exception is the frozen stale-boot
+ *   allowlist of exact previous *plugin* builds in the handshake validator;
  * - the removed single-version build constants must not sneak back in;
  * - preview thumbnail URLs come from `catalog.previewsBase`, so only the
  *   handshake validator (which checks the host-declared base) may mention the
@@ -12,8 +13,12 @@
 import { describe, expect, it } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { STALE_BOOT_VERSIONS } from '../../src/client/handshake.js'
 
 const CLIENT_DIR = join(process.cwd(), 'src', 'client')
+/** The only client file allowed to name exact previous plugin-build versions. */
+const STALE_ALLOWLIST_FILE = join('src', 'client', 'handshake.ts')
+const VERSION_LITERAL = /0\.2\.[0-9]+(?:-rc\.[0-9]+)?/g
 
 /** All client source files, relative to the package root. */
 function clientSources(): string[] {
@@ -28,15 +33,38 @@ function read(entry: string): string {
   return readFileSync(join(process.cwd(), entry), 'utf8')
 }
 
+/**
+ * Source text without comment prose. Documentation may mention release lines;
+ * only actual literals are compatibility logic, so the guard scans code only.
+ * @param source - file contents.
+ * @returns the file contents with block and full-line comments removed.
+ */
+function withoutComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+}
+
 describe('multi-version architecture guards', () => {
   it('contains no hard-coded certified host version strings', () => {
     const offenders: string[] = []
     for (const file of clientSources()) {
-      const source = read(file)
-      const matches = source.match(/0\.2\.[0-9]+(?:-rc\.[0-9]+)?/g)
-      if (matches !== null) offenders.push(`${file}: ${[...new Set(matches)].join(', ')}`)
+      const source = withoutComments(read(file))
+      const matches = source.match(VERSION_LITERAL)
+      if (matches === null) continue
+      // The frozen stale-boot allowlist intentionally names previous *plugin*
+      // builds; no client file may carry any other version literal.
+      const allowed = file === STALE_ALLOWLIST_FILE ? new Set(STALE_BOOT_VERSIONS) : new Set<string>()
+      const unexpected = [...new Set(matches)].filter(version => !allowed.has(version))
+      if (unexpected.length > 0) offenders.push(`${file}: ${unexpected.join(', ')}`)
     }
     expect(offenders).toEqual([])
+  })
+
+  it('keeps the stale-boot allowlist as the only exact previous-build list', () => {
+    const literalVersions = [...new Set(read(STALE_ALLOWLIST_FILE).match(VERSION_LITERAL) ?? [])].sort()
+    expect(literalVersions).toEqual([...STALE_BOOT_VERSIONS].sort())
+    expect(Object.isFrozen(STALE_BOOT_VERSIONS)).toBe(true)
   })
 
   it('does not import the removed single-version build constants', () => {

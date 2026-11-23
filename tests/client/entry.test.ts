@@ -9,6 +9,8 @@
  * `slots.inject` callbacks until the test fires the declaration.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
   const React = await import('react')
@@ -178,6 +180,41 @@ function active(fake: FakeContext, name: string): RegistrationRecord[] {
   return fake.registrations.filter(entry => entry.active && entry.options.name === name)
 }
 
+/** Navigation-composition names (the plugin-detail contributions are page slots). */
+function navNames(fake: FakeContext): string[] {
+  return activeNames(fake).filter(name => !name.startsWith('plugins.detail.'))
+}
+
+/** Detail-contribution names installed by the entry. */
+const DETAIL_SLOT_NAMES = [
+  'plugins.detail.actions',
+  'plugins.detail.badge',
+  'plugins.detail.section',
+] as const
+
+/** Render a contributed detail component with one Livery bundle subject. */
+function renderDetailContribution(fake: FakeContext, name: string): string {
+  const record = fake.registrations.find(entry => entry.active && entry.options.name === name)
+  expect(record).toBeDefined()
+  const subject = {
+    kind: 'bundle',
+    pkg: {
+      name: 'dsh-livery',
+      version: '0.2.2',
+      installed: true,
+      availability: 'available',
+      official: false,
+      enabled: true,
+      rows: [],
+    },
+  }
+  const component = record?.component as ((props: unknown) => unknown) | undefined
+  return renderToStaticMarkup(createElement(component as never, {
+    subject,
+    t: (key: string) => key,
+  } as never))
+}
+
 // The runtime's one catalog fetch must not reach the network in unit tests.
 vi.stubGlobal('fetch', async () => ({ ok: false }))
 
@@ -237,7 +274,7 @@ describe('client entry contributions', () => {
 
     expect(fake.pendingKeys()).toEqual(expect.arrayContaining(['main', 'sidebar.panellist']))
     vi.advanceTimersByTime(PANEL_NAVIGATION_GRACE_MS - 1)
-    expect(activeNames(fake)).toEqual([])
+    expect(navNames(fake)).toEqual([])
 
     fake.declare('main')
     fake.declare('sidebar.panellist')
@@ -254,7 +291,7 @@ describe('client entry contributions', () => {
     apply(fake.ctx)
 
     vi.advanceTimersByTime(PANEL_NAVIGATION_GRACE_MS - 1)
-    expect(activeNames(fake)).toEqual([])
+    expect(navNames(fake)).toEqual([])
     vi.advanceTimersByTime(1)
     expect(active(fake, 'settings.section')).toHaveLength(1)
     expect(activeNames(fake)).not.toContain('sidebar.panellist')
@@ -310,6 +347,38 @@ describe('client entry contributions', () => {
     expect(() => apply(fake.ctx)).not.toThrow()
     expect(active(fake, 'settings.section')).toHaveLength(1)
     expect(activeNames(fake)).not.toContain('sidebar.panellist')
+  })
+
+  it('installs the three plugin-detail slots through inject', () => {
+    const fake = createContext()
+    apply(fake.ctx)
+
+    expect(fake.injections).toEqual(expect.arrayContaining([...DETAIL_SLOT_NAMES]))
+    for (const name of DETAIL_SLOT_NAMES) {
+      const entry = active(fake, name)[0]
+      expect(entry?.options).toMatchObject({
+        name,
+        id: 'dsh-livery',
+        order: 0,
+        locale: 'dsh-livery',
+      })
+      expect(typeof entry?.component).toBe('function')
+    }
+    expect(activeNames(fake)).not.toContain('plugins.bundle.config')
+    expect(activeNames(fake)).not.toContain('plugins.item')
+  })
+
+  it('gates Open Livery on the live main-panel registration', () => {
+    const live = createContext()
+    apply(live.ctx)
+    expect(renderDetailContribution(live, 'plugins.detail.actions')).toContain('data-testid="livery-detail-open"')
+
+    // A settings-fallback composition never registers the `main` panel, so the
+    // action is hidden even though the detail contributions are installed.
+    const fallback = createContext({ deferredInject: ['main', 'sidebar.panellist'] })
+    apply(fallback.ctx)
+    vi.advanceTimersByTime(PANEL_NAVIGATION_GRACE_MS + 1)
+    expect(renderDetailContribution(fallback, 'plugins.detail.actions')).not.toContain('data-testid="livery-detail-open"')
   })
 
   it('clears the grace timer and any fallback on plugin unload', () => {

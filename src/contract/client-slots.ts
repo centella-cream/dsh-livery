@@ -23,13 +23,25 @@ export interface ConsumedClientSlot {
  *   as list/root under the `sidebar` factory owner.
  * - `dsh-client-ui-settings-general/src/client/index.ts` declares
  *   `settings.section` as list/root.
- * None of the three injects owner-only props; locale is injected separately by
- * the slot runtime, not by the host owner.
+ * - `dsh-client-ui-plugin-manager/src/client/slot-contract.ts` declares
+ *   `plugins.detail.actions`, `plugins.detail.badge` and
+ *   `plugins.detail.section` as list/root, each owned by `PluginDetailProps`
+ *   (`subject`); the per-host proof is
+ *   `contracts/dsh/client-slot-declarations.json`.
+ * None of them injects owner-only props into the entry props beyond the
+ * declared owner share; locale is injected separately by the slot runtime, not
+ * by the host owner.
+ *
+ * The detail keys are appended in this frozen order: actions, badge, section.
+ * Appending them changes `clientSlotHash()`.
  */
 export const CONSUMED_CLIENT_SLOTS: readonly ConsumedClientSlot[] = [
   { key: 'main', scope: 'root', kind: 'keyed', ownerProps: [], register: 'main', inject: 'main' },
   { key: 'sidebar.panellist', scope: 'root', kind: 'list', ownerProps: [], register: 'sidebar.panellist', inject: 'sidebar.panellist' },
   { key: 'settings.section', scope: 'root', kind: 'list', ownerProps: [], register: 'settings.section', inject: 'settings.section' },
+  { key: 'plugins.detail.actions', scope: 'root', kind: 'list', ownerProps: ['subject'], register: 'plugins.detail.actions', inject: 'plugins.detail.actions' },
+  { key: 'plugins.detail.badge', scope: 'root', kind: 'list', ownerProps: ['subject'], register: 'plugins.detail.badge', inject: 'plugins.detail.badge' },
+  { key: 'plugins.detail.section', scope: 'root', kind: 'list', ownerProps: ['subject'], register: 'plugins.detail.section', inject: 'plugins.detail.section' },
 ]
 
 export function canonicalClientSlots(): string {

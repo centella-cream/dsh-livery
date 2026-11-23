@@ -8,6 +8,7 @@ import type { CompiledLivery } from '../core/types.js'
 import { formatNumber, formatRatio } from '../i18n/index.js'
 import type { LiveryKey } from './platform.js'
 import {
+  bootStatusCopyKey,
   countCapabilities,
   isStock,
   liveryAvailability,
@@ -104,11 +105,7 @@ export function formatDiagnostics(
   ]))
 
   lines.push(...section(t('diag.boot'), [
-    line(t, t('check.boot'), snapshot.bootStatus === 'valid'
-      ? t('check.bootAccepted')
-      : snapshot.bootStatus === 'absent'
-        ? t('check.bootAbsent')
-        : t('check.bootRejected')),
+    line(t, t('check.boot'), t(bootStatusCopyKey(snapshot.bootStatus))),
     ...(snapshot.bootReason === undefined ? [] : [`  ${snapshot.bootReason}`]),
     ...snapshot.bootDiagnostics.map(diagnostic => `  ${diagnostic}`),
   ]))

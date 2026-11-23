@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { BootPayload, CapabilityMap, LiveryCatalog } from '../../src/core/types.js'
 import { LIVERY_VERSION } from '../../src/core/types.js'
 import { ADAPTER_IDENTITIES } from '../../src/generated/contract.js'
@@ -14,6 +14,7 @@ import {
   FakeLocale,
   FakeTheme,
   RecordingPresenter,
+  STALE_PLUGIN_VERSION,
   TEST_ADAPTER,
   TEST_CORE,
   flush,
@@ -38,6 +39,13 @@ function validBoot(payload: Partial<Record<keyof BootPayload, unknown>> = {}): B
   return check
 }
 
+/** Boot handshake of an in-place HMR update: the allowlisted previous build's frame. */
+function staleBoot(payload: Partial<Record<keyof BootPayload, unknown>> = {}): BootCheck {
+  const check = checkBoot(makeBootPayload({ pluginVersion: STALE_PLUGIN_VERSION, ...payload }), ADAPTER_IDENTITIES)
+  if (check.kind !== 'stale') throw new Error(`fixture boot must be stale: ${check.kind}: ${check.reasons.join('; ')}`)
+  return check
+}
+
 interface Harness {
   runtime: LiveryRuntime
   presenter: RecordingPresenter
@@ -55,6 +63,8 @@ function createHarness(options: {
   theme?: FakeTheme | null
   catalog?: LiveryCatalog | undefined
   document?: FakeDocument
+  /** Number of initial catalog fetches that fail (transient HMR outage). */
+  fetchFailures?: number
 } = {}): Harness {
   const presenter = new RecordingPresenter()
   const form = options.form ?? new FakeConfigForm({
@@ -68,6 +78,7 @@ function createHarness(options: {
   const theme = options.theme === null ? undefined : options.theme ?? new FakeTheme()
   const doc = options.document ?? new FakeDocument()
   let catalog = 'catalog' in options ? options.catalog : makeCatalog()
+  let failures = options.fetchFailures ?? 0
   let fetchCalls = 0
   const runtime = createLiveryRuntime({
     boot: options.boot ?? noBoot(),
@@ -83,6 +94,10 @@ function createHarness(options: {
     core: TEST_CORE,
     fetchCatalog: async () => {
       fetchCalls += 1
+      if (failures > 0) {
+        failures -= 1
+        return undefined
+      }
       return catalog
     },
     locale,
@@ -115,36 +130,126 @@ function seedHostFirstFrame(doc: FakeDocument, id: string, hash: string): void {
   doc.body.setAttribute('data-dsh-livery-hash', hash)
 }
 
-describe('hot-update recovery', () => {
-  it('re-fetches and adopts the new catalog when a plugin release changes its profile during HMR', async () => {
+describe('hot-update recovery (stale boot handshake)', () => {
+  it('refetches the catalog once and applies it when the first frame came from the allowlisted previous build', async () => {
     const catalog = makeCatalog()
-    const previousProfile = `sha256:${'1'.repeat(64)}`
     const harness = createHarness({
-      boot: checkBoot(makeBootPayload({
-        pluginVersion: '0.1.8',
-        catalogProfile: previousProfile,
-        cssHash: expectedHash(catalog, 'fjord'),
-      }), ADAPTER_IDENTITIES),
+      boot: staleBoot({ skinId: 'fjord', cssHash: expectedHash(catalog, 'fjord') }),
       catalog,
     })
+
     harness.runtime.start()
     await flush()
+
     const snapshot = harness.runtime.getSnapshot()
-    expect(snapshot.phase).toBe('degraded')
-    expect(snapshot.catalogStatus).toBe('idle')
-    expect(harness.fetchCalls()).toBe(0)
+    expect(snapshot.phase).toBe('ready')
+    expect(snapshot.bootStatus).toBe('stale')
+    expect(snapshot.catalogStatus).toBe('ready')
+    expect(snapshot.effectiveId).toBe('fjord')
+    expect(harness.fetchCalls()).toBe(1)
+    // The startup CSS hash matches the fetched livery, but a stale frame is
+    // never adopted: exactly one catalog-derived applyConfirmed.
+    expect(harness.presenter.count('adoptBootStyle')).toBe(0)
+    expect(harness.presenter.count('applyConfirmed')).toBe(1)
+    expect(harness.presenter.skins).toEqual([{
+      call: 'applyConfirmed',
+      skin: { id: 'fjord', cssText: '/*fjord*/', hash: expectedHash(catalog, 'fjord') },
+    }])
   })
 
-  it('retries the catalog when a valid boot payload came from an older plugin build', async () => {
-    const catalog = makeCatalog()
-    const harness = createHarness({
-      boot: checkBoot(makeBootPayload({ pluginVersion: '0.1.7', cssHash: expectedHash(catalog, 'fjord') }), ADAPTER_IDENTITIES),
-      catalog: undefined,
+  it('falls back to stock when the config is unavailable, never to the stale payload skin', async () => {
+    const form = new FakeConfigForm({
+      status: 'unavailable',
+      value: undefined,
+      revision: undefined,
+      writable: false,
+      mode: 'memory',
     })
+    const harness = createHarness({
+      boot: staleBoot({ skinId: 'fjord', cssHash: 'sha256:previous-build' }),
+      form,
+    })
+
     harness.runtime.start()
-    await new Promise(resolve => setTimeout(resolve, 80))
-    expect(harness.runtime.getSnapshot().phase).toBe('degraded')
-    expect(harness.fetchCalls()).toBe(0)
+    await flush()
+
+    const snapshot = harness.runtime.getSnapshot()
+    expect(snapshot.phase).toBe('ready')
+    expect(snapshot.bootStatus).toBe('stale')
+    expect(snapshot.configStatus).toBe('unavailable')
+    expect(snapshot.confirmedId).toBe('stock')
+    expect(snapshot.effectiveId).toBe('stock')
+    expect(harness.presenter.count('adoptBootStyle')).toBe(0)
+    expect(harness.presenter.count('applyConfirmed')).toBe(0)
+    expect(harness.presenter.count('clearSkin')).toBe(1)
+  })
+
+  it('retries a transient catalog outage during HMR, then becomes ready', async () => {
+    vi.useFakeTimers()
+    try {
+      const catalog = makeCatalog()
+      const harness = createHarness({
+        boot: staleBoot({ cssHash: expectedHash(catalog, 'fjord') }),
+        catalog,
+        fetchFailures: 1,
+      })
+      harness.runtime.start()
+      await vi.advanceTimersByTimeAsync(0)
+      expect(harness.fetchCalls()).toBe(1)
+      expect(harness.runtime.getSnapshot().phase).toBe('loading')
+
+      await vi.advanceTimersByTimeAsync(1_000)
+      const snapshot = harness.runtime.getSnapshot()
+      expect(snapshot.phase).toBe('ready')
+      expect(snapshot.bootStatus).toBe('stale')
+      expect(snapshot.catalogStatus).toBe('ready')
+      expect(snapshot.effectiveId).toBe('fjord')
+      expect(harness.fetchCalls()).toBe(2)
+      expect(harness.presenter.count('applyConfirmed')).toBe(1)
+      expect(harness.presenter.count('adoptBootStyle')).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('fails closed to stock when the stale catalog never recovers, then retryCatalog recovers', async () => {
+    vi.useFakeTimers()
+    try {
+      const catalog = makeCatalog()
+      const harness = createHarness({
+        boot: staleBoot({ skinId: 'fjord', cssHash: 'sha256:previous-build' }),
+        catalog: undefined,
+      })
+      harness.runtime.start()
+      // Eight fetches with the frozen backoff settle the outage in ~5.5s.
+      await vi.advanceTimersByTimeAsync(10_000)
+
+      let snapshot = harness.runtime.getSnapshot()
+      expect(snapshot.phase).toBe('degraded')
+      expect(snapshot.bootStatus).toBe('stale')
+      expect(snapshot.catalogStatus).toBe('unavailable')
+      expect(snapshot.effectiveId).toBe('stock')
+      expect(harness.fetchCalls()).toBe(8)
+      expect(harness.presenter.count('removeBootArtifacts')).toBe(1)
+      expect(harness.presenter.count('adoptBootStyle')).toBe(0)
+      expect(harness.presenter.count('applyConfirmed')).toBe(0)
+      expect(snapshot.notes.join(' ')).toContain('hot update detected; catalog unavailable')
+
+      harness.setCatalog(catalog)
+      const retry = harness.runtime.retryCatalog()
+      await vi.advanceTimersByTimeAsync(0)
+      await retry
+
+      snapshot = harness.runtime.getSnapshot()
+      expect(snapshot.phase).toBe('ready')
+      expect(snapshot.bootStatus).toBe('stale')
+      expect(snapshot.catalogStatus).toBe('ready')
+      expect(snapshot.effectiveId).toBe('fjord')
+      expect(harness.presenter.count('adoptBootStyle')).toBe(0)
+      expect(harness.presenter.count('applyConfirmed')).toBe(1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 

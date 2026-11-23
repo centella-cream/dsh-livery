@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/client-slots-proof.mjs",
+  "scope": "plugins.detail.*",
+  "clientSlotHash": "sha256:9d01925d56110b23e177fb4b25215cbc832294c68d4ecfa06d4e0ace905dfad3",
+  "consumedClientSlots": [
+    {
+      "key": "main",
+      "scope": "root",
+      "kind": "keyed",
+      "ownerProps": [],
+      "register": "main",
+      "inject": "main"
+    },
+    {
+      "key": "sidebar.panellist",
+      "scope": "root",
+      "kind": "list",
+      "ownerProps": [],
+      "register": "sidebar.panellist",
+      "inject": "sidebar.panellist"
+    },
+    {
+      "key": "settings.section",
+      "scope": "root",
+      "kind": "list",
+      "ownerProps": [],
+      "register": "settings.section",
+      "inject": "settings.section"
+    },
+    {
+      "key": "plugins.detail.actions",
+      "scope": "root",
+      "kind": "list",
+      "ownerProps": [
+        "subject"
+      ],
+      "register": "plugins.detail.actions",
+      "inject": "plugins.detail.actions"
+    },
+    {
+      "key": "plugins.detail.badge",
+      "scope": "root",
+      "kind": "list",
+      "ownerProps": [
+        "subject"
+      ],
+      "register": "plugins.detail.badge",
+      "inject": "plugins.detail.badge"
+    },
+    {
+      "key": "plugins.detail.section",
+      "scope": "root",
+      "kind": "list",
+      "ownerProps": [
+        "subject"
+      ],
+      "register": "plugins.detail.section",
+      "inject": "plugins.detail.section"
+    }
+  ],
+  "expectedDetailDeclaration": {
+    "kind": "list",
+    "scope": "root",
+    "ownerProps": [
+      "subject"
+    ]
+  },
+  "declaredHosts": [
+    "0.2.1-rc.2",
+    "0.2.1-rc.3",
+    "0.2.1-rc.4",
+    "0.2.1-rc.5",
+    "0.2.2-rc.1",
+    "0.2.2-rc.2",
+    "0.2.2-rc.3",
+    "0.2.2-rc.5"
+  ],
+  "inspectedHosts": [
+    {
+      "hostVersion": "0.2.1-rc.4",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.1-rc.4",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:6a34dd481b22d68579f4b44bd33a7488f3fbca96e3ea93ae778f2537afd4b45b",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    },
+    {
+      "hostVersion": "0.2.1-rc.5",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.1-rc.5",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:6a34dd481b22d68579f4b44bd33a7488f3fbca96e3ea93ae778f2537afd4b45b",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.1",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.2-rc.1",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:76161cf2ef4aa831c524d2a5c48775f163f763312c03f73d8b86809cee60140d",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.2",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.2-rc.2",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:fdf05eac5fed073aed1bedd879f50871f54be81d97c9309f7aab7d7e5d70cc1f",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.3",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.2-rc.3",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:fdf05eac5fed073aed1bedd879f50871f54be81d97c9309f7aab7d7e5d70cc1f",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    },
+    {
+      "hostVersion": "0.2.2-rc.5",
+      "packageName": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "packageVersion": "0.2.2-rc.5",
+      "source": "@deepseek-ai/dsh-client-ui-plugin-manager/lib/types/client/slot-contract.d.ts",
+      "sourceSha256": "sha256:fdf05eac5fed073aed1bedd879f50871f54be81d97c9309f7aab7d7e5d70cc1f",
+      "slots": [
+        {
+          "key": "plugins.detail.actions",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.badge",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        },
+        {
+          "key": "plugins.detail.section",
+          "declared": true,
+          "kind": "list",
+          "scope": "root",
+          "ownerProps": [
+            "subject"
+          ]
+        }
+      ]
+    }
+  ],
+  "missingHosts": [
+    {
+      "hostVersion": "0.2.1-rc.2",
+      "reason": "plugin-manager package metadata not installed in the local host tree"
+    },
+    {
+      "hostVersion": "0.2.1-rc.3",
+      "reason": "plugin-manager package metadata not installed in the local host tree"
+    }
+  ]
+}

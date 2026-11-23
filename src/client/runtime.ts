@@ -20,7 +20,7 @@ import type {
   CompiledLivery,
   LiveryCatalog,
 } from '../core/types.js'
-import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, LIVERY_VERSION, STOCK_ID } from '../core/types.js'
+import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, STOCK_ID } from '../core/types.js'
 import type { BootCheck } from './handshake.js'
 import { normalizeLocale } from './handshake.js'
 import {
@@ -146,6 +146,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       status: deps.boot.kind,
       reason: deps.boot.reasons[0],
       diagnostics: deps.boot.payload?.diagnostics ?? [],
+      reloadRequired: deps.boot.kind === 'mismatch' && deps.boot.reloadRequired === true,
       catalogProfile: deps.boot.payload?.catalogProfile,
     })
   }
@@ -603,17 +604,13 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     const generation = ++this.generation
     this.patch({ catalogStatus: 'loading' })
     let catalog: LiveryCatalog | undefined
-    // DSH HMR recomposes the Host while the renderer keeps running. During that
-    // window the catalog route can briefly return 404/close; a valid first-frame
-    // handshake is proof the host is certified, so retry before declaring the
-    // visual layer offline. This is what lets Web and Desktop follow a hot
-    // update without the user pressing Retry.
-    // Only a boot payload produced by an older plugin build proves a live HMR
-    // replacement; a normal first load with a current payload must not hide an
-    // unavailable route behind retries.
-    const hotReloaded = this.deps.boot.kind === 'valid'
-      && this.deps.boot.payload?.pluginVersion !== undefined
-      && this.deps.boot.payload.pluginVersion !== LIVERY_VERSION
+    // DSH client HMR recomposes the Host while the renderer keeps running. During
+    // that window the catalog route can briefly return 404/close; a stale boot
+    // handshake (an exact allowlisted previous build's first frame) is proof of a
+    // live HMR replacement, so retry before declaring the visual layer offline.
+    // A normal first load (valid/absent/mismatch) must not hide an unavailable
+    // route behind retries: only the stale path retries.
+    const hotReloaded = this.deps.boot.kind === 'stale'
     // HMR's write-stability window can exceed the old 1.5s budget (2s debounce
     // plus module replacement). Keep retrying longer for a hot update, while a
     // cold start still fails immediately.
@@ -657,6 +654,18 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     this.maybeSettle()
   }
 
+  /**
+   * Boot skin id fallback for a missing host config value. A stale payload came
+   * from the previous build, so its `skinId` is never trusted — stock is the
+   * safe answer.
+   * @returns the boot skin id, or undefined when it must not be used.
+   */
+  private bootFallbackSkinId(): string | undefined {
+    const boot = this.deps.boot
+    if (boot.kind === 'stale') return undefined
+    return boot.payload?.skinId
+  }
+
   private onConfigChange(): void {
     const form = this.form
     if (form === undefined || this.disposed) return
@@ -666,7 +675,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       return
     }
     const value = normalizeSkinId(snapshot.value)
-    const fallback = snapshot.status === 'unavailable' ? this.deps.boot.payload?.skinId : undefined
+    const fallback = snapshot.status === 'unavailable' ? this.bootFallbackSkinId() : undefined
     const confirmedId = value ?? fallback ?? STOCK_ID
     this.configSettled = true
     const previousRevision = this.lastObservedConfigRevision
@@ -719,7 +728,7 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     if (!this.configSettled || !this.catalogSettled) return
     this.settled = true
     const catalog = this.snapshot.catalog
-    const confirmedId = this.snapshot.confirmedId ?? this.deps.boot.payload?.skinId ?? STOCK_ID
+    const confirmedId = this.snapshot.confirmedId ?? this.bootFallbackSkinId() ?? STOCK_ID
     this.patch({ confirmedId })
     if (catalog === undefined) {
       this.settleWithoutCatalog(confirmedId)
@@ -730,8 +739,21 @@ export class LiveryRuntime implements LiveryRuntimeApi {
   }
 
   private settleWithoutCatalog(confirmedId: string): void {
-    const payload = this.deps.boot.payload
-    const canAdopt = this.deps.boot.kind === 'valid'
+    const boot = this.deps.boot
+    if (boot.kind === 'stale') {
+      // A stale startup frame has no catalog to confirm its CSS and must never
+      // be adopted: remove what the previous build injected and report stock.
+      this.deps.presenter.removeBootArtifacts()
+      this.patch({
+        phase: 'degraded',
+        effectiveId: STOCK_ID,
+        notes: withNote(this.snapshot.notes, 'hot update detected; catalog unavailable — Retry or reload'),
+      })
+      this.basePhase = 'degraded'
+      return
+    }
+    const payload = boot.payload
+    const canAdopt = boot.kind === 'valid'
       && payload !== undefined
       && payload.skinId === confirmedId
       && payload.cssHash.length > 0
