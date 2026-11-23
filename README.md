@@ -222,7 +222,7 @@ through the running Host's plugin manager to the exact candidate.
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
 loader-ABI checks, exact support-matrix / release gates, explicit budgets (client
-gzip 72 KiB, per-livery CSS 13 KiB, tarball 4 MiB), the provider-access gate
+gzip 72 KiB, per-livery/boot CSS 14 KiB, tarball 4 MiB), the provider-access gate
 record, `release:prepare` and `prepublish-check`. The publish workflow never
 rebuilds the accepted tarball.
 

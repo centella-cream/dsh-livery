@@ -28,7 +28,8 @@ packaging; they are folded into the `0.1.0` entry.
 - 壁纸来源不变量更新为“两张背景预设卡（`No wallpaper`、`Follow style`）+ 四个图片来源页签”；默认图片来源为 Built-in，打开壁纸页不发起网络请求，首次激活 Online 页签只请求一批（仅 idle 状态），之后切页签不重新请求；搜索、Random、Refresh、Retry 是其余请求触发点。无轮询、无预取、无遥测。
 - 在线壁纸不再默认走 Picsum：Auto 只会在通过门禁的来源中选择；Picsum 从来源列表移除。
 - 远程图片下载改为 provider 声明的 `imageHosts`/`redirectHosts` 策略（精确主机或 `*.` 通配，禁止后缀匹配；`redirect:'error'` 或校验最终 URL），替换 Picsum-only 的 redirect 分支。
-- client gzip 预算从 60 KiB 显式上调到 **72 KiB（73,728 B）**（评审通过，用于壁纸工作室/provider 注册表/详情面）；per-livery CSS 保持 **13 KiB**，host gzip 保持 360 KiB；tarball 上限保持 **4 MiB（4,194,304 B）**，README 图片使用保画质的压缩/尺寸调整，不提高上限。
+- client gzip 预算从 60 KiB 显式上调到 **72 KiB（73,728 B）**（评审通过，用于壁纸工作室/provider 注册表/详情面）；per-livery/boot CSS 从 13 KiB 显式上调到 **14 KiB（14,336 B）**（`MenuSurface`/jobs fill token 增加约 176 B；legacy typography probe fixture 达到 13,409 B，shipped profile 为 10,366 B）；host gzip 保持 360 KiB；tarball 上限保持 **4 MiB（4,194,304 B）**，README 图片使用保画质的压缩/尺寸调整，不提高上限。
+- 为保持 72 KiB client gzip 上限，精简了 8 条状态/预设提示文案（含义不变，仅缩短措辞；`MenuSurface` 修复本身约 +68 B gzip）；这是一次显式的预算适配，不是静默放宽。
 - README/README.zh-CN/SECURITY/NOTICE 与 interfaces/compatibility/wallpaper-workbench/style-system 设计文档更新到 0.2.2 目标状态；README 壁纸说明不再声称使用真实在线照片。
 - `docs/design/interfaces.md` 修正 “synchronous slot-spec probing” 的旧描述：实现通过 `ctx.slots.inject` 注册，settings fallback 有 1500 ms grace，测试禁止 `slots.spec`。
 
@@ -37,6 +38,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 0.2.1 client 对任意插件版本差异 fail closed、导致 HMR 重试与 stale-profile 分支不可达的问题。stale 路径不信任 `catalogUrl`/`bootStyleId`，config fallback 不回退到旧 boot skin；catalog 重试失败时 fail closed 到 degraded/stock 并移除 boot artifacts，`retryCatalog()` 可在不刷新页面的情况下恢复。
 - 修复远程 selection 写入时重建紧凑对象、丢弃 provenance 的问题；0.2.1 产生的重写仍显示图片，但会丢弃 provenance（0.2.1 无该字段）。
 - 修复 `sourceId`/`revision` 跨标签页竞争可能让落后标签页覆盖胜者 style sidecar 的问题：写入前重新读取主记录，identity 不一致时跳过 sidecar 写入；Clear local data 保留主记录与 style sidecar。
+- 修复宿主浮层菜单的真实表面：0.2.1 只把 `--dsw-specific-menu` 改成不透明，但 `MenuSurface.module.css` 实际绘制用 `--dsw-menu-surface-fill`，且 jobs live row 直接读取未声明的 `--dsw-alias-fill-l1/l2`。0.2.2 现在拥有 `menu-surface-fill`（不透明 layer-1，与 `specific-menu` 同步）并强制输出 `fill-l1/l2`（layer-1/2）；stock style + wallpaper 时通过 `body[data-dsh-wallpaper]:not([data-dsh-livery])` 补齐同样的不透明表面。0.2.1 的 `specific-menu` 修复不覆盖这些表面。
 - 移除在线壁纸打开页面即自动请求 Picsum 批次的行为。
 
 ### Removed

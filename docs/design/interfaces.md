@@ -272,7 +272,7 @@ into the main record; it lives in the sidecar `dsh-livery.wallpaper.style.v1` as
 
 Client gzip budget is **72 KiB (73,728 B)** for the 0.2.2 target — a reviewed
 increase from 60 KiB for the wallpaper studio, provider registry and detail
-surface. Per-livery compiled CSS stays at **13 KiB** and the package tarball cap
+surface. Per-livery/boot compiled CSS is **14 KiB** and the package tarball cap
 stays at **4 MiB (4,194,304 B)**; `scripts/build.mjs` and the release/probe gates
 enforce them, and the final measured numbers are recorded on the accepted
 candidate. The optional wallpapers page fetches provider images directly from

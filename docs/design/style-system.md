@@ -156,14 +156,19 @@ licences).
   (one per adapter; `contracts/dsh/catalog-profile-overrides.json` is empty), so
   the compiled catalog is 28 liveries per profile and the preview dirs contain
   112 SVGs per profile.
-- Per-livery CSS budget stays **13 KiB (13,312 B)**. The accepted `0.2.1` probe
-  measured a largest livery of **9,066 B** (bauhaus); the current `0.2.2`
-  candidate measures **10,190 B** and must be re-measured on the final tarball.
+- Per-livery and first-frame boot CSS budgets are **14 KiB (14,336 B)** for
+  0.2.2 (reviewed increase from 13 KiB). Shipped profiles measure 10,366 B; the
+  increase is required by the legacy typography-strategy probe fixture, whose
+  composite font ladder plus the new host-surface tokens reaches 13,409 B. The
+  added `MenuSurface`/jobs fill tokens are included in these bytes.
+  The accepted `0.2.1` probe measured a largest livery of **9,066 B** (bauhaus);
+  the current `0.2.2` candidate measures **10,366 B** and must be re-measured on
+  the final tarball.
 - Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — an explicit, reviewed
   increase from 60 KiB for the wallpaper studio, provider registry and detail
   surface. The accepted `0.2.1` probe measured **60,902 B** gzip (230,487 B raw)
-  against its 60 KiB cap; the current `0.2.2` candidate measures **73,684 B**,
-  i.e. **44 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
+  against its 60 KiB cap; the current `0.2.2` candidate measures **73,662 B**,
+  i.e. **66 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
   section is cut or deferred to 0.2.3; the cap is not raised ad hoc.
 - Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog. The
   current `0.2.2` candidate host bundle measures **15,506 B** gzip (61,649 B

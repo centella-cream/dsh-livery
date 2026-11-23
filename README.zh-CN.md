@@ -170,7 +170,7 @@ scope，并在 Web 上运行更新探针：安装精确的已发布 `0.2.1` tarb
 管理器更新到精确候选 tarball。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release
-门禁、显式预算（client gzip 72 KiB、per-livery CSS 13 KiB、tarball 4 MiB）、provider
+门禁、显式预算（client gzip 72 KiB、per-livery/boot CSS 14 KiB、tarball 4 MiB）、provider
 访问门禁记录、`release:prepare` 和 `prepublish-check`。发布 workflow 不重新构建已验收 tarball。
 
 ## 文档

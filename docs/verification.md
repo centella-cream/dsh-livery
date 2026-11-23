@@ -96,8 +96,8 @@ Before packaging, acceptance must:
 
 | Measure | Current working-tree candidate | Budget | Accepted `0.2.1` probe |
 |---|---|---|---|
-| Client bundle gzip | **73,684 B** (280,547 B raw) | **73,728 B** (72 KiB) — **44 B headroom** | 60,902 B (cap 61,440 B / 60 KiB) |
-| Largest livery CSS | **10,190 B** (bauhaus) | **13,312 B** (13 KiB) | 9,066 B (cap 13,312 B) |
+| Client bundle gzip | **73,662 B** (280,421 B raw) | **73,728 B** (72 KiB) — **66 B headroom** | 60,902 B (cap 61,440 B / 60 KiB) |
+| Largest livery/boot CSS | **10,366 B** (bauhaus) | **14,336 B** (14 KiB) | 9,066 B (cap 13,312 B) |
 | Host bundle gzip | **15,506 B** (61,649 B raw) | **368,640 B** (360 KiB) | — |
 | Package tarball | **≈3.40 MB** (993 files; exact bytes change with every packaged-doc edit and must be re-measured on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
 
@@ -122,6 +122,10 @@ The 0.2.2 probe replaces 0.2.1's fixed Picsum-batch checks and adds:
 - plugin detail surface: `plugin.detail-section-renders`,
   `plugin.detail-subject-filter`, `plugin.detail-config-slot-clean`,
   `plugin.detail-no-config-slot`, `plugin.detail-copy-diagnostics`;
+- host floating surfaces: `visual.menu-surface-opaque` verifies the real
+  computed `--dsw-menu-surface-fill` / `--dsw-alias-fill-l1/l2` cascade is fully
+  opaque; `visual.jobs-popover-opaque` and `visual.stock-wallpaper-menu-opaque`
+  are explicit skips in the current shell (see limitations);
 - handshake/update: the `stale` boot path (exact `0.2.1` allowlist) with
   no-adopt-boot-CSS and catalog re-adoption, asserted on the update run.
 
@@ -146,6 +150,13 @@ status is unproven until the acceptance runs above.
   as skipped-with-reason, never as a pass.
 - **Update-path evidence schema is pending** (see item 3 above): the transition
   binding and release-gate validation do not exist yet.
+- **Host floating-surface coverage is partial in the automated probe.** The real
+  jobs popover/subagent cards are not triggerable in the isolated shell, so
+  `visual.jobs-popover-opaque` records a skip; `visual.menu-surface-opaque`
+  covers the computed token cascade, and the derive/unit tests cover every
+  shipped livery in both modes. The stock-style + wallpaper bridge rule is
+  covered by a CSS unit assertion, not by a rendered browser check, until the
+  harness can toggle to stock with a wallpaper active.
 - **Hot update is Web-only.** DSH client HMR is a Web-profile mechanism; Desktop
   update copy requires a reload/restart and no Desktop hot update is claimed.
   `0.2.1` has no stale path and fails closed on any plugin-version difference.
