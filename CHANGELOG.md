@@ -21,7 +21,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 预设 schema v2：新增 `{kind:'style', variant:'mesh'}` 壁纸目标与 attribution URL（creatorUrl/licenseUrl/sourceUrl）；导出固定写 v2，导入同时接受 v1/v2；v1 文件声明 style 会被拒绝（`wallpaper-kind`），v2 style variant 错误使用 `wallpaper-variant`。
 - 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与 “Copy diagnostics”。不添加更新按钮、不拦截宿主安装控件。slot 声明证明覆盖 8 个宿主中的 6 个；`0.2.1-rc.2`（Web）由运行时 detail 检查覆盖，`0.2.1-rc.3`（Desktop）暂无运行时 detail 检查，作为 per-scope limitation 记录，不是已通过声明。
 - 新增 `contracts/dsh/client-slot-declarations.json`（repo-only 的 per-host slot 声明证明）与 `scripts/client-slots-proof.mjs`；`clientSlotHash()` 随消费的 detail slots 变化，contract 测试与 release-check 校验其一致性。
-- 新增真实升级验收路径：`scripts/acceptance/web.mjs --update-from <0.2.1.tgz>` 在隔离 DSH_HOME 中通过运行中 Host 的 Add plugin 对话框安装候选包，并记录 schema v3 `transition`（from/to sha、无页面重载、stale boot、catalog 重新采用、manager outcome）；配套 `REQUIRED_UPDATE_CHECKS`、`release-evidence` v3 校验和 `prepublish-check --require-update`。本地 0.2.2-rc.5 Web 探针已通过（0.2.1 `78f1c8d1…` → 0.2.2 `4dde0a5a…`，35 pass / 0 fail / 2 skip / 1 warn），正式 evidence 需在冻结候选上重跑并提交。
+- 新增真实升级验收路径：`scripts/acceptance/web.mjs --update-from <0.2.1.tgz>` 在隔离 DSH_HOME 中通过运行中 Host 的 Add plugin 对话框安装候选包，并记录 schema v3 `transition`（from/to sha、无页面重载、stale boot、catalog 重新采用、manager outcome）；配套 `REQUIRED_UPDATE_CHECKS`、`release-evidence` v3 校验和 `prepublish-check --require-update`。本地 0.2.2-rc.5 Web 探针已通过（0.2.1 `78f1c8d1…` → 0.2.2 `bd5594d3…`，35 pass / 0 fail / 2 skip / 1 warn），正式 evidence 需在冻结候选上重跑并提交。
 - Web HMR stale-boot 修复：`BootCheck` 增加 `stale`；精确 allowlist `STALE_BOOT_VERSIONS = ['0.2.1']`，严格校验已认证 `(hostVersion, adapterId, contractHash)` 三元组、entryId、catalog-profile 严格相等与 accepted；其余版本仍 mismatch/fail closed。stale 路径不采纳 boot CSS，catalog 成功后执行一次 catalog 派生的 `applyConfirmed` 并恢复已保存壁纸/配置。该声明的边界仅为 Web Profile：Desktop 更新后仍需 renderer 重载或重启应用，不声称 Desktop 热更新。
 
 ### Changed
@@ -39,6 +39,8 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 0.2.1 client 对任意插件版本差异 fail closed、导致 HMR 重试与 stale-profile 分支不可达的问题。stale 路径不信任 `catalogUrl`/`bootStyleId`，config fallback 不回退到旧 boot skin；catalog 重试失败时 fail closed 到 degraded/stock 并移除 boot artifacts，`retryCatalog()` 可在不刷新页面的情况下恢复。
 - 修复远程 selection 写入时重建紧凑对象、丢弃 provenance 的问题；0.2.1 产生的重写仍显示图片，但会丢弃 provenance（0.2.1 无该字段）。
 - 修复 `sourceId`/`revision` 跨标签页竞争可能让落后标签页覆盖胜者 style sidecar 的问题：写入前重新读取主记录，identity 不一致时跳过 sidecar 写入；Clear local data 保留主记录与 style sidecar。
+- 修复 Openverse notice 在 preset 导入与 Recent 重新应用后消失：`PresetAttribution` 与 `RecentWallpaperEntry` 增加 providerId 并贯穿导入、应用和 provenance；面板仍从持久化 credit 派生 notice。
+- 统一 `acceptance/evidence` 与 `release-evidence` 的 fresh-install required-check 列表（含 `plugin.detail.*` / `visual.menu-surface-opaque`），避免最终 gate 接受缺少 detail check 的 evidence；stable host 的 slot proof waiver 文案改为明确“Desktop 尚无 runtime detail check，记录为 limitation”。
 - 修复插件详情 facts section 在首帧把 runtime 类方法直接传给 `useSyncExternalStore` 导致的 `this` 丢失异常；改为稳定的绑定 wrappers，并用真实 class-like runtime 测试回归。
 - 修复 Openverse 商标提示在刷新/预设/Recent 后消失：现在也从持久化的 `provenance.providerId` 派生；429 无 `Retry-After` 时增加 30 s 客户端冷却，避免立即重试；Wikimedia Random 补 gate 证据；gate id 与 registry 统一并在 release-check 交叉校验。
 - 修复 style sidecar 事件不被观察与 clear 顺序：controller 现在订阅 sidecar key，clear 按 plan 先删 sidecar 再写 tombstone；补 winner/sidecar-key 事件测试。
