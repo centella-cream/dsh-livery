@@ -182,7 +182,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.clearLocal.hint': '清理缓存图片、历史和未用上传。',
   'wallpaper.clearLocal.button': '清理本地数据',
   'wallpaper.clearLocal.working': '正在清理…',
-  'wallpaper.clearLocal.done': '已清理 {count} 个本地图片文件，当前壁纸已保留。',
+  'wallpaper.clearLocal.done': '已清理 {count} 个图片；当前壁纸保留。',
   'wallpaper.clearLocal.empty': '没有可清理的本地数据。',
   'wallpaper.clearLocal.partial': '已清理 {count} 个图片文件；部分数据未能删除。',
   // Search and tag filters.
@@ -512,9 +512,9 @@ export const zhCN: Record<LiveryKey, string> = {
   'detail.wallpaper.style': '跟随风格',
   'detail.none': '无',
   'detail.boundary.valid': 'DSH 的插件管理器负责安装和更新 Livery；更新后请重新加载此页面。',
-  'detail.boundary.stale': '已热更新；启动画面来自上一个构建。',
+  'detail.boundary.stale': '已热更新；启动画面来自上一构建。',
   'detail.boundary.staleDegraded': '客户端已更新，但样式目录不可用；请重试或重载。',
   'detail.boundary.mismatch': '需要重新加载以完成更新。',
   'detail.boundary.mismatchUnsupported': '此 DSH 构建不受支持；请安装匹配的 Livery 版本。',
-  'detail.boundary.absent': 'Livery 在此宿主上未启用；更新仍由插件管理器负责。',
+  'detail.boundary.absent': 'Livery 在此宿主未启用；更新仍由插件管理器负责。',
 }
