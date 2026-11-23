@@ -98,11 +98,12 @@ preview scenes.
 
 ## Wallpapers
 
-![Built-in Aurora wallpaper with blur, dim, frost and atmosphere controls](docs/assets/wallpaper-studio-en.jpg)
+![Online photo wallpaper with blur, dim, frost, atmosphere and focal controls](docs/assets/wallpaper-studio-en.jpg)
 
-The 0.2.1 wallpaper studio with the live 16:9 preview and L5a dots. Blur, dim, frost and the
-global atmosphere controls apply to the whole interface. Focal positioning is
-available for remote and uploaded wallpapers, not for built-in designs. Opening
+The 0.2.1 wallpaper studio with a real online photo and the live 16:9 preview. Blur, dim,
+frost and the global atmosphere controls apply to the whole interface. Focal
+positioning is available for remote and uploaded wallpapers, not for built-in
+designs. Opening
 a tab loads one batch of content; search, randomise, page or switch source
 explicitly. Wallpaper choices stay local.
 
