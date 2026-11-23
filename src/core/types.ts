@@ -16,7 +16,7 @@ export const LEGACY_CATALOG_SCHEMA_VERSION = 1 as const
 export const SCHEMA_VERSION = LEGACY_MANIFEST_SCHEMA_VERSION
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.2.0' as const
+export const LIVERY_VERSION = '0.2.1' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always

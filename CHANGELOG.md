@@ -7,7 +7,15 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.2.0] — implementation candidate (unreleased)
+## [0.2.1] — 2026-11-23
+
+### Fixed
+
+- 修复无 backdrop blur 的浮层菜单仍使用 70% 半透明底色、导致后台任务详情等卡片透出下层文字的问题。所有 Livery 风格的 `--dsw-specific-menu` 现在使用不透明的 layer-1 表面。
+- 修复 Web/Windows/macOS drawer 与 macOS ordinary sidebar 的有效透明度不一致：直接绘制路径现在匹配宿主合成后的 34%（浅色）/ 42.5%（深色）alpha。
+- 补充分层菜单不透明度与 sidebar 有效 alpha 的回归测试。
+
+## [0.2.0] — 2026-11-21
 
 ### Added
 

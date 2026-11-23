@@ -11,20 +11,20 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 online images and blur/frost effects, and a style gallery. It is a plugin, not a
 host theme takeover.
 
-> **Release status: `0.2.0` — visual and protocol release.**
+> **Release status: `0.2.1` — visual and protocol release.**
 > All 13 declared scopes have current acceptance evidence and the release gates
-> pass. The published artifact is `dsh-livery@0.2.0`.
+> pass. The published artifact is `dsh-livery@0.2.1`.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
 > Web/Desktop and DSH `0.2.2-rc.5` Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease; `0.2.2-rc.5` is npm
-> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.0` candidate is **exact-certified only**: unknown
+> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.1` candidate is **exact-certified only**: unknown
 > builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
 
 English · [中文](README.zh-CN.md)
 
-![DSH Livery 0.2.0 Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
+![DSH Livery 0.2.1 Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
 
 Screenshots are from the English UI; the Chinese README uses the Chinese UI.
 Livery follows the DSH host locale.
@@ -48,6 +48,11 @@ Livery follows the DSH host locale.
   wallpaper trace. The host still owns its final tint/wash composition.
 - **Protocol hardening.** v2 presentation axes, audit envelopes, exact-host
   adapters, deep catalog validation and 13 reaccepted scopes.
+
+## 0.2.1 patch
+
+- All floating menus are now opaque, fixing background-task details and nested popovers showing page text.
+- Direct-paint sidebars (Web/Windows/drawer) now match the macOS composite alpha (34% light / 42.5% dark).
 
 ## Highlights
 
@@ -95,7 +100,7 @@ preview scenes.
 
 ![Built-in Aurora wallpaper with blur, dim, frost and atmosphere controls](docs/assets/wallpaper-studio-en.jpg)
 
-The 0.2.0 wallpaper studio with the live 16:9 preview and L5a dots. Blur, dim, frost and the
+The 0.2.1 wallpaper studio with the live 16:9 preview and L5a dots. Blur, dim, frost and the
 global atmosphere controls apply to the whole interface. Focal positioning is
 available for remote and uploaded wallpapers, not for built-in designs. Opening
 a tab loads one batch of content; search, randomise, page or switch source
@@ -143,19 +148,19 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.2.0`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.2.1`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.2.0
+dsh plugin --profile web add dsh-livery@0.2.1
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.2.0
+dsh plugin --profile desktop add dsh-livery@0.2.1
 ```
 
 Restart the app after the package changes. You can also install by package name
@@ -166,12 +171,12 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 ## Verification
 
-The `0.2.0` artifact passed full isolated acceptance on 13 Web/Desktop scopes:
+The `0.2.1` artifact passed full isolated acceptance on 13 Web/Desktop scopes:
 Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
 `0.2.2-rc.3`, `0.2.2-rc.5` with **275 passed / 0 failed each**, and Desktop
 `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`,
 `0.2.2-rc.5` with **34 / 0 each**. Evidence is bound under
-`contracts/dsh/evidence/0.2.0/`. Scope, counts and limitations:
+`contracts/dsh/evidence/0.2.1/`. Scope, counts and limitations:
 [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,

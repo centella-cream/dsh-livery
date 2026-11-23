@@ -1,6 +1,6 @@
 # Documentation
 
-**`0.2.0` is the current implementation candidate (unpublished); `dsh-livery@0.1.9` remains the published artifact.** The authoritative support policy is
+**`0.2.1` is the current published release (`dsh-livery@0.2.1`).** The authoritative support policy is
 `contracts/dsh/support-matrix.json`; the exact accepted artifact is recorded in
 `contracts/dsh/evidence/` and `docs/verification.md`.
 
@@ -42,7 +42,7 @@ Edge and any other DSH build are not supported.
 - **[0.2.0 proposal](design/0.2.0-proposal.md)** — 0.2.0 multi-axis GUI style
   engine, capability gating, manifest v2 and the host APIs needed for structural
   layout. Implemented in the 0.2.0 candidate; acceptance evidence is under
-  `contracts/dsh/evidence/0.2.0/`.
+  `contracts/dsh/evidence/0.2.1/`.
 
 ## Archive (historical, not authoritative)
 
@@ -55,7 +55,7 @@ not be cited as current support or behavior.
 
 # 文档
 
-**`0.2.0` 是当前实现候选（未发布）；`dsh-livery@0.1.9` 仍是已发布制品。** 支持策略以
+**`0.2.1` 是当前已发布版本（`dsh-livery@0.2.1`）。** 支持策略以
 `contracts/dsh/support-matrix.json` 为准；精确验收制品记录在
 `contracts/dsh/evidence/` 与 `docs/verification.md`。
 

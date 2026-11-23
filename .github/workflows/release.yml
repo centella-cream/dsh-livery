@@ -52,7 +52,7 @@ jobs:
         run: |
           RUN_ID="${{ vars.LIVERY_ACCEPTANCE_RUN_ID }}"
           PRODUCER_SHA=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" --jq .head_sha)
-          EVIDENCE_SHA=$(node -e "const fs=require('fs');const p='contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json';process.stdout.write(JSON.parse(fs.readFileSync(p,'utf8')).commit)")
+          EVIDENCE_SHA=$(node -e "const fs=require('fs');const p='contracts/dsh/evidence/0.2.1/0.2.1-rc.2-web-chrome.json';process.stdout.write(JSON.parse(fs.readFileSync(p,'utf8')).commit)")
           test "$PRODUCER_SHA" = "$EVIDENCE_SHA" || {
             echo "producer run $RUN_ID headSha=$PRODUCER_SHA != evidence commit $EVIDENCE_SHA" >&2
             exit 1

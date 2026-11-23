@@ -133,7 +133,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(web.upstream).toEqual({ githubTag: 'dsh-v0.2.1-rc.2', npmVersion: '0.2.1-rc.2' })
     expect(web.evidence).toEqual([
       'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
-      'contracts/dsh/evidence/0.2.0/0.2.1-rc.2-web-chrome.json',
+      'contracts/dsh/evidence/0.2.1/0.2.1-rc.2-web-chrome.json',
     ])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
@@ -468,7 +468,7 @@ describe('generated shipped registry', () => {
       files?: string[]
       dsh?: { client?: { platform?: string; external?: string[] }; compatibility?: { dshReleases?: Record<string, string> } }
     }
-    expect(pkg.version).toBe('0.2.0')
+    expect(pkg.version).toBe('0.2.1')
     expect(pkg.engines?.dsh).toBe('>=0.2.1-rc.2 <0.3.0')
     expect(pkg.engines?.node).toBe('^22.23.1 || ^24.21.0')
     expect(pkg.dsh?.client?.platform).toBe('web')

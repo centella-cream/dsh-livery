@@ -1256,7 +1256,7 @@ export async function regenerateGeneratedContracts(workspace: string): Promise<G
 }
 
 /** Detection format of a compiled catalog profile; bump with schema/compiler changes. */
-const CATALOG_COMPILER_VERSION = '0.2.0'
+const CATALOG_COMPILER_VERSION = '0.2.1'
 
 /**
  * Render-affecting contract facts. Two host versions with the same profile can
