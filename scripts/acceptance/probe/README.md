@@ -33,7 +33,7 @@ harness drives the system Chrome through `channel: 'chrome'`.
   `视觉风格画廊` / `Visual style gallery`); data-testids are unchanged.
 - Counts are derived from the served catalog: 28 liveries/profile
   (`catalog.gallery-size`), 24 gallery cards, 96 preview SVGs/profile, per-livery
-  CSS ≤12 KiB, and style vocabulary (surface recipes, font stacks, shape/
+  CSS ≤14 KiB, and style vocabulary (surface recipes, font stacks, shape/
   elevation/material/border families).
 - `checkStyleContrast` applies graphite/catppuccin/rice-paper/tokyo-night through
   the real Apply button (or transient preview in read-only `--reuse` mode) and

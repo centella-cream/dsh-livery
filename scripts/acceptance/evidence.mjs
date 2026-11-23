@@ -51,6 +51,7 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
   'wallpaper.attribution-links',
   'plugin.detail-section-renders',
   'plugin.detail-subject-filter',
+  'visual.menu-surface-opaque',
   'visual.floating-surfaces',
 ])
 

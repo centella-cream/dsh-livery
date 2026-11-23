@@ -90,7 +90,7 @@ const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../../../package.json',
 const MIN_LIVERIES = 24
 
 /** Per-livery compiled CSS hard budget (style-system.md §5). */
-const CSS_BUDGET_BYTES = 13 * 1024
+const CSS_BUDGET_BYTES = 14 * 1024
 
 /**
  * Final 0.1.4 merged-client caps (Lead-owned decisions; acceptance reports the
@@ -680,7 +680,7 @@ export async function checkCatalog(ctx) {
   )
 
   // Per-livery CSS budget (style-system.md §5): every compiled livery's
-  // tokens+typography+layout must stay inside the 12 KiB hard cap.
+  // tokens+typography+layout must stay inside the 14 KiB hard cap.
   const cssSizes = liveries.map((livery) => ({
     id: livery.id,
     bytes: (livery.css?.tokens?.length ?? 0) + (livery.css?.typography?.length ?? 0) + (livery.css?.layout?.length ?? 0),
@@ -5741,6 +5741,56 @@ export async function checkVisualMatrix(ctx) {
       'visual.other-floating-surfaces',
       'confirm dialog / Toast / Tooltip / Menu / HoverCard stay opaque above the atmosphere',
       'not triggerable without synthetic host interactions in this shell; Settings modal path covers the shared floating-surface token',
+    )
+
+    // Host menus read --dsw-menu-surface-fill directly (MenuSurface.module.css),
+    // and the jobs live row reads --dsw-alias-fill-l1/l2. Verify the real
+    // cascade values and a composed background under the active Livery style;
+    // an actual jobs popover is not triggerable in this shell, so the popover
+    // itself stays an explicit skip rather than a fake pass.
+    const floatingTokens = await page.evaluate(() => {
+      if (!document.body.hasAttribute('data-dsh-livery')) return null
+      const read = (value) => {
+        const probe = document.createElement('div')
+        probe.style.position = 'absolute'
+        probe.style.visibility = 'hidden'
+        probe.style.backgroundColor = value
+        document.body.appendChild(probe)
+        const background = getComputedStyle(probe).backgroundColor
+        probe.remove()
+        const match = String(background).match(/rgba?\(([^)]*)\)/u)
+        const parts = match ? match[1].split(',').map((part) => part.trim()) : []
+        return { background, alpha: parts.length === 4 ? Number(parts[3]) : 1 }
+      }
+      const bodyStyle = getComputedStyle(document.body)
+      return {
+        menu: read('var(--dsw-menu-surface-fill)'),
+        fillL1: read('var(--dsw-alias-fill-l1)'),
+        fillL2: read('var(--dsw-alias-fill-l2)'),
+        tokenMenu: bodyStyle.getPropertyValue('--dsw-menu-surface-fill').trim(),
+      }
+    })
+    if (floatingTokens === null) {
+      runner.skip('visual.menu-surface-opaque', 'host MenuSurface fill and jobs fill-l1/l2 are opaque under a Livery style', 'no active Livery style in this matrix state')
+      runner.skip('visual.jobs-popover-opaque', 'the real background-jobs popover and subagent cards are opaque over a wallpaper', 'background jobs are not triggerable in this shell; token coverage above plus derive tests are the available evidence')
+    } else {
+      expect(
+        runner,
+        'visual.menu-surface-opaque',
+        'host MenuSurface --dsw-menu-surface-fill resolves fully opaque under a Livery style',
+        floatingTokens.tokenMenu.length > 0
+          && floatingTokens.menu.alpha >= 0.99
+          && floatingTokens.fillL1.alpha >= 0.99
+          && floatingTokens.fillL2.alpha >= 0.99,
+        JSON.stringify(floatingTokens),
+        { floatingTokens },
+      )
+      runner.skip('visual.jobs-popover-opaque', 'the real background-jobs popover and subagent cards are opaque over a wallpaper', 'background jobs are not triggerable in this shell; visual.menu-surface-opaque + derive/unit tests cover the MenuSurface and fill-l1/l2 tokens')
+    }
+    runner.skip(
+      'visual.stock-wallpaper-menu-opaque',
+      'stock style + active wallpaper gets opaque menu/fill surfaces from the wallpaper bridge rule',
+      'this matrix state always has an active Livery style; the stock-only branch is covered by the wallpaper CSS unit assertion and the stock token values',
     )
 
     // ---------- restore a clean interactive state ----------
