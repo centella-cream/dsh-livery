@@ -130,11 +130,21 @@ export function readConsumedClientSlots(root) {
  * @returns declared host versions in matrix order.
  */
 export function readDeclaredHosts(root) {
+  return readDeclaredHostClaims(root).map(entry => entry.hostVersion)
+}
+
+/**
+ * Read the matrix host claims (hostVersion + claimTier) used to decide whether
+ * a missing static proof needs an explicit waiver.
+ * @param root - repository root.
+ * @returns declared host claims in matrix order.
+ */
+export function readDeclaredHostClaims(root) {
   const matrix = JSON.parse(readFileSync(join(root, 'contracts', 'dsh', 'support-matrix.json'), 'utf8'))
   const entries = Array.isArray(matrix.entries) ? matrix.entries : []
   return entries
-    .map(entry => (entry !== null && typeof entry === 'object' ? entry.hostVersion : undefined))
-    .filter(version => typeof version === 'string' && version.length > 0)
+    .filter(entry => entry !== null && typeof entry === 'object' && typeof entry.hostVersion === 'string' && entry.hostVersion.length > 0)
+    .map(entry => ({ hostVersion: entry.hostVersion, claimTier: typeof entry.claimTier === 'string' ? entry.claimTier : 'unknown' }))
 }
 
 /**
@@ -217,14 +227,25 @@ export function inspectHostTree(hostsDir, hostVersion, packageName = PLUGIN_MANA
 export function generateClientSlotProof(options = {}) {
   const root = options.root ?? ROOT
   const hostsDir = options.hostsDir ?? DEFAULT_HOSTS_DIR
-  const declaredHosts = options.declaredHosts ?? readDeclaredHosts(root)
+  const hostClaims = options.declaredHostClaims ?? readDeclaredHostClaims(root)
+  const declaredHosts = options.declaredHosts ?? hostClaims.map(entry => entry.hostVersion)
+  const claimByHost = new Map(hostClaims.map(entry => [entry.hostVersion, entry.claimTier]))
   const consumedClientSlots = readConsumedClientSlots(root)
   const inspectedHosts = []
   const missingHosts = []
   for (const hostVersion of declaredHosts) {
     const inspected = inspectHostTree(hostsDir, hostVersion, options.packageName)
-    if (typeof inspected.reason === 'string') missingHosts.push({ hostVersion, reason: inspected.reason })
-    else inspectedHosts.push(inspected)
+    if (typeof inspected.reason === 'string') {
+      const claimTier = claimByHost.get(hostVersion)
+      missingHosts.push({
+        hostVersion,
+        reason: inspected.reason,
+        ...(claimTier === undefined ? {} : { claimTier }),
+        ...(claimTier === 'stable'
+          ? { waiver: 'stable host tree unavailable for static proof; the runtime detail check is the only evidence and is recorded as a per-scope limitation, never as a pass' }
+          : {}),
+      })
+    } else inspectedHosts.push(inspected)
   }
   return {
     schemaVersion: PROOF_SCHEMA_VERSION,
@@ -300,12 +321,19 @@ export function validateClientSlotProof(document, options = {}) {
   if (JSON.stringify([...covered].sort()) !== JSON.stringify([...declaredHosts].sort())) {
     problems.push('proof must record every declared host exactly once as inspected or missing')
   }
+  const claims = options.declaredHostClaims ?? readDeclaredHostClaims(root)
+  const claimByHost = new Map(claims.map(entry => [entry.hostVersion, entry.claimTier]))
   for (const host of missingHosts) {
     if (typeof host.hostVersion !== 'string' || host.hostVersion.length === 0) {
       problems.push('proof missingHosts entry has no hostVersion')
+      continue
     }
     if (typeof host.reason !== 'string' || host.reason.length === 0) {
-      problems.push(`proof missingHosts entry for ${String(host.hostVersion)} has no explicit reason`)
+      problems.push(`proof missingHosts entry for ${host.hostVersion} has no explicit reason`)
+    }
+    if (claimByHost.get(host.hostVersion) === 'stable'
+      && (typeof host.waiver !== 'string' || host.waiver.trim().length === 0)) {
+      problems.push(`proof missing stable host ${host.hostVersion} needs an explicit waiver`)
     }
   }
   for (const host of inspectedHosts) {
@@ -316,6 +344,8 @@ export function validateClientSlotProof(document, options = {}) {
     }
     if (typeof host.packageVersion !== 'string' || host.packageVersion.length === 0) {
       problems.push(`proof inspected host ${label} has no plugin-manager packageVersion`)
+    } else if (host.packageVersion !== host.hostVersion) {
+      problems.push(`proof inspected host ${label} has plugin-manager packageVersion ${host.packageVersion}; expected the host version`)
     }
     if (host.source !== `${PLUGIN_MANAGER_PACKAGE}/${DECLARATION_SOURCE}`) {
       problems.push(`proof inspected host ${label} does not name the plugin-manager declaration source`)

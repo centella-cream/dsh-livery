@@ -188,7 +188,7 @@ describe('proof generator', () => {
   it('records inspected and missing declared hosts explicitly', () => {
     const hostsDir = makeHostsDir()
     const declaredHosts = ['9.9.9-a', '9.9.9-b', '9.9.9-c']
-    writeHostTree(hostsDir, '9.9.9-a', { packageVersion: '9.9.9' })
+    writeHostTree(hostsDir, '9.9.9-a', { packageVersion: '9.9.9-a' })
     writeHostTree(hostsDir, '9.9.9-c')
     // 9.9.9-b has no host tree on this machine.
 
@@ -207,7 +207,7 @@ describe('proof generator', () => {
       { hostVersion: '9.9.9-b', reason: 'plugin-manager package metadata not installed in the local host tree' },
     ])
     for (const host of document.inspectedHosts) {
-      expect(host.packageVersion).toBe(host.hostVersion === '9.9.9-a' ? '9.9.9' : '9.9.9-c')
+      expect(host.packageVersion).toBe(host.hostVersion)
       expect(host.source).toBe(`${PLUGIN_MANAGER_PACKAGE}/${DECLARATION_SOURCE}`)
       expect(host.sourceSha256).toMatch(/^sha256:[0-9a-f]{64}$/u)
       expect(host.slots).toEqual((DETAIL_SLOT_KEYS as readonly string[]).map(key => ({

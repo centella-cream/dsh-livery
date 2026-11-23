@@ -297,11 +297,15 @@
   "missingHosts": [
     {
       "hostVersion": "0.2.1-rc.2",
-      "reason": "plugin-manager package metadata not installed in the local host tree"
+      "reason": "plugin-manager package metadata not installed in the local host tree",
+      "claimTier": "stable",
+      "waiver": "stable host tree unavailable for static proof; the runtime detail check is the only evidence and is recorded as a per-scope limitation, never as a pass"
     },
     {
       "hostVersion": "0.2.1-rc.3",
-      "reason": "plugin-manager package metadata not installed in the local host tree"
+      "reason": "plugin-manager package metadata not installed in the local host tree",
+      "claimTier": "stable",
+      "waiver": "stable host tree unavailable for static proof; the runtime detail check is the only evidence and is recorded as a per-scope limitation, never as a pass"
     }
   ]
 }
