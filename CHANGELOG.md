@@ -7,6 +7,51 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.2.2] — unreleased (target)
+
+目标版本 `0.2.2`（只改客户端）。本条目描述目标行为，不是发布或验收声明：
+`0.2.1` 仍是当前已发布版本，0.2.2 的全部证据必须在同一份最终 tarball 上重新绑定后才成立。
+
+### Added
+
+- 壁纸工作室改为精选目录：主网格固定 8 张精选内置壁纸（`paper`、`ink`、`aurora`、`cyber`、`dusk`、`minimal`、`mono`、`sand`），其余 16 张收入折叠的 **Classic** 组；全部 24 个 ID 与 CSS 逐字节不变、不重映射。选中旧内置 ID 时显示置顶的 “Current (Classic)” 色板，且该 ID 不会在网格或 Classic 组中重复出现。
+- 新增 `kind:'style'` 壁纸：由当前 Livery 的 catalog token 按明/暗模式生成一条确定的 CSS 背景，不写 blob、IndexedDB 或缓存记录；不可重新定位（只有 remote/upload 可调整焦点），无 catalog token 时禁用并给出可见原因。新增 sidecar 存储键 `dsh-livery.wallpaper.style.v1`（schemaVersion 1，`{variant:'mesh', revision, sourceId}`），主记录仍是 0.2.1 可读的 v2；仅当 sidecar 解析成功、主记录 selection 为空且 `(revision, sourceId)` 完全一致时才 hydrate。
+- 在线图源注册表新增 **Openverse** 与 **Wikimedia Commons**（唯一通过 `docs/research/provider-access-gate.json` 的两个来源），均为免密钥；带来源选择器（Auto + 通过门禁的来源）、加载/空/超时/限流/不可用/无效响应状态与重试。Auto 使用 12 秒总时限、单次尝试 `min(6 s, remaining)`、最多两个来源，并显示实际服务来源；固定来源只尝试一次且不会静默切换。
+- 归属信息持久化：远程 selection 增加可选 `provenance`（provider/title/creator/creatorUrl/license/licenseUrl/source/sourceUrl）；creator/licence/source 链接必须为 https、公网主机、≤2048 字符，并以 `rel="noreferrer noopener"` 打开；`license:null` 的结果可见但不可选。Recent 历史增加归属 URL 字段，仅作展示镜像；旧的 attribution 存储迁移一次后移除。
+- 预设 schema v2：新增 `{kind:'style', variant:'mesh'}` 壁纸目标与 attribution URL（creatorUrl/licenseUrl/sourceUrl）；导出固定写 v2，导入同时接受 v1/v2；v1 文件声明 style 会被拒绝（`wallpaper-kind`），v2 style variant 错误使用 `wallpaper-variant`。
+- 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与 “Copy diagnostics”。不添加更新按钮、不拦截宿主安装控件。
+- 新增 `contracts/dsh/client-slot-declarations.json`（repo-only 的 per-host slot 声明证明）与 `scripts/client-slots-proof.mjs`；`clientSlotHash()` 随消费的 detail slots 变化，contract 测试与 release-check 校验其一致性。
+- Web HMR stale-boot 修复：`BootCheck` 增加 `stale`；精确 allowlist `STALE_BOOT_VERSIONS = ['0.2.1']`，严格校验已认证 `(hostVersion, adapterId, contractHash)` 三元组、entryId、catalog-profile 严格相等与 accepted；其余版本仍 mismatch/fail closed。stale 路径不采纳 boot CSS，catalog 成功后执行一次 catalog 派生的 `applyConfirmed` 并恢复已保存壁纸/配置。该声明的边界仅为 Web Profile：Desktop 更新后仍需 renderer 重载或重启应用，不声称 Desktop 热更新。
+
+### Changed
+
+- 壁纸来源不变量更新为“两张背景预设卡（`No wallpaper`、`Follow style`）+ 四个图片来源页签”；默认图片来源为 Built-in，打开壁纸页不发起网络请求，首次激活 Online 页签只请求一批（仅 idle 状态），之后切页签不重新请求；搜索、Random、Refresh、Retry 是其余请求触发点。无轮询、无预取、无遥测。
+- 在线壁纸不再默认走 Picsum：Auto 只会在通过门禁的来源中选择；Picsum 从来源列表移除。
+- 远程图片下载改为 provider 声明的 `imageHosts`/`redirectHosts` 策略（精确主机或 `*.` 通配，禁止后缀匹配；`redirect:'error'` 或校验最终 URL），替换 Picsum-only 的 redirect 分支。
+- client gzip 预算从 60 KiB 显式上调到 **72 KiB（73,728 B）**（评审通过，用于壁纸工作室/provider 注册表/详情面）；per-livery CSS 保持 **13 KiB**，host gzip 保持 360 KiB；tarball 上限保持 **4 MiB（4,194,304 B）**，README 图片使用保画质的压缩/尺寸调整，不提高上限。
+- README/README.zh-CN/SECURITY/NOTICE 与 interfaces/compatibility/wallpaper-workbench/style-system 设计文档更新到 0.2.2 目标状态；README 壁纸说明不再声称使用真实在线照片。
+- `docs/design/interfaces.md` 修正 “synchronous slot-spec probing” 的旧描述：实现通过 `ctx.slots.inject` 注册，settings fallback 有 1500 ms grace，测试禁止 `slots.spec`。
+
+### Fixed
+
+- 修复 0.2.1 client 对任意插件版本差异 fail closed、导致 HMR 重试与 stale-profile 分支不可达的问题。stale 路径不信任 `catalogUrl`/`bootStyleId`，config fallback 不回退到旧 boot skin；catalog 重试失败时 fail closed 到 degraded/stock 并移除 boot artifacts，`retryCatalog()` 可在不刷新页面的情况下恢复。
+- 修复远程 selection 写入时重建紧凑对象、丢弃 provenance 的问题；0.2.1 产生的重写仍显示图片，但会丢弃 provenance（0.2.1 无该字段）。
+- 修复 `sourceId`/`revision` 跨标签页竞争可能让落后标签页覆盖胜者 style sidecar 的问题：写入前重新读取主记录，identity 不一致时跳过 sidecar 写入；Clear local data 保留主记录与 style sidecar。
+- 移除在线壁纸打开页面即自动请求 Picsum 批次的行为。
+
+### Removed
+
+- 从 0.2.2 provider 列表移除 Picsum（Unsplash 许可禁止这种编译/再发布用途）；已有 Picsum 远程选择仍通过 legacy 缓存路径渲染，新结果不再携带 `license:'Picsum'`。
+- 不列入 NASA（权利不可机器验证、图片 CDN CORS 不一致，拒绝）、The Met（图片 CDN 无 CORS，推迟）、Art Institute of Chicago（Cloudflare 验证受阻，推迟）；Pexels、Pixabay、Unsplash 继续拒绝；无 API key、无 Host proxy、无 `web_fetch` 依赖。
+- 移除 README 中 “24 张内置壁纸” 的旧表述，统一为 “24 张总量：8 张精选 + 16 张 Classic”。
+- 移除 0.2.1 中包含未署名在线照片的 `wallpaper-studio` README 截图；0.2.2 截图必须在最终验收候选上重新采集（内置 CSS 壁纸，或带 `NOTICE.md` 署名的 CC0/公有领域照片）。
+
+### Compatibility
+
+- 0.2.1 继续可读主壁纸记录（schema v2）与 v1 预设；0.2.2 的 style 只写入 sidecar，0.2.1 不会删除它。
+- 已记录的降级限制：0.2.2 选择 Style 后，0.2.1 的任何壁纸状态写入会使主记录 identity 前移，升级回 0.2.2 后 Style 不再显示（sidecar 字节保留但被忽略）；0.2.1 拒绝 v2 预设（既有 `schema-version` 错误）；0.2.1 重写远程 selection 会丢弃 provenance URL。
+- 打包 README 截图必须遵循许可规则：使用 Livery 自己的内置 CSS 壁纸，或带 `NOTICE.md` 署名的 CC0/公有领域照片；在线图片仅在运行时获取，不随包分发。
+
 ## [0.2.1] — 2026-11-23
 
 ### Fixed

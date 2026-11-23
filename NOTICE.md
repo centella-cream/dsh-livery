@@ -10,13 +10,25 @@ were reimplemented from the public design notes in `references/design.md`.
   acceptance evidence.
 * DSH Livery ships no third-party images, fonts, character art, brands or
   trademarks. All preview thumbnails are generated from the plugin's own token
-  data at build time.
+  data at build time. Packaged README screenshots must show Livery's own UI and
+  are recaptured from the final accepted candidate build; wallpaper showcase
+  captures use Livery's built-in CSS wallpapers, or a CC0/public-domain photo
+  credited in this file — never an unlicensed third-party image. The pre-0.2.2
+  wallpaper-studio capture that showed an online photo is not carried into 0.2.2.
+* Online wallpapers are not bundled. The 0.2.2 wallpaper studio fetches images at
+  runtime from Openverse and Wikimedia Commons (the only providers accepted by
+  the committed access-gate record, `docs/research/provider-access-gate.json`,
+  which is repository-only and not shipped: see
+  <https://github.com/centella-cream/dsh-livery/blob/main/docs/research/provider-access-gate.json>),
+  renders the per-image creator/licence/source attribution, and caches the
+  selected image locally in the browser. Legacy Picsum selections cached by 0.2.1
+  remain cache-only; 0.2.2 lists no Picsum source and makes no Picsum requests.
 * DeepSeek Harness (`@deepseek-ai/*`) is MIT licensed; see the host package for
   its own notice.
 
 ## Design inspirations (palettes)
 
-The 24 styles include 10 original designs, 12 palettes **inspired by**
+The 28 styles comprise 14 original designs, 12 palettes **inspired by**
 well-known open-source themes, and 2 original Chinese designs (青瓷 Celadon,
 朱砂 Cinnabar). No source code, images, fonts, character art or trademarks are
 copied. Colours are re-derived through DSH Livery's own OKLab seed/token

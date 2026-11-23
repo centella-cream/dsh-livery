@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "release": "0.2.2",
+  "retrievedAt": "2026-11-23",
+  "reviewer": "lead-agent",
+  "providers": [
+    {
+      "id": "openverse",
+      "role": "Broad openly-licensed media search (CC search aggregator)",
+      "api": {
+        "baseUrl": "https://api.openverse.org/v1",
+        "docsUrl": "https://docs.openverse.org/",
+        "termsUrl": "https://docs.openverse.org/terms_of_service.html",
+        "exampleRequest": "GET https://api.openverse.org/v1/images/?q=dog&page_size=2&page=1 with header 'Origin: https://example.com' (anonymous, no token) -> 200 application/json {result_count, page_count, page_size, page, results[]}; GET https://api.openverse.org/v1/images/{id}/thumb/?full_size=true with 'Origin: https://example.com' -> 200 image/jpeg (proxied original)"
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "200 OK for OPTIONS https://api.openverse.org/v1/images/?q=landscape with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET'; response carries access-control-allow-origin: *, access-control-allow-methods: DELETE, GET, OPTIONS, PATCH, POST, PUT, access-control-allow-headers: accept, authorization, content-type, user-agent, x-csrftoken, x-requested-with, access-control-max-age: 86400. The proxied image endpoint (GET and OPTIONS /v1/images/{id}/thumb/) also returns 200 with access-control-allow-origin: *.",
+        "allowOrigin": "*",
+        "allowedMethods": "DELETE, GET, OPTIONS, PATCH, POST, PUT (from Access-Control-Allow-Methods on preflight)",
+        "imageHostCors": "verified for the proxied image host: GET https://api.openverse.org/v1/images/7992f788-c8f6-459c-8186-b87edfb6bebe/thumb/ and .../thumb/?full_size=true with 'Origin: https://example.com' -> 200 image/jpeg with access-control-allow-origin: * (600x449 compressed thumbnail vs 1024x768 original for the sampled result). Origin image hosts in results[].url are NOT CORS-safe or bounded: the sampled page (q=landscape, page_size=20) returned url host live.staticflickr.com only, but results carry provider/source fields for many third-party platforms (the OpenAPI Source schema is an open {source_name, source_url} record), so origin hosts cannot be enumerated in a fixed imageHosts allowlist. The client must fetch only the api.openverse.org proxy URLs.",
+        "evidence": "Commands: curl --resolve api.openverse.org:443:<DoH-IP> -D - -H 'Origin: https://example.com' 'https://api.openverse.org/v1/images/?q=dog&page_size=2' (200); curl --resolve ... -X OPTIONS -H 'Origin: https://example.com' -H 'Access-Control-Request-Method: GET' 'https://api.openverse.org/v1/images/?q=landscape' (200 + ACAO/ACAM/ACAH above). NOTE: native DNS for api.openverse.org on the review network resolved to a poisoned address (31.13.75.12) and timed out; every successful request used curl --resolve with the DoH-resolved Cloudflare IPs 104.20.17.1 / 172.66.153.86, so the Host/SNI and response headers are the real origin response."
+      },
+      "rateLimits": {
+        "anonymous": "20 requests/min burst and 200 requests/day sustained for anonymous API requests; 1000 proxied image fetches/day (anon_thumbnail scope) shared by the 600px thumbnail and the full_size proxy; anonymous page_size is capped at 20 (a page_size of 21 returns HTTP 401 {\"detail\":\"page_size may not exceed 20 for anonymous requests\"}); anonymous pagination depth is also limited (OpenAPI text: 'Pagination is limited in terms of the size of individual pages and the total number of works visible for a query (pagination depth)').",
+        "observedHeaders": {
+          "x-ratelimit-limit-anon_burst": "20/min",
+          "x-ratelimit-available-anon_burst": "19",
+          "x-ratelimit-limit-anon_sustained": "200/day",
+          "x-ratelimit-available-anon_sustained": "199",
+          "x-ratelimit-limit-anon_thumbnail": "1000/day",
+          "x-ratelimit-available-anon_thumbnail": "999"
+        },
+        "retryAfter": "not observed: no 429 was returned during the review; repeated rapid anonymous requests from the review network produced HTTP 000/504 instead of 429. The OpenAPI schema documents 429 Too Many Requests (APIException {detail}) and states 'Exceeding the limit will result in 429: Too Many Requests responses'; no Retry-After header is documented or was observed, so the client must apply its own backoff on 429."
+      },
+      "pagination": {
+        "style": "page/page_size request parameters; response carries result_count, page_count, page_size, page and results[]; no continuation token or next-URL field.",
+        "cursorField": "page (1-based integer request parameter; the registry should encode it as an opaque cursor; next page is page+1 while page < page_count)",
+        "pageSizeMax": "20 anonymous (401 above 20); the existing 0.2.1 client requests page_size=12"
+      },
+      "license": {
+        "fields": [
+          "license (slug, e.g. by-nc-nd / by-sa / cc0 / pdm)",
+          "license_version",
+          "license_url",
+          "attribution (ready-made attribution sentence)",
+          "creator",
+          "creator_url",
+          "foreign_landing_url (source page; use as sourceUrl/creator provenance)",
+          "title",
+          "source / provider",
+          "width / height",
+          "thumbnail (api.openverse.org proxy URL)"
+        ],
+        "attributionRequired": true,
+        "licenseUrlField": "license_url (present on licensed results; absent/not applicable only when a result has no usable licence, which must render non-selectable)",
+        "termsClauseQuote": "\"You must respect and comply with the terms and conditions applicable to the content and metadata accessible through Openverse, including by providing proper attribution to CC-licensed works and respecting the terms and conditions of platforms hosting CC-licensed works.\" and \"You must adhere to all rate limits, registration requirements, and comply with all requirements in Openverse documentation;\" and \"Openverse aggregates metadata about openly licensed content hosted on websites managed by third parties. Openverse does not own or control the content or data made available through the API or shared on the website, and does not verify its licensing status or make any representations or warranties about the content or data whatsoever.\" (Openverse Terms of Service, effective 5 May 2022, sections 2 and 3)",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": true
+      },
+      "imageHosts": [
+        "api.openverse.org"
+      ],
+      "redirects": {
+        "chain": [
+          "GET https://api.openverse.org/v1/images/?q=dog&page_size=2 -> 200 (no redirect)",
+          "GET https://api.openverse.org/v1/images/7992f788-c8f6-459c-8186-b87edfb6bebe/thumb/ -> 200 image/jpeg (no redirect)",
+          "GET https://api.openverse.org/v1/images/7992f788-c8f6-459c-8186-b87edfb6bebe/thumb/?full_size=true -> 200 image/jpeg (no redirect)"
+        ],
+        "policy": "No redirects observed on the API or image-proxy responses. Declare imageHosts=[api.openverse.org] and use redirect:'error' with no redirectHosts; the client must never follow results[].url origin-host links."
+      },
+      "decision": "accepted",
+      "decisionReason": "Fully verified for the 0.2.2 model: anonymous GET and OPTIONS are CORS-open (access-control-allow-origin: *) and the API proxy serves both 600px thumbnails and full-resolution originals from the single allowlistable host api.openverse.org with ACAO *, so the fetch()+blob cache works without opening arbitrary origin hosts. Licence metadata is complete (license/license_version/license_url/attribution/creator/source page) and the ToS explicitly conditions reuse on attribution to CC-licensed works. Accepted with product caps: anonymous page_size must be clamped to 20, image bytes must only come from api.openverse.org proxy URLs (origin results[].url hosts are unbounded), full resolution is loaded through the 1000/day proxy budget, and 429s need client-side backoff because Retry-After is not observed.",
+      "notes": [
+        "Existing 0.2.1 client already queries Openverse with license=cc0,pdm and page_size=12; the gate supports keeping that public-domain-only filter. The general API also returns CC BY/BY-SA/NC/ND results (sampled: by-nc-nd 2.0, by-sa 2.0), so any widening must render attribution, creator and license_url and must exclude licences whose terms the release cannot honour.",
+        "Openverse ToS section 4 (trademark) requires: \"you must prominently indicate that it was made using Openverse but is not endorsed or certified by Openverse\" - the UI must carry that made-with-Openverse notice without implying endorsement.",
+        "full_size=true returns the original bytes (sampled 1024x768, content-length 158236) while the default thumb is 600px-wide (sampled 600x449); the cache must keep its size cap because some originals are very large.",
+        "Proxied image responses are subject to CF caches and upstream availability; treat non-image content-type or 5xx as unavailable, never as a licence failure."
+      ]
+    },
+    {
+      "id": "wikimedia-commons",
+      "role": "Public-domain and freely-licensed media repository (MediaWiki API)",
+      "api": {
+        "baseUrl": "https://commons.wikimedia.org/w/api.php",
+        "docsUrl": "https://www.mediawiki.org/wiki/API:Main_page",
+        "termsUrl": "https://commons.wikimedia.org/wiki/Commons:Licensing",
+        "exampleRequest": "GET https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=cat&gsrnamespace=6&gsrlimit=2&prop=imageinfo&iiprop=url|extmetadata|size&iiurlwidth=1280&origin=* with header 'Origin: https://example.com' -> 200 application/json; response has access-control-allow-origin: * and per-file imageinfo.url (upload.wikimedia.org), imageinfo.thumburl (thumb.wikimedia.org) and extmetadata licence fields"
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "200 OK for OPTIONS /w/api.php?action=query&format=json&origin=* with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET'; response has access-control-allow-origin: *, access-control-allow-methods: POST, GET, HEAD, access-control-allow-credentials: false and no Access-Control-Allow-Headers. Anonymous CORS requires the origin=* query parameter: the same GET with an Origin header but WITHOUT origin=* returns 200 with no access-control-allow-origin, and OPTIONS without origin=* likewise returns 200 with no ACAO.",
+        "allowOrigin": "* (only when the request includes origin=*; MediaWiki echoes the CORS headers for that mode)",
+        "allowedMethods": "POST, GET, HEAD (from Access-Control-Allow-Methods on preflight); only simple GETs are usable from a browser because no custom headers are allowed (no Access-Control-Allow-Headers)",
+        "imageHostCors": "verified on both image hosts: GET https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg -> 200 image/jpeg with access-control-allow-origin: * and access-control-expose-headers: Age, Date, Content-Length, Content-Range, X-Content-Duration, X-Cache; GET https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1280px-Felis_catus-cat_on_snow.jpg -> 200 image/jpeg with access-control-allow-origin: *.",
+        "evidence": "Commands: curl -D - -H 'Origin: https://example.com' 'https://commons.wikimedia.org/w/api.php?action=query&format=json&titles=File:Cat.jpg&prop=imageinfo' (no ACAO) vs the same URL with '&origin=*' (access-control-allow-origin: *); OPTIONS with origin=* as above; image-host GETs with Origin as above. Page-size: gsrlimit=50 and 500 returned, gsrlimit=1000 was silently clamped to 500 items; every response continued with {\"continue\":{\"gsroffset\":N,\"continue\":\"gsroffset||\"}}."
+      },
+      "rateLimits": {
+        "anonymous": "No hard speed limit on read requests: API:Etiquette states 'There is no hard speed limit on read requests, but be considerate and try not to take a site down.' No rate-limit headers are emitted on api.php read responses (10 consecutive imageinfo queries all returned 200 with no x-ratelimit headers). The image CDN advertises its own budget: x-ratelimit-limit: 600000, 600000;w=60 and x-ratelimit-remaining: 599999 on upload.wikimedia.org.",
+        "observedHeaders": {
+          "x-ratelimit-limit (upload.wikimedia.org)": "600000, 600000;w=60",
+          "x-ratelimit-remaining (upload.wikimedia.org)": "599999",
+          "access-control-expose-headers": "MediaWiki-API-Error, Retry-After, X-Database-Lag, MediaWiki-Login-Suppressed"
+        },
+        "retryAfter": "not observed (no 429 was produced by the read-only queries used here). MediaWiki exposes Retry-After to CORS clients via Access-Control-Expose-Headers and API:Etiquette documents the ratelimited error code plus 'you should increase the time between subsequent requests' / exponential backoff."
+      },
+      "pagination": {
+        "style": "continue / continuation token: responses end with continue:{<token>: value, continue: '<name>||', ...} and callers pass continue+the named offset back; generator=search yields continue.gsroffset.",
+        "cursorField": "continue (opaque token string returned in the response) plus continue.gsroffset for search offsets; the next request must copy continue.<name> and continue unchanged",
+        "pageSizeMax": "500 (gsrlimit=500 returned 500 items; gsrlimit=1000 was silently clamped to 500)"
+      },
+      "license": {
+        "fields": [
+          "imageinfo.extmetadata.LicenseShortName (e.g. CC BY-SA 4.0, CC0, Public domain)",
+          "imageinfo.extmetadata.LicenseUrl (present when the licence needs a link; absent for public domain)",
+          "imageinfo.extmetadata.Artist (HTML; strip tags)",
+          "imageinfo.extmetadata.Credit",
+          "imageinfo.extmetadata.AttributionRequired (true for CC BY/BY-SA, false for PD/CC0)",
+          "imageinfo.extmetadata.UsageTerms",
+          "imageinfo.extmetadata.Copyrighted",
+          "imageinfo.extmetadata.Restrictions",
+          "imageinfo.url (original on upload.wikimedia.org)",
+          "imageinfo.thumburl (scaled on thumb.wikimedia.org; iiurlwidth controls width)",
+          "imageinfo.descriptionurl (file description page)"
+        ],
+        "attributionRequired": true,
+        "licenseUrlField": "imageinfo.extmetadata.LicenseUrl (required for CC BY/CC BY-SA results; absent on public-domain files such as LicenseShortName=Public domain with AttributionRequired=false)",
+        "termsClauseQuote": "\"Wikimedia Commons only accepts free content, that is, images and other media files that are not subject to copyright restrictions which would prevent them being used by anyone, anytime, for any purpose.\" (Commons:Licensing, 'Acceptable licenses') and \"Attribution: If attribution is required, provide attribution.\" (Commons:Reusing content outside Wikimedia). Note the same policy: \"Media licensed exclusively under non-commercial only licenses (like CC BY-NC-SA) are not accepted either.\"",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": true
+      },
+      "imageHosts": [
+        "upload.wikimedia.org",
+        "thumb.wikimedia.org"
+      ],
+      "redirects": {
+        "chain": [
+          "GET https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg -> 200 image/jpeg (no redirect)",
+          "GET https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1280px-Felis_catus-cat_on_snow.jpg -> 200 image/jpeg (no redirect)"
+        ],
+        "policy": "No redirects observed for API-returned image URLs. Declare both image hosts and use redirect:'error' with no redirectHosts. Image URLs returned by imageinfo may include ?utm_source/... query strings; keep them only if allowed (they do not change the host or the redirect policy)."
+      },
+      "decision": "accepted",
+      "decisionReason": "Verified: the MediaWiki API has a documented CORS mode (origin=* query parameter) and returns access-control-allow-origin: *; both API-returned image hosts (upload.wikimedia.org, thumb.wikimedia.org) serve images with ACAO:*, so the required fetch()+blob cache is possible without any non-allowlisted host. Per-file licence metadata is complete (LicenseShortName, LicenseUrl, Artist, AttributionRequired, UsageTerms) and Commons only accepts free content usable 'by anyone, anytime, for any purpose', including commercial use; NC-only and fair-use files are rejected by Commons policy, so displaying and locally caching the image is permitted, with attribution/licence link required for CC BY and CC BY-SA files. Pagination is token-based with a 500-item page cap and no hard anonymous read rate limit.",
+      "notes": [
+        "CORS mode is request-driven: the client MUST append origin=* to every api.php URL; without it responses carry no ACAO and the browser cannot read them. Only simple GET requests are possible - api.php advertises no Access-Control-Allow-Headers, so a custom Api-User-Agent header cannot be set from the browser and the request falls back to the browser's own User-Agent (API:Etiquette acknowledges this and recommends Api-User-Agent, which is not usable here).",
+        "The client must strip HTML from Artist/Credit extmetadata and treat a missing LicenseShortName, a NC-only/ND-only/fair-use mark, or a missing LicenseUrl on a licence that requires attribution as non-selectable (license:null).",
+        "Commons bans NC-only content, but CC BY-SA files carry ShareAlike: local display and byte-for-byte caching do not create a published derivative, and the UI must show attribution + licence URL. If the client ever modifies/derives the image, ShareAlike obligations would apply.",
+        "Thumbnails are generated on the separate thumb.wikimedia.org host (e.g. 1280px URL with utm query parameters) while originals live on upload.wikimedia.org; both must stay in imageHosts.",
+        "API:Etiquette also recommends serial requests and caching query results; the client should not parallel-hammer the API."
+      ]
+    },
+    {
+      "id": "nasa-image-library",
+      "role": "Public-domain space/science imagery (NASA Image and Video Library)",
+      "api": {
+        "baseUrl": "https://images-api.nasa.gov",
+        "docsUrl": "https://images.nasa.gov/docs/images.nasa.gov_api_docs.pdf",
+        "termsUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+        "exampleRequest": "GET https://images-api.nasa.gov/search?q=earth&media_type=image&page_size=2 with header 'Origin: https://example.com' -> 200 application/json; collection.items[].data[] and collection.items[].links[] carry image URLs on https://images-assets.nasa.gov; response has access-control-allow-origin: *"
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "200 OK for OPTIONS https://images-api.nasa.gov/search?q=earth with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET'; response has access-control-allow-origin: *, access-control-allow-methods: GET, access-control-allow-headers: Origin,Content-Type,Accept,Authorization,X-Requested-With.",
+        "allowOrigin": "*",
+        "allowedMethods": "GET",
+        "imageHostCors": "INCONSISTENT / FAILING for the blob cache: image bytes are served by AmazonS3/CloudFront on images-assets.nasa.gov and ACAO is not reliably present. Controlled observations with the SAME URL under different clients/objects: curl GET PIA00342~orig.jpg and PIA00342~small.jpg -> access-control-allow-origin: * (even without an Origin header), but PIA00342~medium.jpg and PIA00342~thumb.jpg -> no access-control header at all; PIA00122~orig.jpg and PIA00122~small.jpg -> no ACAO. Node fetch (browser-like headers + Origin) on PIA00342 ~orig/~medium/~thumb -> 200 image/jpeg with NO access-control headers for all three. A fetch()-based local cache can read some objects and not others, and the mix varies per object.",
+        "evidence": "Commands: curl -D - -H 'Origin: https://example.com' 'https://images-assets.nasa.gov/image/PIA00342/PIA00342~orig.jpg' (ACAO *) vs '...~medium.jpg' (no ACAO); plus the same matrix on PIA00122; Node fetch cross-check with Origin https://example.com / https://www.metmuseum.org / https://example.org (all 200 image/jpeg, no ACAO). API host: curl -H 'Origin: ...' 'https://images-api.nasa.gov/search?q=earth&media_type=image&page_size=2' -> 200 with ACAO *; OPTIONS as above. NASA API docs v1.2.0 state 'We support cross-origin resource sharing, allowing you to interact securely with our API from a client-side web application.' - but that documented promise covers the JSON API, not the assets CDN."
+      },
+      "rateLimits": {
+        "anonymous": "No API key required for images-api.nasa.gov. The v1.2.0 documentation (fetched PDF, glyph-decoded) documents page and page_size parameters but no rate limit; no rate-limit or Retry-After headers were observed; 10 consecutive search requests all returned 200.",
+        "observedHeaders": {},
+        "retryAfter": "not observed and not documented in the v1.2.0 API documentation; 10 sequential anonymous requests returned 200 with no rate-limit headers."
+      },
+      "pagination": {
+        "style": "page/page_size request parameters with collection.metadata.total_hits and collection.links[] containing rel=next (absolute href); no opaque cursor.",
+        "cursorField": "page (1-based integer); next page is page+1 while items remain, total in collection.metadata.total_hits",
+        "pageSizeMax": "no enforced maximum observed: page_size=100, 101, 500 and 1000 were all accepted (page_size=1000 returned 1000 items); the official v1.2.0 documentation states 'page_size (optional) integer - Number of results per page. Default: 100.'"
+      },
+      "license": {
+        "fields": [
+          "collection.items[].data[].title",
+          "collection.items[].data[].description / description_508",
+          "collection.items[].data[].secondary_creator / center (credit-like strings, not a licence)",
+          "collection.items[].data[].nasa_id / date_created / keywords",
+          "collection.items[].links[] (alternate/preview/canonical image URLs with width/height/size)",
+          "/metadata/{nasa_id} JSON contains XMP:Credit and IPTC/EXIF fields but no licence/copyright/rights field"
+        ],
+        "attributionRequired": true,
+        "licenseUrlField": "none - the API returns no licence name, licence URL or copyright field; the only rights signal is free-text credit (e.g. secondary_creator 'NASA/JPL/USGS') and the NASA media guidelines page.",
+        "termsClauseQuote": "\"NASA content - images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format - generally are not subject to copyright in the United States. You may use this material for educational or informational purposes, including photo collections, textbooks, public exhibits, computer graphical simulations and Internet Web pages. This general permission extends to personal Web pages.\" and \"NASA occasionally uses copyright-protected material of third parties with permission on its website. Those images will be marked identified as copyright protected with the name of the copyright holder. NASA's use does not convey any rights to others to use the same material. Those wishing to use copyright protected material of third parties must contact the copyright holder directly.\" (NASA Images and Media Usage Guidelines)",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": false
+      },
+      "imageHosts": [
+        "images-assets.nasa.gov"
+      ],
+      "redirects": {
+        "chain": [
+          "GET https://images-assets.nasa.gov/image/PIA00342/PIA00342~medium.jpg -> 200 image/jpeg (no redirect; AmazonS3/CloudFront)",
+          "GET https://images-assets.nasa.gov/image/PIA00342/collection.json -> 200 application/json (no redirect)"
+        ],
+        "policy": "No redirects observed for search-returned asset URLs; use redirect:'error' with no redirectHosts. Do not follow /asset/{nasa_id} collection.json entries blindly: that manifest returns http:// (not https://) URLs, so they must be rewritten to https and re-checked against imageHosts before use."
+      },
+      "decision": "rejected",
+      "decisionReason": "The rights model is not machine-verifiable and the image CDN fails the cache CORS requirement. The API returns no licence/copyright field, while NASA's own guidelines say third-party copyright-protected images are used 'with permission' and are only 'marked identified as copyright protected with the name of the copyright holder' on NASA's site - images-api results carry no such rights marker, so the client cannot exclude restricted third-party images. In addition, images-assets.nasa.gov only inconsistently sends Access-Control-Allow-Origin (the same asset can 200 with ACAO on ~orig/~small and with no ACAO on ~medium/~thumb, varying per object), so fetch()+blob caching would fail for an unpredictable subset of wallpapers. Rejected for 0.2.2; re-gate only if NASA exposes a per-item rights field and consistent CORS on image bytes.",
+      "notes": [
+        "The search API itself is CORS-clean (ACAO *, GET, preflight OK), so a future acceptance is not blocked by the JSON API - only by asset-host CORS + missing per-item rights metadata.",
+        "collection.json asset manifests emit http:// URLs (insecure); use collection.items[].links[] from the search response, which are https and include width/height/size.",
+        "NASA guidelines also require that use not imply NASA endorsement and that NASA be acknowledged as the source ('NASA should be acknowledged as the source of the material.'); a wallpaper UI would have to show the credit string.",
+        "The API documentation PDF (v1.2.0, 2023-01-06) was fetched from images.nasa.gov/docs/images.nasa.gov_api_docs.pdf (200 application/pdf, 7 pages); its text layer uses a custom glyph encoding, so page_size/default wording above was read from the decoded text."
+      ]
+    },
+    {
+      "id": "met-open-access",
+      "role": "CC0 art museum collection (The Metropolitan Museum of Art Collection API)",
+      "api": {
+        "baseUrl": "https://collectionapi.metmuseum.org/public/collection/v1",
+        "docsUrl": "https://metmuseum.github.io/",
+        "termsUrl": "https://www.metmuseum.org/policies/terms-and-conditions",
+        "exampleRequest": "GET https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=cat&hasImages=true&limit=2 with header 'Origin: https://example.com' -> 200 application/json {total, objectIDs}; then GET https://collectionapi.metmuseum.org/public/collection/v1/objects/{objectID} -> 200 with isPublicDomain, primaryImage, primaryImageSmall, objectURL, title, artistDisplayName"
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "204 No Content for OPTIONS https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=cat with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET'; response has access-control-allow-origin: *, access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE, Allow: OPTIONS, GET. GET responses carry access-control-allow-origin: * and Vary: Origin.",
+        "allowOrigin": "*",
+        "allowedMethods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+        "imageHostCors": "FAILING: the image host images.metmuseum.org serves image bytes WITHOUT Access-Control-Allow-Origin. Node fetch GET https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg -> 200 image/jpeg, redirected=false, content-length 8291194, ACAO null; GET /CRDImages/ep/web-large/DP-42549-001.jpg -> 200 image/jpeg (content-length 221383 in the multi-Origin batch), ACAO null with Origin https://example.com, https://www.metmuseum.org and https://example.org - no access-control headers in any response. Curl requests to the same image host are intercepted by Imperva with an HTML 'Pardon Our Interruption' page (200 text/html) rather than the JPEG, so curl cannot be used as the CORS oracle here; the Node fetch responses are the real origin responses. (A 404 on that host does carry access-control-allow-origin:*, but 200 image responses do not.)",
+        "evidence": "Commands: curl -H 'Origin: ...' -D - https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds=1 (200, ACAO *, Vary: Origin); OPTIONS as above; curl -H 'Origin: ...' 'https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=cat&hasImages=true&limit=2' (200 {total:1595,objectIDs:[...]}); node fetch to images.metmuseum.org with three Origins (200 image/jpeg, no ACAO). Live metmuseum.org terms page returned HTTP 429 to this review network; the CC0/API terms text was read from the Wayback Machine snapshot 20261004090902 of that URL."
+      },
+      "rateLimits": {
+        "anonymous": "No API key: official docs say 'At this time, we do not require API users to register or obtain an API key to use the service. Please limit request rate to 80 requests per second.' No rate-limit response headers were observed on collectionapi.metmuseum.org.",
+        "observedHeaders": {},
+        "retryAfter": "not observed for the API (no 429 returned by collectionapi). Note metmuseum.org web pages (not the API) returned 429 with Imperva bot protection during the review."
+      },
+      "pagination": {
+        "style": "offset/limit on /public/collection/v1.1/search; response is {total, objectIDs[]} (paged search added 2026-09-04). The older /public/collection/v1/search was retired 2026-10-01 (verified 410 'search was retired on 2026-10-01') and /public/collection/v1/objects returns the full object-ID list.",
+        "cursorField": "offset (0-based request parameter); next page is offset+returned count; total in response. No continuation token.",
+        "pageSizeMax": "500 (limit=500 returned 500 IDs; limit=501 and 600 were clamped to 500; docs: 'limit: the number of results to return per page (default 100, maximum 500)')"
+      },
+      "license": {
+        "fields": [
+          "objectID",
+          "isPublicDomain (boolean; true means the artwork image is public domain / Open Access)",
+          "primaryImage (full-size JPEG URL on images.metmuseum.org)",
+          "primaryImageSmall (web-large JPEG URL)",
+          "objectURL (metmuseum.org artwork page)",
+          "title",
+          "artistDisplayName",
+          "creditLine",
+          "department / accessionNumber"
+        ],
+        "attributionRequired": false,
+        "licenseUrlField": "none returned per object; the licence is CC0 stated by the Open Access terms (no per-object license URL field)",
+        "termsClauseQuote": "\"By waiving any rights to Materials identified as Open Access, the Museum makes those Materials available for any purpose, including commercial and noncommercial use, free of charge and without requiring permission from the Museum. Open Access works are made available under a Creative Commons Zero (CC0) license.\" and \"API. The Met Collection API provides access to images in the Museum's collection that it believes is in the public domain, and to certain other content that the Museum to which the Museum waives any copyright it might have, which images and content are designated on the Museum's website with an Open Access icon and are made available under a CC0 license.\" (The Met Terms and Conditions, archived snapshot 2026-10-04 because the live page returned 429). The Met API documentation adds: \"The Metropolitan Museum of Art provides select datasets of information on more than 470,000 artworks in its Collection for unrestricted commercial and noncommercial use... waived all copyright and related or neighboring rights to this dataset using the Creative Commons Zero license.\" and \"The API (RESTful web service in JSON format) gives access to all of The Met's Open Access data and to corresponding high resolution images (JPEG format) that are in the public domain.\"",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": true
+      },
+      "imageHosts": [
+        "images.metmuseum.org"
+      ],
+      "redirects": {
+        "chain": [
+          "GET https://images.metmuseum.org/CRDImages/ep/web-large/DP-42549-001.jpg -> 200 image/jpeg (no redirect, redirected=false; verified via Node fetch because curl is bot-blocked on this host)"
+        ],
+        "policy": "No redirects observed. Declare images.metmuseum.org and use redirect:'error' with no redirectHosts; do not accept http:/non-public URLs, and filter results to isPublicDomain===true only."
+      },
+      "decision": "deferred",
+      "decisionReason": "Licence and API verification passed (CC0 Open Access terms, isPublicDomain filter, full-size image URLs, ACAO '*' on the JSON API, pagination verified) but the required fetch()+blob local cache cannot read image bytes from images.metmuseum.org: 200 image/jpeg responses carry no Access-Control-Allow-Origin for any tested Origin, so a cross-origin fetch would be blocked by the browser. Deferred for 0.2.2 (not listed, not in Auto); re-gate if the Met adds CORS to its image CDN or the product gains a compliant image-fetch path.",
+      "notes": [
+        "The images.metmuseum.org host also fronts Imperva bot mitigation: plain curl requests to image URLs received an HTML 'Pardon Our Interruption' page (200 text/html, 5996 bytes) instead of the JPEG. That is a second, independent practical risk for an image-fetching client even if CORS were fixed.",
+        "Only objects with isPublicDomain=true may be listed; the API still returns identifying data for in-copyright artworks, so this filter is mandatory.",
+        "Search endpoint migration: use /public/collection/v1.1/search (offset/limit); the retired /public/collection/v1/search returns 410 after 2026-10-01.",
+        "The Met terms page itself returned 429 to the review network; the quoted clause is from the Wayback snapshot of the same URL (2026-10-04), while the CC0 grant and 80 req/s limit were also confirmed live on the official API documentation at https://metmuseum.github.io/."
+      ]
+    },
+    {
+      "id": "art-institute-of-chicago",
+      "role": "CC0 art museum collection with IIIF images (Art Institute of Chicago API)",
+      "api": {
+        "baseUrl": "https://api.artic.edu/api/v1",
+        "docsUrl": "https://api.artic.edu/docs/",
+        "termsUrl": "https://www.artic.edu/terms",
+        "exampleRequest": "ATTEMPTED: GET https://api.artic.edu/api/v1/artworks/search?q=monet&limit=2&fields=id,image_id,is_public_domain,thumbnail with header 'Origin: https://example.com' -> HTTP 403 Cloudflare challenge ('Just a moment...', cf-mitigated: challenge); also attempted https://api.artic.edu/api/v1/artworks/27992, https://api.artic.edu/docs/ and https://www.artic.edu/open-access -> all 403 challenge. No API response, CORS header or terms text could be retrieved."
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "unverified - every request to api.artic.edu / www.artic.edu (GET, OPTIONS not reachable because the challenge intercepts first, with curl, Node fetch and the harness web_fetch) returned HTTP 403 with cf-mitigated: challenge and an HTML Cloudflare interstitial; no API preflight response was ever obtained.",
+        "allowOrigin": "unverified - no API response obtained",
+        "allowedMethods": "unverified",
+        "imageHostCors": "unverified - the IIIF/image hosts live under www.artic.edu and were also 403 Cloudflare challenges; no image response or CORS header could be observed.",
+        "evidence": "Commands attempted 2026-11-23: curl (plain, browser-like UA, HTTP/2) and Node fetch and harness web_fetch to https://api.artic.edu/api/v1/artworks/search?q=monet&limit=2&fields=... , https://api.artic.edu/api/v1/artworks/27992?fields=... , https://api.artic.edu/docs/ , https://www.artic.edu/terms , https://www.artic.edu/open-access - all returned HTTP 403 'Just a moment...' with cf-mitigated: challenge, server: cloudflare. No AIC response headers could be verified and no terms/licence clause could be read from the source."
+      },
+      "rateLimits": {
+        "anonymous": "unverified - no response from the API; public AIC documentation claims a keyless API, but that claim could not be confirmed from the AIC source during this review.",
+        "observedHeaders": {},
+        "retryAfter": "unverified - only Cloudflare challenge responses were observed; no API 429/Retry-After could be tested."
+      },
+      "pagination": {
+        "style": "unverified (the AIC API is documented to be Laravel-style page/limit JSON, but no response could be obtained)",
+        "cursorField": "unverified",
+        "pageSizeMax": "unverified"
+      },
+      "license": {
+        "fields": [],
+        "attributionRequired": null,
+        "licenseUrlField": "unverified",
+        "termsClauseQuote": "unverified - the Art Institute of Chicago terms/open-access pages could not be fetched (403 Cloudflare challenge); no clause is quoted and none may be inferred.",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": null
+      },
+      "imageHosts": [],
+      "redirects": {
+        "chain": [],
+        "policy": "unverified - no image URL was returned by the API; the expected IIIF host is www.artic.edu, which is also Cloudflare-challenged. No redirect policy can be declared."
+      },
+      "decision": "deferred",
+      "decisionReason": "Unverifiable from the review network: every request to api.artic.edu, www.artic.edu and the AIC docs/terms/open-access pages returned a Cloudflare 'Just a moment...' challenge (403, cf-mitigated: challenge) for curl, Node fetch and the harness fetcher. No API response, CORS header, licence field or terms clause could be observed, and this record must not assert an unverified acceptance. Deferred for 0.2.2; re-gate from a network/route that can complete the AIC challenge, or ask AIC for a documented CORS/rate-limit/licence statement, before any code is written.",
+      "notes": [
+        "Nothing in this entry is a negative finding about AIC - it is an access blocker on the review side. All shape fields that require observation are marked unverified/null rather than guessed.",
+        "Known URLs to retry from a clean network: API base https://api.artic.edu/api/v1, interactive docs https://api.artic.edu/docs/, terms https://www.artic.edu/terms and open access https://www.artic.edu/open-access; the AIC public-data repository confirms the unified API and points at api.artic.edu/docs.",
+        "If re-gated, the same checklist applies: API CORS/preflight, IIIF image-host CORS on www.artic.edu, anonymous rate limits, pagination/cursor shape, is_public_domain/licence fields and the open-access licence clause."
+      ]
+    },
+    {
+      "id": "picsum",
+      "role": "Experimental random photos with Unsplash provenance (Lorem Picsum)",
+      "api": {
+        "baseUrl": "https://picsum.photos/v2",
+        "docsUrl": "https://picsum.photos/",
+        "termsUrl": "https://unsplash.com/license",
+        "exampleRequest": "GET https://picsum.photos/v2/list?page=1&limit=2 with header 'Origin: https://example.com' -> 200 application/json [{id,author,width,height,url,download_url},...] with access-control-allow-origin: * and Link: <https://picsum.photos/v2/list?page=2&limit=2>; rel=\"next\"; GET https://picsum.photos/id/0/1920/1080 with 'Origin: ...' -> 302 Location: https://fastly.picsum.photos/id/0/1920/1080.jpg?hmac=... with ACAO * -> 200 image/jpeg with ACAO *"
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "204 No Content for OPTIONS https://picsum.photos/v2/list?page=1&limit=2 with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET' -> access-control-allow-origin: *, access-control-allow-methods: GET. The image endpoint (OPTIONS https://picsum.photos/id/0/1920/1080) also returns 204 with the same ACAO/ACAM.",
+        "allowOrigin": "*",
+        "allowedMethods": "GET",
+        "imageHostCors": "verified: the 302 response from picsum.photos carries access-control-allow-origin: *, and the followed 200 image/jpeg response from fastly.picsum.photos carries access-control-allow-origin: * and access-control-expose-headers: Content-Type, Picsum-Id. Both hosts are CORS-readable.",
+        "evidence": "Commands: curl -D - -H 'Origin: https://example.com' 'https://picsum.photos/v2/list?page=1&limit=2' (200, ACAO *, expose-headers Link, Link rel=next); curl -D - -H 'Origin: ...' 'https://picsum.photos/id/0/1920/1080' (302 -> fastly, ACAO * on both hops; followed response 200 image/jpeg, 139158 bytes, 1920x1080); OPTIONS probes as above."
+      },
+      "rateLimits": {
+        "anonymous": "No key and no documented request rate limit were found on the Picsum documentation page; no rate-limit headers were observed; the sampled list/image requests all returned 200/302 without 429 or Retry-After.",
+        "observedHeaders": {},
+        "retryAfter": "not observed (no 429); the service documents no rate-limit policy that could be relied on."
+      },
+      "pagination": {
+        "style": "page/limit request parameters; RFC 5988 Link response header with rel=next (and rel=prev on later pages); response body is a bare JSON array.",
+        "cursorField": "page (1-based) plus Link header rel=next; no opaque cursor",
+        "pageSizeMax": "100 (default 30; limit=0 falls back to 30; limit=101, 500 and 1000 all return 100 items)"
+      },
+      "license": {
+        "fields": [
+          "id",
+          "author (photographer name)",
+          "width / height",
+          "url (Unsplash photo page, e.g. https://unsplash.com/photos/yC-Yzbqy7PY - the only provenance/attribution link)",
+          "download_url (picsum.photos render URL)"
+        ],
+        "attributionRequired": false,
+        "licenseUrlField": "none returned by the API; the only route to a licence is the hardcoded provenance chain Picsum -> Unsplash License (https://unsplash.com/license), which the client would have to assert itself.",
+        "termsClauseQuote": "\"Unsplash grants you an irrevocable, nonexclusive, worldwide copyright license to download, copy, modify, distribute, perform, and use photos from Unsplash for free, including for commercial purposes, without permission from or attributing the photographer or Unsplash. This license does not include the right to compile photos from Unsplash to replicate a similar or competing service.\" and, under what is not allowed: \"Compiling photos from Unsplash to replicate a similar or competing service.\" (Unsplash License; the live https://unsplash.com/license page returned a 307 bot-mitigation redirect to /.within.website on 2026-11-23, so the quote was read from the Wayback Machine snapshot 20240101042220id_ of that URL). Picsum's own page states only \"Images from Unsplash\" and returns no licence field or licence URL.",
+        "termsRetrievedAt": "2026-11-23",
+        "wallpaperUseAllowed": false
+      },
+      "imageHosts": [
+        "picsum.photos",
+        "fastly.picsum.photos"
+      ],
+      "redirects": {
+        "chain": [
+          "GET https://picsum.photos/id/0/1920/1080 -> 302 Location: https://fastly.picsum.photos/id/0/1920/1080.jpg?hmac=AdedhkCl_iciZ1DnZ92rgACLbgMZOBtvON6ehVr1c50",
+          "GET https://fastly.picsum.photos/id/0/1920/1080.jpg?hmac=... -> 200 image/jpeg (ACAO *)"
+        ],
+        "policy": "One fixed redirect hop: picsum.photos -> fastly.picsum.photos with an hmac query string. If ever accepted, redirect:'follow' is only safe with redirectHosts=['fastly.picsum.photos'] and a final-URL check (https, public host, still in the Picsum host set), matching the existing special case in cache.ts."
+      },
+      "decision": "rejected",
+      "decisionReason": "Picsum serves Unsplash photographs and adds no licence of its own: the list rows expose only author + an Unsplash photo page, and the images are the same Unsplash photos governed by the Unsplash License. That licence states 'This license does not include the right to compile photos from Unsplash to replicate a similar or competing service' - a wallpaper browser with local caching is exactly a photo-browsing/display service that compiles Unsplash photos, and 0.2.2 already rejected Unsplash for this model after the earlier terms review (docs/design/0.2.2-plan.md 4.5). Real per-photo attribution (author + Unsplash page URL) would satisfy Unsplash's appreciated-but-not-required attribution, but cannot cure the competing-service restriction or the absence of per-item licence data from Picsum. Rejected; do not list it and do not include it in Auto.",
+      "notes": [
+        "CORS and redirects are technically clean (ACAO * on list API, 302, and CDN image; preflight supported), so the rejection is purely licensing/provenance, not transport.",
+        "If a future release ever accepts Picsum, the registry must fix the current 0.2.1 fields: creator=author, creatorUrl=list-row url (Unsplash page), license='Unsplash License', licenseUrl='https://unsplash.com/license', sourceUrl='https://picsum.photos/', and render non-selectable when the list row has no valid Unsplash page URL.",
+        "Live Unsplash License retrieval was blocked by bot mitigation (307 -> /.within.website); the quote is from the Wayback snapshot of the same URL. Current Unsplash terms are unchanged in substance per the earlier 0.2.2 review, but the exact current wording was not re-read this session."
+      ]
+    }
+  ]
+}

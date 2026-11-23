@@ -8,12 +8,16 @@
 > **Make your DSH beautiful to look at — and alive to use.**
 
 A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio with
-online images and blur/frost effects, and a style gallery. It is a plugin, not a
-host theme takeover.
+access-gated online images and blur/frost effects, and a style gallery. It is a
+plugin, not a host theme takeover.
 
-> **Release status: `0.2.1` — visual and protocol release.**
-> All 13 declared scopes have current acceptance evidence and the release gates
-> pass. The published artifact is `dsh-livery@0.2.1`.
+> **Release status: `0.2.1` is the current published release.**
+> The published artifact is `dsh-livery@0.2.1`; all 13 declared scopes have
+> current acceptance evidence and the release gates pass.
+> **`0.2.2` is the next target release and is not published or accepted yet.**
+> It has no acceptance evidence: the 0.2.2 sections below describe target
+> behaviour, and `dsh-livery@0.2.1` remains the published artifact until the
+> 0.2.2 candidate passes full isolated acceptance.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
@@ -29,30 +33,48 @@ English · [中文](README.zh-CN.md)
 Screenshots are from the English UI; the Chinese README uses the Chinese UI.
 Livery follows the DSH host locale.
 
-## What's new in 0.2.0
+## What's new in 0.2.2 (target)
 
-- **Chinese typography is now a real choice.** 13 local font stacks (up from 10),
-  including new `kai-cjk`, `fangsong-cjk` and `rounded-cjk` families. Chinese UI,
-  content and code can differ per style; Bauhaus, Blueprint, Linen, Sakura,
-  Celadon, Clay, Cinnabar, Plum and Rose Pine use different CJK families.
-- **A visible label hierarchy.** Secondary and tertiary labels are derived from
-  each style's text/surface seeds instead of one neutral host ramp, so captions,
-  metadata and links read as a family without hurting contrast.
-- **L5a Studio Decoration across 26 of 28 styles.** Grid, dots, rules and frame
-  patterns are derived from the surface axis and appear on Livery-owned surfaces;
-  only `solid` and `glass` stay plain.
-- **A calmer style page.** The live preview and current-style copy now share one
-  row on wide layouts; the restore action never wraps.
-- **A more legible macOS rail.** The sidebar is frosted slightly more than the main
-  column (`+20 %`, capped at 94 %), keeping labels readable while preserving a
-  wallpaper trace. The host still owns its final tint/wash composition.
-- **Protocol hardening.** v2 presentation axes, audit envelopes, exact-host
-  adapters, deep catalog validation and 13 reaccepted scopes.
+`0.2.2` is a client-only feature release; `0.2.1` remains the published artifact
+until the 0.2.2 candidate is accepted and released.
 
-## 0.2.1 patch
-
-- All floating menus are now opaque, fixing background-task details and nested popovers showing page text.
-- Direct-paint sidebars (Web/Windows/drawer) now match the macOS composite alpha (34% light / 42.5% dark).
+- **A curated wallpaper studio with a Classic escape hatch.** Exactly 8 curated
+  built-ins (`paper`, `ink`, `aurora`, `cyber`, `dusk`, `minimal`, `mono`, `sand`)
+  fill the main grid; the other 16 stay loadable as **Classic** with
+  byte-identical IDs and CSS in a collapsed group. A legacy selection gets a
+  pinned “Current (Classic)” swatch, so no ID is lost or remapped.
+- **Follow style.** A generated `kind: 'style'` background follows the active
+  Livery and is derived from catalog tokens per light/dark mode. It is not
+  repositionable and is disabled with a visible reason when catalog tokens are
+  unavailable. Preset schema v2 carries the style target and attribution URLs;
+  v1 presets remain importable.
+- **Two access-gated online sources.** Only **Openverse** and **Wikimedia
+  Commons** ship in 0.2.2: both are keyless, CORS-verified and return real
+  licence/attribution metadata. NASA, The Met and the Art Institute of Chicago
+  are not listed (rights or image-CDN verification blocked); Picsum is removed
+  because the Unsplash licence does not permit this use. Existing Picsum remote
+  selections still render from cache; no new result carries a Picsum licence.
+- **Predictable requests.** Opening the wallpapers page triggers no online-provider
+  batch; a persisted online wallpaper may still load through the guarded local
+  cache. The first activation of the Online tab requests exactly one batch; later
+  tab switches do not refetch, and there is no polling or prefetch. Auto tries at
+  most two gate-passed providers under a 12 s deadline and names the provider
+  that served the results; a pinned provider never switches silently. Empty and
+  failure states are explicit, with Retry and links back to Built-in/None.
+- **Safe attribution.** Creator, licence and source links are stored with the
+  selected remote image, validated as HTTPS, and opened with
+  `rel="noreferrer noopener"`. Recent history is a display mirror, not a second
+  source of truth.
+- **A plugin detail page.** Livery consumes the `plugins.detail.actions`,
+  `plugins.detail.badge` and `plugins.detail.section` slots to show observable
+  facts (build, boot handshake state, host/adapter, active style and wallpaper)
+  and a truthful update boundary. It adds no update button and does not duplicate
+  the Host's install control.
+- **Web hot-update boundary.** A real `0.2.1 → 0.2.2` Web client update can be
+  repaired in process: an exact allowlisted stale boot payload is accepted, the
+  catalog is re-fetched and the saved config re-applied, with strict
+  catalog-profile equality and no CSS adoption from the stale frame. Desktop
+  requires a renderer reload/app restart; no Desktop hot update is claimed.
 
 ## Highlights
 
@@ -73,17 +95,28 @@ Livery follows the DSH host locale.
 - **Component chrome.** `layout.chrome` can tint, outline, darken or block-fill the
   rail, composer, bubble, active row and selector from the palette seeds; six
   recipes ship and all 28 styles choose one.
-- **Wallpaper studio.** Online Picsum/Openverse sources, 24 built-in CSS wallpapers,
-  Recent, and local/link uploads (IndexedDB). Blur 0–24 px, dim 0–70 %, frost
-  0–100 % and a global atmosphere overlay. The painted wallpaper layers are
-  viewport-relative `cover`, so images crop without geometric distortion.
+- **Wallpaper studio.** Access-gated Openverse and Wikimedia Commons sources with
+  per-image attribution, 24 CSS wallpapers total (8 curated + 16 Classic),
+  Recent, a generated Follow-style background, and local/link uploads
+  (IndexedDB). Blur 0–24 px, dim 0–70 %, frost 0–100 % and a global atmosphere
+  overlay. The painted wallpaper layers are viewport-relative `cover`, so images
+  crop without geometric distortion. Opening the page triggers no provider batch
+  (a saved online image may load from cache); the first Online activation requests
+  one batch.
 - **Presets and focal position.** Export/import style + wallpaper + effects +
   nine-grid focal point; remote/upload wallpapers support pointer and keyboard
-  focal positioning. Presets never contain uploaded blobs, CSS, tokens or paths.
+  focal positioning. Schema v2 adds the Follow-style target and attribution URLs
+  while v1 presets remain importable. Presets never contain uploaded blobs, CSS,
+  tokens or paths.
 - **Legible, distinct macOS rail.** The sidebar fill is frosted slightly more than
   the main column (`+20 %`, capped at 94 %) so labels stay readable over a light
   wallpaper while the rail keeps a visible wallpaper trace. The host still owns
   its final tint/wash composition; the probe measures the real DOM surface.
+- **Plugin detail page.** The plugin manager's Livery detail page shows observable
+  facts (client build, boot handshake state, host/adapter, active style and
+  wallpaper) and a truthful update boundary. Web client updates can be repaired in
+  process; Desktop needs a renderer reload/app restart. No update button or fake
+  control is added.
 - **Trust by construction.** Exact host allowlist, frozen contracts, token-only
   CSS, loader-ABI checks, contrast/CSS audits and committed acceptance evidence.
   Unknown hosts are rejected at install and fail closed to stock at runtime.
@@ -98,14 +131,14 @@ preview scenes.
 
 ## Wallpapers
 
-![Online photo wallpaper with blur, dim, frost, atmosphere and focal controls](docs/assets/wallpaper-studio-en.jpg)
-
-The 0.2.1 wallpaper studio with a real online photo and the live 16:9 preview. Blur, dim,
-frost and the global atmosphere controls apply to the whole interface. Focal
-positioning is available for remote and uploaded wallpapers, not for built-in
-designs. Opening
-a tab loads one batch of content; search, randomise, page or switch source
-explicitly. Wallpaper choices stay local.
+The wallpaper studio and its live 16:9 preview (screenshots will be refreshed
+from the accepted 0.2.2 build). In the 0.2.2 target, opening the wallpapers page
+triggers no provider batch: Built-in is the default image source, and the first
+Online activation requests one batch from Openverse or Wikimedia Commons; Auto
+names the provider that served the results. Blur, dim, frost and the global
+atmosphere controls apply to the whole interface. Focal positioning is available
+for remote and uploaded wallpapers, not for built-in or Follow-style
+backgrounds. Wallpaper choices stay local.
 
 ## Every DSH plugin page
 
@@ -140,8 +173,8 @@ version-string compatibility fallback.
 | DSH `0.2.2-rc.3` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `next`) |
 | DSH `0.2.2-rc.5` | Web + macOS Desktop | Chrome `156.0.8078.48` / Electron `44.7.0` / Node `22.23.1` / `24.21.0` / Chromium `152.0.7977.130` | **Preview** (npm `latest`, GitHub prerelease) |
 
-Compatible-preview mode is not a stability claim; 0.3+ and API-divergent builds
-still fail closed. Stable support requires a non-prerelease official GitHub
+Preview claims are not stability claims: they still require a listed exact
+adapter, and 0.3+ or API-divergent builds fail closed. Stable support requires a non-prerelease official GitHub
 release plus the matching signed npm package on `latest`; npm `next` and GitHub
 prereleases are preview claims, not stability promises. Native macOS window chrome,
 traffic lights, vibrancy, Dock/rightbar states and OS-level DPI are host-owned and
@@ -150,6 +183,8 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 ## Install
 
 Latest published package: [`dsh-livery@0.2.1`](https://www.npmjs.com/package/dsh-livery).
+The `0.2.2` target is not published; do not install it from a registry until a
+`0.2.2` release is announced.
 
 ### Web Profile
 
@@ -174,26 +209,43 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 The `0.2.1` artifact passed full isolated acceptance on 13 Web/Desktop scopes:
 Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
-`0.2.2-rc.3`, `0.2.2-rc.5` with **275 passed / 0 failed each**, and Desktop
-`0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`,
-`0.2.2-rc.5` with **34 / 0 each**. Evidence is bound under
-`contracts/dsh/evidence/0.2.1/`. Scope, counts and limitations:
-[docs/verification.md](docs/verification.md).
+`0.2.2-rc.3`, `0.2.2-rc.5` with **275 passed / 0 failed / 4 skipped / 2 warnings
+each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
+`0.2.2-rc.3`, `0.2.2-rc.5` with **35 passed / 0 failed / 2 skipped / 0 warnings
+each**. Evidence is bound under `contracts/dsh/evidence/0.2.1/`. Scope, counts
+and limitations: [docs/verification.md](docs/verification.md).
+
+The `0.2.2` target has no acceptance evidence yet. Before packaging it must be
+re-accepted on all 13 declared scopes against one final tarball, plus Web
+update-probe runs that install the exact published `0.2.1` tarball and update
+through the running Host's plugin manager to the exact candidate.
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
-loader-ABI checks, exact support-matrix / release gates, `release:prepare` and
-`prepublish-check`. The publish workflow never rebuilds the accepted tarball.
+loader-ABI checks, exact support-matrix / release gates, explicit budgets (client
+gzip 72 KiB, per-livery CSS 13 KiB, tarball 4 MiB), the provider-access gate
+record, `release:prepare` and `prepublish-check`. The publish workflow never
+rebuilds the accepted tarball.
 
 ## Documentation
 
 - [Docs index](docs/README.md)
-- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [wallpaper workbench](docs/design/wallpaper-workbench.md) · [multi-version policy](docs/design/multi-version.md)
+- Design: [interfaces](docs/design/interfaces.md) · [style system](docs/design/style-system.md) · [wallpaper workbench](docs/design/wallpaper-workbench.md) · [plugin detail surface](docs/design/plugin-detail-surface.md) · [compatibility](docs/design/compatibility.md) · [multi-version policy](docs/design/multi-version.md)
 - [Verification summary](docs/verification.md)
-- [CHANGELOG](CHANGELOG.md) · [SECURITY](SECURITY.md) · [SUPPORT](SUPPORT.md)
+- [CHANGELOG](CHANGELOG.md) · [SECURITY](SECURITY.md) · [NOTICE](NOTICE.md) · [SUPPORT](SUPPORT.md)
+
+## Earlier releases
+
+- **0.2.1** — opaque floating menus; direct-paint sidebar alpha matched to the
+  macOS composite. Published.
+- **0.2.0** — visual-language pass: 13 local font stacks, per-style label
+  hierarchy, L5a Studio Decoration on 26 of 28 styles, a calmer style page, v2
+  presentation axes and protocol hardening. See [CHANGELOG](CHANGELOG.md).
 
 ## License
 
 MIT, see [LICENSE](LICENSE). Palette attributions are in [NOTICE.md](NOTICE.md).
 Preview thumbnails and built-in wallpapers are generated from the plugin's own data.
-The optional wallpaper studio loads online images only when you open the wallpaper
-tab or take an explicit action (see [SECURITY.md](SECURITY.md)).
+The optional wallpaper studio loads online images only when you activate the
+Online tab or take an explicit action (see [SECURITY.md](SECURITY.md)); online
+images are fetched at runtime from Openverse or Wikimedia Commons, are not
+bundled, and carry their per-image attribution in the UI.

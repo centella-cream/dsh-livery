@@ -1,10 +1,13 @@
 # Style system: how the 28 styles differ
 
-> **Status (0.1.9, published):** current implementation reference. The registry paths and
+> **Status (0.2.2 target):** current implementation reference for the `0.2.2`
+> target release; the published baseline is `0.2.1` and `0.2.2` has no
+> acceptance evidence yet. The registry paths and
 > feature flags below are the shipped style-system contract; the release support
 > matrix is in [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
 > The 0.1.9 gallery/recipe expansion is recorded in
-> [`style-gallery.md`](style-gallery.md).
+> [`style-gallery.md`](style-gallery.md). The 28-style catalog itself is unchanged
+> in 0.2.2.
 
 The goal is to make each style visibly different in **palette, typography,
 background material, module shape/elevation and type scale**, while staying inside
@@ -147,15 +150,42 @@ licences).
 ## 5. Compatibility / budgets
 
 - Manifest schema stays `schemaVersion: 1`; only enum ids are extended (additive).
-- Per-livery CSS budget stays 12 KiB (measured max 9,644 B after the chrome axis).
-- Catalog grows to 28 liveries × 2 profiles; preview dirs get 112 SVGs/profile.
-- Host gzip budget stays at 360 KiB for the 28-style catalog (measured 353,844 B /
-  2.95 MB raw across both profiles). Client gzip stays under 60 KiB (measured
-  60,356 B). Both numbers are enforced by `scripts/build.mjs` and were
-  raised explicitly for this content expansion, not silently relaxed. The package
-  tarball budget stays at 3.5 MiB (measured about 2.19 MB with 224 previews);
-  the 12 KiB per-livery CSS budget is unchanged.
-- Host adapters and contracts are unchanged; this is a token-contract change only,
-  with no new host capability. Layout structure stays host/stock: DSH exposes no
-  public density, transcript or message-flow hook, so differences are limited to
-  shape, elevation, type and palette, and the UI discloses that.
+- The style count is **28**: 14 original designs, 12 permissively licensed
+  palettes and 2 original Chinese designs. **0.2.2 adds, removes or remaps no
+  style**. There are eight certified hosts and eight compiled catalog profiles
+  (one per adapter; `contracts/dsh/catalog-profile-overrides.json` is empty), so
+  the compiled catalog is 28 liveries per profile and the preview dirs contain
+  112 SVGs per profile.
+- Per-livery CSS budget stays **13 KiB (13,312 B)**. The accepted `0.2.1` probe
+  measured a largest livery of **9,066 B** (bauhaus); the current `0.2.2`
+  candidate measures **10,190 B** and must be re-measured on the final tarball.
+- Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — an explicit, reviewed
+  increase from 60 KiB for the wallpaper studio, provider registry and detail
+  surface. The accepted `0.2.1` probe measured **60,902 B** gzip (230,487 B raw)
+  against its 60 KiB cap; the current `0.2.2` candidate measures **73,684 B**,
+  i.e. **44 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
+  section is cut or deferred to 0.2.3; the cap is not raised ad hoc.
+- Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog. The
+  current `0.2.2` candidate host bundle measures **15,506 B** gzip (61,649 B
+  raw); `scripts/build.mjs` enforces the cap.
+- Package tarball cap stays at **4 MiB (4,194,304 B)**; the published `0.2.1`
+  tarball is 3,529,494 B and the current `0.2.2` candidate is **≈3.40 MB** (993 files; exact bytes change with every packaged-doc edit and must be re-measured on the frozen candidate after the 0.2.1 online-photo screenshots are replaced).
+  0.2.2 README images are compressed at quality-preserving settings to fit. If
+  the candidate still exceeds the cap, reduce or drop README images in descending
+  size order rather than raising the cap. Those images are README screenshots
+  only: built-in wallpapers are CSS and online wallpapers are fetched at provider
+  resolution at runtime, so this budget never reduces wallpaper rendering
+  quality.
+- 0.2.2 is a client-only release: no new host capability or host version. The
+  consumed detail-slot list changes `clientSlotHash()`, so verify the regeneration
+  diff with `adapter:generate` / `contract:regenerate`; any frozen contract or
+  generated adapter byte change is reviewed as an adapter change. Layout
+  structure stays host/stock: DSH exposes no public density, transcript or
+  message-flow hook, so differences are limited to shape, elevation, type and
+  palette, and the UI discloses that.
+
+The candidate numbers above are working-tree measurements, **not acceptance
+evidence**; every one of them must be re-measured after any packaged-doc, asset
+or code change. Final accepted numbers for the published `0.2.1` artifact are
+recorded in [`docs/verification.md`](../verification.md) and the committed
+evidence files.

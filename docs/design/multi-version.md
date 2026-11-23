@@ -1,14 +1,19 @@
 # Multi-version policy
 
-**Status (0.2.0 candidate):** current policy. This page replaces the earlier
-compatibility-range/compat-mode proposal, which was removed and is archived
-under [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
+**Status (0.2.2 target):** current policy for the DSH Livery `0.2.2` target
+release. The published baseline is `dsh-livery@0.2.1`; `0.2.1` remains the
+current published release until the `0.2.2` candidate is accepted and released.
+This page replaces the earlier compatibility-range/compat-mode proposal, which
+was removed and is archived under
+[`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
 ## 1. Exact certified builds + reviewed compatibility range
 
-The plugin ships exactly one adapter per formally certified DSH build. The exact
-builds and their acceptance evidence are in
-`contracts/dsh/support-matrix.json`. `engines.dsh` is the reviewed 0.2 installability range:
+The plugin ships exactly one adapter per formally certified DSH build; the
+current matrix declares **eight** host adapters (`0.2.1-rc.2` through
+`0.2.2-rc.5`). The exact builds and their acceptance evidence are in
+`contracts/dsh/support-matrix.json`. `0.2.2` is a client-only release: it adds
+no host adapter and drops none, so the declared host set is unchanged. `engines.dsh` is the reviewed 0.2 installability range:
 
 ```text
 >=0.2.1-rc.2 <0.3.0
@@ -26,10 +31,16 @@ not inferred from a version string alone.
 | `0.2.1-rc.2` | npm `latest` + official GitHub release | Stable certified (Web) |
 | `0.2.1-rc.3` | GitHub-tagged Desktop app | Stable certified (Desktop/macOS renderer) |
 | `0.2.1-rc.4` | npm `next` package + GitHub prerelease tag | Next-channel preview (Web) |
-| `0.2.1-rc.5` | npm `next` / prerelease | Preview (Web + Desktop) |
-| `0.2.2-rc.1` | npm `latest` / prerelease | Preview (Web + Desktop) |
+| `0.2.1-rc.5` | npm `latest` | Preview (Web + Desktop) |
+| `0.2.2-rc.1` | npm `latest` | Preview (Web + Desktop) |
 | `0.2.2-rc.2` | npm `next` / prerelease | Preview (Web + Desktop) |
 | `0.2.2-rc.3` | npm `next` / prerelease | Preview (Web + Desktop) |
+| `0.2.2-rc.5` | npm `latest` | Preview (Web + Desktop) |
+
+This is the full eight-host matrix declared in `contracts/dsh/support-matrix.json`;
+`docs/verification.md` records which scopes are accepted for which Livery
+artifact. The distribution channel above is certification metadata for the exact
+build, not a promise that a prerelease version is the current channel head.
 
 Matrix entries also carry the exact certification fields:
 
@@ -52,6 +63,15 @@ called stable; it may be withdrawn or changed before promotion. Preview support
 is still real acceptance work: it must bind the exact signed npm tarball, extract
 its contract, and pass real host acceptance. If upstream later tags or withdraws
 the build, re-certify or remove the preview entry and say so in the release notes.
+
+**Update boundary (0.2.2 target).** Host/preview acceptance is not a hot-update
+claim. The 0.2.2 client accepts a boot payload from exactly one previous build
+(`STALE_BOOT_VERSIONS = ['0.2.1']`), requires strict catalog-profile equality and
+never adopts the stale boot CSS; extending that allowlist is a reviewed release
+change tied to an accepted transition, not a compatibility range. DSH client HMR
+is a Web-profile mechanism: the `0.2.1 → 0.2.2` in-process update claim is Web
+only, and Desktop requires a renderer reload/app restart. `0.2.1` itself has no
+stale path and fails closed on any plugin-version difference.
 
 ## 3. Adding a new DSH release
 
@@ -76,9 +96,11 @@ minimum sequence is:
    its own profile, previews and tests; a matching contract should stay in the
    shared profile.
 5. **Run all declared scopes.** The release gate must re-run every previously
-   declared host plus the new one (Web rc.2, rc.4; Desktop rc.3 in 0.1.3), using
-   the same exact candidate tarball. Preserve the old evidence rather than
-   replacing it with an unbound report.
+   declared scope plus the new one on the same exact candidate tarball (the
+   current matrix is 13 scopes: 7 Web + 6 Desktop across eight host adapters).
+   Preserve the old evidence rather than replacing it with an unbound report;
+   changing the adapter/matrix/package bytes invalidates every earlier acceptance
+   run.
 6. **Update release surfaces.** README/README.zh-CN, CHANGELOG, docs index,
    support table, workflow filenames/evidence lists, release scripts and evidence
    paths. Package `files` must include every shipped contract directory and no
@@ -89,10 +111,10 @@ minimum sequence is:
 
 ## 4. Generated registry and catalog profiles
 
-`contracts/dsh/<version>/contract.json` is the frozen source of truth for the
-six adapter hashes and capability facts. `src/generated/contract.ts` is
-regenerated from the formal matrix and snapshots; tests assert that it is
-byte-reproducible.
+`contracts/dsh/<version>/contract.json` is the frozen source of truth for each
+shipped adapter's contract class hashes and capability facts; the current
+registry contains **eight** adapters. `src/generated/contract.ts` is regenerated
+from the formal matrix and snapshots; tests assert that it is byte-reproducible.
 
 Adapters that share the same render-affecting token contract share a
 `catalogProfile`. A profile is compiled once; every adapter in the group renders
@@ -104,8 +126,11 @@ token contracts.
 
 “Forward compatibility” here means **preserving every version already declared
 in the matrix while adding a new one**, not silently accepting unknown future
-versions. Exact certified builds remain the evidence authority. The 0.2.0 runtime is exact-certified only; in-range uncertified builds fail
-closed and there is no compatibility fallback.
+versions. Exact certified builds remain the evidence authority. The `0.2.2`
+client is exact-certified only; in-range uncertified builds fail closed and there
+is no compatibility fallback. The single reviewed in-process transition is the
+Web stale-boot allowlist described in §2 — an exact previous-build entry, not a
+range or a fallback.
 
 When upstream publishes a new DSH version, the correct action is a plugin release
 that adds a verified adapter for it, not a range that guesses compatibility. If a

@@ -18,6 +18,7 @@ compatibility modes or pre-release designs. For current behavior use:
 | `host-contract-0.2.0-rc.2.md` | Host-side contract research pinned to DSH `0.2.0-rc.2`. |
 | `client-contract-0.2.0-rc.2.md` | Client-side contract research pinned to DSH `0.2.0-rc.2`. |
 | `tokens-0.2.0-rc.2.md` | Token inventory extracted from DSH `0.2.0-rc.2`. |
+| `host-update-preflight-proposal.md` | Unscheduled proposal for a DSH Host `planBundleUpdate` preflight; no host API exists and it is not implemented in Livery 0.2.2. |
 
 Current contract truth lives in `contracts/dsh/<version>/contract.json` and the
 generated registry in `src/generated/contract.ts`.

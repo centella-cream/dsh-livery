@@ -1,6 +1,9 @@
-# DSH compatibility architecture (0.1.9)
+# DSH compatibility architecture (0.2.2 target)
 
-Status: current for DSH Livery `0.1.9` (published); the `0.1.8` evidence below is historical.
+Status: current for the DSH Livery `0.2.2` target release. The published baseline
+is `0.2.1`; `0.2.1` remains the current published release until the 0.2.2
+candidate is accepted. The previous compatibility model is retained below only as
+context.
 
 ## Why the old model broke
 
@@ -21,6 +24,8 @@ host bundle grow by roughly 150 KiB gzip per version.
    loader/host/client API hashes and layout-compatible slots; token additions are
    safe because every livery token is emitted concretely and unknown tokens inherit
    stock. The compiler skips byte-identity only for explicit shared-profile records.
+   HMR never relaxes this: a stale boot payload is accepted only when its
+   `catalogProfile` strictly equals the matched adapter's profile.
 3. **Evidence stays exact.** Formal evidence and stable/preview claims are bound
    to exact host versions and artifact bytes. Unknown builds emit
    `gate.host-unsupported`, never a compatibility success claim.
@@ -34,19 +39,28 @@ host bundle grow by roughly 150 KiB gzip per version.
   an override with a reviewed reason, run full acceptance on the new host, and add
   exact evidence. No new catalog profile is needed.
 - If API hashes differ: add a new adapter/profile and follow the full evidence chain.
-- Unknown compatible versions may run, but are not claimed; promote them with evidence
-  before listing them as stable or preview claims.
+- Unknown builds are not claimed and do not run: an in-range but uncertified
+  build fails closed before adapter selection. Promote a build only with exact
+  evidence (and, where profile sharing applies, a reviewed override) before
+  listing it as stable or preview.
+- Extending the HMR stale allowlist (`STALE_BOOT_VERSIONS`) is also a reviewed
+  release change tied to an accepted transition, not a compatibility fallback.
 
-## Verified in 0.1.9
+## Verified baseline: 0.2.1 (published)
 
-- Desktop `0.2.2-rc.2`: 34 checks pass on the real Electron app with the shared
-  rc.1 catalog profile.
-- Web `0.2.2-rc.2` and `0.2.2-rc.3`: full acceptance passes on 0.1.9.
-- All older certified hosts remain in the test matrix.
+- The `0.2.1` artifact was accepted on all 13 declared scopes (7 Web + 6
+  Desktop) with isolated `DSH_HOME`, official plugin-manager install of the exact
+  tarball, and committed evidence under `contracts/dsh/evidence/0.2.1/`.
+- Desktop scopes run the real Electron app; Web scopes run the declared Chrome
+  build. Exact counts and the desktop renderer boundary are in
+  [`docs/verification.md`](../verification.md).
+- The `0.2.2` target has **no acceptance evidence yet**. Before packaging, every
+  declared scope must be re-accepted on one final tarball, plus the Web update
+  probe below. 0.2.1 evidence is never reused for 0.2.2 bytes.
 
-## Hot update (HMR)
+## Hot update (HMR) — 0.2.2 target
 
-DSH base enables `dsh-hmr` when the launcher provides `profileContext`; direct
+DSH enables client HMR when the launcher provides `profileContext`; direct
 Plugin Manager operations and profile manifest changes recompose running plugins
 and replace modules whose files under the profile changed. Livery keeps this path
 safe:
@@ -56,14 +70,28 @@ safe:
   write after its owner is gone;
 - style elements are reference-counted/shared across a hot replacement, and a
   stale host boot style is removed by the new confirmed apply;
-- a new client build accepts the previous build's boot payload when the adapter
-  identity is unchanged, reports `plugin version changed by HMR`, and re-fetches
-  the catalog instead of failing closed; a changed catalog-profile id caused by
-  the plugin release itself is also accepted, using the matched adapter's
-  profile for the live-catalog check;
-- the catalog fetch retries across the recomposition window (up to eight
-  bounded attempts for a detected HMR transition);
+- the 0.2.2 client accepts a boot payload from one exact previous build as
+  `stale`: `STALE_BOOT_VERSIONS = ['0.2.1']`. The check order is payload shape →
+  certified `(hostVersion, adapterId, contractHash)` triple → `entryId` → exact
+  version allowlist → strict `catalogProfile === adapter.catalogProfile` →
+  `accepted`. It is exact string equality only: no semver, prefix or range
+  inference, and there is no exception for a profile id that "changed by HMR"
+  (that earlier claim was reverted and is not true for 0.2.1);
+- a stale payload never adopts its boot CSS. The client re-fetches the catalog
+  once, performs exactly one catalog-derived `applyConfirmed`, and re-applies the
+  saved wallpaper/config. If the catalog stays unavailable it fails closed to
+  `degraded` with boot artifacts removed and `effectiveId: STOCK_ID`; the config
+  fallback never uses the stale `skinId`, and `retryCatalog()` may recover without
+  a page reload. Anything not exactly allowlisted remains `mismatch`/fail closed;
+- the catalog fetch retries across the recomposition window (up to eight bounded
+  attempts for a detected hot reload);
 - saved skin/wallpaper state is host-backed, so the new instance reapplies it.
 
-Cold start remains the acceptance target; HMR is a convenience path and is covered
-by the client handshake/runtime tests and a Web 0.1.7→0.1.8 smoke run.
+**Claim boundary.** DSH client HMR is a Web-profile mechanism (the client-hmr SSE
+path is Web-only; Electron does not use it). The 0.2.2 claim is exactly that a
+real `0.2.1 → 0.2.2` **Web** client update can be repaired in process, and it
+must be evidenced by an update probe that installs the exact published 0.2.1
+tarball and updates through the running Host's plugin manager to the exact
+candidate. Desktop requires a renderer reload/app restart; no Desktop hot update
+is claimed. 0.2.1 itself has no stale path — it fails closed on any
+plugin-version difference; the repair exists only in the 0.2.2 client.

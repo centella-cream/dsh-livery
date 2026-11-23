@@ -1,10 +1,16 @@
 # Verification
 
-## Release `0.2.1`
+## Release `0.2.1` (current published)
 
-The `0.2.1` artifact is `dsh-livery-0.2.1.tgz`. Its exact sha256, byte size and
-build commit are recorded in the committed evidence JSON under
-`contracts/dsh/evidence/0.2.1/`. It is published on npm `latest`.
+The `0.2.1` artifact is `dsh-livery-0.2.1.tgz`, published on npm `latest`. Its
+exact sha256 (`78f1c8d1…`), byte size **3,529,494 B** and build commit are recorded
+in the committed evidence JSON under `contracts/dsh/evidence/0.2.1/`. The
+repository working tree contains post-0.2.1 packaged-doc and screenshot changes
+that are `0.2.2` material; they are **not** part of the published 0.2.1 tarball,
+and the accepted 0.2.1 evidence must never be rebound to them.
+
+The accepted artifact was installed from the exact tarball and probed on all 13
+declared scopes (7 Web + 6 Desktop, eight host adapters):
 
 | Host | Profile / platform | Runtime | Result |
 |---|---|---|---|
@@ -24,142 +30,147 @@ build commit are recorded in the committed evidence JSON under
 
 Evidence:
 
-- `contracts/dsh/evidence/0.2.1/` contains one JSON per declared scope, plus raw
-  probes, reports and canonical audit envelopes.
-- Each evidence file binds the exact tarball sha256, probe/report sha256,
-  critical check ids, build commit and audit envelope.
-- `pnpm prepublishOnly` verifies all 13 declared-scope files against the final candidate.
+- `contracts/dsh/evidence/0.2.1/` contains one JSON per declared scope (13 files),
+  plus sanitized raw probes, reports and canonical audit envelopes.
+- Each evidence file binds the exact tarball sha256/bytes, probe/report sha256,
+  critical check ids, build commit and audit envelope; schema v2 re-derives
+  critical checks from probe statuses rather than trusting a self-reported list.
+- `pnpm prepublishOnly` verifies all 13 declared-scope files against the final
+  candidate.
+- The accepted probe measured the client bundle at **60,902 B gzip / 230,487 B
+  raw** against the then-current 60 KiB (61,440 B) cap, and the largest livery CSS
+  at **9,066 B** (bauhaus) against the 13,312 B cap.
+
+Every run used the official plugin install path from a fresh isolated `DSH_HOME`
+and its own run directory; concurrent suites are run serially and never share a
+`DSH_HOME`. Web runs used the
+declared Node runtime and Playwright with the exact certified Chrome build, and
+Desktop runs drove the real Electron renderer with an isolated
+`DSH_HOME`/user-data dir. A real-profile clone run remains a supplementary
+diagnostic and is intentionally **not** part of formal release evidence: only
+isolated-home runs are authoritative.
 
 The Desktop probe records `desktop.sidebar-path` from the real `sidebarCol` DOM
 background and compares it with the host-composited target (`fillAlpha × host
-tint factor`), not with the tint token. The Web probe covers the merged preset/wallpaper checks and the
-Settings floating-surface check; the Desktop probe covers the Electron renderer
-surface, not native window shell/vibrancy.
+tint factor`), not with the tint token. The Web probe covers the merged
+preset/wallpaper checks and the Settings floating-surface check; the Desktop
+probe covers the Electron renderer surface, not native window shell/vibrancy.
 
-> **Release `0.1.9` is published.** Full acceptance passed on Web `0.2.1-rc.2`,
-> `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` and
-> Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`;
-> 11 evidence files are bound under `contracts/dsh/evidence/0.1.9/`. The `0.1.8`
-> section below is retained as the previous published release.
+## Release `0.2.2` (target, acceptance pending)
 
-**Release `0.1.9` — current npm release.** The accepted artifact is
-`dsh-livery-0.1.9.tgz`, sha256
-`f1ee56180c0a78fc922a265457df589bba052c1fbd486b28cabc61dc2875938d`, 2,189,307 bytes,
-302 files, built from commit `9d21ba0ce9c861686e25c032c14a44d2c1e449c0` and published
-as npm `latest` and GitHub Release `v0.1.9`. Eleven evidence files are bound under
-`contracts/dsh/evidence/0.1.9/`.
+`0.2.2` is the **client-only target release** described in
+[`design/0.2.2-plan.md`](design/0.2.2-plan.md); it is not published, and
+**no 0.2.2 acceptance evidence exists**. Every 0.2.2 statement in this file is a
+target or working-tree measurement, not proof of a shipped artifact. The
+published artifact remains `dsh-livery@0.2.1`, and no 0.2.1 evidence may be reused
+for 0.2.2 bytes. 0.2.2 adds no host adapter and no host capability: the declared
+host set stays at the eight adapters above.
 
-| Host | Profile / platform | Certified runtime | Status |
+Before packaging, acceptance must:
+
+1. **Re-accept all 13 scopes** (7 Web + 6 Desktop) on **one final tarball**, with
+   a fresh isolated `DSH_HOME` and the official plugin-manager install of the
+   exact `--tgz` candidate (AGENTS §3). The client bundle and the packaged
+   docs/assets change, so every previous acceptance run is invalid.
+2. **Run the Web `0.2.1 → 0.2.2` update probe.** Install the exact published
+   0.2.1 tarball, update through the running Host's plugin-manager install dialog
+   to the exact 0.2.2 candidate, and record: no navigation/page reload, the old
+   boot payload observed as `stale`, a re-fetched and re-applied catalog, the
+   detail section rendering, and a manager outcome that is not
+   `restart-required`. One `0.2.2`-line Web scope is required; one `0.2.1`-line
+   Web scope is added when its plugin manager can install over the
+   tarball-installed bundle. The claim is **Web only** — Desktop needs a renderer
+   reload/app restart. The **run harness itself is also not implemented yet**:
+   `scripts/acceptance/web.mjs` has no “install 0.2.1, then update to the
+   candidate” mode, so this probe is a release task, not an executable command
+   today.
+3. **Bind the update transition in evidence schema v3.** The required
+   `transition` record (`fromVersion`, `fromSha256`, `fromBytes`, `toVersion`,
+   `toSha256`, `trigger`, `pageReloaded`, `staleBootObserved`,
+   `catalogReadopted`, `managerOutcome`) is **not implemented yet**: the current
+   acceptance evidence schema is still v2 and the release scripts have no
+   update-run validation. Until that lands, an update run cannot be recorded as
+   accepted evidence.
+
+### Candidate budgets (measured, not accepted)
+
+| Measure | Current working-tree candidate | Budget | Accepted `0.2.1` probe |
 |---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (Web) |
-| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` / Chromium `152.0.7977.130` | Stable certified renderer surface |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Preview |
-| DSH `0.2.1-rc.5` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
-| DSH `0.2.2-rc.1` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
-| DSH `0.2.2-rc.2` | Web + Desktop macOS | Node `22.23.1` / `24.21.0` | Preview |
-| DSH `0.2.2-rc.3` | Web + Desktop macOS | Node `24.21.0` / Electron `44.7.0` | Preview |
+| Client bundle gzip | **73,684 B** (280,547 B raw) | **73,728 B** (72 KiB) — **44 B headroom** | 60,902 B (cap 61,440 B / 60 KiB) |
+| Largest livery CSS | **10,190 B** (bauhaus) | **13,312 B** (13 KiB) | 9,066 B (cap 13,312 B) |
+| Host bundle gzip | **15,506 B** (61,649 B raw) | **368,640 B** (360 KiB) | — |
+| Package tarball | **≈3.40 MB** (993 files; exact bytes change with every packaged-doc edit and must be re-measured on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
 
-Acceptance on the exact `0.1.9` artifact: Web `0.2.1-rc.2`, `0.2.1-rc.4`,
-`0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3` each **275 / 0 / 4 / 2**;
-Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`
-each **34 / 0 / 2 / 0**. The expanded layout probe covers 1440/1200/1024/767/600
-with 49 screenshots and 0 high / 0 medium.
+The client/host/CSS numbers come from `lib/build-report.json` for the current
+working-tree build. The tarball number was measured before the final packaged-doc
+and screenshot refresh; any packaged-byte change (including edits to this file)
+changes the tarball and requires a rebuild, a fresh measurement and full
+re-acceptance. None of these numbers is acceptance evidence.
 
-**Release `0.1.8` — previous published release (historical).** The exact accepted artifact, sha256,
-byte size and commit are recorded in the seven committed evidence files at
-`contracts/dsh/evidence/0.1.8/`; the publication workflow downloads the same bytes
-from npm and attaches the tarball, `SHA256SUMS` and release manifest to the GitHub
-Release. `0.1.2` evidence is retained unchanged under
-`contracts/dsh/evidence/` for the prior release.
+### New probe areas in the 0.2.2 candidate (implemented, not yet accepted)
 
-**Release scope for 0.1.8 (released):**
+The 0.2.2 probe replaces 0.2.1's fixed Picsum-batch checks and adds:
 
-| Host | Profile / platform | Certified runtime | Status |
-|---|---|---|---|
-| DSH `0.2.1-rc.2` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Stable certified (npm `latest`) |
-| DSH `0.2.1-rc.4` | Web Profile, Chrome `156.0.8078.48` | Node `22.23.1` | Next-channel preview (npm `next`; GitHub prerelease tag exists) |
-| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron/Node `24.21.0` (Chromium `152.0.7977.130`) | Stable certified renderer surface (GitHub-tagged) |
-| DSH `0.2.1-rc.5` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; reaccepted in 0.1.7 |
-| DSH `0.2.2-rc.1` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; Web+Desktop acceptance bound |
-| DSH `0.2.2-rc.2` | Web Profile + Desktop app macOS | Chrome `156.0.8078.48` / Chromium `152.0.7977.130`; Node `22.23.1` / `24.21.0` | Preview; npm `next`, GitHub prerelease; Web+Desktop acceptance bound |
-| Desktop Windows, Web Edge, other DSH builds | — | — | Not supported; no guarantee |
+- wallpaper studio: `wallpaper.no-request-before-online`,
+  `wallpaper.online-first-batch`, `wallpaper.provider-selector`,
+  `wallpaper.provider-served-by`, `wallpaper.provider-failover`,
+  `wallpaper.provider-rate-limited`, `wallpaper.provider-pinned-no-failover`,
+  `wallpaper.builtin-visible-8`, `wallpaper.builtin-classic`,
+  `wallpaper.builtin-current-classic`, `wallpaper.style-card`,
+  `wallpaper.style-applied`, `wallpaper.style-disabled-no-catalog`,
+  `wallpaper.attribution-links`;
+- plugin detail surface: `plugin.detail-section-renders`,
+  `plugin.detail-subject-filter`, `plugin.detail-config-slot-clean`,
+  `plugin.detail-no-config-slot`, `plugin.detail-copy-diagnostics`;
+- handshake/update: the `stale` boot path (exact `0.2.1` allowlist) with
+  no-adopt-boot-CSS and catalog re-adoption, asserted on the update run.
 
-Compatible-preview mode is unclaimed and diagnosed; 0.3+ and API-divergent builds
-still fail closed. Stable claims require a non-prerelease official GitHub
-release and the matching signed npm tarball on `latest`; `0.2.1-rc.4` is verified against the signed npm `next`
-tarball and has an upstream GitHub prerelease tag (commit 504a01a…) but npm remains on the next channel, so it is a preview compatibility claim,
-not a channel-stability promise. The Desktop certification covers plugin
-installation, boot, the Electron renderer, settings/gallery, persistence and the
-restart handshake; native macOS window chrome, traffic lights/leading, vibrancy,
-Dock/rightbar, OS-level DPI and the packaged GPU/sandbox path remain outside the
-certification surface. First-paint sampling is only claimed when the Desktop report
-contains actual sample data.
+Their probe and unit-test implementations exist in the working tree; their
+status is unproven until the acceptance runs above.
 
-The release artifact is the exact tarball named in the committed evidence files
-(including committed report markdown + sha256 checks). Both release gates and
-`prepublish-check` refuse to publish bytes that do not match them.
+### Known pre-acceptance limitations
 
-Evidence:
+- **Screenshots are not final.** Packaged README screenshots must be recaptured
+  from the final accepted candidate build, replacing the pre-0.2.2
+  wallpaper-studio capture that showed an online photo (see `NOTICE.md`).
+  Recapture changes packaged bytes, so a candidate measured before it is invalid
+  and must be rebuilt and re-accepted.
+- **Slot-proof coverage is 6 of 8 hosts.**
+  `contracts/dsh/client-slot-declarations.json` inspected six host trees;
+  `0.2.1-rc.2` and `0.2.1-rc.3` are explicit gaps ("plugin-manager package
+  metadata not installed in the local host tree"). The runtime
+  `plugin.detail-section-renders` check currently runs in the Web flow only, so
+  `0.2.1-rc.2` (Web) is covered by it; **`0.2.1-rc.3` (Desktop) has no runtime
+  detail check yet** and remains a documented per-scope limitation until the
+  Desktop probe gains the same check. A missing/failed detail check is recorded
+  as skipped-with-reason, never as a pass.
+- **Update-path evidence schema is pending** (see item 3 above): the transition
+  binding and release-gate validation do not exist yet.
+- **Hot update is Web-only.** DSH client HMR is a Web-profile mechanism; Desktop
+  update copy requires a reload/restart and no Desktop hot update is claimed.
+  `0.2.1` has no stale path and fails closed on any plugin-version difference.
+- **No live-provider guarantee.** Openverse and Wikimedia Commons are accepted by
+  the committed provider gate, but the probe exercises the online card with
+  mocked responses, so third-party uptime, rate-limit enforcement and licence
+  data are not acceptance claims.
+- **0.2.2 host support is unchanged**: the eight host adapters are re-probed, not
+  newly certified.
 
-- `contracts/dsh/evidence/0.1.8/0.2.1-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.1.8/0.2.1-rc.4-web-chrome.json`
-- `contracts/dsh/evidence/0.1.8/0.2.1-rc.5-web-chrome.json`
-- `contracts/dsh/evidence/0.1.8/0.2.1-rc.5-desktop-macos.json`
-- `contracts/dsh/evidence/0.1.8/0.2.1-rc.3-desktop-macos.json`
-- `contracts/dsh/evidence/0.1.8/0.2.2-rc.1-web-chrome.json`
-- `contracts/dsh/evidence/0.1.8/0.2.2-rc.1-desktop-macos.json`
-- `contracts/dsh/evidence/0.1.8/0.2.2-rc.2-web-chrome.json`
-- `contracts/dsh/evidence/0.1.8/0.2.2-rc.2-desktop-macos.json`
-
-Each file records the exact sha256, byte size, commit, exact browser/runtime
-versions, scope and per-run results. Evidence schema v2 also binds a sanitized
-raw probe path+sha256, run summary, host/adapter identity, report hash and run
-commit; critical checks are re-derived from probe statuses rather than trusted
-from a self-reported list. The `0.1.2` evidence files are never rewritten.
-
-## Acceptance runs (accepted artifact)
-
-| Run | Environment | Result |
-|---|---|---|
-| Web isolated full run | DSH `0.2.1-rc.2`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 passed / 0 failed / 4 skipped / 2 warnings** |
-| Web isolated full run | DSH `0.2.1-rc.4`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
-| Web isolated full run | DSH `0.2.1-rc.5`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
-| Web isolated full run | DSH `0.2.2-rc.1`, macOS arm64, Node `22.23.1`, Chrome `156.0.8078.48` | **275 / 0 / 4 / 2** |
-| Desktop app renderer | DSH `0.2.1-rc.3`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
-| Desktop app renderer | DSH `0.2.1-rc.5`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
-| Desktop app renderer | DSH `0.2.2-rc.1`, macOS arm64, Electron / Node `24.21.0` | **34 / 0 / 2 / 0** |
-
-A real-profile clone run remains a supplementary diagnostic and is intentionally
-not part of formal release evidence: only isolated-home runs are authoritative.
-The Web runs use the official plugin install path, an isolated `DSH_HOME`, Node
-22.23.1 for the 0.2.1 hosts and Node 22.23.1 for 0.2.2-rc.1, and Playwright with
-the exact certified Chrome build 156.0.8078.48. When
-the system Chrome channel auto-updates to an uncertified build, the same official
-Chrome for Testing build for the certified version is provisioned explicitly;
-the harness still fails fast unless the reported four-part version matches the
-matrix exactly. The Desktop run uses the real
-Electron app, the official plugin manager and an isolated app
-`DSH_HOME`/user-data-dir, driving the actual renderer for rc.3, rc.5 and 0.2.2-rc.1.
-
-## 0.1.8 historical verification
-
-This subsection records the previous release's scope (five adapters, 24 styles
-per profile). It is historical and must not be read as the 0.1.9 matrix, which
-has seven adapters and 28 styles per profile; see the 0.1.9 section above.
-
-## What is verified
+## What is verified (accepted `0.2.1` artifact)
 
 - Official install, activation and uninstall lifecycle; boot gate and handshake.
-- Five adapters (`0.2.1-rc.2` through `0.2.2-rc.1`) and two catalog profiles
-  (pre-0.2.2 token contract and 0.2.2's 188-token contract): 24 styles per profile.
+- Eight adapters (`0.2.1-rc.2` through `0.2.2-rc.5`) and their per-adapter
+  catalog profiles: 28 styles per profile.
 - Style page: preview, single-mutation Apply, restore, persistence, self-check.
 - Style gallery, preview language switching, family filters and keyboard tabs.
-- Wallpaper studio: built-in designs, online search/random, uploads (IndexedDB),
-  recent history/cache, effects and global atmosphere (safe layering: below all floating UI; no visual-coverage guarantee on opaque third-party plugin pages).
+- Wallpaper studio: 24 built-in CSS wallpapers (0.2.1; 0.2.2 ships 8 curated + 16
+  Classic with identical IDs/CSS), online search/random, uploads (IndexedDB),
+  recent history/cache, effects and global atmosphere (safe layering: below all
+  floating UI; no visual-coverage guarantee on opaque third-party plugin pages).
 - Wallpaper state v2: v1 migration, focal position on page/atmosphere/preview,
   multi-tab sync, preset export/import validation and local-data cleanup.
 - Performance/network canaries: catalog JSON cap, cold-start p50/p95 baselines and
-  a non-blocking real Openverse canary (reported in probe.json).
+  a non-blocking Openverse canary (reported in `probe.json`).
 - Floating-surface layering: atmosphere `z-index:90` below host ordinary
   Menu/Tooltip/HoverCard (100/101), Modal (1000) and Toast (1100); host Settings
   modal is opaque while wallpaper frost is active.
@@ -168,21 +179,24 @@ has seven adapters and 28 styles per profile; see the 0.1.9 section above.
 - Desktop app: official install, renderer boot, panel, apply/persist, reload
   handshake and stock restore.
 - CSS/token/contrast audits: 0 missing tokens, contrast assertions and 0 failures.
-- Loader-ABI checks for the certified host builds; production dependency audit clean.
+- Loader-ABI checks for the certified host builds; production dependency audit
+  clean.
 
 ## What is not verified / not supported
 
 - Native macOS window chrome, traffic lights/leading clearance, vibrancy,
   Dock/rightbar window states, OS-level DPI and the packaged GPU/sandbox path.
   These are host-owned and outside this plugin's certification.
-- Desktop Windows, Web Edge, any browser other than Chrome 156.0.8078.48, any Node other than
-  the two certified runtimes, DSH Desktop rc.4 (not released/available), and any
-  other DSH version.
+- Desktop Windows, Web Edge, any Web browser other than Chrome `156.0.8078.48`,
+  any Node other than the two certified runtimes (`22.23.1`, `24.21.0`), and any
+  DSH build not listed in `contracts/dsh/support-matrix.json`.
 - A second **theme registry**: the build intentionally ships one adapter per
-  certified host, while the two catalog profiles only reflect upstream token
-  contract changes.
-- Live Openverse availability: search is exercised with mocked responses; the
-  automatic Picsum batch works in the acceptance environment.
+  certified host; the per-adapter catalog profiles only reflect upstream token
+  contract differences.
+- Live provider availability: online search/random is exercised with mocked
+  responses, so the probe proves client behaviour, not third-party uptime. The
+  0.2.1 online-batch checks were mock-backed as well and are replaced by the
+  0.2.2 provider probes.
 - Malicious/corrupted host payloads beyond the client's structural validation.
 - Uninstall residue: DSH keeps the plugin's `livery` config row after plugin
   removal (by design of the host profile store). A stock value is harmless; a
@@ -191,6 +205,14 @@ has seven adapters and 28 styles per profile; see the 0.1.9 section above.
 - All host surfaces using `--dsw-alias-bg-layer-2` remain opaque under frost
   (not only Modal). This is an accepted 0.1.4 product boundary; plugin cards keep
   the glass effect through `--dsh-livery-card-surface`.
+
+## Previous releases
+
+`0.1.8` and `0.1.9` are previous published releases; their artifacts, scope
+tables and acceptance counts are retained only for audit under
+`contracts/dsh/evidence/0.1.8/` and `contracts/dsh/evidence/0.1.9/`. They are
+historical and must not be read as the current support matrix or as 0.2.1/0.2.2
+evidence. `0.2.1` is the current published artifact.
 
 ## Reproduce
 
@@ -216,8 +238,14 @@ version back from npm and checks sha256, byte size and package version. The acce
 tarball, `SHA256SUMS` and release manifest are attached to the GitHub Release.
 The Web acceptance harness must be run with `--expect-browser-version
 156.0.8078.48` for the Web hosts; any other system Chrome version fails the run.
+When the system Chrome channel auto-updates to an uncertified build, the same
+official Chrome for Testing build for the certified version is provisioned
+explicitly; the harness still fails fast unless the reported four-part version
+matches the matrix exactly.
 
-Raw screenshots remain local under `artifacts/`; the sanitized raw probes and
-reports are committed next to each evidence file so the release gate can re-derive
-critical checks and verify report hashes. The evidence files record the exact
-artifact identity and run commit.
+For 0.2.2, a new candidate must be rebuilt after all packaged-doc/screenshot
+changes, measured again, and accepted from fresh isolated environments; a
+0.2.1-era report is never reused. Raw screenshots remain local under
+`artifacts/`; the sanitized raw probes and reports are committed next to each
+evidence file so the release gate can re-derive critical checks and verify report
+hashes. The evidence files record the exact artifact identity and run commit.

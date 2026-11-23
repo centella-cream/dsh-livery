@@ -1,6 +1,6 @@
-# Style gallery and GUI style recipes (0.1.9)
+# Style gallery and GUI style recipes
 
-Status: current for the published `0.1.9`. This note covers the compact
+Status: current for the published `0.2.1` (28 styles). This note covers the compact
 style catalog (information architecture) and the GUI-level recipe expansion. The
 support matrix and release evidence remain in
 [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json) and
