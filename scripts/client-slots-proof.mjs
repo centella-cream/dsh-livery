@@ -242,7 +242,7 @@ export function generateClientSlotProof(options = {}) {
         reason: inspected.reason,
         ...(claimTier === undefined ? {} : { claimTier }),
         ...(claimTier === 'stable'
-          ? { waiver: 'stable host tree unavailable for static proof; the runtime detail check is the only evidence and is recorded as a per-scope limitation, never as a pass' }
+          ? { waiver: 'stable host tree unavailable for static proof; runtime detail coverage is recorded per scope, but Desktop has no runtime detail check yet — documented limitation, never a pass' }
           : {}),
       })
     } else inspectedHosts.push(inspected)
