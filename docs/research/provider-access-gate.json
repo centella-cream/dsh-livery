@@ -79,7 +79,7 @@
       ]
     },
     {
-      "id": "wikimedia-commons",
+      "id": "wikimedia",
       "role": "Public-domain and freely-licensed media repository (MediaWiki API)",
       "api": {
         "baseUrl": "https://commons.wikimedia.org/w/api.php",
@@ -93,7 +93,7 @@
         "allowOrigin": "* (only when the request includes origin=*; MediaWiki echoes the CORS headers for that mode)",
         "allowedMethods": "POST, GET, HEAD (from Access-Control-Allow-Methods on preflight); only simple GETs are usable from a browser because no custom headers are allowed (no Access-Control-Allow-Headers)",
         "imageHostCors": "verified on both image hosts: GET https://upload.wikimedia.org/wikipedia/commons/b/b6/Felis_catus-cat_on_snow.jpg -> 200 image/jpeg with access-control-allow-origin: * and access-control-expose-headers: Age, Date, Content-Length, Content-Range, X-Content-Duration, X-Cache; GET https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Felis_catus-cat_on_snow.jpg/1280px-Felis_catus-cat_on_snow.jpg -> 200 image/jpeg with access-control-allow-origin: *.",
-        "evidence": "Commands: curl -D - -H 'Origin: https://example.com' 'https://commons.wikimedia.org/w/api.php?action=query&format=json&titles=File:Cat.jpg&prop=imageinfo' (no ACAO) vs the same URL with '&origin=*' (access-control-allow-origin: *); OPTIONS with origin=* as above; image-host GETs with Origin as above. Page-size: gsrlimit=50 and 500 returned, gsrlimit=1000 was silently clamped to 500 items; every response continued with {\"continue\":{\"gsroffset\":N,\"continue\":\"gsroffset||\"}}."
+        "evidence": "Commands: curl -D - -H 'Origin: https://example.com' 'https://commons.wikimedia.org/w/api.php?action=query&format=json&titles=File:Cat.jpg&prop=imageinfo' (no ACAO) vs the same URL with '&origin=*' (access-control-allow-origin: *); OPTIONS with origin=* as above; image-host GETs with Origin as above. Page-size: gsrlimit=50 and 500 returned, gsrlimit=1000 was silently clamped to 500 items; every response continued with {\"continue\":{\"gsroffset\":N,\"continue\":\"gsroffset||\"}}. Random endpoint verified today: GET https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=random&grnnamespace=6&grnlimit=2&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&origin=* with 'Origin: https://example.com' -> 200 application/json, access-control-allow-origin: *, access-control-expose-headers includes MediaWiki-API-Error, Retry-After, X-Database-Lag, MediaWiki-Login-Suppressed; no redirect."
       },
       "rateLimits": {
         "anonymous": "No hard speed limit on read requests: API:Etiquette states 'There is no hard speed limit on read requests, but be considerate and try not to take a site down.' No rate-limit headers are emitted on api.php read responses (10 consecutive imageinfo queries all returned 200 with no x-ratelimit headers). The image CDN advertises its own budget: x-ratelimit-limit: 600000, 600000;w=60 and x-ratelimit-remaining: 599999 on upload.wikimedia.org.",
@@ -147,7 +147,8 @@
         "The client must strip HTML from Artist/Credit extmetadata and treat a missing LicenseShortName, a NC-only/ND-only/fair-use mark, or a missing LicenseUrl on a licence that requires attribution as non-selectable (license:null).",
         "Commons bans NC-only content, but CC BY-SA files carry ShareAlike: local display and byte-for-byte caching do not create a published derivative, and the UI must show attribution + licence URL. If the client ever modifies/derives the image, ShareAlike obligations would apply.",
         "Thumbnails are generated on the separate thumb.wikimedia.org host (e.g. 1280px URL with utm query parameters) while originals live on upload.wikimedia.org; both must stay in imageHosts.",
-        "API:Etiquette also recommends serial requests and caching query results; the client should not parallel-hammer the API."
+        "API:Etiquette also recommends serial requests and caching query results; the client should not parallel-hammer the API.",
+        "Random mode (generator=random, namespace 6) verified with the same anonymous CORS requirements as search; 0.2.2 may declare random:true."
       ]
     },
     {

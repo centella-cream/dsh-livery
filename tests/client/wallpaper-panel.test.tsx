@@ -391,6 +391,16 @@ describe('online request policy (panel)', () => {
     // Auto idle: nothing selected or served, so no notice.
     expect(renderPanel()).not.toContain('data-testid="wallpaper-openverse-notice"')
 
+    // A persisted Openverse selection (reload/preset/Recent) keeps the notice
+    // even when the Online studio has never run in this page session.
+    controller.setSelection({
+      kind: 'remote',
+      url: 'https://api.openverse.org/v1/images/result-1/thumb/',
+      provenance: { providerId: 'openverse', title: 'Persisted result' },
+    })
+    expect(renderPanel()).toContain('data-testid="wallpaper-openverse-notice"')
+    controller.clear()
+
     // Selected explicitly: always visible, even before a request runs.
     const selected = createOnlineStudio({
       fetchPage: async () => ({ ok: true, results: [resultFixture()], servedBy: 'wikimedia' }),
@@ -541,7 +551,7 @@ describe('focal position nine-grid', () => {
     expect(en).toContain('Top left')
     expect(en).toContain('Center')
     expect(en).toContain('Bottom right')
-    expect(en).toContain('built-in designs stay centered')
+    expect(en).toContain('Only online/uploaded images can be repositioned.')
   })
 
   it('reflects a persisted position in the checked radio and the hero preview', () => {
@@ -731,7 +741,7 @@ describe('wallpaper studio render', () => {
   it('shows the hero empty-state prompt while no wallpaper is selected', () => {
     const html = renderPanel()
     expect(html).toContain('data-testid="wallpaper-hero-empty"')
-    expect(html).toContain('No wallpaper selected yet')
+    expect(html).toContain('No wallpaper selected.')
   })
 
   it('uses only the documented effect defaults when nothing is stored', () => {

@@ -896,10 +896,13 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
       label: provider.label[snapshot.locale === 'zh' ? 'zh-CN' : 'en-US'],
     })),
   ]
-  // Openverse ToS §4 (trademark): whenever Openverse is the selected source or
-  // served an Auto result, state prominently that this work merely *uses*
-  // Openverse and is neither endorsed nor certified by it.
-  const openverseNoticeVisible = online.provider === 'openverse' || online.servedBy === 'openverse'
+  // Openverse ToS §4 (trademark): whenever Openverse is the selected/served
+  // source OR the currently applied wallpaper has persisted Openverse
+  // provenance (reload/preset/Recent), state prominently that this work merely
+  // *uses* Openverse and is neither endorsed nor certified by it.
+  const openverseNoticeVisible = online.provider === 'openverse'
+    || online.servedBy === 'openverse'
+    || credit?.providerId === 'openverse'
 
   const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller

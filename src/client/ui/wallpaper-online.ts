@@ -221,6 +221,8 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
   const fetchPage = options.fetchPage ?? fetchOnlinePage
   const createAbort = options.createAbortController ?? defaultAbortController()
   const listeners = new Set<() => void>()
+  /** Client-side cooldown after a 429; Openverse often omits Retry-After. */
+  let cooldownUntil = 0
   let snapshot = idleSnapshot()
   /** Monotonic request ticket: a stale response never overwrites a newer one. */
   let sequence = 0
@@ -250,6 +252,20 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
 
   const run = async (request: OnlineRequestSpec): Promise<void> => {
     if (disposed) return
+    const now = Date.now()
+    if (now < cooldownUntil) {
+      publish({
+        ...snapshot,
+        status: 'rate-limited',
+        results: [],
+        servedBy: undefined,
+        failure: 'rate-limited',
+        retryAfterMs: cooldownUntil - now,
+        tried: [],
+        nextCursor: undefined,
+      })
+      return
+    }
     const ticket = ++sequence
     abortActive()
     const controller = createAbort?.()
@@ -278,6 +294,7 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
     if (disposed || ticket !== sequence) return
     active = undefined
     if (outcome.ok) {
+      cooldownUntil = 0
       publish({
         status: outcome.results.length === 0 ? 'empty' : 'ready',
         results: outcome.results,
@@ -289,12 +306,18 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
       })
       return
     }
+    const cooldownMs = outcome.failure === 'rate-limited'
+      // Use the server hint when present, otherwise back off locally. Gate
+      // review observed Openverse 429s without Retry-After.
+      ? outcome.retryAfterMs ?? 30_000
+      : 0
+    if (outcome.failure === 'rate-limited') cooldownUntil = Date.now() + cooldownMs
     publish({
       status: outcome.failure,
       results: [],
       servedBy: undefined,
       failure: outcome.failure,
-      retryAfterMs: outcome.retryAfterMs,
+      retryAfterMs: outcome.failure === 'rate-limited' ? cooldownMs : outcome.retryAfterMs,
       tried: [...outcome.tried],
       nextCursor: undefined,
     })

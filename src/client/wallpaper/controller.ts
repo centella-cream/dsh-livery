@@ -50,7 +50,9 @@ import { removeWallpaperRefs, writeWallpaperRefs } from './refs.js'
 import type { WallpaperDocument, WallpaperLayer } from './apply.js'
 import { styleWallpaperImage } from './style.js'
 import {
+  WALLPAPER_STYLE_STORAGE_KEY,
   readStoredWallpaperStyle,
+  removeStoredWallpaperStyle,
   removeStoredWallpaperStyleIfOwn,
   wallpaperStateIdentityOf,
   writeStoredWallpaperStyle,
@@ -254,6 +256,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     : window as unknown as StorageEventTarget)
   let lastPublishedRaw: string | undefined
   let syncUnsubscribe: (() => void) | undefined
+  let styleSyncUnsubscribe: (() => void) | undefined
   // Started only with the controller: refs/heartbeat must not exist for a
   // boot-less or uncertified instance.
   let refHeartbeat: ReturnType<typeof setInterval> | undefined
@@ -402,18 +405,18 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
         return true
       }
       if (selection === undefined) {
-        // Clear ordering: write the main tombstone FIRST, then remove the
-        // sidecar only if this writer still owns the main record. A stale
-        // sidecar left by a losing writer has a different identity from the
-        // new tombstone, so hydration ignores it; the removal guard stops a
-        // behind tab from deleting a newer tab's winner sidecar.
+        // Clear ordering (plan §4.3): remove the sidecar BEFORE the tombstone.
+        // The pre-write identity check keeps a behind tab from deleting a newer
+        // tab's winner sidecar; once this writer owns the transition, a failed
+        // tombstone write may lose the style (documented) but can never leave a
+        // matching sidecar to resurrect it.
         const record = serializeWallpaperState(undefined, effects, position, revision)
         const identity = wallpaperStateIdentityOf(record.revision, publishSourceId ? sourceId : undefined)
         if (!canPublishIdentity(identity)) return false
+        removeStoredWallpaperStyle(storage)
         const raw = JSON.stringify(publishSourceId ? { ...record, sourceId } : record)
         storage.setItem(WALLPAPER_STORAGE_KEY, raw)
         lastPublishedRaw = raw
-        if (!removeStoredWallpaperStyleIfOwn(storage, identity)) return false
         durableSelection = undefined
         publishRefs()
         return true
@@ -557,6 +560,32 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       saveTimer = undefined
     }
     savePending = false
+  }
+
+  /**
+   * Re-resolve the style sidecar after its key changes. Only the identity the
+   * tab already adopted may win, so an older sidecar event cannot resurrect a
+   * style and a newer tab's main record still wins.
+   */
+  const adoptStyleSidecar = (): void => {
+    if (disposed || storage === undefined) return
+    let raw: string | null
+    try {
+      raw = storage.getItem(WALLPAPER_STORAGE_KEY)
+    } catch {
+      return
+    }
+    const external = parseExternalWallpaperState(raw)
+    if (external === undefined) return
+    if (external.state.revision !== revision) return
+    if ((external.sourceId ?? '') !== (winnerSourceId ?? '')) return
+    const next = resolveStoredSelection(external)
+    if (sameSelection(selection, next)) return
+    selection = next
+    selectionVersion += 1
+    durableSelection = next
+    apply()
+    notify()
   }
 
   const adoptExternalState = (newValue: string | null): void => {
@@ -720,6 +749,14 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
         key: WALLPAPER_STORAGE_KEY,
         onExternal: adoptExternalState,
       })
+      // The style sidecar is a second key: a writer may publish the main
+      // tombstone and the sidecar in two events. Re-resolve the adopted style
+      // when the sidecar key changes instead of waiting for a reload.
+      styleSyncUnsubscribe = createWallpaperStorageSync({
+        eventTarget,
+        key: WALLPAPER_STYLE_STORAGE_KEY,
+        onExternal: () => adoptStyleSidecar(),
+      })
       void restoreUpload()
       void restoreRemote()
     },
@@ -728,6 +765,8 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       stopRefHeartbeat()
       syncUnsubscribe?.()
       syncUnsubscribe = undefined
+      styleSyncUnsubscribe?.()
+      styleSyncUnsubscribe = undefined
       // Flush FIRST: a pending save republishes the ref, so removing it before
       // the flush would resurrect a closed tab's reference record.
       flushSave()

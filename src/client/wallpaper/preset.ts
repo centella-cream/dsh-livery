@@ -733,6 +733,10 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
 
   const wallpaper = parseWallpaper(record.wallpaper, version)
   if ('ok' in wallpaper && wallpaper.ok === false) return wallpaper
+  const wallpaperValue = (wallpaper as { readonly wallpaper: PresetWallpaper | null }).wallpaper
+  if (wallpaperValue?.kind === 'style' && styleId === STOCK_ID) {
+    return failed('wallpaper-kind', 'wallpaper.style.stock')
+  }
   const effects = parseEffects(record.effects)
   if ('ok' in effects && effects.ok === false) return effects
   const position = parsePosition(record.position)

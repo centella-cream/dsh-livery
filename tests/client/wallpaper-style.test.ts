@@ -82,10 +82,12 @@ class FakeImages implements WallpaperImageStore {
 
 /** Minimal storage-event target for two-tab adoption tests. */
 class FakeEvents implements StorageEventTarget {
-  private listener: ((event: StorageEventLike) => void) | undefined
-  addEventListener(_type: 'storage', listener: (event: StorageEventLike) => void): void { this.listener = listener }
-  removeEventListener(): void { this.listener = undefined }
-  emit(newValue: string | null): void { this.listener?.({ key: WALLPAPER_STORAGE_KEY, newValue }) }
+  private readonly listeners = new Set<(event: StorageEventLike) => void>()
+  addEventListener(_type: 'storage', listener: (event: StorageEventLike) => void): void { this.listeners.add(listener) }
+  removeEventListener(_type: 'storage', listener: (event: StorageEventLike) => void): void { this.listeners.delete(listener) }
+  emit(newValue: string | null, key = WALLPAPER_STORAGE_KEY): void {
+    for (const listener of this.listeners) listener({ key, newValue })
+  }
 }
 
 /** Light/dark token maps with every style token present. */
@@ -667,16 +669,16 @@ describe('style controller persistence', () => {
     controller.dispose()
   })
 
-  it('writes the clear tombstone first and leaves a stale sidecar harmless when removal fails', () => {
+  it('removes the sidecar before the tombstone and leaves a stale sidecar harmless when removal fails', () => {
     const storage = new MemoryStorage()
     seedStyle(storage, 7, 'tab-a')
     const { controller } = harness({ storage, sourceId: 'tab-a' })
     expect(controller.getSnapshot().selection).toEqual(styleSelection)
     storage.failRemoveKeys.add(WALLPAPER_STYLE_STORAGE_KEY)
     controller.clear()
-    // The tombstone is committed; the sidecar removal failed, so the save is
-    // reported as not durable, but hydration still ignores the stale identity.
-    expect(controller.flushState()).toBe(false)
+    // The tombstone is committed; the failed removal leaves old sidecar bytes,
+    // but their identity no longer matches the new tombstone.
+    expect(controller.flushState()).toBe(true)
     const cleared = storedMain(storage)
     expect(cleared).toMatchObject({ selection: { kind: 'none' } })
     expect(cleared.revision).toBe(8)
@@ -687,18 +689,18 @@ describe('style controller persistence', () => {
     controller.dispose()
   })
 
-  it('keeps the previous style when the clear tombstone write fails', () => {
+  it('loses the style when the tombstone write fails after sidecar removal', () => {
     const storage = new MemoryStorage()
     seedStyle(storage, 4, 'tab-a')
     const { controller } = harness({ storage, sourceId: 'tab-a' })
     storage.failSetKeys.add(WALLPAPER_STORAGE_KEY)
     controller.clear()
     expect(controller.flushState()).toBe(false)
-    // Nothing committed: the old matching main+sidecar pair is still the
-    // recoverable state.
-    expect(storedStyle(storage)).toMatchObject({ revision: 4 })
+    // Remove-first ordering: the sidecar is gone, so the old tombstone can
+    // never resurrect style even though the clear did not commit.
+    expect(storage.getItem(WALLPAPER_STYLE_STORAGE_KEY)).toBeNull()
     const reloaded = harness({ storage, sourceId: 'tab-b' })
-    expect(reloaded.controller.getSnapshot().selection).toEqual(styleSelection)
+    expect(reloaded.controller.getSnapshot().selection).toBeUndefined()
     reloaded.controller.dispose()
     controller.dispose()
   })
@@ -972,6 +974,39 @@ describe('style cross-tab safety', () => {
     expect(a.controller.getSnapshot().revision).toBe(1)
     expect(a.controller.getPersistedSelection()).toEqual(styleSelection)
     a.controller.dispose()
+  })
+})
+
+describe('sidecar key events', () => {
+  it('adopts the winner style when the main tombstone arrives before the sidecar', () => {
+    const storage = new MemoryStorage()
+    seedStyle(storage, 5, 'tab-a')
+    const events = new FakeEvents()
+    const b = harness({ storage, sourceId: 'tab-b', eventTarget: events })
+    expect(b.controller.getSnapshot().selection).toEqual(styleSelection)
+
+    // A newer writer publishes the main tombstone first; the receiver adopts
+    // the clear because the sidecar is not there yet.
+    const main = JSON.stringify({
+      schemaVersion: 2,
+      revision: 6,
+      selection: { kind: 'none' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: DEFAULT_WALLPAPER_POSITION,
+      sourceId: 'tab-z',
+    })
+    storage.map.set(WALLPAPER_STORAGE_KEY, main)
+    events.emit(main)
+    expect(b.controller.getSnapshot().selection).toBeUndefined()
+
+    // The sidecar event then completes the same identity, and the receiver
+    // re-resolves the style without a reload.
+    const sidecar = JSON.stringify({ schemaVersion: 1, variant: 'mesh', revision: 6, sourceId: 'tab-z' })
+    storage.map.set(WALLPAPER_STYLE_STORAGE_KEY, sidecar)
+    events.emit(sidecar, WALLPAPER_STYLE_STORAGE_KEY)
+    expect(b.controller.getSnapshot().selection).toEqual(styleSelection)
+    expect(b.controller.getPersistedSelection()).toEqual(styleSelection)
+    b.controller.dispose()
   })
 })
 

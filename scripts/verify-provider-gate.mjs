@@ -147,7 +147,23 @@ export function validateProviderGate(value, expectedRelease) {
 }
 
 /**
- * Validate the committed gate file.
+ * Read the shipped provider ids from the registry source. The registry is
+ * TypeScript and this script is plain ESM, so a narrow source read keeps the
+ * release gate independent of the build graph.
+ * @param {string} root repository root.
+ * @returns {string[]} provider ids in source order.
+ */
+export function readRegistryProviderIds(root) {
+  try {
+    const source = readFileSync(join(root, 'src/client/wallpaper/providers.ts'), 'utf8')
+    return [...source.matchAll(/\bid:\s*'(openverse|wikimedia)'/gu)].map(match => match[1])
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Validate the committed gate file against the code registry.
  * @param {string} root repository root.
  * @param {string} expectedRelease package version.
  * @returns {string[]} problems; empty means valid.
@@ -156,7 +172,19 @@ export function verifyProviderGate(root, expectedRelease) {
   const path = join(root, GATE_PATH)
   const read = readJson(path)
   if ('error' in read) return [`cannot read ${GATE_PATH}: ${read.error}`]
-  return validateProviderGate(read.value, expectedRelease)
+  const problems = validateProviderGate(read.value, expectedRelease)
+  if (problems.length > 0) return problems
+  const accepted = new Set((read.value.providers ?? [])
+    .filter(provider => provider?.decision === 'accepted')
+    .map(provider => provider.id))
+  const shipped = new Set(readRegistryProviderIds(root))
+  for (const id of accepted) {
+    if (!shipped.has(id)) problems.push(`accepted gate provider ${id} is not shipped by the registry`)
+  }
+  for (const id of shipped) {
+    if (!accepted.has(id)) problems.push(`shipped provider ${id} has no accepted gate record`)
+  }
+  return problems.filter(problem => !problem.startsWith('cannot read'))
 }
 
 /** CLI entry point. */
