@@ -24,6 +24,7 @@ harness drives the system Chrome through `channel: 'chrome'`.
 | `labels.mjs` | frozen zh/en settings copy + tag labels used for accessible-name queries and search assertions |
 | `labels-runtime.mjs` | `--labels <file|json>` override loading |
 | `checks.mjs` | the assertions themselves (handshake, catalog, stock baseline, settings UI flow, tokens/dark mode, fonts/locale, self-check, first paint, restore, uninstall residue) |
+| `update.mjs` | executable `0.2.1 → 0.2.2` in-process update probe: verifies the `--update-from` artifact against committed evidence, reads exact tarball identities, drives the running Host's Plugins → Add plugin dialog, and records the `update.*` checks plus the schema-v3 `transition` block (no reload, stale boot, catalog re-adoption, detail surface) |
 | `report.mjs` | assembles `probe.json` / `console.json` / `timings.json` and renders the Markdown report under `artifacts/acceptance/` |
 
 ## Round-5 style system (24 visual styles, 视觉风格 / Visual Style)
@@ -41,6 +42,27 @@ harness drives the system Chrome through `channel: 'chrome'`.
   shadow values, glass backdrop token and cascade-resolved style tokens. In a
   real-profile clone the existing `- id: livery` row is updated in place, which
   `apply.one-mutation` accepts as the same single mutation.
+
+## Real `0.2.1 → 0.2.2` update probe
+
+`node scripts/acceptance/web.mjs --tgz <candidate.tgz> --update-from <0.2.1.tgz>`
+installs the previous exact accepted tarball through the official CLI, boots the
+declared Host, applies one catalogue style, then installs the candidate through
+the **running Host's** Plugins → Add plugin dialog with an absolute `file:` path.
+It asserts in process: the window/document sentinel and navigation counters are
+unchanged (no page reload), `__DSH_LIVERY_BOOT__.pluginVersion` is still the
+previous build while the live client build is the candidate, the Host reloaded
+the client bundle through its in-page module reloader, the catalog route was
+re-fetched and its saved style re-applied, the plugin-detail badge/section shows
+a `stale` handshake with the stale boundary copy, and the Host manager reported
+`applied` rather than `restart-required`. The probe emits
+`update.transition` (schema v3) and the `REQUIRED_UPDATE_CHECKS` list from
+`scripts/release-lib.mjs`; `scripts/acceptance/evidence.mjs --update-from`
+turns it into evidence, and `scripts/release-evidence.mjs` requires the from
+artifact to be bound by committed evidence. The `0.2.1` tarball is a fixture,
+never an evidence run of its own. A dialog that cannot be driven or a
+`restart-required` answer fails the probe honestly; there is no CLI fallback in
+this mode.
 
 ## Fast nav smoke
 

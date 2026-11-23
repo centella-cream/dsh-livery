@@ -5,6 +5,8 @@
  * One command proves the shipped plugin works in the real Web profile:
  *
  *   node scripts/acceptance/web.mjs --tgz dist/dsh-livery-0.1.4.tgz
+ *   node scripts/acceptance/web.mjs --tgz .tmp/release-check/dsh-livery-0.2.2.tgz \
+ *     --update-from .tmp/fixtures/dsh-livery-0.2.1.tgz    # 0.2.1 → candidate probe
  *   node scripts/acceptance/web.mjs --reuse "http://127.0.0.1:3080/?token=…"   # read-only
  *
  * The isolated path creates its own DSH_HOME under `.tmp/acceptance/`, installs
@@ -13,6 +15,16 @@
  * playwright-core, then uninstalls through the official path and proves there
  * is no residue after a restart. Nothing outside the workspace is written and
  * the user's real `~/.dsh` is never touched.
+ *
+ * `--update-from <0.2.1.tgz>` uses the same isolated home but installs the
+ * previous exact tarball first, then updates to `--tgz` through the running
+ * Host's own Plugins → Add plugin dialog and asserts the in-process transition
+ * (no page reload, stale startup frame, re-fetched catalog, detail surface).
+ * The resulting probe carries the schema-v3 `update.transition` block consumed
+ * by `scripts/acceptance/evidence.mjs --update-from` and
+ * `scripts/release-evidence.mjs`. It never installs the candidate from the CLI
+ * when it is meant to prove the Host surface: a dialog that cannot be driven is
+ * a recorded failure, not a fallback.
  *
  * Exit code 0 = every check passed (skips/warnings allowed); 1 = at least one
  * failed check; 2 = the run could not start (bad arguments, missing tarball,
@@ -72,6 +84,7 @@ import {
 import { labelOverrides } from './probe/labels-runtime.mjs'
 import { labelsFor } from './probe/labels.mjs'
 import { writeEvidence, writeMarkdownReport } from './probe/report.mjs'
+import { checkUpdateProbe, readTarballIdentity, verifyUpdateSource, writeUpdateBaselineConfig } from './probe/update.mjs'
 import { probeBrowserTrust, probePluginBundle } from './probe/http.mjs'
 import { validateBrowserVersion, certificationFor, describeCertification } from './probe/support-matrix.mjs'
 
@@ -82,6 +95,11 @@ Usage:
 
 Options:
   --tgz <path>            Plugin tarball to install into an isolated DSH_HOME (required unless --reuse)
+  --update-from <path>    Previous exact plugin tarball (e.g. .tmp/fixtures/dsh-livery-0.2.1.tgz).
+                          Isolated update mode: install --update-from through the official CLI,
+                          boot, then install --tgz through the running Host plugin-manager
+                          Add-plugin dialog and assert the in-process transition. Requires
+                          --tgz; mutually exclusive with --reuse/--clone-from/--quick.
   --dsh-home <path>       Isolated Harness home (default: .tmp/acceptance/dsh-home); must live under .tmp/
   --reuse <url>           Drive an already-running dsh web profile (printed dsh web: URL with token); read-only
   --keep                  Keep the isolated home and browser artifacts after the run
@@ -191,6 +209,7 @@ async function main() {
         'chrome-binary',
         'expect-profile-kind',
         'clone-from',
+        'update-from',
         'notes',
       ],
       aliases: { h: 'help' },
@@ -208,6 +227,13 @@ async function main() {
   const tgz = options.tgz ? path.resolve(options.tgz) : null
   if (!reuse && !tgz) failStartup('either --tgz <path> (isolated run) or --reuse <url> (existing profile) is required')
   if (reuse && tgz) failStartup('--reuse and --tgz are mutually exclusive')
+  const updateFrom = options['update-from'] ? path.resolve(options['update-from']) : null
+  if (updateFrom !== null) {
+    if (reuse) failStartup('--update-from cannot be combined with --reuse (the update probe needs its own isolated DSH_HOME)')
+    if (!tgz) failStartup('--update-from requires --tgz <candidate tarball>')
+    if (options['clone-from']) failStartup('--update-from cannot be combined with --clone-from (the from artifact must be installed from scratch)')
+    if (options.quick) failStartup('--update-from cannot be combined with --quick (the update probe needs the full boot and browser phases)')
+  }
 
   const outDir = path.resolve(options.out ?? DEFAULT_ARTIFACTS)
   const screensDir = path.join(outDir, 'screens')
@@ -220,6 +246,7 @@ async function main() {
   const pluginId = options['plugin-id'] ?? 'dsh-livery'
   const packageName = options.package ?? (pluginId === 'dsh-livery' ? 'dsh-livery' : pluginId)
   const mode = reuse ? 'reuse' : 'isolated'
+  const updateMode = updateFrom !== null
   const cloneFrom = options['clone-from'] ? path.resolve(options['clone-from']) : null
   const expectVersionOption = options['expect-version'] ?? null
   const expectBrowserVersionOption = options['expect-browser-version'] ?? null
@@ -277,6 +304,8 @@ async function main() {
       expectedAdapter: expectedAdapterByOption,
       expectedProfileKind: expectProfileKindOption ?? (reuse ? null : 'web'),
       cloneFrom,
+      updateFrom,
+      updateMode,
       notesPath: options.notes ? path.resolve(options.notes) : null,
       notesText: null,
       baseUrl: null,
@@ -367,6 +396,7 @@ async function main() {
       }
       ctx.knownLimitations = buildKnownLimitations(ctx, adapter)
       if (ctx.config.quick) ctx.knownLimitations.unshift('QUICK MODE — this run exercised install/boot/catalog + sidebar-panel navigation only (no fonts, first-paint, dark mode, responsive, restore stock or uninstall lifecycle). Use a full run for acceptance evidence.')
+      if (updateMode) ctx.knownLimitations.unshift('UPDATE-PROBE MODE — this run installs the previous exact artifact through the official CLI, then updates to the candidate through the running Host plugin manager and asserts the in-process transition only. It is not a fresh-install acceptance run; the same scope still needs an ordinary schema-v2 run on the final candidate.')
       if (!reuse) {
         if (!(await access(tgz).then(() => true, () => false))) failStartup(`tarball not found: ${tgz}`)
         const manifest = await readTarballManifest(tgz)
@@ -374,6 +404,28 @@ async function main() {
         ctx.environment.packageName = manifest?.name ?? null
         if (manifest && manifest.name !== packageName) {
           ctx.deviations.push(`tarball package name "${manifest.name}" differs from --package "${packageName}"`)
+        }
+        if (updateMode) {
+          // Update runs bind both exact artifacts before touching the home: the
+          // from side must be a previously accepted artifact (committed
+          // evidence), and the candidate is the only artifact this run accepts.
+          const candidate = readTarballIdentity(tgz)
+          if (candidate.name !== packageName) {
+            failStartup(`candidate tarball package name "${candidate.name}" differs from --package "${packageName}"`)
+          }
+          const source = verifyUpdateSource({ fromTgz: updateFrom })
+          ctx.state.updateSource = source
+          ctx.state.updateCandidate = candidate
+          ctx.environment.installedVersion = source.from.version
+          if (candidate.version === source.from.version) {
+            failStartup(`--update-from and --tgz are the same version (${candidate.version}); an update probe needs two different artifacts`)
+          }
+          ctx.runner.pass(
+            'lifecycle.update-source',
+            '--update-from is the exact artifact bound by committed acceptance evidence, and --tgz is a different exact candidate',
+            `from=${source.from.name}@${source.from.version} sha256=${source.from.sha256} bytes=${source.from.bytes} evidence=[${source.evidence.join(', ')}]; to=${candidate.name}@${candidate.version} sha256=${candidate.sha256} bytes=${candidate.bytes}`,
+            { from: source.from, evidence: source.evidence, candidate },
+          )
         }
         if (!keep) await removeIsolatedHome(dshHome)
         await ensureDir(dshHome)
@@ -405,13 +457,16 @@ async function main() {
             ctx.runner.pass('lifecycle.clone-repaired', 'cloned profile manifest needs no local dependency repair', 'all local file:/link: specs resolve')
           }
         }
-        ctx.install = await installPlugin({ bin: ctx.config.dshBin, home: dshHome, tgz, packageName })
+        const installTgz = updateMode ? updateFrom : tgz
+        ctx.install = await installPlugin({ bin: ctx.config.dshBin, home: dshHome, tgz: installTgz, packageName })
         ctx.state.installTimings = { durationMs: ctx.install.durationMs, exitCode: ctx.install.exitCode, stdout: oneLine(ctx.install.stdout, 600), stderr: oneLine(ctx.install.stderr, 600) }
         const installedOk = ctx.install.exitCode === 0 && Boolean(ctx.install.dependencies?.[packageName]) && ctx.install.bundles?.includes(packageName)
         ctx.runner.add(
           installedOk ? 'pass' : 'fail',
-          'lifecycle.install',
-          'official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle',
+          updateMode ? 'lifecycle.update-from-install' : 'lifecycle.install',
+          updateMode
+            ? 'official `dsh plugin --profile web add file:<from.tgz>` installs and selects the previous bundle before the Host-manager update'
+            : 'official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle',
           `${summarizeOperation(ctx.install)}; dependency=${ctx.install.dependencies?.[packageName] ?? '(none)'}; bundles=${JSON.stringify(ctx.install.bundles ?? [])}`,
           { command: ctx.install.command, stdout: ctx.install.stdout, stderr: ctx.install.stderr },
         )
@@ -420,10 +475,33 @@ async function main() {
         const installedManifest = await readFile(path.join(profilePaths(dshHome).nodeModules, packageName, 'package.json'), 'utf8').catch(() => null)
         if (installedManifest) {
           try {
-            ctx.environment.packageVersion = JSON.parse(installedManifest).version ?? ctx.environment.packageVersion
+            const installedVersion = JSON.parse(installedManifest).version
+            if (updateMode) {
+              // The candidate is installed later through the running Host, so
+              // environment.packageVersion stays the candidate; only the
+              // pre-update installed version is recorded here.
+              ctx.environment.installedVersion = installedVersion ?? ctx.environment.installedVersion
+            } else {
+              ctx.environment.packageVersion = installedVersion ?? ctx.environment.packageVersion
+            }
           } catch {
             /* informational */
           }
+        }
+        if (updateMode && !ctx.state.baselineConfigWritten) {
+          // A realistic update starts from a profile that already runs 0.2.1 with
+          // an active style: the first-frame payload only exists then, and the
+          // updated client must classify that surviving payload as `stale`.
+          const baselineLivery = 'fjord'
+          const baselineConfig = await writeUpdateBaselineConfig({ home: dshHome, packageName, liveryId: baselineLivery })
+          ctx.state.updateBaselineLivery = baselineLivery
+          ctx.state.baselineConfigWritten = true
+          ctx.runner.pass(
+            'update.baseline-config',
+            'the isolated pre-update profile already runs the previous build with an active style (realistic saved config)',
+            `profile patch ${baselineConfig.patchFile}; row added=${baselineConfig.added}; skinId=${baselineConfig.liveryId}`,
+            baselineConfig,
+          )
         }
         if (!cloneFrom) {
           ctx.runner.pass('lifecycle.profile-initialized', 'isolated profile initialized from the shipped web template', `home=${dshHome}; profile=${profilePaths(dshHome).profileDir}; initialized=${ctx.install.initializedProfile}; sha256=${ctx.install.tarballSha256 ?? '?'}`)
@@ -531,14 +609,48 @@ async function main() {
       await checkBootHandshake(ctx)
       pGraph.record(!ctx.runner.checks.some((check) => check.id.startsWith('boot.graph-entry') && check.status === 'fail'), '')
       p.record(true, '')
+      // In-process navigation accounting for the update probe: attached after the
+      // one authenticated bootstrap navigation, so any later load/frame
+      // navigation is a real page reload and must not happen.
+      ctx.state.navEvents = { mainFrameNavigations: 0, loads: 0 }
+      session.page.on('framenavigated', (frame) => {
+        if (frame === session.page.mainFrame()) ctx.state.navEvents.mainFrameNavigations += 1
+      })
+      session.page.on('load', () => { ctx.state.navEvents.loads += 1 })
     } catch (error) {
       ctx.runner.fail('boot.session', 'authenticated browser session reaches the app shell', error instanceof Error ? (error.stack ?? error.message) : String(error))
       throw error
     }
 
+    // ------------------------------------------------------- update probe
+    if (ctx.config.updateMode) {
+      const p = phase('update')
+      try {
+        await checkUpdateProbe(ctx)
+        p.record(!ctx.runner.checks.some((check) => check.id.startsWith('update.') && check.status === 'fail'), '')
+      } catch (error) {
+        ctx.runner.fail('update.probe', 'the 0.2.1 → candidate in-process update probe completes', error instanceof Error ? (error.stack ?? error.message) : String(error))
+        p.record(false, String(error?.message ?? error))
+        try {
+          const page = ctx.session?.page
+          if (page) {
+            const shot = path.join(ctx.config.screensDir, ctx.config.profileName, 'failure-update.png')
+            await page.screenshot({ path: shot, animations: 'disabled' }).catch(() => {})
+            const html = await page.content().catch(() => '')
+            const file = path.join(ctx.config.htmlDir, 'failure-update.html')
+            await writeFile(file, html).catch(() => {})
+          }
+        } catch {
+          /* diagnostics are best effort */
+        }
+      }
+    }
+
     // ------------------------------------------------------------- probe
     const quick = ctx.config.quick
-    const probeGroups = quick
+    const probeGroups = ctx.config.updateMode
+      ? []
+      : quick
       ? [
           ['catalog', async () => checkCatalog(ctx)],
           ['nav', async () => checkLiveryPanelFlow(ctx)],
@@ -640,6 +752,9 @@ async function main() {
     if (quick) {
       ctx.runner.skip('lifecycle.install-uninstall', 'official install → boot → uninstall → restart residue', 'quick mode: lifecycle phase not exercised (bounded nav smoke)')
       ctx.runner.skip('lifecycle.sigterm', 'SIGTERM stops the service and closes the port', 'quick mode: lifecycle phase not exercised')
+    } else if (ctx.config.updateMode) {
+      ctx.runner.skip('lifecycle.install-uninstall', 'official install → boot → uninstall → restart residue', 'update-probe run: the transition is the subject; fresh-install lifecycle evidence is a separate schema-v2 run on the final candidate')
+      ctx.runner.skip('lifecycle.sigterm', 'SIGTERM stops the service and closes the port', 'update-probe run: the isolated Host is stopped by the harness after the probe')
     } else {
       const p = phase('lifecycle')
       try {
@@ -736,7 +851,7 @@ function printSummary(ctx, report) {
   console.log('')
   console.log('DSH Livery — Web-profile acceptance')
   console.log('===================================')
-  console.log(`mode:        ${ctx.config.mode}${ctx.config.mode === 'isolated' ? ` (isolated DSH_HOME: ${ctx.config.dshHome})` : ' (read-only reuse)'}`)
+  console.log(`mode:        ${ctx.config.mode}${ctx.config.mode === 'isolated' ? ` (isolated DSH_HOME: ${ctx.config.dshHome})` : ' (read-only reuse)'}${ctx.config.updateMode ? ' + update probe' : ''}`)
   console.log(`target:      ${ctx.config.packageName}@${ctx.environment.packageVersion ?? '?'}  plugin id: ${ctx.config.pluginId}`)
   console.log(`environment: dsh ${ctx.environment.dshVersion ?? '?'} · Chrome ${ctx.environment.chromeVersion ?? '?'} · playwright-core ${ctx.environment.playwrightVersion ?? '?'}`)
   console.log(
@@ -744,6 +859,10 @@ function printSummary(ctx, report) {
       `${ctx.state.browserCertification?.certified?.length ? ` (certified [${ctx.state.browserCertification.certified.join(', ')}])` : ''} (desktop rc.3 covered by separate Electron evidence; windows/edge not-supported)`,
   )
   console.log(`result:      ${passed.length} passed, ${failures.length} failed, ${skips.length} skipped, ${warnings.length} warnings`)
+  if (ctx.state.update?.transition) {
+    const transition = ctx.state.update.transition
+    console.log(`update:      ${transition.fromVersion} (${transition.fromSha256.slice(0, 12)}…) → ${transition.toVersion} (${transition.toSha256.slice(0, 12)}…); trigger=${transition.trigger}; pageReloaded=${transition.pageReloaded}; stale=${transition.staleBootObserved}; catalogReadopted=${transition.catalogReadopted}; managerOutcome=${transition.managerOutcome}`)
+  }
   console.log(`evidence:    ${path.relative(WORKSPACE_ROOT, ctx.config.jsonPath)}`)
   if (ctx.config.reportPath) console.log(`report:      ${path.relative(WORKSPACE_ROOT, ctx.config.reportPath)}`)
   if (ctx.state.filmstrip?.frames?.length) console.log(`filmstrip:   ${ctx.state.filmstrip.frames.length} frames in ${path.relative(WORKSPACE_ROOT, ctx.config.filmstripDir)}`)

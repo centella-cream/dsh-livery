@@ -109,12 +109,16 @@ export function buildProbeReport(ctx) {
   const observedPayload = ctx.state.bootPayloadApplied ?? ctx.state.bootPayload ?? null
   const observedCatalog = ctx.state.catalog ?? null
   const observedAdapter = observedPayload ? adapterForTriple(observedPayload) ?? null : observedCatalog ? adapterForTriple(observedCatalog) ?? null : null
+  // An update run binds the candidate tarball, not the from fixture installed by
+  // the CLI; both exact identities live in the `update` block.
+  const updateCandidate = ctx.state?.updateCandidate ?? null
   const target = {
     packageName: ctx.config.packageName,
     pluginId: ctx.config.pluginId,
     packageVersion: ctx.environment?.packageVersion ?? null,
-    tarball: ctx.install?.spec ?? ctx.config.tgz ?? null,
-    tarballSha256: ctx.install?.tarballSha256 ?? null,
+    tarball: updateCandidate?.path ?? ctx.install?.spec ?? ctx.config.tgz ?? null,
+    tarballSha256: updateCandidate?.sha256 ?? ctx.install?.tarballSha256 ?? null,
+    tarballBytes: updateCandidate?.bytes ?? null,
     hostVersion: ctx.config.expectedVersion ?? observedCatalog?.hostVersion ?? null,
     adapterId: expectedAdapter?.adapterId ?? observedCatalog?.adapterId ?? null,
     contractHash: expectedAdapter?.contractHash ?? observedCatalog?.contractHash ?? null,
@@ -180,6 +184,8 @@ export function buildProbeReport(ctx) {
       expectedVersion: ctx.config.expectedVersion ?? null,
       expectedProfileKind: ctx.config.expectedProfileKind ?? null,
       cloneFrom: ctx.config.cloneFrom ? redact(ctx.config.cloneFrom) : null,
+      updateFrom: ctx.config.updateFrom ? redact(ctx.config.updateFrom) : null,
+      updateMode: Boolean(ctx.config.updateMode),
       bootTimeoutMs: ctx.config.bootTimeout,
       artifactsDir: ctx.config.outDir,
       reportPath: ctx.config.reportPath,
@@ -206,6 +212,7 @@ export function buildProbeReport(ctx) {
       probeJson: ctx.config.jsonPath,
       reportMarkdown: ctx.config.reportPath,
     },
+    update: ctx.state?.update ?? null,
     evidence: {
       catalog: summarizeCatalog(ctx.state.catalog),
       stockTokens: ctx.state.stockTokens ?? null,
@@ -510,6 +517,29 @@ export function renderMarkdown(report, { title } = {}) {
   lines.push('')
   lines.push(`- boot ready: ${formatDuration(report.boot.readyMs)}; install via official profile package manager: ${formatDuration(report.boot.installMs)}`)
   lines.push('')
+  const update = report.update
+  if (update?.transition) {
+    const transition = update.transition
+    lines.push('## In-process update transition (schema v3)')
+    lines.push('')
+    lines.push('| field | value |')
+    lines.push('|---|---|')
+    lines.push(`| from | ${transition.fromVersion} · \`${transition.fromSha256}\` · ${transition.fromBytes} B |`)
+    lines.push(`| to | ${transition.toVersion} · \`${transition.toSha256}\` · ${report.target.tarballBytes ?? '—'} B |`)
+    lines.push(`| trigger | ${transition.trigger} |`)
+    lines.push(`| page reloaded | ${transition.pageReloaded} |`)
+    lines.push(`| stale startup frame observed | ${transition.staleBootObserved} |`)
+    lines.push(`| catalog re-adopted | ${transition.catalogReadopted} |`)
+    lines.push(`| manager outcome | ${transition.managerOutcome} |`)
+    lines.push('')
+    lines.push(`Required update checks: ${(update.requiredChecks ?? []).map((id) => `\`${id}\``).join(', ')}`)
+    lines.push('')
+    const phases = update.phases ?? []
+    if (phases.length) lines.push(`Observed Host install-dialog phases: ${phases.join(' → ')}`)
+    lines.push('')
+    lines.push('This run is a transition probe, not a fresh-install acceptance run: the scope it was executed on still needs an ordinary schema-v2 run on the same final candidate.')
+    lines.push('')
+  }
   lines.push('## docs/design/implementation-plan.md §20 coverage (Web profile)')
   lines.push('')
   const checkById = new Map(report.checks.map((check) => [check.id, check]))

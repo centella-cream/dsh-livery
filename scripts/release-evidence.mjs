@@ -13,7 +13,14 @@ import { createHash } from 'node:crypto'
 import { requiresAuditEnvelope } from './version-policy.mjs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { readMatrix } from './release-lib.mjs'
+import {
+  REQUIRED_UPDATE_CHECKS,
+  UPDATE_EVIDENCE_SCHEMA_VERSION,
+  findAcceptedArtifactEvidence,
+  readMatrix,
+  requiredCheckProblems,
+  validateTransition,
+} from './release-lib.mjs'
 
 const argv = process.argv.slice(2)
 const flag = (name) => {
@@ -37,7 +44,43 @@ const evidence = JSON.parse(readFileSync(resolve(evidencePath), 'utf8'))
 const matrix = readMatrix()
 const matrixEntryFor = (hostVersion) =>
   matrix.entries.find((entry) => entry.hostVersion === hostVersion) ?? null
-if (evidence.schemaVersion !== 2) fail(`unsupported evidence schemaVersion ${String(evidence.schemaVersion)}`)
+if (evidence.schemaVersion !== 2 && evidence.schemaVersion !== UPDATE_EVIDENCE_SCHEMA_VERSION) {
+  fail(`unsupported evidence schemaVersion ${String(evidence.schemaVersion)}`)
+}
+const isUpdateRun = evidence.schemaVersion === UPDATE_EVIDENCE_SCHEMA_VERSION
+if (isUpdateRun) {
+  // Schema v3 is exactly the update transition record: two exact artifacts, the
+  // running Host's own dialog trigger, no reload, stale startup frame, catalog
+  // re-adoption and an applied (not restart-required) manager outcome. The
+  // from artifact must be bound by committed evidence for that earlier version —
+  // never the candidate and never a local rebuild.
+  const transitionProblems = validateTransition(evidence.transition, {
+    toSha256: digest,
+    toVersion: evidence.packageVersion,
+  })
+  if (transitionProblems.length > 0) fail(`invalid update transition: ${transitionProblems.join('; ')}`)
+  const transition = evidence.transition
+  const previous = findAcceptedArtifactEvidence({
+    version: transition.fromVersion,
+    sha256: transition.fromSha256,
+    bytes: transition.fromBytes,
+  })
+  if (previous.length === 0) {
+    fail(
+      `transition.fromSha256 ${transition.fromSha256} (${transition.fromVersion}, ${transition.fromBytes} B) is not bound by any committed contracts/dsh/evidence artifact`,
+    )
+  }
+  if (evidence.updateFrom !== undefined) {
+    if (evidence.updateFrom.version !== transition.fromVersion
+      || evidence.updateFrom.sha256 !== transition.fromSha256
+      || evidence.updateFrom.bytes !== transition.fromBytes) {
+      fail('evidence.updateFrom does not match evidence.transition from fields')
+    }
+  }
+  evidence.transitionEvidence = previous
+} else if (evidence.transition !== undefined) {
+  fail('schema-v2 evidence must not carry a transition block (use schemaVersion 3 + --update-from)')
+}
 if (evidence.tarballSha256 !== digest) fail(`tarball sha mismatch: file=${digest} evidence=${String(evidence.tarballSha256)}`)
 if (!/^[0-9a-f]{40}$/u.test(evidence.commit ?? '')) fail('evidence.commit must be a full git commit')
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
@@ -225,11 +268,13 @@ const REQUIRED_DESKTOP_CHECKS = [
   'desktop.matrix-consistency',
 ]
 const profile = evidence.scope?.profile
-const requiredChecks = profile === 'web'
-  ? REQUIRED_WEB_CHECKS
-  : profile === 'desktop'
-    ? REQUIRED_DESKTOP_CHECKS
-    : []
+const requiredChecks = isUpdateRun
+  ? REQUIRED_UPDATE_CHECKS
+  : profile === 'web'
+    ? REQUIRED_WEB_CHECKS
+    : profile === 'desktop'
+      ? REQUIRED_DESKTOP_CHECKS
+      : []
 if (!Array.isArray(evidence.criticalChecks)) {
   fail('evidence.criticalChecks is required for display, but it is validated against raw probes')
 }
@@ -269,6 +314,28 @@ for (const run of evidence.runs) {
   }
   if (typeof probeSummary.pass !== 'number' || probeSummary.pass <= 0) fail(`${run.id}: probe has no passing checks`)
   if (probeSummary.fail !== 0) fail(`${run.id}: probe records failing checks`)
+  if (isUpdateRun) {
+    const update = probe.update
+    if (update === null || typeof update !== 'object') fail(`${run.id}: update run probe must carry an update block`)
+    const transitionProblems = validateTransition(update.transition, {
+      toSha256: digest,
+      toVersion: evidence.packageVersion,
+    })
+    if (transitionProblems.length > 0) fail(`${run.id}: invalid probe update.transition: ${transitionProblems.join('; ')}`)
+    if (JSON.stringify(update.transition) !== JSON.stringify(evidence.transition)) {
+      fail(`${run.id}: probe update.transition does not match the evidence transition`)
+    }
+    if (update.from?.version !== evidence.transition.fromVersion
+      || update.from?.sha256 !== evidence.transition.fromSha256
+      || update.from?.bytes !== evidence.transition.fromBytes) {
+      fail(`${run.id}: probe update.from does not match the evidence transition from fields`)
+    }
+    if (update.to?.version !== evidence.transition.toVersion || update.to?.sha256 !== evidence.transition.toSha256) {
+      fail(`${run.id}: probe update.to does not match the evidence transition to fields`)
+    }
+    const updateCheckProblems = requiredCheckProblems(probe.checks, REQUIRED_UPDATE_CHECKS)
+    if (updateCheckProblems.length > 0) fail(`${run.id}: update probe checks invalid: ${updateCheckProblems.join('; ')}`)
+  }
   if (probe.target?.packageVersion !== evidence.packageVersion) fail(`${run.id}: probe packageVersion mismatch`)
   if (probe.target?.tarballSha256 !== digest) fail(`${run.id}: probe was not run on this tarball`)
   if (probe.target?.hostVersion !== run.hostVersion) fail(`${run.id}: probe hostVersion mismatch`)

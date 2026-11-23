@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Build schema-v2, probe-bound acceptance evidence from real run artifacts.
+ * Build schema-v2 (fresh install) or schema-v3 (0.2.1 → candidate update probe)
+ * probe-bound acceptance evidence from real run artifacts.
  *
  * New round-2 evidence binds every run to a sanitized raw probe committed next to
  * the evidence. The release gate re-reads those probes and requires:
@@ -17,6 +18,13 @@
  *     --reports-dir contracts/dsh/evidence/0.1.4/reports \
  *     --tgz dsh-livery-0.1.4.tgz --package-version 0.1.4 \
  *     --run web-isolated-full:0.2.1-rc.2:dsh-0.2.1-rc.2-r1:<probe>:<report>
+ *
+ * Update run (schema v3, `--update-from` required):
+ *   node scripts/acceptance/evidence.mjs \
+ *     --evidence contracts/dsh/evidence/0.2.2/<host>-web-chrome-update.json \
+ *     --tgz .tmp/release-check/dsh-livery-0.2.2.tgz --package-version 0.2.2 \
+ *     --update-from .tmp/fixtures/dsh-livery-0.2.1.tgz \
+ *     --run web-update:<host>:<adapter>:<probe>:<report>
  */
 
 import { requiresAuditEnvelope } from '../version-policy.mjs'
@@ -24,6 +32,13 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import {
+  REQUIRED_UPDATE_CHECKS,
+  UPDATE_EVIDENCE_SCHEMA_VERSION,
+  requiredCheckProblems,
+  validateTransition,
+} from '../release-lib.mjs'
+import { readTarballIdentity } from './probe/update.mjs'
 import { WORKSPACE_ROOT } from './probe/util.mjs'
 
 export const REQUIRED_WEB_CHECKS = Object.freeze([
@@ -54,6 +69,13 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
   'visual.menu-surface-opaque',
   'visual.floating-surfaces',
 ])
+
+/**
+ * Update runs (schema v3) use the `REQUIRED_UPDATE_CHECKS` set from
+ * `scripts/release-lib.mjs` instead of the profile's fresh-install set, so the
+ * probe, this emitter and `scripts/release-evidence.mjs` share one frozen list.
+ */
+export { REQUIRED_UPDATE_CHECKS }
 
 export const REQUIRED_DESKTOP_CHECKS = Object.freeze([
   'desktop.official-install',
@@ -95,8 +117,15 @@ const packageVersion = flag('--package-version')
 const commitArg = flag('--commit')
 const runArgs = flags('--run')
 const auditEnvelopeArgs = flags('--audit-envelope')
+const updateFromPath = flag('--update-from')
+const updateFromFlagGiven = argv.includes('--update-from') && updateFromPath !== undefined
+const updateFrom = updateFromFlagGiven ? readTarballIdentity(updateFromPath) : null
 if (!evidencePath || !tgzPath || !packageVersion || runArgs.length === 0) {
-  fail('usage: evidence.mjs --evidence <out> --tgz <tgz> --package-version <v> --run <id>:<host>:<adapter>:<probe>:<report> [--audit-envelope <json> ...]')
+  fail('usage: evidence.mjs --evidence <out> --tgz <tgz> --package-version <v> --run <id>:<host>:<adapter>:<probe>:<report> [--update-from <previous.tgz>] [--audit-envelope <json> ...]')
+}
+if (argv.includes('--update-from') && updateFrom === null) fail('--update-from requires a tarball path')
+if (updateFrom !== null && updateFrom.version === packageVersion) {
+  fail(`--update-from and --package-version are the same version (${packageVersion}); an update evidence file needs two different artifacts`)
 }
 if (requiresAuditEnvelope(packageVersion) && auditEnvelopeArgs.length === 0) {
   fail('0.2.0+ evidence requires at least one --audit-envelope')
@@ -190,7 +219,9 @@ for (const raw of runArgs) {
     profile = runProfile
     scope = probe.target.scope
     targetCertification = certificationFor(entry)
-    criticalIds = runProfile === 'web' ? REQUIRED_WEB_CHECKS : REQUIRED_DESKTOP_CHECKS
+    criticalIds = updateFrom !== null
+      ? REQUIRED_UPDATE_CHECKS
+      : runProfile === 'web' ? REQUIRED_WEB_CHECKS : REQUIRED_DESKTOP_CHECKS
   } else if (profile !== runProfile) {
     fail(`${id}: mixed scope profiles in one evidence file`)
   }
@@ -204,6 +235,25 @@ for (const raw of runArgs) {
     if (check === undefined) fail(`${id}: required critical check missing from probe: ${checkId}`)
     if (check.status !== 'pass') fail(`${id}: required critical check not pass in probe: ${checkId} (${check.status})`)
     criticalCheckMap.set(checkId, { id: checkId, status: check.status, title: check.title })
+  }
+  if (updateFrom !== null) {
+    const update = probe.update
+    if (update === null || typeof update !== 'object') fail(`${id}: update run probe must carry an update block`)
+    if (update.transition === null || typeof update.transition !== 'object') fail(`${id}: update run probe must carry update.transition`)
+    if (update.from?.version !== updateFrom.version || update.from?.sha256 !== updateFrom.sha256 || update.from?.bytes !== updateFrom.bytes) {
+      fail(`${id}: probe update.from does not match --update-from (${updateFrom.version}/${updateFrom.sha256}/${updateFrom.bytes})`)
+    }
+    if (update.to?.version !== packageVersion || update.to?.sha256 !== tarballSha256) {
+      fail(`${id}: probe update.to does not match the candidate (${packageVersion}/${tarballSha256})`)
+    }
+    const transitionProblems = validateTransition(update.transition, {
+      toSha256: tarballSha256,
+      toVersion: packageVersion,
+    })
+    if (transitionProblems.length > 0) fail(`${id}: invalid update.transition: ${transitionProblems.join('; ')}`)
+    if (probe.update.pageReloaded === true) fail(`${id}: update probe recorded a page reload`)
+    const checkProblems = requiredCheckProblems(probe.checks, REQUIRED_UPDATE_CHECKS)
+    if (checkProblems.length > 0) fail(`${id}: update probe is not acceptable: ${checkProblems.join('; ')}`)
   }
   const sanitizedProbe = sanitizeJson(probe)
   const probeOut = path.resolve(repoRoot, probesDir, `${id}.json`)
@@ -237,6 +287,19 @@ for (const raw of runArgs) {
 }
 
 if (profile === null) fail('no runs')
+let transition = null
+if (updateFrom !== null) {
+  // Every run in a v3 evidence file must have observed the same transition.
+  for (const raw of runArgs) {
+    const id = raw.split(':')[0]
+    const probeFile = resolvePath(raw.split(':')[3])
+    const probe = JSON.parse(readFileSync(probeFile, 'utf8'))
+    const observed = JSON.stringify(probe.update?.transition ?? null)
+    if (transition === null) transition = probe.update.transition
+    else if (JSON.stringify(transition) !== observed) fail(`${id}: update.transition differs between runs`)
+  }
+  if (transition === null) fail('update run has no recorded transition')
+}
 const evidenceDir = path.dirname(resolvePath(evidencePath))
 const envelopeDir = path.join(evidenceDir, 'audit-envelopes')
 if (auditEnvelopeArgs.length > 0) mkdirSync(envelopeDir, { recursive: true })
@@ -249,7 +312,7 @@ const auditEnvelopes = auditEnvelopeArgs.map((source) => {
   return { path: rel(destination), sha256: sha256(bytes) }
 })
 const evidence = {
-  schemaVersion: 2,
+  schemaVersion: transition === null ? 2 : UPDATE_EVIDENCE_SCHEMA_VERSION,
   commit,
   packageVersion,
   tarballSha256,
@@ -271,8 +334,12 @@ const evidence = {
     certification: targetCertification,
   },
   criticalChecks: [...criticalCheckMap.values()],
+  ...(transition === null ? {} : { transition }),
+  ...(updateFrom === null ? {} : { updateFrom: { version: updateFrom.version, sha256: updateFrom.sha256, bytes: updateFrom.bytes } }),
   ...(auditEnvelopes.length === 0 ? {} : { auditEnvelopes }),
   runs,
 }
 writeFileSync(resolvePath(evidencePath), `${JSON.stringify(evidence, null, 2)}\n`)
-console.log(`acceptance-evidence: wrote ${rel(resolvePath(evidencePath))} — ${runs.length} run(s), ${evidence.criticalChecks.length} critical checks, probes in ${probesDir}`)
+console.log(
+  `acceptance-evidence: wrote ${rel(resolvePath(evidencePath))} — schema v${evidence.schemaVersion}, ${runs.length} run(s), ${evidence.criticalChecks.length} critical checks, probes in ${probesDir}`,
+)

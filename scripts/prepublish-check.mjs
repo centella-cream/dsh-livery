@@ -6,7 +6,18 @@
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { defaultCandidatePath, evidenceScopeKey, matrixEvidence, matrixPassedScopes, parseFlag, readMatrix, readPackageJson } from './release-lib.mjs'
+import {
+  REQUIRED_UPDATE_CHECKS,
+  UPDATE_EVIDENCE_SCHEMA_VERSION,
+  defaultCandidatePath,
+  evidenceScopeKey,
+  matrixEvidence,
+  matrixPassedScopes,
+  parseFlag,
+  readMatrix,
+  readPackageJson,
+  validateTransition,
+} from './release-lib.mjs'
 
 const fail = (message) => {
   console.error(`prepublish-check: BLOCKED ${message}`)
@@ -37,6 +48,30 @@ for (const file of candidates) {
 const missing = scopes.filter((scope) => !covered.has(scope.key))
 if (missing.length > 0) {
   fail(`package version ${pkg.version} evidence does not cover ${missing.length}/${scopes.length} passed scopes: ${missing.map((scope) => scope.key).join(', ')}`)
+}
+const requireUpdate = process.argv.slice(2).includes('--require-update') || process.env.REQUIRE_UPDATE_EVIDENCE === '1'
+if (requireUpdate) {
+  // The release that claims an in-process update must ship at least one
+  // schema-v3 transition record for a matrix-passed Web scope, and that record
+  // must bind the same candidate bytes every other evidence file binds.
+  const updateDocuments = candidates
+    .map((file) => ({ file, document: JSON.parse(readFileSync(file, 'utf8')) }))
+    .filter((entry) => entry.document.schemaVersion === UPDATE_EVIDENCE_SCHEMA_VERSION)
+  if (updateDocuments.length === 0) {
+    fail(`--require-update: no schema-v${UPDATE_EVIDENCE_SCHEMA_VERSION} update evidence for ${pkg.name}@${pkg.version}`)
+  }
+  const passedWeb = new Set(scopes.filter((scope) => scope.profile === 'web').map((scope) => scope.key))
+  const accepted = updateDocuments.filter((entry) => {
+    const key = evidenceScopeKey(entry.document)
+    if (key === null || !passedWeb.has(key)) return false
+    const transition = entry.document.transition
+    if (validateTransition(transition, { toVersion: pkg.version }).length > 0) return false
+    if (!Array.isArray(entry.document.criticalChecks)) return false
+    return entry.document.criticalChecks.some((check) => check.status === 'pass' && REQUIRED_UPDATE_CHECKS.includes(check.id))
+  })
+  if (accepted.length === 0) {
+    fail(`--require-update: the schema-v${UPDATE_EVIDENCE_SCHEMA_VERSION} evidence files do not cover a matrix-passed Web scope with an accepted transition`)
+  }
 }
 const supplied = parseFlag(process.argv.slice(2), 'tgz') ?? process.env.RELEASE_TGZ
 const tgz = supplied === undefined || supplied === '' ? defaultCandidatePath(pkg) : supplied

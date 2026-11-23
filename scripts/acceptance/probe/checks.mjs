@@ -843,7 +843,9 @@ export async function checkBootHandshake(ctx) {
     try {
       if (!config.liveryMode) throw new Error('performance budget applies to the dsh-livery bundle only (generic fixture mode)')
       const raw = await rawRequest(bundle.bundle.entryUrl)
-      const gzipBytes = zlib.gzipSync(raw.body).length
+      // Match the build gate's zlib level; the old default-level read overstated
+      // the candidate by ~318 B and made the two gates disagree.
+      const gzipBytes = zlib.gzipSync(raw.body, { level: 9 }).length
       ctx.state.bundleGzip = gzipBytes
       const budget = CLIENT_GZIP_BUDGET_BYTES
       expect(
