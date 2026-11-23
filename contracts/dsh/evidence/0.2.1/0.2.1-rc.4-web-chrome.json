@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "commit": "27ce345895a83c3e82a54ef0f49d72ba37246985",
-  "packageVersion": "0.2.0",
-  "tarballSha256": "088b2e0df073d45620fb6da7b9c6121fe908f7167e7b572a75c3db229ea44af5",
-  "tarballBytes": 3552991,
-  "generatedAt": "2026-11-21T11:12:18.326Z",
+  "commit": "0d6e4a3f69d5d0d6dd0509e6ed8734fa6950f1ce",
+  "packageVersion": "0.2.1",
+  "tarballSha256": "78f1c8d108e5647dd666f6489b7766b11877f812c42519e314f8174dbb9b55a7",
+  "tarballBytes": 3529494,
+  "generatedAt": "2026-11-23T05:17:22.117Z",
   "scope": {
     "hostVersion": "0.2.1-rc.4",
     "profile": "web",
@@ -102,17 +102,17 @@
   ],
   "auditEnvelopes": [
     {
-      "path": "contracts/dsh/evidence/0.2.0/audit-envelopes/sha256:d126b90736df71222c4175c8181d1ea828779f2894edc77c0e6cb994d460235f-audit-envelope.json",
-      "sha256": "a614ca883127154e0eeeb142bc2edfd7dee4e73f7a4153f4499395a4f8332360"
+      "path": "contracts/dsh/evidence/0.2.1/audit-envelopes/sha256:d79417c43791d0dc1ed795d6309001c66185eaef168d5521ea2a4de263602f05-audit-envelope.json",
+      "sha256": "09e93640f779822d058b1b662fdb1ed3ce63d69f146b482fc4d56223bd6f3ec8"
     }
   ],
   "runs": [
     {
       "id": "0.2.1-rc.4-web",
-      "commit": "27ce345895a83c3e82a54ef0f49d72ba37246985",
+      "commit": "0d6e4a3f69d5d0d6dd0509e6ed8734fa6950f1ce",
       "hostVersion": "0.2.1-rc.4",
       "adapterId": "dsh-0.2.1-rc.4-r1",
-      "tarballSha256": "088b2e0df073d45620fb6da7b9c6121fe908f7167e7b572a75c3db229ea44af5",
+      "tarballSha256": "78f1c8d108e5647dd666f6489b7766b11877f812c42519e314f8174dbb9b55a7",
       "summary": {
         "pass": 275,
         "fail": 0,
@@ -120,10 +120,10 @@
         "warn": 2,
         "total": 281
       },
-      "probe": "contracts/dsh/evidence/0.2.0/probes/0.2.1-rc.4-web.json",
-      "probeSha256": "7a2b72f7004dc9bc68591f0e6d92b602a120387b2d80dec33834fec73558027b",
-      "report": "contracts/dsh/evidence/0.2.0/reports/0.2.1-rc.4-web.md",
-      "reportSha256": "80abab2985f94a4aa2c2a530bec764b313efc624feee4d821c267e5e9aa9d51e"
+      "probe": "contracts/dsh/evidence/0.2.1/probes/0.2.1-rc.4-web.json",
+      "probeSha256": "bb488b7b0e44d400a89853277d1d6716ff8d67d2b5591d721eaef2c35841fc4d",
+      "report": "contracts/dsh/evidence/0.2.1/reports/0.2.1-rc.4-web.md",
+      "reportSha256": "43b1b4dd8401aa090f8dd33d185e714f1b9d042abdfecaf79388e30044a76fb9"
     }
   ]
 }
