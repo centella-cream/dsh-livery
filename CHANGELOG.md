@@ -19,8 +19,9 @@ packaging; they are folded into the `0.1.0` entry.
 - 在线图源注册表新增 **Openverse** 与 **Wikimedia Commons**（唯一通过 `docs/research/provider-access-gate.json` 的两个来源），均为免密钥；带来源选择器（Auto + 通过门禁的来源）、加载/空/超时/限流/不可用/无效响应状态与重试。Auto 使用 12 秒总时限、单次尝试 `min(6 s, remaining)`、最多两个来源，并显示实际服务来源；固定来源只尝试一次且不会静默切换。
 - 归属信息持久化：远程 selection 增加可选 `provenance`（provider/title/creator/creatorUrl/license/licenseUrl/source/sourceUrl）；creator/licence/source 链接必须为 https、公网主机、≤2048 字符，并以 `rel="noreferrer noopener"` 打开；`license:null` 的结果可见但不可选。Recent 历史增加归属 URL 字段，仅作展示镜像；旧的 attribution 存储迁移一次后移除。
 - 预设 schema v2：新增 `{kind:'style', variant:'mesh'}` 壁纸目标与 attribution URL（creatorUrl/licenseUrl/sourceUrl）；导出固定写 v2，导入同时接受 v1/v2；v1 文件声明 style 会被拒绝（`wallpaper-kind`），v2 style variant 错误使用 `wallpaper-variant`。
-- 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与 “Copy diagnostics”。不添加更新按钮、不拦截宿主安装控件。
+- 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与 “Copy diagnostics”。不添加更新按钮、不拦截宿主安装控件。slot 声明证明覆盖 8 个宿主中的 6 个；`0.2.1-rc.2`（Web）由运行时 detail 检查覆盖，`0.2.1-rc.3`（Desktop）暂无运行时 detail 检查，作为 per-scope limitation 记录，不是已通过声明。
 - 新增 `contracts/dsh/client-slot-declarations.json`（repo-only 的 per-host slot 声明证明）与 `scripts/client-slots-proof.mjs`；`clientSlotHash()` 随消费的 detail slots 变化，contract 测试与 release-check 校验其一致性。
+- 新增真实升级验收路径：`scripts/acceptance/web.mjs --update-from <0.2.1.tgz>` 在隔离 DSH_HOME 中通过运行中 Host 的 Add plugin 对话框安装候选包，并记录 schema v3 `transition`（from/to sha、无页面重载、stale boot、catalog 重新采用、manager outcome）；配套 `REQUIRED_UPDATE_CHECKS`、`release-evidence` v3 校验和 `prepublish-check --require-update`。本地 0.2.2-rc.5 Web 探针已通过（0.2.1 `78f1c8d1…` → 0.2.2 `4dde0a5a…`，35 pass / 0 fail / 2 skip / 1 warn），正式 evidence 需在冻结候选上重跑并提交。
 - Web HMR stale-boot 修复：`BootCheck` 增加 `stale`；精确 allowlist `STALE_BOOT_VERSIONS = ['0.2.1']`，严格校验已认证 `(hostVersion, adapterId, contractHash)` 三元组、entryId、catalog-profile 严格相等与 accepted；其余版本仍 mismatch/fail closed。stale 路径不采纳 boot CSS，catalog 成功后执行一次 catalog 派生的 `applyConfirmed` 并恢复已保存壁纸/配置。该声明的边界仅为 Web Profile：Desktop 更新后仍需 renderer 重载或重启应用，不声称 Desktop 热更新。
 
 ### Changed
@@ -29,7 +30,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 在线壁纸不再默认走 Picsum：Auto 只会在通过门禁的来源中选择；Picsum 从来源列表移除。
 - 远程图片下载改为 provider 声明的 `imageHosts`/`redirectHosts` 策略（精确主机或 `*.` 通配，禁止后缀匹配；`redirect:'error'` 或校验最终 URL），替换 Picsum-only 的 redirect 分支。
 - client gzip 预算从 60 KiB 显式上调到 **72 KiB（73,728 B）**（评审通过，用于壁纸工作室/provider 注册表/详情面）；per-livery/boot CSS 从 13 KiB 显式上调到 **14 KiB（14,336 B）**（`MenuSurface`/jobs fill token 增加约 176 B；legacy typography probe fixture 达到 13,409 B，shipped profile 为 10,366 B）；host gzip 保持 360 KiB；tarball 上限保持 **4 MiB（4,194,304 B）**，README 图片使用保画质的压缩/尺寸调整，不提高上限。
-- 为保持 72 KiB client gzip 上限，精简了 8 条状态/预设提示文案（含义不变，仅缩短措辞；`MenuSurface` 修复本身约 +68 B gzip）；这是一次显式的预算适配，不是静默放宽。
+- 为保持 72 KiB client gzip 上限，精简了若干状态/预设/错误提示文案（含义不变，仅缩短措辞）；验收 probe 的 gzip 测量改为与 build 相同的 zlib level 9（旧默认级别会高估约 318 B）。这是一次显式的预算适配，不是静默放宽。
 - README/README.zh-CN/SECURITY/NOTICE 与 interfaces/compatibility/wallpaper-workbench/style-system 设计文档更新到 0.2.2 目标状态；README 壁纸说明不再声称使用真实在线照片。
 - `docs/design/interfaces.md` 修正 “synchronous slot-spec probing” 的旧描述：实现通过 `ctx.slots.inject` 注册，settings fallback 有 1500 ms grace，测试禁止 `slots.spec`。
 
@@ -38,6 +39,9 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 0.2.1 client 对任意插件版本差异 fail closed、导致 HMR 重试与 stale-profile 分支不可达的问题。stale 路径不信任 `catalogUrl`/`bootStyleId`，config fallback 不回退到旧 boot skin；catalog 重试失败时 fail closed 到 degraded/stock 并移除 boot artifacts，`retryCatalog()` 可在不刷新页面的情况下恢复。
 - 修复远程 selection 写入时重建紧凑对象、丢弃 provenance 的问题；0.2.1 产生的重写仍显示图片，但会丢弃 provenance（0.2.1 无该字段）。
 - 修复 `sourceId`/`revision` 跨标签页竞争可能让落后标签页覆盖胜者 style sidecar 的问题：写入前重新读取主记录，identity 不一致时跳过 sidecar 写入；Clear local data 保留主记录与 style sidecar。
+- 修复插件详情 facts section 在首帧把 runtime 类方法直接传给 `useSyncExternalStore` 导致的 `this` 丢失异常；改为稳定的绑定 wrappers，并用真实 class-like runtime 测试回归。
+- 修复 Openverse 商标提示在刷新/预设/Recent 后消失：现在也从持久化的 `provenance.providerId` 派生；429 无 `Retry-After` 时增加 30 s 客户端冷却，避免立即重试；Wikimedia Random 补 gate 证据；gate id 与 registry 统一并在 release-check 交叉校验。
+- 修复 style sidecar 事件不被观察与 clear 顺序：controller 现在订阅 sidecar key，clear 按 plan 先删 sidecar 再写 tombstone；补 winner/sidecar-key 事件测试。
 - 修复宿主浮层菜单的真实表面：0.2.1 只把 `--dsw-specific-menu` 改成不透明，但 `MenuSurface.module.css` 实际绘制用 `--dsw-menu-surface-fill`，且 jobs live row 直接读取未声明的 `--dsw-alias-fill-l1/l2`。0.2.2 现在拥有 `menu-surface-fill`（不透明 layer-1，与 `specific-menu` 同步）并强制输出 `fill-l1/l2`（layer-1/2）；stock style + wallpaper 时通过 `body[data-dsh-wallpaper]:not([data-dsh-livery])` 补齐同样的不透明表面。0.2.1 的 `specific-menu` 修复不覆盖这些表面。
 - 移除在线壁纸打开页面即自动请求 Picsum 批次的行为。
 

@@ -182,7 +182,7 @@ scope，并在 Web 上运行更新探针：安装精确的已发布 `0.2.1` tarb
 
 ## 早期版本
 
-- **0.2.1** — 浮层菜单改为不透明；直接绘制侧栏 alpha 与 macOS 合成路径对齐。已发布。
+- **0.2.1** — `--dsw-specific-menu` 别名改为不透明，直接绘制侧栏 alpha 与 macOS 合成路径对齐；真正的 `MenuSurface` fill 与 jobs fill token 在 0.2.2 补齐。已发布。
 - **0.2.0** — 视觉语言升级：13 套本地字体栈、按风格的标签层级、26/28 风格的 L5a Studio
   Decoration、更克制的风格页、v2 presentation axes 与协议加固。详见 [CHANGELOG](CHANGELOG.md)。
 

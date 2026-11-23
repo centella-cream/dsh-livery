@@ -68,7 +68,9 @@ until the 0.2.2 candidate is accepted and released.
 - **A plugin detail page.** Livery consumes the `plugins.detail.actions`,
   `plugins.detail.badge` and `plugins.detail.section` slots to show observable
   facts (build, boot handshake state, host/adapter, active style and wallpaper)
-  and a truthful update boundary. It adds no update button and does not duplicate
+  and a truthful update boundary. The slot proof covers 6 of 8 hosts; on
+  `0.2.1-rc.3` Desktop the static proof is a recorded gap and the runtime detail
+  check is not implemented yet, so that surface is a documented limitation. It adds no update button and does not duplicate
   the Host's install control.
 - **Web hot-update boundary.** A real `0.2.1 → 0.2.2` Web client update can be
   repaired in process: an exact allowlisted stale boot payload is accepted, the
@@ -235,8 +237,9 @@ rebuilds the accepted tarball.
 
 ## Earlier releases
 
-- **0.2.1** — opaque floating menus; direct-paint sidebar alpha matched to the
-  macOS composite. Published.
+- **0.2.1** — opaque `--dsw-specific-menu` alias and direct-paint sidebar alpha
+  matched to the macOS composite. The real `MenuSurface` fill and jobs fill
+  tokens were completed in 0.2.2. Published.
 - **0.2.0** — visual-language pass: 13 local font stacks, per-style label
   hierarchy, L5a Studio Decoration on 26 of 28 styles, a calmer style page, v2
   presentation axes and protocol hardening. See [CHANGELOG](CHANGELOG.md).

@@ -167,8 +167,8 @@ licences).
 - Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — an explicit, reviewed
   increase from 60 KiB for the wallpaper studio, provider registry and detail
   surface. The accepted `0.2.1` probe measured **60,902 B** gzip (230,487 B raw)
-  against its 60 KiB cap; the current `0.2.2` candidate measures **73,662 B**,
-  i.e. **66 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
+  against its 60 KiB cap; the current `0.2.2` candidate measures **73,561 B**,
+  i.e. **167 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
   section is cut or deferred to 0.2.3; the cap is not raised ad hoc.
 - Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog. The
   current `0.2.2` candidate host bundle measures **15,506 B** gzip (61,649 B

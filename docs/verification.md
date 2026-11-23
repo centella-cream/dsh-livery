@@ -72,40 +72,159 @@ Before packaging, acceptance must:
    a fresh isolated `DSH_HOME` and the official plugin-manager install of the
    exact `--tgz` candidate (AGENTS §3). The client bundle and the packaged
    docs/assets change, so every previous acceptance run is invalid.
-2. **Run the Web `0.2.1 → 0.2.2` update probe.** Install the exact published
-   0.2.1 tarball, update through the running Host's plugin-manager install dialog
-   to the exact 0.2.2 candidate, and record: no navigation/page reload, the old
-   boot payload observed as `stale`, a re-fetched and re-applied catalog, the
-   detail section rendering, and a manager outcome that is not
-   `restart-required`. One `0.2.2`-line Web scope is required; one `0.2.1`-line
-   Web scope is added when its plugin manager can install over the
-   tarball-installed bundle. The claim is **Web only** — Desktop needs a renderer
-   reload/app restart. The **run harness itself is also not implemented yet**:
-   `scripts/acceptance/web.mjs` has no “install 0.2.1, then update to the
-   candidate” mode, so this probe is a release task, not an executable command
-   today.
-3. **Bind the update transition in evidence schema v3.** The required
-   `transition` record (`fromVersion`, `fromSha256`, `fromBytes`, `toVersion`,
-   `toSha256`, `trigger`, `pageReloaded`, `staleBootObserved`,
-   `catalogReadopted`, `managerOutcome`) is **not implemented yet**: the current
-   acceptance evidence schema is still v2 and the release scripts have no
-   update-run validation. Until that lands, an update run cannot be recorded as
-   accepted evidence.
+2. **Run the Web `0.2.1 → 0.2.2` update probe on one `0.2.2`-line Web scope**
+   (and on one `0.2.1`-line Web scope when that line's manager proves it can
+   apply the candidate in process). The harness mode and evidence schema are
+   implemented; a local probe on the working-tree candidate **passed**
+   (`0.2.1` `78f1c8d1…` → `0.2.2` candidate `4dde0a5a…`, 35 pass / 0 fail /
+   2 skip / 1 warn, no page reload, stale boot observed, catalog re-adopted,
+   manager `applied`). No schema-v3 evidence is committed yet, so the formal
+   transition remains to be re-run and bound on the frozen candidate. The claim
+   is **Web only** — Desktop needs a renderer reload/app restart.
+
+   Local working-tree smoke (explicitly not acceptance evidence): the fresh
+   Web quick run passed **88 / 0 / 5 skip / 1 warn**, and the update probe
+   passed **35 / 0 / 2 skip / 1 warn** on candidate `4dde0a5a…`; neither run has
+   committed evidence, and both must be repeated on the frozen candidate.
+3. **Bind the accepted transition in evidence schema v3** and keep that evidence
+   file next to the ordinary fresh-install files for the same candidate. The
+   update evidence is validated by `release-evidence.mjs`; `prepublish-check.mjs
+   --require-update` refuses to publish a release claiming an in-process update
+   without at least one accepted schema-v3 file covering a matrix-passed Web
+   scope.
+
+### Web `0.2.1 → 0.2.2` update probe (implemented; local pass on working-tree candidate; no accepted evidence yet)
+
+`scripts/acceptance/web.mjs --update-from <previous.tgz>` is the harness mode.
+It uses its own isolated `DSH_HOME` and never touches the real user profile. It:
+
+1. verifies the `--update-from` tarball is the *exact* artifact bound by committed
+   `contracts/dsh/evidence/**` (currently the published `0.2.1` tarball,
+   3,529,494 B, sha256 `78f1c8d1…`), and installs it through the official
+   `dsh plugin --profile web add file:<0.2.1.tgz>` path;
+2. boots the declared Host with `--dsh-bin`/`--expect-version` and performs the
+   normal authenticated Chrome session (boot payload, handshake, boot graph);
+3. pre-seeds the isolated profile with an active style (the same `- id: livery`
+   config row the Host's own config editor writes) before boot, so the `0.2.1`
+   first-frame payload exists and there is a saved configuration the updated
+   client must re-apply;
+4. installs the exact `--tgz` candidate through the **running Host's own plugin
+   manager**: Plugins → Add plugin → `file:<absolute candidate.tgz>` → Install.
+   The Host must answer `applied`; a `restart-required`, refused or unattempted
+   dialog is a recorded failure, never replaced by a CLI fallback;
+5. proves the update happened in process without a page reload (window sentinel,
+   `performance.timeOrigin`, navigation-entry count, history length, `load`
+   events), that `__DSH_LIVERY_BOOT__.pluginVersion` still says `0.2.1`, that the
+   live client build is `0.2.2`, that the client bundle was reloaded through the
+   page's module reloader, that the catalog route was re-fetched, that the saved
+   style was re-applied from the new catalog, and that the plugin-detail
+   badge/facts section shows handshake `stale` with the stale update-boundary
+   copy;
+6. exports a schema-v3 `transition` block and requires all
+   `REQUIRED_UPDATE_CHECKS` in the raw probe.
+
+Exact commands (replace the host path/version with the declared scope):
+
+```sh
+# 1. Build/measure the final candidate exactly as it will be published.
+pnpm release:check   # writes .tmp/release-check/dsh-livery-0.2.2.tgz
+
+# 2. Run the in-process update probe against one declared Web host.
+node scripts/acceptance/web.mjs \
+  --tgz .tmp/release-check/dsh-livery-0.2.2.tgz \
+  --update-from .tmp/fixtures/dsh-livery-0.2.1.tgz \
+  --dsh-bin /tmp/dsh-hosts/0.2.2-rc.5/node_modules/.bin/dsh \
+  --expect-version 0.2.2-rc.5 \
+  --expect-browser-version 156.0.8078.48 \
+  --chrome-binary ".tmp/acceptance/browsers/chrome-156.0.8078.48/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" \
+  --dsh-home .tmp/acceptance/update-0.2.2-rc.5 \
+  --out .tmp/acceptance/update-0.2.2-rc.5/artifacts \
+  --json .tmp/acceptance/update-0.2.2-rc.5/artifacts/probe.json \
+  --report .tmp/acceptance/update-0.2.2-rc.5/artifacts/report.md
+
+# 3. Emit the schema-v3 evidence file (probes/reports are committed beside it).
+node scripts/acceptance/evidence.mjs \
+  --evidence contracts/dsh/evidence/<release>/0.2.2-rc.5-web-chrome-update.json \
+  --probes-dir contracts/dsh/evidence/<release>/probes \
+  --reports-dir contracts/dsh/evidence/<release>/reports \
+  --tgz .tmp/release-check/dsh-livery-0.2.2.tgz --package-version 0.2.2 \
+  --update-from .tmp/fixtures/dsh-livery-0.2.1.tgz \
+  --audit-envelope <canonical audit envelope.json> \
+  --run web-update:0.2.2-rc.5:dsh-0.2.2-rc.5-r1:<probe>:<report>
+
+# 4. Gate the claim: candidate bytes + every fresh-install scope + update run.
+node scripts/release-evidence.mjs \
+  --tgz .tmp/release-check/dsh-livery-0.2.2.tgz \
+  --evidence contracts/dsh/evidence/<release>/0.2.2-rc.5-web-chrome-update.json
+node scripts/prepublish-check.mjs --require-update --tgz .tmp/release-check/dsh-livery-0.2.2.tgz
+```
+
+The `0.2.1` tarball is a fixture, never an evidence run of its own: every run
+still binds exactly one candidate tarball, one commit and one matrix scope.
+
+Schema-v3 evidence (`schemaVersion: 3`) adds exactly one block to the schema-v2
+document:
+
+```json
+"transition": {
+  "fromVersion": "0.2.1",
+  "fromSha256": "78f1c8d1…",
+  "fromBytes": 3529494,
+  "toVersion": "0.2.2",
+  "toSha256": "<candidate sha256>",
+  "trigger": "host-install-dialog",
+  "pageReloaded": false,
+  "staleBootObserved": true,
+  "catalogReadopted": true,
+  "managerOutcome": "applied"
+}
+```
+
+Validation rules enforced by `scripts/release-lib.mjs`,
+`scripts/acceptance/evidence.mjs` and `scripts/release-evidence.mjs`:
+
+- exact field set; both artifact identities exact; `fromVersion !== toVersion`;
+  `trigger` ∈ `{host-install-dialog}`; `pageReloaded === false`;
+  `staleBootObserved === true`; `catalogReadopted === true`;
+  `managerOutcome === 'applied'` for acceptance;
+- `toSha256` equals the candidate tarball, `toVersion` equals the package version,
+  and every run's raw probe records the same transition;
+- `fromSha256`/`fromBytes`/`fromVersion` are bound by a **previously committed**
+  evidence artifact under `contracts/dsh/evidence/` (never the candidate, never a
+  locally rebuilt tarball);
+- all `REQUIRED_UPDATE_CHECKS` (`env.certified-host`, `env.browser-version`,
+  `update.from-artifact-verified`, `update.from-installed`,
+  `update.dialog-available`, `update.dialog-install-completed`,
+  `update.manager-outcome`, `update.new-client-bundle-loaded`,
+  `update.no-page-navigation`, `update.boot-payload-previous`,
+  `update.live-client-build-candidate`, `update.catalog-refetched`,
+  `update.catalog-applied`, `update.stale-boot-observed`,
+  `update.detail-section-renders`, `update.transition-recorded`) are present and
+  passing in the sanitized raw probe;
+- schema-v2 (fresh-install) runs keep their existing required-check sets and may
+  not carry a `transition` block.
+
+The probe records the same facts in `artifacts/.../probe.json` under `update`
+(`from`, `to`, `requiredChecks`, dialog `phases`, captured catalog/client-bundle
+`responses`, `transition`, and the handler observations), and the Markdown report
+renders the transition table.
 
 ### Candidate budgets (measured, not accepted)
 
 | Measure | Current working-tree candidate | Budget | Accepted `0.2.1` probe |
 |---|---|---|---|
-| Client bundle gzip | **73,662 B** (280,421 B raw) | **73,728 B** (72 KiB) — **66 B headroom** | 60,902 B (cap 61,440 B / 60 KiB) |
+| Client bundle gzip | **73,561 B** build gate (`lib/build-report.json`; 280,313 B raw) / **73,609 B** acceptance probe (280,019 B served raw) — **119 B headroom at the gate** | **73,728 B** (72 KiB) | 60,902 B (cap 61,440 B / 60 KiB) |
 | Largest livery/boot CSS | **10,366 B** (bauhaus) | **14,336 B** (14 KiB) | 9,066 B (cap 13,312 B) |
 | Host bundle gzip | **15,506 B** (61,649 B raw) | **368,640 B** (360 KiB) | — |
-| Package tarball | **≈3.40 MB** (993 files; exact bytes change with every packaged-doc edit and must be re-measured on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
+| Package tarball | **3,420,662 B** (993 files; the probe above ran on `4dde0a5a…`; later packaged-doc edits changed only docs and produced `191770dc…`, so re-measure/re-run on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
 
-The client/host/CSS numbers come from `lib/build-report.json` for the current
-working-tree build. The tarball number was measured before the final packaged-doc
-and screenshot refresh; any packaged-byte change (including edits to this file)
-changes the tarball and requires a rebuild, a fresh measurement and full
-re-acceptance. None of these numbers is acceptance evidence.
+The client/host/CSS numbers come from the latest working-tree build and the fresh
+Web quick acceptance probe. The acceptance probe now compresses the served
+bundle at the same zlib level 9 as `scripts/build.mjs`; the previous default-level
+measurement overstated it by ~318 B. The tarball number was measured before the
+final packaged-doc and screenshot refresh; any packaged-byte change (including
+edits to this file) changes the tarball and requires a rebuild, a fresh
+measurement and full re-acceptance. None of these numbers is acceptance evidence.
 
 ### New probe areas in the 0.2.2 candidate (implemented, not yet accepted)
 
@@ -127,10 +246,11 @@ The 0.2.2 probe replaces 0.2.1's fixed Picsum-batch checks and adds:
   opaque; `visual.jobs-popover-opaque` and `visual.stock-wallpaper-menu-opaque`
   are explicit skips in the current shell (see limitations);
 - handshake/update: the `stale` boot path (exact `0.2.1` allowlist) with
-  no-adopt-boot-CSS and catalog re-adoption, asserted on the update run.
+  no-adopt-boot-CSS and catalog re-adoption, asserted by the executable
+  `--update-from` probe above.
 
 Their probe and unit-test implementations exist in the working tree; their
-status is unproven until the acceptance runs above.
+status is unproven until the acceptance runs above produce evidence.
 
 ### Known pre-acceptance limitations
 
@@ -148,8 +268,18 @@ status is unproven until the acceptance runs above.
   detail check yet** and remains a documented per-scope limitation until the
   Desktop probe gains the same check. A missing/failed detail check is recorded
   as skipped-with-reason, never as a pass.
-- **Update-path evidence schema is pending** (see item 3 above): the transition
-  binding and release-gate validation do not exist yet.
+- **Update-probe evidence is pending.** The `--update-from` harness mode,
+  schema-v3 transition validation and `REQUIRED_UPDATE_CHECKS` set are
+  implemented and unit-tested. The harness was also exercised end-to-end locally
+  on an uncommitted intermediate candidate (DSH `0.2.2-rc.5`, Chrome
+  `156.0.8078.48`): the Host's Add-plugin dialog applied the candidate in
+  process, the probe recorded `pageReloaded: false`, `staleBootObserved: true`,
+  `catalogReadopted: true`, `managerOutcome: applied` and passed every
+  `REQUIRED_UPDATE_CHECKS`. That local output is a harness validation, **not
+  accepted evidence**: the final candidate must be rebuilt from the committed
+  tree, and the probe/report/evidence files must be committed for those exact
+  bytes and pass `release-evidence.mjs` / `prepublish-check.mjs --require-update`
+  before the transition is claimed.
 - **Host floating-surface coverage is partial in the automated probe.** The real
   jobs popover/subagent cards are not triggerable in the isolated shell, so
   `visual.jobs-popover-opaque` records a skip; `visual.menu-surface-opaque`

@@ -61,8 +61,9 @@ adapter. DSH Desktop Windows, Web Edge and any other DSH build are not supported
   package is built.
 - **[Plugin detail surface](design/plugin-detail-surface.md)** — target 0.2.2:
   detail slots, observable-facts section, truthful actions and update-boundary
-  copy. Slot proof covers 6 of 8 hosts; `0.2.1-rc.2`/`0.2.1-rc.3` are recorded
-  gaps covered by the runtime check.
+  copy. Slot proof covers 6 of 8 hosts: `0.2.1-rc.2` (Web) is covered by the
+  runtime detail check; `0.2.1-rc.3` (Desktop) has no runtime detail check yet,
+  so it is a documented per-scope limitation, not a passed claim.
 
 Repository-only records (not shipped in the npm package): the 0.2.2 provider
 access-gate record `docs/research/provider-access-gate.json` and the per-host
@@ -120,7 +121,7 @@ not be cited as current support or behavior.
 
 - **[0.2.0 视觉语言](design/0.2.0-visual-language.md)** 与 **[0.2.0 方案稿](design/0.2.0-proposal.md)**：已实现的字体/标签/L5a/sidebar 视觉语言，以及 manifest v2 多轴设计。
 - **[0.2.2 实施方案](design/0.2.2-plan.md)**：目标 0.2.2 的壁纸工作室、provider 注册表、stale boot HMR 握手与插件详情面；实现已在工作区，发布前仍需验收与证据（freeze v3），打包前定稿或归档。
-- **[插件详情面](design/plugin-detail-surface.md)**：目标 0.2.2 的 detail slots、可观测事实区块、真实操作与更新边界文案；per-host slot 证明覆盖 8 个宿主中的 6 个，`0.2.1-rc.2` / `0.2.1-rc.3` 为显式缺口，仅由运行时检查覆盖。
+- **[插件详情面](design/plugin-detail-surface.md)**：目标 0.2.2 的 detail slots、可观测事实区块、真实操作与更新边界文案；per-host slot 证明覆盖 8 个宿主中的 6 个，`0.2.1-rc.2` / `0.2.1-rc.3` 为显式缺口，其中 `0.2.1-rc.2`（Web）由运行时 detail 检查覆盖；`0.2.1-rc.3`（Desktop）目前没有运行时 detail 检查，属于文档化的 per-scope limitation，不是已通过声明。
 
 仅仓库记录（不随 npm 包发布）：0.2.2 provider 访问门禁记录
 `docs/research/provider-access-gate.json`，以及 per-host slot 声明证明
