@@ -142,6 +142,21 @@ function makeRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
   }
 }
 
+/**
+ * Runtime face whose `getSnapshot`/`subscribe` are real methods using `this`.
+ * Passing these straight into `useSyncExternalStore` throws, so this guards the
+ * detail section against the class-instance binding regression.
+ */
+function makeBoundRuntime(snapshot: LiveryRuntimeSnapshot): LiveryRuntimeApi {
+  const runtime = {
+    ...makeRuntime(snapshot),
+    snapshot,
+    getSnapshot() { return this.snapshot },
+    subscribe() { return () => undefined },
+  }
+  return runtime as LiveryRuntimeApi
+}
+
 /** Render the badge for one subject and locale. */
 function renderBadge(subject: PluginsSubject = LIVERY_BUNDLE, t: Translate = EN): string {
   return renderToStaticMarkup(<DetailBadge subject={subject} t={t} />)
@@ -186,6 +201,15 @@ function setDocumentHash(hash: string | null): void {
     value: { body: { getAttribute: (name: string) => (name === HASH_ATTRIBUTE ? hash : null) } },
   })
 }
+
+describe('detail section runtime binding', () => {
+  it('subscribes to a class-like runtime without losing `this`', () => {
+    const runtime = makeBoundRuntime(makeSnapshot())
+    const html = renderToStaticMarkup(<DetailSection subject={LIVERY_BUNDLE} t={EN} runtime={runtime} />)
+    expect(html).toContain(enUS['detail.section.title'])
+    expect(html).toContain(LIVERY_VERSION)
+  })
+})
 
 const savedDocument = Object.getOwnPropertyDescriptor(globalThis, 'document')
 

@@ -18,7 +18,7 @@
  * update policy, HMR and restart; this file never offers or intercepts an
  * update control and never claims a Host plan that does not exist.
  */
-import { useState, useSyncExternalStore } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import { Button, Tag, writeClipboard } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -190,7 +190,11 @@ export function wallpaperFact(t: LiveryDetailProps['t']): string {
 
 /** Subscribe a component to the runtime snapshot (server-render safe). */
 function useRuntimeSnapshot(runtime: LiveryRuntimeApi): LiveryRuntimeSnapshot {
-  return useSyncExternalStore(runtime.subscribe, runtime.getSnapshot, runtime.getSnapshot)
+  // The runtime is a class instance: passing its methods straight through loses
+  // `this` on the first render. Bind stable wrappers per runtime instance.
+  const subscribe = useCallback((listener: () => void) => runtime.subscribe(listener), [runtime])
+  const getSnapshot = useCallback(() => runtime.getSnapshot(), [runtime])
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
 /** One rendered `<dt>`/`<dd>` fact of the section. */

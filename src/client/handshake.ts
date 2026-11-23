@@ -283,7 +283,7 @@ export function isCatalogShape(value: unknown): value is LiveryCatalog {
   for (const field of ['grammarHash', 'catalogHash'] as const) {
     if (typeof candidate[field] !== 'string') return false
   }
-  for (const field of ['adapterId', 'hostVersion', 'contractHash', 'catalogProfile', 'previewsBase'] as const) {
+  for (const field of ['compilerVersion', 'adapterId', 'hostVersion', 'contractHash', 'catalogProfile', 'previewsBase'] as const) {
     if (typeof candidate[field] !== 'string') return false
   }
   if (!isCapabilityMap(candidate.capabilities)) return false
