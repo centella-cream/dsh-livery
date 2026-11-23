@@ -33,7 +33,9 @@ import { execFileSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import {
+  REQUIRED_DESKTOP_CHECKS,
   REQUIRED_UPDATE_CHECKS,
+  REQUIRED_WEB_CHECKS,
   UPDATE_EVIDENCE_SCHEMA_VERSION,
   requiredCheckProblems,
   validateTransition,
@@ -41,34 +43,7 @@ import {
 import { readTarballIdentity } from './probe/update.mjs'
 import { WORKSPACE_ROOT } from './probe/util.mjs'
 
-export const REQUIRED_WEB_CHECKS = Object.freeze([
-  'env.browser-version',
-  'handshake.certified-adapter',
-  'catalog.certified-identity',
-  'merged.two-tab-sync',
-  'merged.two-tab-clear',
-  'merged.state-migration-v1',
-  'merged.preset-import-diff',
-  'merged.preset-apply-atomic',
-  'merged.preset-invalid-rejected',
-  'merged.preset-partial-failure',
-  'merged.position-remote',
-  'merged.clear-local-data',
-  'merged.preset-style-roundtrip',
-  'merged.preset-v2-attribution',
-  'wallpaper.no-request-before-online',
-  'wallpaper.online-first-batch',
-  'wallpaper.provider-selector',
-  'wallpaper.provider-served-by',
-  'wallpaper.builtin-visible-8',
-  'wallpaper.builtin-classic',
-  'wallpaper.style-card',
-  'wallpaper.attribution-links',
-  'plugin.detail-section-renders',
-  'plugin.detail-subject-filter',
-  'visual.menu-surface-opaque',
-  'visual.floating-surfaces',
-])
+export { REQUIRED_DESKTOP_CHECKS, REQUIRED_WEB_CHECKS }
 
 /**
  * Update runs (schema v3) use the `REQUIRED_UPDATE_CHECKS` set from
@@ -76,20 +51,6 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
  * probe, this emitter and `scripts/release-evidence.mjs` share one frozen list.
  */
 export { REQUIRED_UPDATE_CHECKS }
-
-export const REQUIRED_DESKTOP_CHECKS = Object.freeze([
-  'desktop.official-install',
-  'desktop.certified-runtime',
-  'desktop.renderer-launches',
-  'desktop.boot-graph-row',
-  'desktop.apply-persists',
-  'desktop.position-remote',
-  'desktop.reduced-transparency',
-  'desktop.floating-surfaces',
-  'desktop.restore-stock',
-  'desktop.matrix-consistency',
-  'desktop.sidebar-path',
-])
 
 const argv = process.argv.slice(2)
 const flag = (name) => {

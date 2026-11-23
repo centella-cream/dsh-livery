@@ -155,6 +155,51 @@ export const REQUIRED_UPDATE_CHECKS = Object.freeze([
   'update.transition-recorded',
 ])
 
+/** Fresh-install Web critical checks (shared by evidence emission and release gate). */
+export const REQUIRED_WEB_CHECKS = Object.freeze([
+  'env.browser-version',
+  'handshake.certified-adapter',
+  'catalog.certified-identity',
+  'merged.two-tab-sync',
+  'merged.two-tab-clear',
+  'merged.state-migration-v1',
+  'merged.preset-import-diff',
+  'merged.preset-apply-atomic',
+  'merged.preset-invalid-rejected',
+  'merged.preset-partial-failure',
+  'merged.position-remote',
+  'merged.clear-local-data',
+  'merged.preset-style-roundtrip',
+  'merged.preset-v2-attribution',
+  'wallpaper.no-request-before-online',
+  'wallpaper.online-first-batch',
+  'wallpaper.provider-selector',
+  'wallpaper.provider-served-by',
+  'wallpaper.builtin-visible-8',
+  'wallpaper.builtin-classic',
+  'wallpaper.style-card',
+  'wallpaper.attribution-links',
+  'plugin.detail-section-renders',
+  'plugin.detail-subject-filter',
+  'visual.menu-surface-opaque',
+  'visual.floating-surfaces',
+])
+
+/** Fresh-install Desktop critical checks (shared by evidence emission and release gate). */
+export const REQUIRED_DESKTOP_CHECKS = Object.freeze([
+  'desktop.official-install',
+  'desktop.certified-runtime',
+  'desktop.renderer-launches',
+  'desktop.boot-graph-row',
+  'desktop.apply-persists',
+  'desktop.position-remote',
+  'desktop.reduced-transparency',
+  'desktop.floating-surfaces',
+  'desktop.restore-stock',
+  'desktop.matrix-consistency',
+  'desktop.sidebar-path',
+])
+
 const SHA256_HEX = /^[0-9a-f]{64}$/u
 const VERSION_TOKEN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u
 

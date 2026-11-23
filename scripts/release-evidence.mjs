@@ -14,7 +14,9 @@ import { requiresAuditEnvelope } from './version-policy.mjs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
+  REQUIRED_DESKTOP_CHECKS,
   REQUIRED_UPDATE_CHECKS,
+  REQUIRED_WEB_CHECKS,
   UPDATE_EVIDENCE_SCHEMA_VERSION,
   findAcceptedArtifactEvidence,
   readMatrix,
@@ -240,33 +242,6 @@ if (evidence.scope !== undefined) {
 }
 // Critical checks that must be present AND pass. Counts alone cannot catch a
 // skipped safety path (preset partial failure, floating surfaces, migration).
-const REQUIRED_WEB_CHECKS = [
-  'env.browser-version',
-  'handshake.certified-adapter',
-  'catalog.certified-identity',
-  'merged.two-tab-sync',
-  'merged.two-tab-clear',
-  'merged.state-migration-v1',
-  'merged.preset-import-diff',
-  'merged.preset-apply-atomic',
-  'merged.preset-invalid-rejected',
-  'merged.preset-partial-failure',
-  'merged.position-remote',
-  'merged.clear-local-data',
-  'visual.floating-surfaces',
-]
-const REQUIRED_DESKTOP_CHECKS = [
-  'desktop.official-install',
-  'desktop.certified-runtime',
-  'desktop.renderer-launches',
-  'desktop.boot-graph-row',
-  'desktop.apply-persists',
-  'desktop.position-remote',
-  'desktop.reduced-transparency',
-  'desktop.floating-surfaces',
-  'desktop.restore-stock',
-  'desktop.matrix-consistency',
-]
 const profile = evidence.scope?.profile
 const requiredChecks = isUpdateRun
   ? REQUIRED_UPDATE_CHECKS
