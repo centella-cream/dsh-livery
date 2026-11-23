@@ -543,17 +543,14 @@ async function main() {
         DESKTOP_FAMILY_ORDER.every((family) => (desktopFamilyCounts.get(family) ?? 0) > 0),
       `families=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopRenderedCounts.get(family) ?? 0}`).join(', ')}]; expected=[${DESKTOP_FAMILY_ORDER.map((family) => `${family}:${desktopFamilyCounts.get(family)}`).join(', ')}]`,
     )
-    // Mock the online card's automatic Picsum batch (and Openverse) so the
-    // desktop probe never depends on the live network.
-    await page.route('https://picsum.photos/**', (route) => {
-      const url = route.request().url()
-      if (url.includes('/v2/list')) {
-        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: '10', author: 'Tester' }, { id: '11', author: 'Tester' }]) })
-      }
-      return route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG })
-    })
+    // 0.2.2 opens the wallpaper page on the offline Built-in gallery (no request).
+    // The two gate-accepted provider APIs are still stubbed so a path that
+    // activates Online can never touch the live network in this renderer run.
     await page.route('https://api.openverse.org/**', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [] }) }),
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [], page: 1, page_count: 0 }) }),
+    )
+    await page.route('https://commons.wikimedia.org/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) }),
     )
     await page.context().route('https://images.example.test/**', (route) =>
       route.fulfill({ status: 200, contentType: 'image/png', body: TINY_PNG, headers: { 'access-control-allow-origin': '*' } }),
@@ -619,20 +616,21 @@ async function main() {
       runner,
       'desktop.wallpaper',
       'desktop wallpaper studio applies a built-in CSS layer through the owned stylesheet',
-      desktopWallpaperInitial.builtins.length === 24 &&
+      desktopWallpaperInitial.builtins.length === 8 &&
+        desktopWallpaperInitial.builtinGallery?.allIds?.length === 24 &&
         desktopWallpaper.attribute !== null &&
         desktopWallpaper.styleMarker === 'dsh-livery/wallpaper' &&
         desktopWallpaper.selectedBuiltin === 'aurora' &&
         desktopWallpaper.styleText.includes('background-image') &&
         desktopWallpaper.overlay?.present === true,
-      `builtins=${desktopWallpaperInitial.builtins.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
+      `curated builtins=${desktopWallpaperInitial.builtins.length}; all ids=${desktopWallpaperInitial.builtinGallery?.allIds?.length}; attr=${desktopWallpaper.attribute}; marker=${desktopWallpaper.styleMarker}; selected=${desktopWallpaper.selectedBuiltin}`,
     )
     // ---------- merged 0.1.4: focal position, reduced transparency, floating surfaces ----------
     await selectDesktopWallpaperSource(page, 'local')
     await page.locator('[data-testid="wallpaper-url"]').fill('https://images.example.test/desktop.jpg')
     await page.locator('[data-testid="wallpaper-url-apply"]').click({ timeout: 8_000 })
     await page.waitForSelector('[data-testid="wallpaper-position"]', { timeout: 12_000 }).catch(() => {})
-    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('images.example.test/desktop.jpg'), undefined, { timeout: 12_000 }).catch(() => {})
+    await page.waitForFunction(() => (document.querySelector('style#dsh-livery-wallpaper')?.textContent ?? '').includes('blob:'), undefined, { timeout: 15_000 }).catch(() => {})
     await page.locator('[data-testid="wallpaper-position-top-left"]').click({ timeout: 8_000 }).catch(() => {})
     await page.waitForTimeout(400)
     const desktopPosition = await page.evaluate(() => {

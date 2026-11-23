@@ -39,6 +39,18 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
   'merged.preset-partial-failure',
   'merged.position-remote',
   'merged.clear-local-data',
+  'merged.preset-style-roundtrip',
+  'merged.preset-v2-attribution',
+  'wallpaper.no-request-before-online',
+  'wallpaper.online-first-batch',
+  'wallpaper.provider-selector',
+  'wallpaper.provider-served-by',
+  'wallpaper.builtin-visible-8',
+  'wallpaper.builtin-classic',
+  'wallpaper.style-card',
+  'wallpaper.attribution-links',
+  'plugin.detail-section-renders',
+  'plugin.detail-subject-filter',
   'visual.floating-surfaces',
 ])
 

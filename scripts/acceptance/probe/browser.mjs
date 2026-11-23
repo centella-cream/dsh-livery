@@ -1013,11 +1013,27 @@ export async function readWallpaperState(page) {
     const body = document.body
     const before = getComputedStyle(body, '::before')
     const after = getComputedStyle(body, '::after')
+    const text = (selector) => (document.querySelector(selector)?.textContent ?? '').trim()
+    const present = (selector) => document.querySelector(selector) !== null
     const builtins = [...document.querySelectorAll('[data-testid="wallpaper-builtin"]')].map((button) => ({
       id: button.getAttribute('data-wallpaper-id'),
       pressed: button.getAttribute('aria-pressed') === 'true',
       label: button.getAttribute('aria-label'),
     }))
+    const classicSwatches = [...document.querySelectorAll('[data-testid="wallpaper-builtin-classic-swatch"]')].map((button) => ({
+      id: button.getAttribute('data-wallpaper-id'),
+      pressed: button.getAttribute('aria-pressed') === 'true',
+      label: button.getAttribute('aria-label'),
+    }))
+    const pinnedSwatch = document.querySelector('[data-testid="wallpaper-builtin-pinned-swatch"]')
+    const classicGroup = document.querySelector('[data-testid="wallpaper-builtin-classic"]')
+    const builtinsCard = document.querySelector('[data-testid="wallpaper-builtins-card"]')
+    const allBuiltinIds = builtinsCard === null
+      ? []
+      : [...builtinsCard.querySelectorAll('[data-wallpaper-id]')].map((node) => node.getAttribute('data-wallpaper-id'))
+    const idCounts = {}
+    for (const id of allBuiltinIds) idCounts[String(id)] = (idCounts[String(id)] ?? 0) + 1
+    const duplicateBuiltinIds = Object.entries(idCounts).filter(([, count]) => count > 1).map(([id]) => id)
     const sliderValue = (testId) => {
       const element = document.querySelector(`[data-testid="${testId}"]`)
       return element instanceof HTMLInputElement ? Number(element.value) : null
@@ -1025,6 +1041,15 @@ export async function readWallpaperState(page) {
     const stored = (() => {
       try { return window.localStorage.getItem('dsh-livery.wallpaper.v1') } catch { return null }
     })()
+    const styleSidecarRaw = (() => {
+      try { return window.localStorage.getItem('dsh-livery.wallpaper.style.v1') } catch { return null }
+    })()
+    let styleSidecar = null
+    try {
+      styleSidecar = styleSidecarRaw === null || styleSidecarRaw === '' ? null : JSON.parse(styleSidecarRaw)
+    } catch {
+      styleSidecar = 'unparseable'
+    }
     const overlay = document.getElementById('dsh-livery-wallpaper-overlay')
     const overlayStyle = overlay ? getComputedStyle(overlay) : null
     const libraryResults = [...document.querySelectorAll('[data-testid="wallpaper-library-result"]')].map((result) => ({
@@ -1032,6 +1057,25 @@ export async function readWallpaperState(page) {
       selected: result.getAttribute('aria-selected') === 'true',
       label: result.getAttribute('aria-label'),
     }))
+    const providerSelect = document.querySelector('[data-testid="wallpaper-provider"]')
+    const hero = document.querySelector('[data-testid="wallpaper-hero-preview"]')
+    const presetNone = document.querySelector('[data-testid="wallpaper-preset-none"]')
+    const presetStyle = document.querySelector('[data-testid="wallpaper-preset-style"]')
+    const presetsContainer = document.querySelector('[data-testid="wallpaper-presets"]')
+    const sourceTabs = document.querySelector('[data-testid="wallpaper-source-tabs"]')
+    const presetsBeforeTabs = presetsContainer !== null && sourceTabs !== null
+      && (presetsContainer.compareDocumentPosition(sourceTabs) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+    const attributionLinks = [...document.querySelectorAll('[data-testid="wallpaper-attribution-link"]')].map((link) => ({
+      kind: link.getAttribute('data-kind'),
+      href: link.getAttribute('href'),
+      rel: link.getAttribute('rel'),
+      target: link.getAttribute('target'),
+      text: (link.textContent ?? '').trim(),
+    }))
+    const selectedSourceTab = [...document.querySelectorAll('[data-testid^="wallpaper-source-tab-"]')]
+      .find((tab) => tab.getAttribute('aria-selected') === 'true')
+    const visiblePanel = [...document.querySelectorAll('[data-testid^="wallpaper-source-panel-"]')]
+      .find((panel) => !panel.hasAttribute('hidden'))
     return {
       attribute: body.getAttribute('data-dsh-wallpaper'),
       stylePresent: Boolean(style),
@@ -1088,6 +1132,113 @@ export async function readWallpaperState(page) {
       sliderValues: { blur: sliderValue('wallpaper-blur'), dim: sliderValue('wallpaper-dim'), frost: sliderValue('wallpaper-frost'), atmosphere: sliderValue('wallpaper-atmosphere') },
       builtins,
       selectedBuiltin: builtins.find((button) => button.pressed)?.id ?? null,
+      builtinGallery: {
+        cardPresent: builtinsCard !== null,
+        gridCount: builtins.length,
+        gridIds: builtins.map((button) => button.id),
+        classic: {
+          present: classicGroup !== null,
+          open: classicGroup === null ? null : classicGroup.hasAttribute('open'),
+          summary: classicGroup === null ? '' : (classicGroup.querySelector('summary')?.textContent ?? '').trim(),
+          count: classicSwatches.length,
+          ids: classicSwatches.map((button) => button.id),
+          pressed: classicSwatches.filter((button) => button.pressed).map((button) => button.id),
+        },
+        pinned: pinnedSwatch === null
+          ? { present: false }
+          : {
+              present: true,
+              id: pinnedSwatch.getAttribute('data-wallpaper-id'),
+              pressed: pinnedSwatch.getAttribute('aria-pressed') === 'true',
+              beforeGrid: (() => {
+                const grid = document.querySelector('[data-testid="wallpaper-builtin-grid"]')
+                return grid !== null && (pinnedSwatch.compareDocumentPosition(grid) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+              })(),
+            },
+        allIds: allBuiltinIds,
+        duplicateIds: duplicateBuiltinIds,
+        noRequestHint: text('[data-testid="wallpaper-no-request-hint"]'),
+        hint: text('[data-testid="wallpaper-builtins-card"] .livery-ui-card__hint'),
+      },
+      presets: {
+        containerPresent: presetsContainer !== null,
+        beforeTabs: presetsBeforeTabs,
+        title: presetsContainer === null ? '' : (presetsContainer.querySelector('h4')?.textContent ?? '').trim(),
+        none: presetNone === null
+          ? { present: false }
+          : { present: true, tagName: presetNone.tagName.toLowerCase(), pressed: presetNone.getAttribute('aria-pressed') === 'true', text: (presetNone.textContent ?? '').trim() },
+        style: presetStyle === null
+          ? { present: false }
+          : {
+              present: true,
+              tagName: presetStyle.tagName.toLowerCase(),
+              pressed: presetStyle.getAttribute('aria-pressed') === 'true',
+              disabled: presetStyle.hasAttribute('disabled'),
+              describedBy: presetStyle.getAttribute('aria-describedby'),
+              text: (presetStyle.textContent ?? '').trim(),
+              swatchBackground: (() => {
+                const swatch = presetStyle.querySelector('.wallpaper-preset-style__swatch')
+                return swatch instanceof HTMLElement ? swatch.style.backgroundImage : ''
+              })(),
+            },
+        styleDisabledReason: text('[data-testid="wallpaper-style-disabled"]'),
+      },
+      sourceTab: {
+        selected: selectedSourceTab?.getAttribute('data-testid') ?? null,
+        visiblePanel: visiblePanel?.getAttribute('data-testid') ?? null,
+        onlineSelected: selectedSourceTab?.getAttribute('data-testid') === 'wallpaper-source-tab-online',
+      },
+      positionPresent: present('[data-testid="wallpaper-position"]'),
+      heroPreview: hero === null
+        ? { present: false }
+        : {
+            present: true,
+            kind: hero.getAttribute('data-kind'),
+            inlineBackground: hero instanceof HTMLElement ? hero.style.backgroundImage : '',
+            computedBackground: getComputedStyle(hero).backgroundImage,
+            inlinePosition: hero instanceof HTMLElement ? hero.style.backgroundPosition : '',
+          },
+      heroEmptyPresent: present('[data-testid="wallpaper-hero-empty"]'),
+      heroAttributionPresent: present('[data-testid="wallpaper-hero-attribution"]'),
+      heroAttributionText: text('[data-testid="wallpaper-hero-attribution"]'),
+      attributionLinksPresent: present('[data-testid="wallpaper-attribution-links"]'),
+      attributionLinks,
+      providerSelect: providerSelect === null
+        ? { present: false }
+        : {
+            present: true,
+            id: providerSelect.id,
+            tagName: providerSelect.tagName.toLowerCase(),
+            value: providerSelect instanceof HTMLSelectElement ? providerSelect.value : null,
+            labelText: (document.querySelector('label[for="wallpaper-provider"]')?.textContent ?? '').trim(),
+            options: providerSelect instanceof HTMLSelectElement
+              ? [...providerSelect.options].map((option) => ({ value: option.value, text: (option.textContent ?? '').trim() }))
+              : [],
+          },
+      servedByText: text('[data-testid="wallpaper-served-by"]'),
+      servedByPresent: present('[data-testid="wallpaper-served-by"]'),
+      onlineError: {
+        present: present('[data-testid="wallpaper-online-error"]'),
+        role: document.querySelector('[data-testid="wallpaper-online-error"]')?.getAttribute('role') ?? null,
+        text: text('[data-testid="wallpaper-online-error"]'),
+        retry: present('[data-testid="wallpaper-online-retry"]'),
+        builtin: present('[data-testid="wallpaper-online-builtin"]'),
+        none: present('[data-testid="wallpaper-online-none"]'),
+      },
+      retryAfterPresent: present('[data-testid="wallpaper-retry-after"]'),
+      retryAfterText: text('[data-testid="wallpaper-retry-after"]'),
+      onlineEmpty: {
+        present: present('[data-testid="wallpaper-online-empty"]'),
+        builtin: present('[data-testid="wallpaper-online-empty-builtin"]'),
+        none: present('[data-testid="wallpaper-online-empty-none"]'),
+        text: text('[data-testid="wallpaper-online-empty"]'),
+      },
+      capabilityReasonPresent: present('[data-testid="wallpaper-capability-reason"]'),
+      capabilityReasonText: text('[data-testid="wallpaper-capability-reason"]'),
+      openverseNoticePresent: present('[data-testid="wallpaper-openverse-notice"]'),
+      openverseNoticeText: text('[data-testid="wallpaper-openverse-notice"]'),
+      styleDisabledReasonPresent: present('[data-testid="wallpaper-style-disabled"]'),
+      styleDisabledReasonText: text('[data-testid="wallpaper-style-disabled"]'),
       urlErrorText: (document.querySelector('[data-testid="wallpaper-url-error"]')?.textContent ?? '').trim(),
       status: document.querySelector('[data-testid="wallpaper-status"]')?.getAttribute('data-status') ?? null,
       statusText: (document.querySelector('[data-testid="wallpaper-status"]')?.textContent ?? '').trim(),
@@ -1095,9 +1246,16 @@ export async function readWallpaperState(page) {
         url: result.getAttribute('data-wallpaper-url'),
         selected: result.getAttribute('aria-selected') === 'true',
         label: result.getAttribute('aria-label'),
+        provider: result.getAttribute('data-provider'),
+        selectable: result.getAttribute('data-selectable'),
+        ariaDisabled: result.getAttribute('aria-disabled'),
+        thumbSrc: result.querySelector('[data-testid="wallpaper-result-thumb"]')?.getAttribute('src') ?? null,
       })),
+      pagerPresent: present('[data-testid="wallpaper-results-pager"]'),
       attribution: (document.querySelector('[data-testid="wallpaper-attribution"]')?.textContent ?? '').trim(),
       stored,
+      styleSidecarRaw,
+      styleSidecar,
       effectiveLivery: body.getAttribute('data-dsh-livery'),
       bgBaseToken: getComputedStyle(body).getPropertyValue('--dsw-alias-bg-base').trim(),
     }
@@ -1628,6 +1786,151 @@ export async function readLiveryCssRules(page) {
       }
     }
     return result
+  })
+}
+
+/**
+ * Sidebar labels of the plugin-manager page (shipped zh/en dicts).
+ * The row is a regular `sidebar.panellist` entry like Livery's own.
+ */
+export const PLUGINS_PANEL_LABELS = ['插件', 'Plugins']
+
+/** Heading prefix of the plugin-manager detail card title button, per locale. */
+const PLUGINS_OPEN_DETAIL_PREFIXES = ['查看 ', 'View ']
+
+/**
+ * Open the plugin-manager page from the sidebar Plugins row.
+ *
+ * The page is not opened by the acceptance harness elsewhere, so this helper
+ * also records how the surface was reached; a host without the page throws and
+ * the caller records a skip instead of a fake pass.
+ * @param page - Playwright page.
+ * @param options - readiness timeout.
+ * @returns the navigation via label.
+ */
+export async function openPluginsPanel(page, { timeoutMs = 25_000 } = {}) {
+  await dismissFirstRunDialogs(page).catch(() => undefined)
+  let clicked = null
+  for (const label of PLUGINS_PANEL_LABELS) {
+    const nav = sidebarPanelNav(page)
+    const row = (await nav.count().catch(() => 0)) > 0
+      ? nav.locator(`button[aria-label="${label}"]`).first()
+      : page.locator(`[data-slot="sidebar"] nav button[aria-label="${label}"]`).first()
+    if ((await row.count().catch(() => 0)) > 0) {
+      await row.click({ timeout: 10_000 })
+      clicked = label
+      break
+    }
+  }
+  if (clicked === null) throw new Error(`plugin-manager sidebar row not found (tried ${PLUGINS_PANEL_LABELS.join(' / ')})`)
+  await page.waitForSelector('[data-plugin-panel]', { timeout: timeoutMs })
+  await page.waitForFunction(() => document.querySelectorAll('[data-plugin-loading]').length === 0, undefined, { timeout: 15_000 }).catch(() => undefined)
+  return { via: 'sidebar.panellist', label: clicked }
+}
+
+/** Click the title button that opens one plugin card's detail page. */
+async function clickPluginCardTitle(card) {
+  for (const prefix of PLUGINS_OPEN_DETAIL_PREFIXES) {
+    const button = card.locator(`button[aria-label^="${prefix}"]`).first()
+    if ((await button.count().catch(() => 0)) > 0) {
+      await button.click({ timeout: 10_000 })
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Open one bundle's detail page from the plugin-manager list.
+ * @param page - Playwright page (must already show the Plugins page).
+ * @param packageName - exact bundle package name (e.g. `dsh-livery`).
+ * @param options - readiness timeout.
+ * @returns the read detail surface.
+ */
+export async function openPluginBundleDetail(page, packageName, { timeoutMs = 25_000 } = {}) {
+  const card = page.locator(`[data-plugin-package="${packageName}"]`).first()
+  await card.waitFor({ state: 'visible', timeout: timeoutMs })
+  if (!(await clickPluginCardTitle(card))) throw new Error(`plugin card for ${packageName} has no detail title button`)
+  await page.waitForSelector(`[data-plugin-detail="${packageName}"]`, { timeout: timeoutMs })
+  return readPluginDetail(page)
+}
+
+/**
+ * Return from a plugin detail page to the plugin-manager list.
+ * @param page - Playwright page showing a detail page.
+ * @param options - readiness timeout.
+ */
+export async function backToPluginList(page, { timeoutMs = 20_000 } = {}) {
+  const back = page
+    .locator('[data-plugin-detail] > [data-window-drag] button, [data-plugin-row-detail] > [data-window-drag] button, [data-plugin-item-detail] > [data-window-drag] button')
+    .first()
+  if ((await back.count().catch(() => 0)) === 0) throw new Error('plugin detail page has no crumb/back button')
+  await back.click({ timeout: 10_000 })
+  await page.waitForSelector('[data-plugin-package]', { timeout: timeoutMs })
+}
+
+/** One crumb/back button on a plugin detail page (kept for diagnostics). */
+export async function pluginDetailBreadcrumb(page) {
+  return page.evaluate(() => {
+    const top = document.querySelector('[data-plugin-detail] [data-window-drag], [data-plugin-row-detail] [data-window-drag], [data-plugin-item-detail] [data-window-drag]')
+    const button = top?.querySelector('button')
+    return button === null || button === undefined
+      ? null
+      : { label: button.getAttribute('aria-label'), text: (button.textContent ?? '').trim() }
+  })
+}
+
+/** Read the contributed plugin-detail surface of the current page. */
+export async function readPluginDetail(page) {
+  return page.evaluate(() => {
+    const detail = document.querySelector('[data-plugin-detail]')
+    const rowDetail = document.querySelector('[data-plugin-row-detail]')
+    const itemDetail = document.querySelector('[data-plugin-item-detail]')
+    const text = (selector) => (document.querySelector(selector)?.textContent ?? '').trim()
+    const present = (selector) => document.querySelector(selector) !== null
+    const liveryNodes = [...document.querySelectorAll('[data-testid^="livery-detail-"]')]
+    const section = document.querySelector('[data-testid="livery-detail-section"]')
+    const facts = section === null
+      ? []
+      : [...section.querySelectorAll('[data-testid^="livery-detail-"]')]
+          .filter((node) => node.matches('dd'))
+          .map((node) => ({
+            id: (node.getAttribute('data-testid') ?? '').replace(/^livery-detail-/u, ''),
+            label: (node.closest('div')?.querySelector('dt')?.textContent ?? '').trim(),
+            value: (node.textContent ?? '').trim(),
+          }))
+    const title = detail?.querySelector('h3')
+    const actions = document.querySelector('[data-testid="livery-detail-actions"]')
+    const actionsBeforeTitle = actions !== null && title !== null && title !== undefined
+      && (actions.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
+    const configSections = [...document.querySelectorAll('[data-plugin-config]')]
+    return {
+      panelPresent: present('[data-plugin-panel]'),
+      bundle: detail?.getAttribute('data-plugin-detail') ?? null,
+      row: rowDetail?.getAttribute('data-plugin-row-detail') ?? null,
+      item: itemDetail?.getAttribute('data-plugin-item-detail') ?? null,
+      title: title?.textContent?.trim() ?? null,
+      packageName: text('[data-plugin-name]'),
+      badge: { present: present('[data-testid="livery-detail-badge"]'), text: text('[data-testid="livery-detail-badge"]') },
+      actions: {
+        present: actions !== null,
+        beforeTitle: actionsBeforeTitle,
+        open: present('[data-testid="livery-detail-open"]'),
+        copyDiagnostics: present('[data-testid="livery-detail-copy-diagnostics"]'),
+        copyStatus: text('[data-testid="livery-detail-copy-status"]'),
+      },
+      section: {
+        present: section !== null,
+        headingId: section?.getAttribute('aria-labelledby') ?? null,
+        heading: text('[data-testid="livery-detail-section"] h3'),
+        facts,
+        boundary: text('[data-testid="livery-detail-boundary"]'),
+      },
+      configSectionCount: configSections.length,
+      liveryNodesInsideConfig: [...document.querySelectorAll('[data-plugin-config] [data-testid^="livery-detail-"]')].length,
+      liveryNodeCount: liveryNodes.length,
+      liveryTestIds: liveryNodes.map((node) => node.getAttribute('data-testid')),
+    }
   })
 }
 

@@ -367,14 +367,24 @@ export const PLAN20_ROWS = [
     note: 'display order calm→nature→light→retro→vivid→dark; family priority nature→calm→light→retro→vivid→dark; all six sections non-empty; 16 tag chips behind 更多筛选; roving focus crosses sections',
   },
   {
-    criterion: 'Wallpaper studio (client-only layer, effects, validation, online search)',
-    checks: ['wallpaper.tab', 'wallpaper.builtin-count', 'wallpaper.builtin-applied', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.search-results', 'wallpaper.search-applied', 'wallpaper.clear', 'wallpaper.tab-restore'],
-    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; 24 built-ins, search-first online card (auto Picsum batch; mocked Openverse/Picsum), uploads, atmosphere overlay, tab persistence (no live network)',
+    criterion: 'Wallpaper studio (client-only layer, background presets, curated/Classic built-ins, effects, uploads, validation)',
+    checks: ['wallpaper.tab', 'wallpaper.preset-cards', 'wallpaper.no-request-before-online', 'wallpaper.builtin-visible-8', 'wallpaper.builtin-classic', 'wallpaper.builtin-current-classic', 'wallpaper.builtin-applied', 'wallpaper.style-card', 'wallpaper.style-applied', 'wallpaper.style-disabled-no-catalog', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.clear', 'wallpaper.tab-restore'],
+    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; two background-preset cards above the four unchanged source tabs; 8 curated + a collapsed 16-design Classic group (all 24 ids render exactly once, an active Classic id pins once); Follow style is a CSS-only generated layer (no blob/IndexedDB/cache/url()); uploads, atmosphere overlay and tab persistence (no live network on page open)',
   },
   {
-    criterion: 'Round-11 copy/type/online card: human About footer, unified five-step typography, search-first online card with one auto random batch',
-    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'wallpaper.library-removed', 'wallpaper.online-auto-random', 'wallpaper.online-no-refetch', 'wallpaper.online-search', 'wallpaper.online-random', 'wallpaper.online-refresh', 'wallpaper.online-retry', 'wallpaper.online-applied', 'selfcheck.copy-diagnostics-content'],
-    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; curated library removed; exactly one mocked Picsum auto batch on tab open; sliders never refetch; explicit Openverse search / random / refresh / retry flows',
+    criterion: 'Wallpaper online provider registry: explicit request policy, Auto failover, typed failures, attribution and empty states',
+    checks: ['wallpaper.online-first-batch', 'wallpaper.provider-selector', 'wallpaper.provider-served-by', 'wallpaper.openverse-attribution-notice', 'wallpaper.online-thumbnails', 'wallpaper.online-no-refetch', 'wallpaper.online-search', 'wallpaper.online-selectability', 'wallpaper.online-json-cap', 'wallpaper.provider-rate-limited', 'wallpaper.online-retry', 'wallpaper.online-empty', 'wallpaper.provider-failover', 'wallpaper.provider-pinned-no-failover', 'wallpaper.error-escape-builtin', 'wallpaper.online-random', 'wallpaper.online-refresh', 'wallpaper.provider-capabilities', 'wallpaper.online-applied', 'wallpaper.attribution-links', 'wallpaper.attribution-url-optional', 'wallpaper.provider-switch-no-fetch', 'wallpaper.library-removed', 'recent.online-entry', 'recent.two-entries'],
+    note: 'the first Online activation performs exactly one mocked batch (Auto → Openverse); later tab switches never refetch; a pinned provider makes one attempt, Auto fails over to Wikimedia Commons and names the provider that served; 429 shows Retry-After + Retry/Built-in/None; licence-null results are non-selectable; CC BY renders creator/licence/source https links with rel="noreferrer noopener" and the CREDIT is persisted on the selection (recent history is a mirror); no live network (mocked provider JSON + declared image hosts only)',
+  },
+  {
+    criterion: 'Round-11 copy/type: human About footer, unified five-step typography, online-card request copy',
+    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'copy.wallpaper-online-hint', 'selfcheck.copy-diagnostics-content'],
+    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; the online card copy states one batch on tab activation and explicit-action-only fetches',
+  },
+  {
+    criterion: 'Plugin detail surface: live-build badge, observable-facts section, truthful actions, subject filter',
+    checks: ['plugin.detail-section-renders', 'plugin.detail-subject-filter', 'plugin.detail-no-config-slot', 'plugin.detail-config-slot-clean', 'plugin.detail-copy-diagnostics'],
+    note: 'Plugins → Livery bundle page renders the Livery 0.2.2 badge, the facts <dl>, the handshake-selected update-boundary statement, Open Livery (only while the main panel is registered) and Copy diagnostics; only the three plugins.detail.* slots are consumed (no plugins.bundle.config / plugins.item registration) and other bundle/row/item subjects render nothing. A host without the plugin-manager page records skipped checks with the limitation, never a fake pass.',
   },
   {
     criterion: 'Round-10 card layout: two-column card hierarchy, responsive stacking, bounded sliders, no overflow',
