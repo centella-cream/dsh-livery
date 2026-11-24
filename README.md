@@ -11,32 +11,30 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 access-gated online images and blur/frost effects, and a style gallery. It is a
 plugin, not a host theme takeover.
 
-> **Release status: `0.2.1` is the current published release.**
-> The published artifact is `dsh-livery@0.2.1`; all 13 declared scopes have
-> current acceptance evidence and the release gates pass.
-> **`0.2.2` is the next target release and is not published or accepted yet.**
-> It has no acceptance evidence: the 0.2.2 sections below describe target
-> behaviour, and `dsh-livery@0.2.1` remains the published artifact until the
-> 0.2.2 candidate passes full isolated acceptance.
+> **Release status: `0.2.2` is the current release (2026-11-24).**
+> The artifact is `dsh-livery@0.2.2`; all 13 declared scopes and the
+> `0.2.1 → 0.2.2` Web in-process update transition have acceptance evidence.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
 > Web/Desktop and DSH `0.2.2-rc.5` Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease; `0.2.2-rc.5` is npm
-> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.1` candidate is **exact-certified only**: unknown
+> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.2` candidate is **exact-certified only**: unknown
 > builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
 
 English · [中文](README.zh.md)
 
-![DSH Livery 0.2.1 Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
+![DSH Livery Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
 
 Screenshots are from the English UI; the Chinese README uses the Chinese UI.
-Livery follows the DSH host locale.
+Livery follows the DSH host locale. The Visual Style page shown here is unchanged
+in `0.2.2`; the new wallpaper studio and plugin-detail surfaces are documented in
+the design notes and CHANGELOG.
 
-## What's new in 0.2.2 (target)
+## What's new in 0.2.2
 
-`0.2.2` is a client-only feature release; `0.2.1` remains the published artifact
-until the 0.2.2 candidate is accepted and released.
+`0.2.2` is a client-only feature release on the same eight exact-certified host
+adapters as `0.2.1`; it adds no host adapter and no new host capability.
 
 - **A curated wallpaper studio with a Classic escape hatch.** Exactly 8 curated
   built-ins (`paper`, `ink`, `aurora`, `cyber`, `dusk`, `minimal`, `mono`, `sand`)
@@ -48,18 +46,21 @@ until the 0.2.2 candidate is accepted and released.
   repositionable and is disabled with a visible reason when catalog tokens are
   unavailable. Preset schema v2 carries the style target and attribution URLs;
   v1 presets remain importable.
-- **Two access-gated online sources.** Only **Openverse** and **Wikimedia
-  Commons** ship in 0.2.2: both are keyless, CORS-verified and return real
-  licence/attribution metadata. NASA, The Met and the Art Institute of Chicago
-  are not listed (rights or image-CDN verification blocked); Picsum is removed
-  because the Unsplash licence does not permit this use. Existing Picsum remote
-  selections still render from cache; no new result carries a Picsum licence.
+- **One access-gated online source.** **Wikimedia Commons** is the only offered
+  online source in 0.2.2: keyless, CORS-verified and returning real
+  licence/attribution metadata. Openverse was accepted by the access gate but
+  removed from the offered registry because its anonymous limits made it
+  unusable; stored legacy selections still render from cache without new
+  requests. NASA, The Met and the Art Institute of Chicago are not listed
+  (rights or image-CDN verification blocked); Picsum is removed because the
+  Unsplash licence does not permit this use. Existing Picsum remote selections
+  still render from cache; no new result carries a Picsum licence.
 - **Predictable requests.** Opening the wallpapers page triggers no online-provider
   batch; a persisted online wallpaper may still load through the guarded local
   cache. The first activation of the Online tab requests exactly one batch; later
-  tab switches do not refetch, and there is no polling or prefetch. Auto tries at
-  most two gate-passed providers under a 12 s deadline and names the provider
-  that served the results; a pinned provider never switches silently. Empty and
+  tab switches do not refetch, and there is no polling or prefetch. Auto tries the offered
+  gate-passed providers under a 12 s deadline and names the provider that served
+  the results; a pinned provider never switches silently. Empty and
   failure states are explicit, with Retry and links back to Built-in/None.
 - **Safe attribution.** Creator, licence and source links are stored with the
   selected remote image, validated as HTTPS, and opened with
@@ -133,8 +134,7 @@ preview scenes.
 
 ## Wallpapers
 
-The wallpaper studio and its live 16:9 preview (screenshots will be refreshed
-from the accepted 0.2.2 build). In the 0.2.2 target, opening the wallpapers page
+The wallpaper studio and its live 16:9 preview. Opening the wallpapers page
 triggers no provider batch: Built-in is the default image source, and the first
 Online activation requests one batch from Wikimedia Commons; Auto
 names the provider that served the results. Blur, dim, frost and the global
@@ -184,21 +184,19 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.2.1`](https://www.npmjs.com/package/dsh-livery).
-The `0.2.2` target is not published; do not install it from a registry until a
-`0.2.2` release is announced.
+Latest published package: [`dsh-livery@0.2.2`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.2.1
+dsh plugin --profile web add dsh-livery@0.2.2
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.2.1
+dsh plugin --profile desktop add dsh-livery@0.2.2
 ```
 
 Restart the app after the package changes. You can also install by package name
@@ -209,18 +207,15 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 ## Verification
 
-The `0.2.1` artifact passed full isolated acceptance on 13 Web/Desktop scopes:
-Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
-`0.2.2-rc.3`, `0.2.2-rc.5` with **275 passed / 0 failed / 4 skipped / 2 warnings
-each**, and Desktop `0.2.1-rc.3`, `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`,
-`0.2.2-rc.3`, `0.2.2-rc.5` with **35 passed / 0 failed / 2 skipped / 0 warnings
-each**. Evidence is bound under `contracts/dsh/evidence/0.2.1/`. Scope, counts
-and limitations: [docs/verification.md](docs/verification.md).
-
-The `0.2.2` target has no acceptance evidence yet. Before packaging it must be
-re-accepted on all 13 declared scopes against one final tarball, plus Web
-update-probe runs that install the exact published `0.2.1` tarball and update
-through the running Host's plugin manager to the exact candidate.
+The `0.2.2` artifact passed full isolated acceptance on all 13 Web/Desktop
+scopes: Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`,
+`0.2.2-rc.2`, `0.2.2-rc.3`, `0.2.2-rc.5`, and Desktop `0.2.1-rc.3`,
+`0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`, `0.2.2-rc.5`, with
+**zero failed checks** in every scope. A real `0.2.1 → 0.2.2` Web update was
+also accepted through the running Host's plugin manager: no page reload, stale
+startup frame observed, catalog re-adopted and manager outcome `applied`.
+Evidence is bound under `contracts/dsh/evidence/0.2.2/`. Scope, exact counts,
+artifact sha256 and limitations: [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
 loader-ABI checks, exact support-matrix / release gates, explicit budgets (client
@@ -237,6 +232,10 @@ rebuilds the accepted tarball.
 
 ## Earlier releases
 
+- **0.2.2** — wallpaper studio (8 curated + 16 Classic, Follow style, Wikimedia
+  Commons), provider/licence hardening, plugin-detail surface, opaque
+  `MenuSurface`/jobs surfaces and the Web `0.2.1 → 0.2.2` hot-update repair.
+  Current release.
 - **0.2.1** — opaque `--dsw-specific-menu` alias and direct-paint sidebar alpha
   matched to the macOS composite. The real `MenuSurface` fill and jobs fill
   tokens were completed in 0.2.2. Published.

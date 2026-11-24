@@ -1,9 +1,9 @@
 # Plugin detail surface and update boundary
 
-Status: **current design note, target `0.2.2`**. Baseline: published
-`dsh-livery@0.2.1`. The client implementation is present in the working tree, but
-0.2.2 has **no acceptance evidence yet** and is not published. Implementation plan
-and acceptance sequencing live in [`0.2.2-plan.md`](0.2.2-plan.md) §5. The
+Status: **current design note for `0.2.2`**. Baseline: published
+`dsh-livery@0.2.1`; `0.2.2` is the current release candidate with bound
+acceptance evidence. Implementation record and acceptance sequencing live in
+[`0.2.2-plan.md`](0.2.2-plan.md) §5. The
 unscheduled DSH Host preflight proposal this note used to be bundled with is not
 part of the package; it lives in the repository at
 `docs/archive/host-update-preflight-proposal.md`.
@@ -90,8 +90,8 @@ The consumed-slot list changes `clientSlotHash()`; expected adapter/contract
 diff is metadata only (the list is not part of adapter identity and
 `catalog-profile-overrides.json` is empty). Verify with `adapter:generate` /
 `contract:regenerate`; if any frozen contract or generated adapter bytes change,
-treat it as an adapter change. Either way the client bundle and all 13 evidence
-files change and must be re-accepted.
+treat it as an adapter change. The client bundle and all 13 evidence files were
+re-accepted on the accepted artifact.
 
 ## Content
 

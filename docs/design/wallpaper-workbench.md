@@ -1,7 +1,6 @@
-# Wallpaper workbench layout (0.2.2 target)
+# Wallpaper workbench layout (0.2.2)
 
-Status: current for the DSH Livery `0.2.2` target release. The published baseline
-is `0.2.1`. This note is versioned with the release so the layout decision and
+Status: current for the released DSH Livery `0.2.2` artifact. This note is versioned with the release so the layout decision and
 its acceptance boundary stay reviewable after later changes.
 
 ## Problem
@@ -44,7 +43,7 @@ Rules:
    grid stretch and the card's flex column, so future copy changes do not reopen
    the mismatch.
 
-## Source picker and presets (0.2.2 target)
+## Source picker and presets (0.2.2)
 
 - The two preset cards are single-select real buttons with `aria-pressed`:
   `No wallpaper` is selected when the selection is `undefined`; `Follow style`
@@ -59,7 +58,7 @@ Rules:
 - Preset export/import covers the style target and attribution URLs in schema v2;
   v1 presets remain importable (details in [interfaces.md](interfaces.md) §6.2).
 
-## Built-in gallery: 8 curated + 16 Classic (0.2.2 target)
+## Built-in gallery: 8 curated + 16 Classic (0.2.2)
 
 - `VISIBLE_BUILTIN_IDS` is fixed, in order: `paper`, `ink`, `aurora`, `cyber`,
   `dusk`, `minimal`, `mono`, `sand` (four light, four dark). The Built-in panel
@@ -76,7 +75,7 @@ Rules:
   preset does not pin anything.
 - No ID is remapped, and a preset referencing a legacy ID still applies.
 
-## Online requests and states (0.2.2 target)
+## Online requests and states (0.2.2)
 
 - **No request on panel mount or app boot.** The default image tab is Built-in,
   so opening the Wallpapers page renders the 8 curated swatches without network.
@@ -167,9 +166,10 @@ No hashed host class selector or `!important` is used to force parity.
   `wallpaper.style-applied` (CSS only, no blob/image-store row),
   `wallpaper.style-disabled-no-catalog` and `wallpaper.attribution-links`.
 - The README wallpaper showcase capture must use a built-in CSS wallpaper (or a
-  CC0/public-domain photo with a documented credit) before packaging, so
+  CC0/public-domain photo with a documented credit) in any packaged build, so
   `NOTICE.md`'s “ships no third-party images” stays true. Visual-acceptance
-  captures follow the same licensing rule.
+  captures follow the same licensing rule; current packaged screenshots show the
+  Visual Style page and no online photos.
 - Layout preview is expected to report 0 high / 0 medium on the accepted
   candidate.
 - Browser acceptance still asserts no horizontal overflow, the two preset cards
@@ -177,11 +177,12 @@ No hashed host class selector or `!important` is used to force parity.
 
 ## Related evidence
 
-- `contracts/dsh/evidence/0.2.1/` — published baseline acceptance (13 scopes).
+- `contracts/dsh/evidence/0.2.2/` — accepted `0.2.2` artifact (13 scopes + the
+  Web `0.2.1 → 0.2.2` update transition).
 - `docs/verification.md` — scope, counts, known limitations.
 - `CHANGELOG.md` — 0.2.2 change record under `[0.2.2]`.
-- 0.2.2 has no acceptance evidence yet; this note's target behaviour must be
-  covered by the re-accepted final candidate before packaging.
+- The accepted `0.2.2` candidate covers this note's layout and wallpaper
+  behavior on all 13 declared scopes.
 
 Any future change to these breakpoints, card order, source picker or preview
 behavior is a user-visible design change: update this note, README, CHANGELOG and

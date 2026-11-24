@@ -7,10 +7,10 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.2.2] — unreleased (target)
+## [0.2.2] — 2026-11-24
 
-目标版本 `0.2.2`（只改客户端）。本条目描述目标行为，不是发布或验收声明：
-`0.2.1` 仍是当前已发布版本，0.2.2 的全部证据必须在同一份最终 tarball 上重新绑定后才成立。
+`0.2.2` 是只改客户端的正式版本，沿用与 `0.2.1` 相同的 8 个 exact-certified 宿主 adapter。
+包内 README/CHANGELOG/设计文档与正式验收 evidence 均绑定同一份最终 tarball。
 
 ### Added
 
@@ -21,7 +21,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 预设 schema v2：新增 `{kind:'style', variant:'mesh'}` 壁纸目标与 attribution URL（creatorUrl/licenseUrl/sourceUrl）；导出固定写 v2，导入同时接受 v1/v2；v1 文件声明 style 会被拒绝（`wallpaper-kind`），v2 style variant 错误使用 `wallpaper-variant`。
 - 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与详情内 `详情/热更新` tabs；不添加复制诊断按钮。不添加更新按钮、不拦截宿主安装控件。slot 声明证明覆盖 8 个宿主中的 6 个；`0.2.1-rc.2`（Web）由运行时 detail 检查覆盖，`0.2.1-rc.3`（Desktop）暂无运行时 detail 检查，作为 per-scope limitation 记录，不是已通过声明。
 - 新增 `contracts/dsh/client-slot-declarations.json`（repo-only 的 per-host slot 声明证明）与 `scripts/client-slots-proof.mjs`；`clientSlotHash()` 随消费的 detail slots 变化，contract 测试与 release-check 校验其一致性。
-- 新增真实升级验收路径：`scripts/acceptance/web.mjs --update-from <0.2.1.tgz>` 在隔离 DSH_HOME 中通过运行中 Host 的 Add plugin 对话框安装候选包，并记录 schema v3 `transition`（from/to sha、无页面重载、stale boot、catalog 重新采用、manager outcome）；配套 `REQUIRED_UPDATE_CHECKS`、`release-evidence` v3 校验和 `prepublish-check --require-update`。本地 0.2.2-rc.5 Web 探针已通过（0.2.1 `78f1c8d1…` → 0.2.2 `3b2e4b38…`，35 pass / 0 fail / 2 skip / 1 warn），正式 evidence 需在冻结候选上重跑并提交。
+- 新增真实升级验收路径：`scripts/acceptance/web.mjs --update-from <0.2.1.tgz>` 在隔离 DSH_HOME 中通过运行中 Host 的 Add plugin 对话框安装候选包，并记录 schema v3 `transition`（from/to sha、无页面重载、stale boot、catalog 重新采用、manager outcome）；配套 `REQUIRED_UPDATE_CHECKS`、`release-evidence` v3 校验和 `prepublish-check --require-update`。正式 evidence 已在冻结候选上重跑并提交（0.2.1 `78f1c8d1…` → 0.2.2 候选，35 pass / 0 fail / 2 skip / 1 warn；无页面重载、stale boot、catalog 重新采用、manager `applied`）。
 - Web HMR stale-boot 修复：`BootCheck` 增加 `stale`；精确 allowlist `STALE_BOOT_VERSIONS = ['0.2.1']`，严格校验已认证 `(hostVersion, adapterId, contractHash)` 三元组、entryId、catalog-profile 严格相等与 accepted；其余版本仍 mismatch/fail closed。stale 路径不采纳 boot CSS，catalog 成功后执行一次 catalog 派生的 `applyConfirmed` 并恢复已保存壁纸/配置。该声明的边界仅为 Web Profile：Desktop 更新后仍需 renderer 重载或重启应用，不声称 Desktop 热更新。
 
 ### Changed

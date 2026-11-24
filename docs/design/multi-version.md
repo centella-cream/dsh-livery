@@ -1,9 +1,7 @@
 # Multi-version policy
 
-**Status (0.2.2 target):** current policy for the DSH Livery `0.2.2` target
-release. The published baseline is `dsh-livery@0.2.1`; `0.2.1` remains the
-current published release until the `0.2.2` candidate is accepted and released.
-This page replaces the earlier compatibility-range/compat-mode proposal, which
+**Status (0.2.2):** current policy for the released DSH Livery `0.2.2`
+artifact. The previous baseline is `dsh-livery@0.2.1`. This page replaces the earlier compatibility-range/compat-mode proposal, which
 was removed and is archived under
 [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
@@ -64,7 +62,7 @@ is still real acceptance work: it must bind the exact signed npm tarball, extrac
 its contract, and pass real host acceptance. If upstream later tags or withdraws
 the build, re-certify or remove the preview entry and say so in the release notes.
 
-**Update boundary (0.2.2 target).** Host/preview acceptance is not a hot-update
+**Update boundary (0.2.2).** Host/preview acceptance is not a hot-update
 claim. The 0.2.2 client accepts a boot payload from exactly one previous build
 (`STALE_BOOT_VERSIONS = ['0.2.1']`), requires strict catalog-profile equality and
 never adopts the stale boot CSS; extending that allowlist is a reviewed release
@@ -101,7 +99,7 @@ minimum sequence is:
    Preserve the old evidence rather than replacing it with an unbound report;
    changing the adapter/matrix/package bytes invalidates every earlier acceptance
    run.
-6. **Update release surfaces.** README/README.zh-CN, CHANGELOG, docs index,
+6. **Update release surfaces.** README/README.zh.md, CHANGELOG, docs index,
    support table, workflow filenames/evidence lists, release scripts and evidence
    paths. Package `files` must include every shipped contract directory and no
    removed/unsupported one.

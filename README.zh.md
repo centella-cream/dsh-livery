@@ -10,28 +10,25 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁的在线图片与虚化/磨砂效果的壁纸
 工作室，以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：`0.2.1` 是当前已发布版本。**
-> 已发布制品为 `dsh-livery@0.2.1`；13 个声明 scope 均已有当前验收证据，发布门禁通过。
-> **`0.2.2` 是下一个目标版本，尚未发布、也尚未验收。** 它还没有验收证据：
-> 下面的 0.2.2 内容描述的是目标行为；在 0.2.2 候选通过完整隔离验收前，已发布制品仍是
-> `dsh-livery@0.2.1`。
+> **发布状态：`0.2.2` 是当前版本（2026-11-24）。**
+> 制品为 `dsh-livery@0.2.2`；13 个声明 scope 与 `0.2.1 → 0.2.2` Web 进程内更新转换均已绑定验收证据。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop、DSH `0.2.2-rc.5` Web/Desktop。
 > `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease；`0.2.2-rc.5` 是 npm
-> `latest` 但仍是 GitHub prerelease，因此两者都保持预览声明。`0.2.1`
+> `latest` 但仍是 GitHub prerelease，因此两者都保持预览声明。`0.2.2`
 > 候选只接受 exact-certified 宿主：未知构建整体 fail closed；Windows Desktop、Edge
 > 和其他 DSH 构建不在支持范围内。
 
 [English](README.md) · 中文
 
-![DSH Livery 0.2.1 视觉风格页：实时预览、当前风格与 28 套风格目录](docs/assets/hero-zh.jpg)
+![DSH Livery 视觉风格页：实时预览、当前风格与 28 套风格目录](docs/assets/hero-zh.jpg)
 
-截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。
+截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。这里的视觉风格页在 `0.2.2` 中未改变；新的壁纸工作室与插件详情面见设计文档和 CHANGELOG。
 
-## 0.2.2 更新（目标）
+## 0.2.2 更新
 
-`0.2.2` 是一个只改客户端的功能版本；在 0.2.2 候选通过验收并发布前，`0.2.1` 仍是已发布制品。
+`0.2.2` 是同一组 8 个 exact-certified 宿主 adapter 上的只改客户端的功能版本；不新增宿主 adapter，也不新增宿主能力。
 
 - **精选壁纸 + Classic 兜底。** 主网格固定展示 8 张精选内置壁纸（`paper`、`ink`、`aurora`、
   `cyber`、`dusk`、`minimal`、`mono`、`sand`）；其余 16 张以 **Classic** 折叠组保留，ID 与
@@ -39,12 +36,12 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
 - **跟随风格（Follow style）。** 新增 `kind:'style'` 背景，由当前 Livery 的 catalog token
   按明/暗模式生成；不可调整焦点；catalog token 不可用时会禁用并给出可见原因。预设 schema v2
   可携带 style 目标与归属链接；v1 预设仍可导入。
-- **两个通过访问门禁的在线图源。** 0.2.2 只提供 **Wikimedia Commons**（Openverse 因匿名限额不可用已移除）：
-  两者都免密钥、已验证 CORS，并返回真实许可/归属元数据。NASA、大都会博物馆和芝加哥艺术
+- **一个通过访问门禁的在线图源。** 0.2.2 只提供 **Wikimedia Commons**（Openverse 通过门禁但因其匿名限额不可用而从提供列表移除）：
+  它免密钥、已验证 CORS，并返回真实许可/归属元数据。NASA、大都会博物馆和芝加哥艺术
   博物馆未列入（权利或图片 CDN 验证受阻）；Picsum 已移除，因为 Unsplash 许可不允许这种
   用途。已有的 Picsum 远程选择仍从缓存渲染，新结果不再携带 Picsum 许可。
 - **可预期的网络行为。** 打开壁纸页不发请求；首次激活 Online 页签只请求一批，之后切换页签
-  不会重新请求，也没有轮询或预取。Auto 在 12 秒总时限内最多尝试两个通过门禁的来源，并标明
+  不会重新请求，也没有轮询或预取。Auto 在 12 秒总时限内尝试已提供且通过门禁的来源，并标明
   实际服务来源；固定来源不会静默切换。空结果与失败状态都有明确显示，并提供重试和回到
   内置/无壁纸的入口。
 - **安全的归属信息。** 创作者、许可和来源链接随选中的远程图片一起保存，按 HTTPS 校验，并以
@@ -93,9 +90,8 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
 
 ## 壁纸
 
-壁纸工作室与实时 16:9 预览（截图将从通过验收的 0.2.2 构建重新采集）。在 0.2.2 目标中，
-打开壁纸页不会触发在线图源请求：默认图片来源是内置，首次激活 Online 页签才会从 Openverse 或
-Wikimedia Commons 请求一批内容，Auto 会标明实际服务来源。模糊、变暗、磨砂和全局氛围作用于
+壁纸工作室与实时 16:9 预览。打开壁纸页不会触发在线图源请求：默认图片来源是内置，
+首次激活 Online 页签才会从 Wikimedia Commons 请求一批内容，Auto 会标明实际服务来源。模糊、变暗、磨砂和全局氛围作用于
 整个界面；焦点位置只对远程和上传壁纸可用，内置和跟随风格背景没有焦点控件。壁纸选择保存在
 本地。
 
@@ -136,20 +132,19 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.2.1`](https://www.npmjs.com/package/dsh-livery)。
-`0.2.2` 目标版本尚未发布；在正式宣布 0.2.2 发布前，不要从 registry 安装它。
+npm 最新发布版：[`dsh-livery@0.2.2`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.2.1
+dsh plugin --profile web add dsh-livery@0.2.2
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.2.1
+dsh plugin --profile desktop add dsh-livery@0.2.2
 ```
 
 包变化后重启 App。也可以在 **设置 → 插件** 中按包名安装。
@@ -159,15 +154,13 @@ sha256。不要安装未校验的 tarball。
 
 ## 验收
 
-`0.2.1` 制品已在 13 个 Web/Desktop scope 上完成隔离全量验收：
+`0.2.2` 制品已在全部 13 个 Web/Desktop scope 上完成隔离全量验收：
 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`、`0.2.2-rc.5`
-（各 275 通过 / 0 失败 / 4 跳过 / 2 警告）与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`、`0.2.2-rc.5`
-（各 35 通过 / 0 失败 / 2 跳过 / 0 警告）。证据绑定在 `contracts/dsh/evidence/0.2.1/`。
-范围、计数和已知限制见 [docs/verification.md](docs/verification.md)。
-
-`0.2.2` 目标版本还没有验收证据。打包前必须在同一份最终 tarball 上重新验收全部 13 个声明
-scope，并在 Web 上运行更新探针：安装精确的已发布 `0.2.1` tarball，通过运行中的宿主插件
-管理器更新到精确候选 tarball。
+与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`、`0.2.2-rc.5`，
+每个 scope 均为 **0 失败**。同时通过运行中的宿主插件管理器完成真实的 `0.2.1 → 0.2.2`
+Web 更新验收：无页面重载、观察到 stale startup frame、catalog 重新采用、manager outcome
+为 `applied`。证据绑定在 `contracts/dsh/evidence/0.2.2/`。范围、精确计数、制品 sha256 和
+已知限制见 [docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release
 门禁、显式预算（client gzip 72 KiB、per-livery/boot CSS 14 KiB、tarball 4 MiB）、provider
@@ -182,6 +175,9 @@ scope，并在 Web 上运行更新探针：安装精确的已发布 `0.2.1` tarb
 
 ## 早期版本
 
+- **0.2.2** — 壁纸工作室（8 精选 + 16 Classic、Follow style、Wikimedia Commons）、
+  provider/许可加固、插件详情面、`MenuSurface`/jobs 表面不透明与 Web
+  `0.2.1 → 0.2.2` 热更新修复。当前版本。
 - **0.2.1** — `--dsw-specific-menu` 别名改为不透明，直接绘制侧栏 alpha 与 macOS 合成路径对齐；真正的 `MenuSurface` fill 与 jobs fill token 在 0.2.2 补齐。已发布。
 - **0.2.0** — 视觉语言升级：13 套本地字体栈、按风格的标签层级、26/28 风格的 L5a Studio
   Decoration、更克制的风格页、v2 presentation axes 与协议加固。详见 [CHANGELOG](CHANGELOG.md)。

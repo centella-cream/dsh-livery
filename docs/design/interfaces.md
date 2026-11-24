@@ -1,11 +1,10 @@
 # Interfaces and architecture
 
-**Status (0.2.2 target):** current implementation reference for the `0.2.2`
-target release; the published baseline is `0.2.1`. The authoritative support
-policy is [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json);
-the exact evidence bound to the published baseline is in
-[`docs/verification.md`](../verification.md), and 0.2.2 evidence must be bound
-after the candidate is accepted. Historical interfaces and pre-0.1.0 design
+**Status (0.2.2):** current implementation reference for the released `0.2.2`
+artifact. The authoritative support policy is
+[`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json);
+the exact evidence bound to the accepted artifact is in
+[`docs/verification.md`](../verification.md). Historical interfaces and pre-0.1.0 design
 notes are under
 [`docs/archive/`](https://github.com/centella-cream/dsh-livery/tree/main/docs/archive).
 
@@ -106,7 +105,7 @@ when the hash matches; otherwise it performs one synchronous replacement.
 Unknown/deleted configured styles fall back to stock without an automatic config
 write.
 
-### 4.1 Stale-boot repair (0.2.2 target)
+### 4.1 Stale-boot repair (0.2.2)
 
 `checkBoot` returns `valid | stale | absent | mismatch`. The only in-process
 repair path is `stale`, and only for an exact allowlisted previous client build:
@@ -171,7 +170,7 @@ diagnostics-copied. Keyboard navigation, `aria-selected`/`aria-pressed` states,
 focus rings, visible selected swatches and readable labels are part of the UI
 contract.
 
-### 6.1 Client slot consumption and per-host proof (0.2.2 target)
+### 6.1 Client slot consumption and per-host proof (0.2.2)
 
 `src/contract/client-slots.ts` freezes the slots Livery consumes, in order:
 `main`, `sidebar.panellist`, `settings.section`, then the appended detail slots
@@ -214,7 +213,7 @@ opaque third-party pages may show no perceptible change and no visual coverage
 is claimed. The local `dsh-charter` example is only a rendering fixture for
 screenshots, not a dependency.
 
-### 6.2 Wallpaper persistence: style sidecar, provenance and preset v2 (0.2.2 target)
+### 6.2 Wallpaper persistence: style sidecar, provenance and preset v2 (0.2.2)
 
 The main record stays 0.2.1-readable: key `dsh-livery.wallpaper.v1`, schema v2,
 `{schemaVersion:2, revision, selection, effects, position}`, selection kinds
@@ -270,7 +269,7 @@ into the main record; it lives in the sidecar `dsh-livery.wallpaper.style.v1` as
   plus `index.json`.
 - `schemas/`, `liveries/` and `contracts/dsh/<version>/` — shipped data.
 
-Client gzip budget is **72 KiB (73,728 B)** for the 0.2.2 target — a reviewed
+Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — a reviewed
 increase from 60 KiB for the wallpaper studio, provider registry and detail
 surface. Per-livery/boot compiled CSS is **14 KiB** and the package tarball cap
 stays at **4 MiB (4,194,304 B)**; `scripts/build.mjs` and the release/probe gates

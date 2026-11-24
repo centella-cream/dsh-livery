@@ -1,8 +1,7 @@
 # Style system: how the 28 styles differ
 
-> **Status (0.2.2 target):** current implementation reference for the `0.2.2`
-> target release; the published baseline is `0.2.1` and `0.2.2` has no
-> acceptance evidence yet. The registry paths and
+> **Status (0.2.2):** current implementation reference for the released `0.2.2`
+> artifact. The registry paths and
 > feature flags below are the shipped style-system contract; the release support
 > matrix is in [`contracts/dsh/support-matrix.json`](../../contracts/dsh/support-matrix.json).
 > The 0.1.9 gallery/recipe expansion is recorded in
@@ -166,18 +165,14 @@ licences).
   the final tarball.
 - Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — an explicit, reviewed
   increase from 60 KiB for the wallpaper studio, provider registry and detail
-  surface. The accepted `0.2.1` probe measured **60,902 B** gzip (230,487 B raw)
-  against its 60 KiB cap; the current `0.2.2` candidate measures **73,630 B**,
-  i.e. **98 B** of headroom. If the final 0.2.2 build exceeds 72 KiB, the detail
-  section is cut or deferred to 0.2.3; the cap is not raised ad hoc.
-- Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog. The
-  current `0.2.2` candidate host bundle measures **15,506 B** gzip (61,649 B
-  raw); `scripts/build.mjs` enforces the cap.
-- Package tarball cap stays at **4 MiB (4,194,304 B)**; the published `0.2.1`
-  tarball is 3,529,494 B and the current `0.2.2` candidate is **≈3.40 MB** (993 files; exact bytes change with every packaged-doc edit and must be re-measured on the frozen candidate after the 0.2.1 online-photo screenshots are replaced).
-  0.2.2 README images are compressed at quality-preserving settings to fit. If
-  the candidate still exceeds the cap, reduce or drop README images in descending
-  size order rather than raising the cap. Those images are README screenshots
+  surface. The accepted `0.2.2` build stays within this cap; the exact measured
+  bytes are recorded by the build gate and the acceptance probe.
+- Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog;
+  `scripts/build.mjs` enforces the cap on the accepted build.
+- Package tarball cap stays at **4 MiB (4,194,304 B)**. The accepted `0.2.2`
+  tarball is within budget; its exact sha256 and byte size are recorded in
+  `contracts/dsh/evidence/0.2.2/`. If a candidate exceeds the cap, reduce or drop
+  README images in descending size order rather than raising the cap. Those images are README screenshots
   only: built-in wallpapers are CSS and online wallpapers are fetched at provider
   resolution at runtime, so this budget never reduces wallpaper rendering
   quality.

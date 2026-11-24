@@ -1,9 +1,7 @@
-# DSH compatibility architecture (0.2.2 target)
+# DSH compatibility architecture (0.2.2)
 
-Status: current for the DSH Livery `0.2.2` target release. The published baseline
-is `0.2.1`; `0.2.1` remains the current published release until the 0.2.2
-candidate is accepted. The previous compatibility model is retained below only as
-context.
+Status: current for the released DSH Livery `0.2.2` artifact. The previous
+compatibility model is retained below only as context.
 
 ## Why the old model broke
 
@@ -46,19 +44,19 @@ host bundle grow by roughly 150 KiB gzip per version.
 - Extending the HMR stale allowlist (`STALE_BOOT_VERSIONS`) is also a reviewed
   release change tied to an accepted transition, not a compatibility fallback.
 
-## Verified baseline: 0.2.1 (published)
+## Verified baseline: 0.2.2 (current)
 
-- The `0.2.1` artifact was accepted on all 13 declared scopes (7 Web + 6
-  Desktop) with isolated `DSH_HOME`, official plugin-manager install of the exact
-  tarball, and committed evidence under `contracts/dsh/evidence/0.2.1/`.
+- The `0.2.2` artifact was accepted on all 13 declared scopes (7 Web + 6 Desktop)
+  with isolated `DSH_HOME`, official plugin-manager install of the exact tarball,
+  and committed evidence under `contracts/dsh/evidence/0.2.2/`.
 - Desktop scopes run the real Electron app; Web scopes run the declared Chrome
   build. Exact counts and the desktop renderer boundary are in
   [`docs/verification.md`](../verification.md).
-- The `0.2.2` target has **no acceptance evidence yet**. Before packaging, every
-  declared scope must be re-accepted on one final tarball, plus the Web update
-  probe below. 0.2.1 evidence is never reused for 0.2.2 bytes.
+- One schema-v3 Web update transition from the exact published `0.2.1` tarball to
+  the accepted `0.2.2` candidate is bound in the same evidence directory. The
+  `0.2.1` evidence is retained but never reused for `0.2.2` bytes.
 
-## Hot update (HMR) — 0.2.2 target
+## Hot update (HMR) — 0.2.2
 
 DSH enables client HMR when the launcher provides `profileContext`; direct
 Plugin Manager operations and profile manifest changes recompose running plugins
