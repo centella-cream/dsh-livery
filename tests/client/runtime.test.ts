@@ -65,6 +65,8 @@ function createHarness(options: {
   document?: FakeDocument
   /** Number of initial catalog fetches that fail (transient HMR outage). */
   fetchFailures?: number
+  /** Optional per-call catalog sequence (stale-catalog retry tests). */
+  catalogSequence?: readonly (LiveryCatalog | undefined)[]
 } = {}): Harness {
   const presenter = new RecordingPresenter()
   const form = options.form ?? new FakeConfigForm({
@@ -79,6 +81,7 @@ function createHarness(options: {
   const doc = options.document ?? new FakeDocument()
   let catalog = 'catalog' in options ? options.catalog : makeCatalog()
   let failures = options.fetchFailures ?? 0
+  const queuedCatalogs = options.catalogSequence === undefined ? undefined : [...options.catalogSequence]
   let fetchCalls = 0
   const runtime = createLiveryRuntime({
     boot: options.boot ?? noBoot(),
@@ -98,6 +101,7 @@ function createHarness(options: {
         failures -= 1
         return undefined
       }
+      if (queuedCatalogs !== undefined && queuedCatalogs.length > 0) return queuedCatalogs.shift()
       return catalog
     },
     locale,
@@ -247,6 +251,50 @@ describe('hot-update recovery (stale boot handshake)', () => {
       expect(snapshot.effectiveId).toBe('fjord')
       expect(harness.presenter.count('adoptBootStyle')).toBe(0)
       expect(harness.presenter.count('applyConfirmed')).toBe(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('treats a previous-build catalog as transient during HMR and retries', async () => {
+    vi.useFakeTimers()
+    try {
+      const catalog = makeCatalog()
+      const previous = { ...catalog, compilerVersion: '0.2.1' } as LiveryCatalog
+      const harness = createHarness({
+        boot: staleBoot({ cssHash: 'sha256:previous-build' }),
+        catalogSequence: [previous, catalog],
+      })
+      harness.runtime.start()
+      await vi.advanceTimersByTimeAsync(1_000)
+      const snapshot = harness.runtime.getSnapshot()
+      expect(snapshot.phase).toBe('ready')
+      expect(snapshot.bootStatus).toBe('stale')
+      expect(snapshot.catalogStatus).toBe('ready')
+      expect(harness.fetchCalls()).toBe(2)
+      expect(harness.presenter.count('applyConfirmed')).toBe(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('fails closed when only a previous-build catalog is available', async () => {
+    vi.useFakeTimers()
+    try {
+      const catalog = makeCatalog()
+      const previous = { ...catalog, compilerVersion: '0.2.1' } as LiveryCatalog
+      const harness = createHarness({
+        boot: staleBoot({ cssHash: 'sha256:previous-build' }),
+        catalogSequence: Array.from({ length: 8 }, () => previous),
+      })
+      harness.runtime.start()
+      await vi.advanceTimersByTimeAsync(10_000)
+      const snapshot = harness.runtime.getSnapshot()
+      expect(snapshot.phase).toBe('degraded')
+      expect(snapshot.catalogStatus).toBe('unavailable')
+      expect(snapshot.effectiveId).toBe('stock')
+      expect(harness.fetchCalls()).toBe(8)
+      expect(harness.presenter.count('applyConfirmed')).toBe(0)
     } finally {
       vi.useRealTimers()
     }

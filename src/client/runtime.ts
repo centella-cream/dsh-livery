@@ -20,7 +20,7 @@ import type {
   CompiledLivery,
   LiveryCatalog,
 } from '../core/types.js'
-import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, STOCK_ID } from '../core/types.js'
+import { BODY_ATTRIBUTE, HASH_ATTRIBUTE, LIVERY_VERSION, STOCK_ID } from '../core/types.js'
 import type { BootCheck } from './handshake.js'
 import { normalizeLocale } from './handshake.js'
 import {
@@ -616,12 +616,21 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     // cold start still fails immediately.
     const attempts = hotReloaded ? 8 : 1
     for (let attempt = 0; attempt < attempts; attempt += 1) {
+      let fetched: LiveryCatalog | undefined
       try {
-        catalog = await this.deps.fetchCatalog()
+        fetched = await this.deps.fetchCatalog()
       } catch {
-        catalog = undefined
+        fetched = undefined
       }
-      if (catalog !== undefined || this.disposed || generation !== this.generation) break
+      // A stale boot means the Host is mid-replacement. A successfully fetched
+      // catalog compiled by the previous build is not proof of success: the
+      // renderer would otherwise apply stale CSS and stop retrying. Treat a
+      // mismatched compilerVersion as a transient failure on this path only.
+      if (fetched !== undefined && (!hotReloaded || fetched.compilerVersion === LIVERY_VERSION)) {
+        catalog = fetched
+        break
+      }
+      if (this.disposed || generation !== this.generation) break
       if (attempt + 1 < attempts) {
         await new Promise(resolve => setTimeout(resolve, Math.min(1000, 250 * (attempt + 1))))
       }
