@@ -52,6 +52,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 style sidecar 事件不被观察与 clear 顺序：controller 现在订阅 sidecar key，clear 按 plan 先删 sidecar 再写 tombstone；补 winner/sidecar-key 事件测试。
 - 修复宿主浮层菜单的真实表面：0.2.1 只把 `--dsw-specific-menu` 改成不透明，但 `MenuSurface.module.css` 实际绘制用 `--dsw-menu-surface-fill`，且 jobs live row 直接读取未声明的 `--dsw-alias-fill-l1/l2`。0.2.2 现在拥有 `menu-surface-fill`（不透明 layer-1，与 `specific-menu` 同步）并强制输出 `fill-l1/l2`（layer-1/2）；stock style + wallpaper 时通过 `body[data-dsh-wallpaper]:not([data-dsh-livery])` 补齐同样的不透明表面。0.2.1 的 `specific-menu` 修复不覆盖这些表面。
 - 移除 **Openverse** 内置图源：匿名 API 的每日限额/注册要求使其在真实使用中不可用；0.2.2 不再在来源选择器、Auto 或搜索结果中提供 Openverse。已保存的旧 Openverse 选择仍可通过 legacy 缓存/免责声明路径渲染，但不会发起新 Openverse 请求；相关 unit/acceptance 覆盖需随正式验收更新。
+- 中文 README 现在通过 `locale/zh.json` 的 `meta.detail: "README.zh.md"` 交给 DSH plugin-detail 读取；仅把文件命名为 README.zh.md 不会被宿主自动选中。
 - 移除插件详情的 “复制诊断信息” 操作：它只是把格式化诊断文本写入剪贴板，没有反馈提交/遥测，属于非必要复杂度；Livery 自检面板仍保留诊断信息。
 - `<code>README.zh-CN.md</code>` 重命名为 `<code>README.zh.md</code>`：符合 DSH 插件详情 README 的语言约定（`README.md` 默认、`README.zh.md` 中文、缺省回退默认），无协议风险；同步更新 package files、lint、release-check 与文档链接。
 - 移除在线壁纸打开页面即自动请求 Picsum 批次的行为。

@@ -36,6 +36,14 @@ two inspected packages, not as a cross-host guarantee.
 The Host owns installation, update policy, HMR and restart. Livery shows facts
 and truthful boundary copy; it does not own or duplicate the update control.
 
+## README localization
+
+The plugin detail document is host-owned. DSH selects a package's detail document
+from `locale/<language>.json` `meta.detail`, then falls back to the package
+README. Livery ships `locale/zh.json` with `meta.detail: "README.zh.md"`;
+`README.md` remains the default/fallback. Renaming the Chinese README alone is
+not enough, and no license term changes: these are ordinary documentation files.
+
 ## Slot facts (inspected on DSH 0.2.1-rc.5 and 0.2.2-rc.5 packages)
 
 - All three keys exist in both inspected plugin-manager client packages. The
