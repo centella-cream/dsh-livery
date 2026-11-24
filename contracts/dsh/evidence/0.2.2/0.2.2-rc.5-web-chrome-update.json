@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 3,
+  "commit": "2cc363e492cdad2d48d959b84b976bb898a6bc35",
+  "packageVersion": "0.2.2",
+  "tarballSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+  "tarballBytes": 3417842,
+  "generatedAt": "2026-11-24T14:36:10.388Z",
+  "scope": {
+    "hostVersion": "0.2.2-rc.5",
+    "profile": "web",
+    "browser": "chrome",
+    "browserVersion": "156.0.8078.48"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.2-rc.5",
+      "profile": "web",
+      "browser": "chrome",
+      "browserVersion": "156.0.8078.48"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "22.23.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.5",
+        "npmVersion": "0.2.2-rc.5"
+      }
+    }
+  },
+  "criticalChecks": [
+    {
+      "id": "env.certified-host",
+      "status": "pass",
+      "title": "dsh CLI host version maps to a certified adapter record"
+    },
+    {
+      "id": "env.browser-version",
+      "status": "pass",
+      "title": "actual full Chrome version matches the exact certified browser version requirement"
+    },
+    {
+      "id": "update.from-artifact-verified",
+      "status": "pass",
+      "title": "the --update-from tarball is the exact artifact bound by committed acceptance evidence"
+    },
+    {
+      "id": "update.from-installed",
+      "status": "pass",
+      "title": "the isolated profile runs the exact previous artifact: boot payload, live client build and installed package are the from version"
+    },
+    {
+      "id": "update.dialog-available",
+      "status": "pass",
+      "title": "the running Host plugin-manager page exposes the Add plugin install dialog for a local tarball path"
+    },
+    {
+      "id": "update.dialog-install-completed",
+      "status": "pass",
+      "title": "the Host install dialog settles with an applied installation"
+    },
+    {
+      "id": "update.manager-outcome",
+      "status": "pass",
+      "title": "the Host plugin manager reports the update as applied (not restart-required)"
+    },
+    {
+      "id": "update.new-client-bundle-loaded",
+      "status": "pass",
+      "title": "the running Host delivers the new client bundle through its in-page module reloader"
+    },
+    {
+      "id": "update.no-page-navigation",
+      "status": "pass",
+      "title": "the update happens without any page navigation or reload (window sentinel, timeOrigin, navigation count, load events)"
+    },
+    {
+      "id": "update.boot-payload-previous",
+      "status": "pass",
+      "title": "the first-frame boot payload is still the previous build (no page reload injected a new one)"
+    },
+    {
+      "id": "update.live-client-build-candidate",
+      "status": "pass",
+      "title": "the live client build is the candidate version while the boot payload stays the previous version"
+    },
+    {
+      "id": "update.catalog-refetched",
+      "status": "pass",
+      "title": "the updated client re-fetches a catalog compiled by the candidate version after the in-process update"
+    },
+    {
+      "id": "update.catalog-applied",
+      "status": "pass",
+      "title": "the updated client re-applies the saved style from the re-fetched catalog"
+    },
+    {
+      "id": "update.stale-boot-observed",
+      "status": "pass",
+      "title": "the updated client classifies the surviving startup frame as stale (handshake reason + truthful boundary copy)"
+    },
+    {
+      "id": "update.detail-section-renders",
+      "status": "pass",
+      "title": "the plugin-detail badge and facts section render the candidate build and stale handshake after the update"
+    },
+    {
+      "id": "update.transition-recorded",
+      "status": "pass",
+      "title": "the schema-v3 update transition records both exact artifacts, the Host-dialog trigger and the observed in-process outcome"
+    }
+  ],
+  "transition": {
+    "fromVersion": "0.2.1",
+    "fromSha256": "78f1c8d108e5647dd666f6489b7766b11877f812c42519e314f8174dbb9b55a7",
+    "fromBytes": 3529494,
+    "toVersion": "0.2.2",
+    "toSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+    "trigger": "host-install-dialog",
+    "pageReloaded": false,
+    "staleBootObserved": true,
+    "catalogReadopted": true,
+    "managerOutcome": "applied"
+  },
+  "updateFrom": {
+    "version": "0.2.1",
+    "sha256": "78f1c8d108e5647dd666f6489b7766b11877f812c42519e314f8174dbb9b55a7",
+    "bytes": 3529494
+  },
+  "auditEnvelopes": [
+    {
+      "path": "contracts/dsh/evidence/0.2.2/audit-envelopes/sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94-audit-envelope.json",
+      "sha256": "4967d838befd4b3d6c6ec527110de1e3ef75b3dee8b47a9e8e78a3ee2aad0238"
+    }
+  ],
+  "runs": [
+    {
+      "id": "0.2.2-rc.5-web-update",
+      "commit": "2cc363e492cdad2d48d959b84b976bb898a6bc35",
+      "hostVersion": "0.2.2-rc.5",
+      "adapterId": "dsh-0.2.2-rc.5-r1",
+      "tarballSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+      "summary": {
+        "pass": 35,
+        "fail": 0,
+        "skip": 2,
+        "warn": 1,
+        "total": 38
+      },
+      "probe": "contracts/dsh/evidence/0.2.2/probes/0.2.2-rc.5-web-update.json",
+      "probeSha256": "da7744378359d441120c08b34bae89b4390d158375f8378e6759a533710c0247",
+      "report": "contracts/dsh/evidence/0.2.2/reports/0.2.2-rc.5-web-update.md",
+      "reportSha256": "1d3996353b559abc4500b949325b57f767ab64c9e539885e35755a5121486ab3"
+    }
+  ]
+}

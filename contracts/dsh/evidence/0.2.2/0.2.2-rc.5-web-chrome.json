@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 2,
+  "commit": "2cc363e492cdad2d48d959b84b976bb898a6bc35",
+  "packageVersion": "0.2.2",
+  "tarballSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+  "tarballBytes": 3417842,
+  "generatedAt": "2026-11-24T14:36:10.329Z",
+  "scope": {
+    "hostVersion": "0.2.2-rc.5",
+    "profile": "web",
+    "browser": "chrome",
+    "browserVersion": "156.0.8078.48"
+  },
+  "target": {
+    "scope": {
+      "hostVersion": "0.2.2-rc.5",
+      "profile": "web",
+      "browser": "chrome",
+      "browserVersion": "156.0.8078.48"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "22.23.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.5",
+        "npmVersion": "0.2.2-rc.5"
+      }
+    }
+  },
+  "criticalChecks": [
+    {
+      "id": "env.browser-version",
+      "status": "pass",
+      "title": "actual full Chrome version matches the exact certified browser version requirement"
+    },
+    {
+      "id": "handshake.certified-adapter",
+      "status": "pass",
+      "title": "live host matches a certified adapter record (exact version + adapter + contract + catalog profile)"
+    },
+    {
+      "id": "catalog.certified-identity",
+      "status": "pass",
+      "title": "catalog reports a certified (hostVersion, adapterId, contractHash, catalogProfile) quadruple"
+    },
+    {
+      "id": "merged.two-tab-sync",
+      "status": "pass",
+      "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops"
+    },
+    {
+      "id": "merged.two-tab-clear",
+      "status": "pass",
+      "title": "clearing wallpaper in page A clears page B through the same sync path"
+    },
+    {
+      "id": "merged.state-migration-v1",
+      "status": "pass",
+      "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored"
+    },
+    {
+      "id": "merged.preset-import-diff",
+      "status": "pass",
+      "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position"
+    },
+    {
+      "id": "merged.preset-apply-atomic",
+      "status": "pass",
+      "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action"
+    },
+    {
+      "id": "merged.preset-invalid-rejected",
+      "status": "pass",
+      "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage"
+    },
+    {
+      "id": "merged.preset-partial-failure",
+      "status": "pass",
+      "title": "injected wallpaper-persistence failure applies the style, shows an explicit retry (no false success), and retry applies wallpaper with coherent attribution"
+    },
+    {
+      "id": "merged.position-remote",
+      "status": "pass",
+      "title": "nine-grid position applies to page/overlay/hero for remote wallpapers and persists as state-v2 position"
+    },
+    {
+      "id": "merged.clear-local-data",
+      "status": "pass",
+      "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache"
+    },
+    {
+      "id": "merged.preset-style-roundtrip",
+      "status": "pass",
+      "title": "importing and applying the exported style preset restores the CSS-only style selection through the sidecar"
+    },
+    {
+      "id": "merged.preset-v2-attribution",
+      "status": "pass",
+      "title": "preset v2 attribution URLs survive import/apply into the selection and render as safe new-tab links"
+    },
+    {
+      "id": "wallpaper.no-request-before-online",
+      "status": "pass",
+      "title": "opening the wallpaper page makes no provider request and shows the offline Built-in gallery by default"
+    },
+    {
+      "id": "wallpaper.online-first-batch",
+      "status": "pass",
+      "title": "the first activation of the Online tab performs exactly one Wikimedia Commons batch for Auto (no mount-time batch)"
+    },
+    {
+      "id": "wallpaper.provider-selector",
+      "status": "pass",
+      "title": "the Online tab exposes a native provider <select> with Auto and Wikimedia Commons only (Openverse is not offered)"
+    },
+    {
+      "id": "wallpaper.provider-served-by",
+      "status": "pass",
+      "title": "Auto names the provider that served the results in a polite live region"
+    },
+    {
+      "id": "wallpaper.builtin-visible-8",
+      "status": "pass",
+      "title": "the Built-in tab renders exactly the 8 curated offline swatches in order"
+    },
+    {
+      "id": "wallpaper.builtin-classic",
+      "status": "pass",
+      "title": "a collapsed Classic group holds the other 16 designs, every one of the 24 ids renders exactly once"
+    },
+    {
+      "id": "wallpaper.style-card",
+      "status": "pass",
+      "title": "Follow style is a single-select preset card; selecting it renders the generated style hero and clears the image-only controls"
+    },
+    {
+      "id": "wallpaper.attribution-links",
+      "status": "pass",
+      "title": "a CC BY result renders creator/licence/source links as safe new-tab https anchors and keeps them in the selection"
+    },
+    {
+      "id": "plugin.detail-section-renders",
+      "status": "pass",
+      "title": "the Livery bundle detail page renders the live-build badge, the facts section and the Open Livery / hot-update actions"
+    },
+    {
+      "id": "plugin.detail-subject-filter",
+      "status": "pass",
+      "title": "Livery detail contributions render nothing for other bundles, rows and official items"
+    },
+    {
+      "id": "visual.menu-surface-opaque",
+      "status": "pass",
+      "title": "host MenuSurface --dsw-menu-surface-fill resolves fully opaque under a Livery style"
+    },
+    {
+      "id": "visual.floating-surfaces",
+      "status": "pass",
+      "title": "host Settings modal stays opaque above frost+atmosphere"
+    }
+  ],
+  "auditEnvelopes": [
+    {
+      "path": "contracts/dsh/evidence/0.2.2/audit-envelopes/sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94-audit-envelope.json",
+      "sha256": "4967d838befd4b3d6c6ec527110de1e3ef75b3dee8b47a9e8e78a3ee2aad0238"
+    }
+  ],
+  "runs": [
+    {
+      "id": "0.2.2-rc.5-web",
+      "commit": "2cc363e492cdad2d48d959b84b976bb898a6bc35",
+      "hostVersion": "0.2.2-rc.5",
+      "adapterId": "dsh-0.2.2-rc.5-r1",
+      "tarballSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+      "summary": {
+        "pass": 299,
+        "fail": 0,
+        "skip": 9,
+        "warn": 2,
+        "total": 310
+      },
+      "probe": "contracts/dsh/evidence/0.2.2/probes/0.2.2-rc.5-web.json",
+      "probeSha256": "24bbc49c25731e3028bea154a6cc94849f9b8a17efc2f7c98b78b3fcf1d7cd72",
+      "report": "contracts/dsh/evidence/0.2.2/reports/0.2.2-rc.5-web.md",
+      "reportSha256": "0434832491e84fdf9183a416801c22d378b93e8bdc203926c02f7715c90b7d65"
+    }
+  ]
+}
