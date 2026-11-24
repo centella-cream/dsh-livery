@@ -261,7 +261,7 @@ The 0.2.2 probe replaces 0.2.1's fixed Picsum-batch checks and adds:
   `wallpaper.attribution-links`;
 - plugin detail surface: `plugin.detail-section-renders`,
   `plugin.detail-subject-filter`, `plugin.detail-config-slot-clean`,
-  `plugin.detail-no-config-slot`, `plugin.detail-copy-diagnostics`;
+  `plugin.detail-no-config-slot`;
 - host floating surfaces: `visual.menu-surface-opaque` verifies the real
   computed `--dsw-menu-surface-fill` / `--dsw-alias-fill-l1/l2` cascade is fully
   opaque; `visual.jobs-popover-opaque` and `visual.stock-wallpaper-menu-opaque`

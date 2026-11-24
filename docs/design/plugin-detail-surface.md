@@ -117,8 +117,9 @@ The badge shows only an observable fact, e.g. `Livery 0.2.2`. No “Hot update�
 - **Open Livery** — call the public `ctx.layout.selectPanel('livery')`, rendered
   only when Livery's `main` panel registration is present on this host; the call
   throws for an unregistered key.
-- **Copy diagnostics** — reuse the existing `formatDiagnostics` and clipboard
-  helper, announcing copied/failed via a live region.
+- **热更新** — scroll to and select the Livery detail's hot-update tab. There is
+  no copy-diagnostics action in the plugin detail surface; diagnostics remain in
+  the Livery self-check panel.
 - No update button, no disabled duplicate, no interception of the Host install
   control. The Host's own control stays the only update path.
 
@@ -166,10 +167,10 @@ update path; desktop copy must not promise a hot client swap.
   boundary copy.
 - `stale` shows the hot-reload note when the catalog is ready; `stale` +
   degraded shows the catalog-unavailable note; `mismatch` shows reload-required.
-- Open Livery hidden when the main panel is not registered; Copy diagnostics
-  announces success/failure.
+- Open Livery hidden when the main panel is not registered. The detail surface
+  does not add a copy-diagnostics action.
 - Acceptance: `plugin.detail-section-renders`, `plugin.detail-subject-filter`,
-  `plugin.detail-no-config-slot`, `plugin.detail-copy-diagnostics`, plus the
+  `plugin.detail-no-config-slot`, plus the
   visual matrix (1440/1024/767/390, light/dark, keyboard focus, forced-colors,
   reduced-transparency) on Web and Desktop fresh installs.
 - Coverage limits: the per-host declaration proof covers 6 of the 8 declared

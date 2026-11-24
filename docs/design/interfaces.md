@@ -197,7 +197,7 @@ adapter byte change is reviewed as an adapter change.
   `subject.kind === 'bundle' && subject.pkg.name === 'dsh-livery'`. Livery does
   not use `plugins.bundle.config` (the bundle config body) or `plugins.item`
   (official settings pages). Actions are limited to Open Livery (rendered only
-  while the main panel registration is live) and Copy diagnostics — no update
+  while the main panel registration is live) and a hot-update tab jump — no copy-diagnostics action, no update
   button and no interception of the host's install control.
 - The detail section shows observable facts only: client build and installed
   package version, boot handshake state and reason, host version/adapter/contract
