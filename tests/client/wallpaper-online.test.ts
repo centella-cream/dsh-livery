@@ -341,12 +341,10 @@ describe('online studio — capability-gated actions', () => {
 })
 
 describe('online studio — real provider transport (no network)', () => {
-  it('fails over inside one Auto batch and names the serving provider', async () => {
+  it('Auto uses the one offered provider and names it', async () => {
     const calls: string[] = []
     const fetchMock = vi.fn(async (input: unknown) => {
-      const url = String(input)
-      calls.push(url)
-      if (url.startsWith('https://api.openverse.org/')) return jsonResponse({}, 500)
+      calls.push(String(input))
       return jsonResponse(wikimediaPage())
     })
     vi.stubGlobal('fetch', fetchMock)
@@ -359,10 +357,8 @@ describe('online studio — real provider transport (no network)', () => {
       expect(snapshot.servedBy).toBe('wikimedia')
       expect(snapshot.results).toHaveLength(1)
       expect(snapshot.results[0]?.fullUrl).toBe('https://upload.wikimedia.org/sea.jpg')
-      // One Auto batch = at most two provider attempts, never more.
-      expect(calls).toHaveLength(2)
-      expect(calls[0]).toContain('api.openverse.org')
-      expect(calls[1]).toContain('commons.wikimedia.org')
+      expect(calls).toHaveLength(1)
+      expect(calls[0]).toContain('commons.wikimedia.org')
     } finally {
       vi.unstubAllGlobals()
     }

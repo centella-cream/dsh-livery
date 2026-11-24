@@ -66,7 +66,7 @@ import type {
   WallpaperSelection,
   WallpaperUrlProblem,
 } from '../wallpaper.js'
-import { PROVIDERS, providerById, providerImagePolicy } from '../wallpaper/providers.js'
+import { OFFERED_PROVIDERS, providerById, providerImagePolicy } from '../wallpaper/providers.js'
 import type { ImageHostPolicy, ProviderFailure, ProviderId, WallpaperProviderResult } from '../wallpaper/providers.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
@@ -897,19 +897,11 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
           : t('wallpaper.status.failed')
   const providerOptions: readonly { id: ProviderChoice; label: string }[] = [
     { id: 'auto', label: t('wallpaper.providerAuto') },
-    ...PROVIDERS.map(provider => ({
+    ...OFFERED_PROVIDERS.map(provider => ({
       id: provider.id as ProviderChoice,
       label: provider.label[snapshot.locale === 'zh' ? 'zh-CN' : 'en-US'],
     })),
   ]
-  // Openverse ToS §4 (trademark): whenever Openverse is the selected/served
-  // source OR the currently applied wallpaper has persisted Openverse
-  // provenance (reload/preset/Recent), state prominently that this work merely
-  // *uses* Openverse and is neither endorsed nor certified by it.
-  const openverseNoticeVisible = online.provider === 'openverse'
-    || online.servedBy === 'openverse'
-    || credit?.providerId === 'openverse'
-
   const presetWallpaperTarget = async (target: PresetWallpaperTarget): Promise<boolean> => {
     const active = controller
     if (active === undefined) return false
@@ -1221,11 +1213,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                 </select>
               </div>
               <p className="livery-ui-card__hint">{t('wallpaper.providerHint')}</p>
-              {openverseNoticeVisible && (
-                <p className="livery-ui-card__hint" data-testid="wallpaper-openverse-notice">
-                  {t('wallpaper.online.openverseNotice')}
-                </p>
-              )}
+
               <div className={SEARCH}>
                 <Input
                   data-testid="wallpaper-search"

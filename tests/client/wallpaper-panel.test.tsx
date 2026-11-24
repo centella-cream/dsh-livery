@@ -362,12 +362,10 @@ describe('online request policy (panel)', () => {
     expect(html).toContain('>Source<')
     expect(html).toContain('data-testid="wallpaper-provider"')
     const autoIndex = html.indexOf('value="auto"')
-    const openverseIndex = html.indexOf('value="openverse"')
     const wikimediaIndex = html.indexOf('value="wikimedia"')
     expect(autoIndex).toBeGreaterThan(-1)
-    expect(autoIndex).toBeLessThan(openverseIndex)
-    expect(openverseIndex).toBeLessThan(wikimediaIndex)
-    expect(html).toContain('>Openverse<')
+    expect(autoIndex).toBeLessThan(wikimediaIndex)
+    expect(html).not.toContain('value="openverse"')
     expect(html).toContain('>Wikimedia Commons<')
   })
 
@@ -387,57 +385,7 @@ describe('online request policy (panel)', () => {
     expect(html).toMatch(/data-testid="wallpaper-refresh"[^>]*disabled/)
   })
 
-  it('shows the Openverse non-endorsement notice when Openverse is selected or serves Auto', async () => {
-    // Auto idle: nothing selected or served, so no notice.
-    expect(renderPanel()).not.toContain('data-testid="wallpaper-openverse-notice"')
 
-    // A persisted Openverse selection (reload/preset/Recent) keeps the notice
-    // even when the Online studio has never run in this page session.
-    controller.setSelection({
-      kind: 'remote',
-      url: 'https://api.openverse.org/v1/images/result-1/thumb/',
-      provenance: { providerId: 'openverse', title: 'Persisted result' },
-    })
-    expect(renderPanel()).toContain('data-testid="wallpaper-openverse-notice"')
-    controller.clear()
-
-    // Selected explicitly: always visible, even before a request runs.
-    const selected = createOnlineStudio({
-      fetchPage: async () => ({ ok: true, results: [resultFixture()], servedBy: 'wikimedia' }),
-    })
-    selected.setProvider('openverse')
-    const selectedHtml = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: selected })
-    expect(selectedHtml).toContain('data-testid="wallpaper-openverse-notice"')
-    expect(selectedHtml).toContain('Made using Openverse. Not endorsed or certified by Openverse.')
-
-    // Served by Auto: shown for Openverse ...
-    const servedOpenverse = await activatedStudio({
-      ok: true,
-      results: [resultFixture({ providerId: 'openverse' })],
-      servedBy: 'openverse',
-    })
-    expect(renderPanel(enUS as unknown as Dict, READY, { onlineStudio: servedOpenverse }))
-      .toContain('data-testid="wallpaper-openverse-notice"')
-
-    // ... and not misleadingly for Wikimedia-only Auto results.
-    const servedWikimedia = await activatedStudio({
-      ok: true,
-      results: [resultFixture()],
-      servedBy: 'wikimedia',
-    })
-    expect(renderPanel(enUS as unknown as Dict, READY, { onlineStudio: servedWikimedia }))
-      .not.toContain('data-testid="wallpaper-openverse-notice"')
-  })
-
-  it('localizes the Openverse notice in Chinese', () => {
-    const studio = createOnlineStudio({
-      fetchPage: async () => ({ ok: true, results: [], servedBy: 'openverse' }),
-    })
-    studio.setProvider('openverse')
-    const html = renderPanel(zhCN as unknown as Dict, READY_ZH, { onlineStudio: studio })
-    expect(html).toContain('data-testid="wallpaper-openverse-notice"')
-    expect(html).toContain('使用 Openverse 制作，未获得 Openverse 认可或认证。')
-  })
 
   it('renders licence-less results as readable but non-selectable', async () => {
     const studio = await activatedStudio({

@@ -64,7 +64,6 @@ export const enUS = {
   'wallpaper.providerLabel': 'Source',
   'wallpaper.providerAuto': 'Auto',
   'wallpaper.providerHint': 'Auto tries sources in order; switching clears results.',
-  'wallpaper.online.openverseNotice': 'Made using Openverse. Not endorsed or certified by Openverse.',
   'wallpaper.searchUnavailable': 'This source cannot search; pick another source.',
   'wallpaper.randomUnavailable': 'This source has no random images; pick another.',
   'wallpaper.status.loading': 'Loading wallpapers…',

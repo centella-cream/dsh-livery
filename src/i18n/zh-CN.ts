@@ -62,7 +62,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.providerLabel': '来源',
   'wallpaper.providerAuto': '自动',
   'wallpaper.providerHint': 'Auto 按顺序尝试来源；切换会清空结果。',
-  'wallpaper.online.openverseNotice': '使用 Openverse 制作，未获得 Openverse 认可或认证。',
   'wallpaper.searchUnavailable': '此来源不支持搜索；请换来源。',
   'wallpaper.randomUnavailable': '此来源没有随机图片；请换来源。',
   'wallpaper.status.loading': '正在加载壁纸…',

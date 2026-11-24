@@ -176,7 +176,7 @@ describe('provider registry (gate order, no rejected providers)', () => {
   it('lists exactly the two gate-accepted providers in gate order', () => {
     expect(PROVIDERS.map(provider => provider.id)).toEqual(['openverse', 'wikimedia'])
     expect(Object.isFrozen(PROVIDERS)).toBe(true)
-    expect(autoProviders().map(provider => provider.id)).toEqual(['openverse', 'wikimedia'])
+    expect(autoProviders().map(provider => provider.id)).toEqual(['wikimedia'])
     expect(PROVIDERS.filter(provider => provider.id === ('picsum' as ProviderId))).toEqual([])
   })
 
@@ -203,7 +203,7 @@ describe('provider registry (gate order, no rejected providers)', () => {
   })
 
   it('filters providers by capability in registry order', () => {
-    expect(providersForCapability('search').map(provider => provider.id)).toEqual(['openverse', 'wikimedia'])
+    expect(providersForCapability('search').map(provider => provider.id)).toEqual(['wikimedia'])
     expect(providersForCapability('random').map(provider => provider.id)).toEqual(['wikimedia'])
   })
 
@@ -697,9 +697,8 @@ describe('Wikimedia Commons provider', () => {
 /* -------------------------------------------------------------------------- */
 
 describe('fetchOnlinePage', () => {
-  it('fails over from Openverse to Wikimedia and names the provider that served', async () => {
+  it('Auto uses the offered Wikimedia provider and names it', async () => {
     const calls = stubHosts({
-      'api.openverse.org': () => new Response('down', { status: 500 }),
       'commons.wikimedia.org': () => wikimediaPage(),
     })
     const outcome = await fetchOnlinePage({ provider: 'auto', query: 'sea', pageSize: 12 })
@@ -708,15 +707,11 @@ describe('fetchOnlinePage', () => {
     expect(outcome.servedBy).toBe('wikimedia')
     expect(outcome.results.length).toBeGreaterThan(0)
     expect(outcome.nextCursor).toBeDefined()
-    expect(calls.map(call => call.url.hostname)).toEqual([
-      'api.openverse.org',
-      'commons.wikimedia.org',
-    ])
+    expect(calls.map(call => call.url.hostname)).toEqual(['commons.wikimedia.org'])
   })
 
   it('returns the last failure with the tried provider names when Auto cannot serve', async () => {
     stubHosts({
-      'api.openverse.org': () => new Response('', { status: 500 }),
       'commons.wikimedia.org': () => new Response('', { status: 429, headers: { 'retry-after': '3' } }),
     })
     const outcome = await fetchOnlinePage({ provider: 'auto', query: 'sea', pageSize: 12 })
@@ -724,7 +719,7 @@ describe('fetchOnlinePage', () => {
       ok: false,
       failure: 'rate-limited',
       retryAfterMs: 3000,
-      tried: ['openverse', 'wikimedia'],
+      tried: ['wikimedia'],
     })
   })
 
@@ -798,16 +793,15 @@ describe('fetchOnlinePage', () => {
       }))
       vi.stubGlobal('fetch', hangingFetch)
       const pending = fetchOnlinePage({ provider: 'auto', query: 'sea', pageSize: 12 })
-      // At the 6 s per-attempt timeout the first attempt is abandoned and the
-      // second provider attempt starts immediately (it gets the remaining 6 s).
+      // Only Wikimedia is offered, so one attempt consumes the per-attempt
+      // timeout and there is no second provider to fail over to.
       await vi.advanceTimersByTimeAsync(ONLINE_ATTEMPT_TIMEOUT_MS)
-      expect(hangingFetch).toHaveBeenCalledTimes(2)
-      await vi.advanceTimersByTimeAsync(ONLINE_PAGE_DEADLINE_MS - ONLINE_ATTEMPT_TIMEOUT_MS)
+      expect(hangingFetch).toHaveBeenCalledTimes(1)
       const outcome = await pending
       expect(outcome).toEqual({
         ok: false,
         failure: 'timeout',
-        tried: ['openverse', 'wikimedia'],
+        tried: ['wikimedia'],
       })
     } finally {
       vi.useRealTimers()
@@ -822,7 +816,7 @@ describe('fetchOnlinePage', () => {
       const pending = fetchOnlinePage({ provider: 'auto', query: 'sea', pageSize: 12, deadlineMs: 120 })
       await vi.advanceTimersByTimeAsync(120)
       const outcome = await pending
-      expect(outcome).toEqual({ ok: false, failure: 'timeout', tried: ['openverse'] })
+      expect(outcome).toEqual({ ok: false, failure: 'timeout', tried: ['wikimedia'] })
       expect(hangingFetch).toHaveBeenCalledTimes(1)
     } finally {
       vi.useRealTimers()

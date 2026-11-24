@@ -909,16 +909,26 @@ const wikimediaProvider: WallpaperProvider = Object.freeze({
 /** Empty policy used for foreign ids (fail closed: no images allowed). */
 const EMPTY_IMAGE_POLICY: ImageHostPolicy = Object.freeze({ imageHosts: Object.freeze([]) })
 
-/** Gate-accepted providers in gate (Auto) order: Openverse, Wikimedia Commons. */
+/** All registered providers, including legacy ids kept for old selections. */
 export const PROVIDERS: readonly WallpaperProvider[] = Object.freeze([
   openverseProvider,
   wikimediaProvider,
 ])
 
-/** Capability-filtered provider lists (precomputed; registry order preserved). */
+/**
+ * Providers offered in the 0.2.2 UI and tried by Auto. Openverse remains
+ * resolvable for already-stored selections/presets, but anonymous rate limits
+ * (200 requests/day; no usable random mode; no fully open keyless policy) made
+ * it unusable as a built-in source, so it is deliberately not offered.
+ */
+export const OFFERED_PROVIDERS: readonly WallpaperProvider[] = Object.freeze([
+  wikimediaProvider,
+])
+
+/** Capability-filtered offered-provider lists (precomputed; registry order preserved). */
 const CAPABILITY_PROVIDERS: Readonly<Record<'search' | 'random', readonly WallpaperProvider[]>> = Object.freeze({
-  search: Object.freeze(PROVIDERS.filter(provider => provider.capabilities.search)),
-  random: Object.freeze(PROVIDERS.filter(provider => provider.capabilities.random)),
+  search: Object.freeze(OFFERED_PROVIDERS.filter(provider => provider.capabilities.search)),
+  random: Object.freeze(OFFERED_PROVIDERS.filter(provider => provider.capabilities.random)),
 })
 
 /**
@@ -935,7 +945,7 @@ export function providerById(id: string): WallpaperProvider | undefined {
  * @returns every gate-accepted provider.
  */
 export function autoProviders(): readonly WallpaperProvider[] {
-  return PROVIDERS
+  return OFFERED_PROVIDERS
 }
 
 /**
