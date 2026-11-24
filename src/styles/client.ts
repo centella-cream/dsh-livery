@@ -95,6 +95,9 @@ body[data-dsh-livery]{
 .livery-check__block{display:flex;flex-direction:column;gap:6px;min-width:0}
 .livery-check__title{margin:0;font-size:var(--lw-fs-label);font-weight:600;color:var(--lw-2)}
 .livery-check__value{font-size:var(--lw-fs-label);line-height:var(--lw-lh);overflow-wrap:anywhere}
+.livery-detail__facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:10px 18px;margin:0;padding:0}
+.livery-detail__fact{display:flex;flex-direction:column;gap:2px;min-width:0}
+.livery-detail__fact dd{margin:0}
 .livery-caps__row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--lw-mono);font-size:var(--lw-fs-label);line-height:var(--lw-lh)}
 @media (prefers-reduced-motion:reduce){.livery-chip,.livery-card{transition:none}}
 .livery-settings,.livery-workspace{display:flex;flex-direction:column;gap:var(--lw-gap-page);min-width:0;font-size:var(--lw-fs-body)}
