@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
-  "runId": "2026-11-24T14-22-05-078Z-isolated",
+  "runId": "2026-11-24T14-59-08-898Z-isolated",
   "mode": "isolated",
   "ok": true,
-  "startedAt": "2026-11-24T14:22:05.079Z",
-  "finishedAt": "2026-11-24T14:27:54.158Z",
+  "startedAt": "2026-11-24T14:59:08.898Z",
+  "finishedAt": "2026-11-24T15:03:01.062Z",
   "summary": {
     "pass": 299,
     "fail": 0,
     "skip": 9,
-    "warn": 3,
-    "total": 311
+    "warn": 2,
+    "total": 310
   },
   "environment": {
-    "date": "2026-11-24T14:27:54.149Z",
-    "commit": "2cc363e492cdad2d48d959b84b976bb898a6bc35",
+    "date": "2026-11-24T15:03:01.054Z",
+    "commit": "5dfff96185e3adc80d0554ddc58eb530ddd343e8",
     "dshVersion": "0.2.2-rc.3",
     "dshBin": "<tmp>",
     "hostRuntime": "packaged-app",
@@ -134,164 +134,164 @@
     "reportPath": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/report.md",
     "readOnly": false
   },
-  "dshWebLine": "dsh web: http://127.0.0.1:63135/?token=<redacted>",
+  "dshWebLine": "dsh web: http://127.0.0.1:55662/?token=<redacted>",
   "boot": {
-    "readyMs": 2223,
-    "installMs": 237,
-    "port": 63135
+    "readyMs": 2040,
+    "installMs": 220,
+    "port": 55662
   },
   "phases": [
     {
       "name": "prepare",
-      "startedAt": "2026-11-24T14:22:05.080Z",
-      "durationMs": 334,
+      "startedAt": "2026-11-24T14:59:08.898Z",
+      "durationMs": 303,
       "ok": true,
-      "detail": "dsh 0.2.2-rc.3; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz → exit 0 in 237ms"
+      "detail": "dsh 0.2.2-rc.3; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz → exit 0 in 220ms"
     },
     {
       "name": "boot",
-      "startedAt": "2026-11-24T14:22:05.414Z",
-      "durationMs": 2223,
+      "startedAt": "2026-11-24T14:59:09.201Z",
+      "durationMs": 2040,
       "ok": true,
-      "detail": "ready in 2223ms port 63135"
+      "detail": "ready in 2040ms port 55662"
     },
     {
       "name": "browser",
-      "startedAt": "2026-11-24T14:22:07.637Z",
-      "durationMs": 446,
+      "startedAt": "2026-11-24T14:59:11.241Z",
+      "durationMs": 403,
       "ok": true,
       "detail": "Chrome 156.0.8078.48"
     },
     {
       "name": "boot-graph",
-      "startedAt": "2026-11-24T14:22:08.345Z",
-      "durationMs": 379,
+      "startedAt": "2026-11-24T14:59:11.855Z",
+      "durationMs": 344,
       "ok": true,
       "detail": ""
     },
     {
       "name": "boot-handshake",
-      "startedAt": "2026-11-24T14:22:08.237Z",
-      "durationMs": 487,
+      "startedAt": "2026-11-24T14:59:11.771Z",
+      "durationMs": 428,
       "ok": true,
       "detail": ""
     },
     {
       "name": "trust",
-      "startedAt": "2026-11-24T14:22:08.724Z",
-      "durationMs": 16,
+      "startedAt": "2026-11-24T14:59:12.199Z",
+      "durationMs": 14,
       "ok": true,
       "detail": ""
     },
     {
       "name": "stock",
-      "startedAt": "2026-11-24T14:22:08.740Z",
-      "durationMs": 164,
+      "startedAt": "2026-11-24T14:59:12.213Z",
+      "durationMs": 110,
       "ok": true,
       "detail": ""
     },
     {
       "name": "catalog",
-      "startedAt": "2026-11-24T14:22:08.904Z",
-      "durationMs": 85,
+      "startedAt": "2026-11-24T14:59:12.323Z",
+      "durationMs": 83,
       "ok": true,
       "detail": ""
     },
     {
       "name": "nav",
-      "startedAt": "2026-11-24T14:22:08.989Z",
-      "durationMs": 8953,
+      "startedAt": "2026-11-24T14:59:12.406Z",
+      "durationMs": 15961,
       "ok": true,
       "detail": ""
     },
     {
       "name": "theme",
-      "startedAt": "2026-11-24T14:22:17.942Z",
-      "durationMs": 1280,
+      "startedAt": "2026-11-24T14:59:28.367Z",
+      "durationMs": 1293,
       "ok": true,
       "detail": ""
     },
     {
       "name": "fonts",
-      "startedAt": "2026-11-24T14:22:19.222Z",
-      "durationMs": 3503,
+      "startedAt": "2026-11-24T14:59:29.660Z",
+      "durationMs": 3448,
       "ok": true,
       "detail": ""
     },
     {
       "name": "selfcheck",
-      "startedAt": "2026-11-24T14:22:22.725Z",
-      "durationMs": 2026,
+      "startedAt": "2026-11-24T14:59:33.108Z",
+      "durationMs": 2047,
       "ok": true,
       "detail": ""
     },
     {
       "name": "firstpaint",
-      "startedAt": "2026-11-24T14:22:24.751Z",
-      "durationMs": 960,
+      "startedAt": "2026-11-24T14:59:35.155Z",
+      "durationMs": 921,
       "ok": true,
       "detail": ""
     },
     {
       "name": "web",
-      "startedAt": "2026-11-24T14:22:25.711Z",
-      "durationMs": 1327,
+      "startedAt": "2026-11-24T14:59:36.076Z",
+      "durationMs": 1331,
       "ok": true,
       "detail": ""
     },
     {
       "name": "layout",
-      "startedAt": "2026-11-24T14:22:27.038Z",
-      "durationMs": 6307,
+      "startedAt": "2026-11-24T14:59:37.407Z",
+      "durationMs": 6501,
       "ok": true,
       "detail": ""
     },
     {
       "name": "style",
-      "startedAt": "2026-11-24T14:22:33.345Z",
-      "durationMs": 6706,
+      "startedAt": "2026-11-24T14:59:43.908Z",
+      "durationMs": 6709,
       "ok": true,
       "detail": ""
     },
     {
       "name": "wallpaper",
-      "startedAt": "2026-11-24T14:22:40.051Z",
-      "durationMs": 215400,
+      "startedAt": "2026-11-24T14:59:50.617Z",
+      "durationMs": 84382,
       "ok": true,
       "detail": ""
     },
     {
       "name": "visual",
-      "startedAt": "2026-11-24T14:26:15.451Z",
-      "durationMs": 20374,
+      "startedAt": "2026-11-24T15:01:14.999Z",
+      "durationMs": 21047,
       "ok": true,
       "detail": ""
     },
     {
       "name": "merged",
-      "startedAt": "2026-11-24T14:26:35.825Z",
-      "durationMs": 61821,
+      "startedAt": "2026-11-24T15:01:36.046Z",
+      "durationMs": 70075,
       "ok": true,
       "detail": ""
     },
     {
       "name": "perf",
-      "startedAt": "2026-11-24T14:27:37.646Z",
-      "durationMs": 10004,
+      "startedAt": "2026-11-24T15:02:46.121Z",
+      "durationMs": 10007,
       "ok": true,
       "detail": ""
     },
     {
       "name": "restore",
-      "startedAt": "2026-11-24T14:27:47.650Z",
-      "durationMs": 2151,
+      "startedAt": "2026-11-24T15:02:56.128Z",
+      "durationMs": 2106,
       "ok": true,
       "detail": ""
     },
     {
       "name": "lifecycle",
-      "startedAt": "2026-11-24T14:27:49.801Z",
-      "durationMs": 4312,
+      "startedAt": "2026-11-24T15:02:58.235Z",
+      "durationMs": 2789,
       "ok": true,
       "detail": ""
     }
@@ -325,52 +325,52 @@
           }
         }
       },
-      "at": "2026-11-24T14:22:05.157Z"
+      "at": "2026-11-24T14:59:08.964Z"
     },
     {
       "id": "lifecycle.install",
       "title": "official `dsh plugin --profile web add file:<tgz>` installs and selects the bundle",
       "status": "pass",
-      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz → exit 0 in 237ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
+      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz → exit 0 in 220ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
       "evidence": {
         "command": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz",
-        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz\n\nDone in 113ms using pnpm v12.3.4\n",
+        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz\n\nDone in 111ms using pnpm v12.3.4\n",
         "stderr": "dsh: initialized profile web at <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-0.2.2-rc.3-home/profiles/web\n"
       },
-      "at": "2026-11-24T14:22:05.414Z"
+      "at": "2026-11-24T14:59:09.201Z"
     },
     {
       "id": "lifecycle.profile-initialized",
       "title": "isolated profile initialized from the shipped web template",
       "status": "pass",
       "detail": "home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-0.2.2-rc.3-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-0.2.2-rc.3-home/profiles/web; initialized=true; sha256=46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
-      "at": "2026-11-24T14:22:05.414Z"
+      "at": "2026-11-24T14:59:09.201Z"
     },
     {
       "id": "lifecycle.boot",
       "title": "`dsh --profile web --no-open --port 0` boots and prints its authenticated URL",
       "status": "pass",
-      "detail": "ready in 2223ms on port 63135; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
+      "detail": "ready in 2040ms on port 55662; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
       "evidence": {
-        "url": "http://127.0.0.1:63135/?token=<redacted>",
-        "readyMs": 2223,
-        "pid": 29749
+        "url": "http://127.0.0.1:55662/?token=<redacted>",
+        "readyMs": 2040,
+        "pid": 70528
       },
-      "at": "2026-11-24T14:22:07.637Z"
+      "at": "2026-11-24T14:59:11.241Z"
     },
     {
       "id": "lifecycle.boot-warnings",
       "title": "boot log has no skipped-bundle or compatibility warnings",
       "status": "pass",
       "detail": "no skipped/incompatible/warning lines in the boot log",
-      "at": "2026-11-24T14:22:07.637Z"
+      "at": "2026-11-24T14:59:11.241Z"
     },
     {
       "id": "env.browser",
       "title": "Chrome launches through playwright-core (no automatic browser download)",
       "status": "pass",
       "detail": "Chrome 156.0.8078.48 (explicit Chrome-for-Testing executable); playwright-core 1.63.0 at <home>/Personal/openprojects/dsh-livery/node_modules/playwright-core/index.mjs",
-      "at": "2026-11-24T14:22:08.083Z"
+      "at": "2026-11-24T14:59:11.644Z"
     },
     {
       "id": "env.browser-version",
@@ -385,46 +385,46 @@
           "152.0.7977.130"
         ]
       },
-      "at": "2026-11-24T14:22:08.083Z"
+      "at": "2026-11-24T14:59:11.644Z"
     },
     {
       "id": "boot.token-exchange",
       "title": "launch token is exchanged for the signed cookie and dropped from the URL",
       "status": "pass",
-      "detail": "final url http://127.0.0.1:63135/; navigation 107ms",
+      "detail": "final url http://127.0.0.1:55662/; navigation 84ms",
       "evidence": {
-        "requestedUrl": "http://127.0.0.1:63135/?token=<redacted>",
-        "finalUrl": "http://127.0.0.1:63135/",
+        "requestedUrl": "http://127.0.0.1:55662/?token=<redacted>",
+        "finalUrl": "http://127.0.0.1:55662/",
         "tokenDropped": true,
-        "navigationMs": 107
+        "navigationMs": 84
       },
-      "at": "2026-11-24T14:22:08.345Z"
+      "at": "2026-11-24T14:59:11.855Z"
     },
     {
       "id": "boot.graph-entry",
       "title": "__DSH_BOOT__ lists client entry \"dsh-livery\"",
       "status": "pass",
-      "detail": "url plugins/??dsh-livery/client.js&rev=6045db031703",
+      "detail": "url plugins/??dsh-livery/client.js&rev=478f1ba34488",
       "evidence": {
         "entry": {
           "id": "dsh-livery",
-          "url": "plugins/??dsh-livery/client.js&rev=6045db031703"
+          "url": "plugins/??dsh-livery/client.js&rev=478f1ba34488"
         }
       },
-      "at": "2026-11-24T14:22:08.682Z"
+      "at": "2026-11-24T14:59:12.166Z"
     },
     {
       "id": "bundle.serves-client-js",
       "title": "plugin client bundle (boot-graph URL) is served as JavaScript",
       "status": "pass",
-      "detail": "GET /plugins/??dsh-livery/client.js&rev=6045db031703 → 200 text/javascript; charset=utf-8 (278869 bytes)",
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=478f1ba34488 → 200 text/javascript; charset=utf-8 (278869 bytes)",
       "evidence": {
-        "url": "http://127.0.0.1:63135/plugins/??dsh-livery/client.js&rev=6045db031703",
+        "url": "http://127.0.0.1:55662/plugins/??dsh-livery/client.js&rev=478f1ba34488",
         "status": 200,
         "contentType": "text/javascript; charset=utf-8",
         "bytes": 278869
       },
-      "at": "2026-11-24T14:22:08.705Z"
+      "at": "2026-11-24T14:59:12.184Z"
     },
     {
       "id": "bundle.requires-rev",
@@ -432,10 +432,10 @@
       "status": "pass",
       "detail": "GET graph URL without rev → 404",
       "evidence": {
-        "url": "http://127.0.0.1:63135/plugins/??dsh-livery/client.js",
+        "url": "http://127.0.0.1:55662/plugins/??dsh-livery/client.js",
         "status": 404
       },
-      "at": "2026-11-24T14:22:08.705Z"
+      "at": "2026-11-24T14:59:12.184Z"
     },
     {
       "id": "bundle.canonical-route",
@@ -445,10 +445,10 @@
       "evidence": {
         "canonicalStatus": 404,
         "canonicalNoRevStatus": 404,
-        "rev": "6045db031703",
-        "entryUrl": "http://127.0.0.1:63135/plugins/??dsh-livery/client.js&rev=6045db031703"
+        "rev": "478f1ba34488",
+        "entryUrl": "http://127.0.0.1:55662/plugins/??dsh-livery/client.js&rev=478f1ba34488"
       },
-      "at": "2026-11-24T14:22:08.705Z"
+      "at": "2026-11-24T14:59:12.184Z"
     },
     {
       "id": "bundle.gzip-budget",
@@ -460,35 +460,35 @@
         "rawBytes": 278869,
         "budgetBytes": 73728
       },
-      "at": "2026-11-24T14:22:08.711Z"
+      "at": "2026-11-24T14:59:12.190Z"
     },
     {
       "id": "handshake.stock-no-rows",
       "title": "stock default injects no first-frame rows (fail-safe stock)",
       "status": "pass",
       "detail": "__DSH_LIVERY_BOOT__ absent; skin style elements=0; body attribute=null",
-      "at": "2026-11-24T14:22:08.724Z"
+      "at": "2026-11-24T14:59:12.199Z"
     },
     {
       "id": "handshake.boot-global",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-11-24T14:22:08.724Z"
+      "at": "2026-11-24T14:59:12.199Z"
     },
     {
       "id": "handshake.echo",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-11-24T14:22:08.724Z"
+      "at": "2026-11-24T14:59:12.199Z"
     },
     {
       "id": "handshake.catalog-url",
       "title": "first-frame handshake is asserted once a livery is configured",
       "status": "skip",
       "detail": "initial boot is stock (no rows expected); asserted after the settings apply step",
-      "at": "2026-11-24T14:22:08.724Z"
+      "at": "2026-11-24T14:59:12.199Z"
     },
     {
       "id": "trust.no-cookie-401",
@@ -498,7 +498,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.wrong-token-rejected",
@@ -508,7 +508,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.token-exchange-303",
@@ -519,22 +519,22 @@
         "status": 303,
         "location": "./"
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.cookie-issued",
       "title": "browser trust: cookie issued",
       "status": "pass",
-      "detail": "Set-Cookie: Max-Age=2592000; Path=/; Expires=Thu, 24 Dec 2026 14:22:08 GMT; HttpOnly; SameSite=Strict",
+      "detail": "Set-Cookie: Max-Age=2592000; Path=/; Expires=Thu, 24 Dec 2026 14:59:12 GMT; HttpOnly; SameSite=Strict",
       "evidence": {
         "cookieNames": [
-          "dsh-auth-Yr40FxB31X-T_1V6K0jVY_JvmsJzrZb9Xv3acJBKOqw"
+          "dsh-auth-CJ8GmEOAjWzInA6Y2exBVlmOSuR32LgxIo7d8bu3MoU"
         ],
         "setCookie": [
-          "dsh-auth-Yr40FxB31X-T_1V6K0jVY_JvmsJzrZb9Xv3acJBKOqw=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6NjMxMzUiLCJpc3N1ZWRBdCI6MTc5NTUzMDEyODcyNywiZXhwaXJlc0F0IjoxNzk4MTIyMTI4NzI3fQ.aSOOvhzPfHOv1_wOCvB-S8FoWKA1bvMPAvNHygYq-JM; Max-Age=2592000; Path=/; Expires=Thu, 24 Dec 2026 14:22:08 GMT; HttpOnly; SameSite=Strict"
+          "dsh-auth-CJ8GmEOAjWzInA6Y2exBVlmOSuR32LgxIo7d8bu3MoU=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6NTU2NjIiLCJpc3N1ZWRBdCI6MTc5NTUzMjM1MjIwMSwiZXhwaXJlc0F0IjoxNzk4MTI0MzUyMjAxfQ.ygA66UxopHxLtP4xC3xuQDBUrd3G_7_ClQGiVk9rZfY; Max-Age=2592000; Path=/; Expires=Thu, 24 Dec 2026 14:59:12 GMT; HttpOnly; SameSite=Strict"
         ]
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.cookie-200",
@@ -546,7 +546,7 @@
         "contentType": "text/html; charset=utf-8",
         "bytes": 41541
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.bad-host-index-refused",
@@ -556,7 +556,7 @@
       "evidence": {
         "status": 401
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.212Z"
     },
     {
       "id": "trust.bad-host-api-403",
@@ -566,7 +566,7 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.213Z"
     },
     {
       "id": "trust.cross-origin-403",
@@ -576,7 +576,7 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.213Z"
     },
     {
       "id": "trust.cross-site-403",
@@ -586,21 +586,21 @@
       "evidence": {
         "status": 403
       },
-      "at": "2026-11-24T14:22:08.740Z"
+      "at": "2026-11-24T14:59:12.213Z"
     },
     {
       "id": "stock.no-body-attribute",
       "title": "stock boot leaves body without data-dsh-livery",
       "status": "pass",
       "detail": "data-dsh-livery=null",
-      "at": "2026-11-24T14:22:08.748Z"
+      "at": "2026-11-24T14:59:12.219Z"
     },
     {
       "id": "stock.no-livery-styles",
       "title": "stock boot injects no Livery skin style elements or handshake rows",
       "status": "pass",
       "detail": "0 skin style element(s); __DSH_LIVERY_BOOT__ present=false",
-      "at": "2026-11-24T14:22:08.749Z"
+      "at": "2026-11-24T14:59:12.220Z"
     },
     {
       "id": "stock.tokens-recorded",
@@ -612,28 +612,28 @@
         "--dsw-alias-label-primary": "#0f1115",
         "--dsw-alias-border-l1": "#0000000a"
       },
-      "at": "2026-11-24T14:22:08.749Z"
+      "at": "2026-11-24T14:59:12.220Z"
     },
     {
       "id": "stock.host-theme-source",
       "title": "host theme source is system (preference untouched)",
       "status": "pass",
       "detail": "html[data-ds-theme-source]=system body[data-ds-dark-theme]=null",
-      "at": "2026-11-24T14:22:08.749Z"
+      "at": "2026-11-24T14:59:12.220Z"
     },
     {
       "id": "stock.no-theme-write",
       "title": "no ui-theme row was written to the profile patch",
       "status": "pass",
       "detail": "no ui-theme row in profile patch",
-      "at": "2026-11-24T14:22:08.749Z"
+      "at": "2026-11-24T14:59:12.220Z"
     },
     {
       "id": "nav.sidebar-entry-present-stock",
       "title": "Livery sidebar row is present on a stock start (client navigation registration)",
       "status": "pass",
       "detail": "row #3 label \"视觉风格\" panellistSlot=true icon=true selected=false",
-      "at": "2026-11-24T14:22:08.751Z"
+      "at": "2026-11-24T14:59:12.221Z"
     },
     {
       "id": "catalog.serves-json",
@@ -641,9 +641,9 @@
       "status": "pass",
       "detail": "status 200, content-type application/json, cache-control no-store",
       "evidence": {
-        "url": "http://127.0.0.1:63135/livery/api/catalog"
+        "url": "http://127.0.0.1:55662/livery/api/catalog"
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.329Z"
     },
     {
       "id": "catalog.schema",
@@ -658,7 +658,7 @@
         "catalogProfile": "sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04",
         "previewsBase": "/livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/"
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.329Z"
     },
     {
       "id": "catalog.certified-identity",
@@ -694,14 +694,14 @@
           }
         }
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.329Z"
     },
     {
       "id": "catalog.cache-control-no-store",
       "title": "catalog is not cached",
       "status": "pass",
       "detail": "cache-control: no-store",
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.329Z"
     },
     {
       "id": "catalog.gallery-size",
@@ -740,7 +740,7 @@
           "phosphor"
         ]
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.329Z"
     },
     {
       "id": "catalog.token-coverage",
@@ -753,28 +753,28 @@
         "missing": 0,
         "required": 4844
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.330Z"
     },
     {
       "id": "catalog.contrast-zero-failures",
       "title": "compiled catalog has 0 contrast failures",
       "status": "pass",
       "detail": "all liveries report contrastFailures=0",
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.330Z"
     },
     {
       "id": "catalog.css-safety-clean",
       "title": "compiled catalog has 0 !important / 0 hash selectors",
       "status": "pass",
       "detail": "all liveries report cssSafety pass",
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.330Z"
     },
     {
       "id": "catalog.livery-hashes",
       "title": "every compiled livery cssHash equals sha256(tokens+typography+layout)",
       "status": "pass",
       "detail": "28 livery hashes verified",
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.330Z"
     },
     {
       "id": "catalog.css-budget",
@@ -901,7 +901,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:08.915Z"
+      "at": "2026-11-24T14:59:12.330Z"
     },
     {
       "id": "catalog.style-vocabulary",
@@ -931,7 +931,7 @@
           "border": 18
         }
       },
-      "at": "2026-11-24T14:22:08.916Z"
+      "at": "2026-11-24T14:59:12.331Z"
     },
     {
       "id": "catalog.capabilities",
@@ -1024,7 +1024,7 @@
           "host-font-role-hooks": true
         }
       },
-      "at": "2026-11-24T14:22:08.916Z"
+      "at": "2026-11-24T14:59:12.331Z"
     },
     {
       "id": "previews.assets-served",
@@ -1033,16 +1033,16 @@
       "detail": "112/112 preview assets HTTP 200 image/svg+xml under /livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/ (28 liveries × zh/en × light/dark)",
       "evidence": {
         "base": "/livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/",
-        "sample": "http://127.0.0.1:63135/livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/fjord-zh-light.svg"
+        "sample": "http://127.0.0.1:55662/livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/fjord-zh-light.svg"
       },
-      "at": "2026-11-24T14:22:08.988Z"
+      "at": "2026-11-24T14:59:12.405Z"
     },
     {
       "id": "previews.unknown-404",
       "title": "unknown preview asset returns 404",
       "status": "pass",
       "detail": "unknown file → 404",
-      "at": "2026-11-24T14:22:08.988Z"
+      "at": "2026-11-24T14:59:12.405Z"
     },
     {
       "id": "previews.profile-isolation",
@@ -1050,19 +1050,19 @@
       "status": "pass",
       "detail": "cross-profile asset /livery/assets/previews/sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150/fjord-zh-light.svg → 404 (404 expected)",
       "evidence": {
-        "url": "http://127.0.0.1:63135/livery/assets/previews/sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150/fjord-zh-light.svg",
+        "url": "http://127.0.0.1:55662/livery/assets/previews/sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150/fjord-zh-light.svg",
         "status": 404,
         "catalogProfile": "sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04",
         "foreignProfile": "sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150"
       },
-      "at": "2026-11-24T14:22:08.989Z"
+      "at": "2026-11-24T14:59:12.405Z"
     },
     {
       "id": "catalog.get-only-405",
       "title": "catalog route is GET-only (POST → 405)",
       "status": "pass",
       "detail": "POST /livery/api/catalog → 405",
-      "at": "2026-11-24T14:22:08.989Z"
+      "at": "2026-11-24T14:59:12.406Z"
     },
     {
       "id": "nav.sidebar-entry",
@@ -1145,21 +1145,21 @@
           "Visual Style"
         ]
       },
-      "at": "2026-11-24T14:22:09.795Z"
+      "at": "2026-11-24T14:59:13.172Z"
     },
     {
       "id": "nav.row-order",
       "title": "Livery row comes after the existing plugin rows (order 30)",
       "status": "pass",
       "detail": "row #3; existing plugin rows at [0,1]; rows: 插件, 自动化任务, 从侧边栏取消固定自动化任务, 视觉风格, 从侧边栏取消固定视觉风格, 更多",
-      "at": "2026-11-24T14:22:09.796Z"
+      "at": "2026-11-24T14:59:13.172Z"
     },
     {
       "id": "nav.above-workspaces",
       "title": "Livery row sits above the workspace section in the sidebar",
       "status": "pass",
       "detail": "navBeforeWorkspaces=true rowTop=184 workspacesTop=0 workspacesHeight=0",
-      "at": "2026-11-24T14:22:09.796Z"
+      "at": "2026-11-24T14:59:13.172Z"
     },
     {
       "id": "nav.main-panel",
@@ -1180,14 +1180,14 @@
           "bodyTextStart": "新会话\n⌥\n⌘\nN\n插件\n自动化任务\n视觉风格\n更多\n工作区\n默认工作区\n新会话\n更多\n视觉风格\nv0.2.2\n\n挑选配色、字体和界面细节。\n\n风格\n壁纸\n默认外观\n当前视觉风格\n默认外观\n\nDSH 自带的默认外观。\n\n恢复默认外观\nID\nstock\n全部\n静谧\n自然\n明亮\n复古\n霓虹\n深色\n更多筛选\n预览语言\n跟随 "
         }
       },
-      "at": "2026-11-24T14:22:09.796Z"
+      "at": "2026-11-24T14:59:13.173Z"
     },
     {
       "id": "nav.conversation-hidden",
       "title": "the conversation is replaced while the Livery panel is selected",
       "status": "pass",
       "detail": "composer visible=false; conversation copy visible=false; body starts: 新会话 ⌥ ⌘ N 插件 自动化任务 视觉风格 更多 工作区 默认工作区 新会话 更多 视觉风格 v0.2.2 挑选配色、字体和界面细节。 风格 壁纸 默认外观 当前视觉风格 默认外观 DSH 自带的默认外观。 恢复默认外观 ID stoc",
-      "at": "2026-11-24T14:22:09.796Z"
+      "at": "2026-11-24T14:59:13.173Z"
     },
     {
       "id": "nav.settings-section-absent",
@@ -1202,7 +1202,7 @@
           "Agent 预设"
         ]
       },
-      "at": "2026-11-24T14:22:10.382Z"
+      "at": "2026-11-24T14:59:13.764Z"
     },
     {
       "id": "nav.settings-open-path",
@@ -1212,21 +1212,21 @@
       "evidence": {
         "via": "account-menu"
       },
-      "at": "2026-11-24T14:22:10.382Z"
+      "at": "2026-11-24T14:59:13.764Z"
     },
     {
       "id": "nav.panel-still-selected",
       "title": "closing the settings dialog returns to the selected Livery panel",
       "status": "pass",
       "detail": "panel visible=true; selected row \"视觉风格\"",
-      "at": "2026-11-24T14:22:10.422Z"
+      "at": "2026-11-24T14:59:13.797Z"
     },
     {
       "id": "copy.selfcheck-labels-zh",
       "title": "zh self-check uses the round-12 plain-language labels (启动信息 / 样式覆盖 / 协议校验码)",
       "status": "pass",
       "detail": "missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.2-rc.3-r1 协议校验码: 0f583969a24e 插件版本: 0.2.2 宿主版本: 0.2.2-rc.3 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 配置中的视觉风格: stock 实际应用的视觉",
-      "at": "2026-11-24T14:22:10.460Z"
+      "at": "2026-11-24T14:59:13.837Z"
     },
     {
       "id": "gallery.cards",
@@ -1349,28 +1349,28 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:10.691Z"
+      "at": "2026-11-24T14:59:14.074Z"
     },
     {
       "id": "gallery.aria-label",
       "title": "gallery region exposes the renamed accessible label",
       "status": "pass",
       "detail": "aria-label=\"视觉风格画廊\" (expected \"视觉风格画廊\")",
-      "at": "2026-11-24T14:22:10.693Z"
+      "at": "2026-11-24T14:59:14.076Z"
     },
     {
       "id": "gallery.thumbnails",
       "title": "every livery card shows a loaded preview thumbnail",
       "status": "pass",
       "detail": "28/28 thumbs, broken: none",
-      "at": "2026-11-24T14:22:10.693Z"
+      "at": "2026-11-24T14:59:14.076Z"
     },
     {
       "id": "gallery.no-error-state",
       "title": "gallery is not in an error/catalog-unavailable state",
       "status": "pass",
       "detail": "0 livery-error node(s)",
-      "at": "2026-11-24T14:22:10.695Z"
+      "at": "2026-11-24T14:59:14.078Z"
     },
     {
       "id": "previewLocale.tab-present",
@@ -1403,21 +1403,21 @@
         },
         "hostPreviewLocale": "zh"
       },
-      "at": "2026-11-24T14:22:10.753Z"
+      "at": "2026-11-24T14:59:14.152Z"
     },
     {
       "id": "previewLocale.tab-labels",
       "title": "the segmented control labels and hint match the host locale copy",
       "status": "pass",
       "detail": "texts=[follow:\"跟随 DSH\", zh:\"中文\", en:\"English\"]; title=\"只改变预览图；已应用风格跟随 DSH 语言。\" (expected \"只改变预览图；已应用风格跟随 DSH 语言。\")",
-      "at": "2026-11-24T14:22:10.753Z"
+      "at": "2026-11-24T14:59:14.152Z"
     },
     {
       "id": "copy.state-strings",
       "title": "acceptance label constants match the round-12 rewritten copy for the non-happy-path states (unit-covered)",
       "status": "pass",
       "detail": "zh.catalogUnavailable=\"视觉风格暂时无法加载\"; zh.writeRefused=\"宿主没有保存这套视觉风格。\"; en.catalogUnavailable=\"Visual styles are unavailable right now\"; en.writeRefused=\"The host did not save this visual style.\"",
-      "at": "2026-11-24T14:22:10.753Z"
+      "at": "2026-11-24T14:59:14.152Z"
     },
     {
       "id": "previewLocale.default-follow",
@@ -1435,49 +1435,49 @@
         ],
         "hostPreviewLocale": "zh"
       },
-      "at": "2026-11-24T14:22:10.755Z"
+      "at": "2026-11-24T14:59:14.155Z"
     },
     {
       "id": "previewLocale.switch-en",
       "title": "switching the preview language to English pins every thumbnail to -en- SVG URLs",
       "status": "pass",
       "detail": "28 thumbs; -en-=28; pressed=follow,zh,en*",
-      "at": "2026-11-24T14:22:10.873Z"
+      "at": "2026-11-24T14:59:14.244Z"
     },
     {
       "id": "previewLocale.switch-zh",
       "title": "switching the preview language to 中文 pins every thumbnail to -zh- SVG URLs",
       "status": "pass",
       "detail": "28 thumbs; -zh-=28; pressed=follow,zh*,en",
-      "at": "2026-11-24T14:22:10.960Z"
+      "at": "2026-11-24T14:59:14.335Z"
     },
     {
       "id": "previewLocale.follow-restores",
       "title": "switching back to Follow DSH restores thumbnails to the host preview locale without changing card copy",
       "status": "pass",
       "detail": "follow pressed=true; thumb locales=[\"zh\"]; card copy unchanged while pinned=true",
-      "at": "2026-11-24T14:22:10.990Z"
+      "at": "2026-11-24T14:59:14.362Z"
     },
     {
       "id": "shell.version-badge",
       "title": "the Visual Style title keeps its adjacent plugin version badge",
       "status": "pass",
       "detail": "badge=\"v0.2.2\" expected=\"v0.2.2\" title=\"视觉风格\" inTitleRow=true",
-      "at": "2026-11-24T14:22:10.991Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.page-tabs",
       "title": "visual studio exposes 视觉风格 / 壁纸 page tabs with the style tab selected by default",
       "status": "pass",
       "detail": "tabs=[{\"id\":\"style\",\"role\":\"tab\",\"selected\":true,\"text\":\"风格\"},{\"id\":\"wallpaper\",\"role\":\"tab\",\"selected\":false,\"text\":\"壁纸\"}]; stylePanel=true; wallpaperPanel=false; expected texts 风格|壁纸",
-      "at": "2026-11-24T14:22:10.991Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.family-chips",
       "title": "primary filter row shows 全部 + six family chips in display order",
       "status": "pass",
       "detail": "chips=all:全部*, calm:静谧, nature:自然, light:明亮, retro:复古, vivid:霓虹, dark:深色",
-      "at": "2026-11-24T14:22:10.991Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.family-sections",
@@ -1532,126 +1532,126 @@
           "dark": 4
         }
       },
-      "at": "2026-11-24T14:22:10.992Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.family-mapping",
       "title": "family assignment follows the nature→calm→light→retro→vivid→dark tag priority for every style",
       "status": "pass",
       "detail": "28/28 cards mapped to the priority-picked family",
-      "at": "2026-11-24T14:22:10.992Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.more-filters",
       "title": "更多筛选 reveals the 16 tag chips and collapses again",
       "status": "pass",
       "detail": "more-filters found=true; expanded=false; tag chips visible=0",
-      "at": "2026-11-24T14:22:10.992Z"
+      "at": "2026-11-24T14:59:14.363Z"
     },
     {
       "id": "gallery.more-filters-expanded",
       "title": "expanded 更多筛选 shows the tag chips (aria-expanded=true)",
       "status": "pass",
       "detail": "expanded=true; tag chips=16; toggle text=\"收起筛选\"",
-      "at": "2026-11-24T14:22:11.021Z"
+      "at": "2026-11-24T14:59:14.398Z"
     },
     {
       "id": "gallery.more-filters-collapsed",
       "title": "collapsing 更多筛选 hides the tag chips again",
       "status": "pass",
       "detail": "expanded=false; tag chips=0",
-      "at": "2026-11-24T14:22:11.053Z"
+      "at": "2026-11-24T14:59:14.430Z"
     },
     {
       "id": "gallery.family-filter",
       "title": "selecting a family chip narrows the one grid to that family without duplicating a section heading",
       "status": "pass",
       "detail": "sections=[nature:4]; cards=4 (expected nature=4)",
-      "at": "2026-11-24T14:22:11.288Z"
+      "at": "2026-11-24T14:59:14.669Z"
     },
     {
       "id": "gallery.card-keyboard",
       "title": "roving focus walks the flattened card list",
       "status": "pass",
       "detail": "focus after ArrowRight=\"bauhaus\" (expected \"bauhaus\" after \"cinnabar\")",
-      "at": "2026-11-24T14:22:11.731Z"
+      "at": "2026-11-24T14:59:15.120Z"
     },
     {
       "id": "search.accessible-name",
       "title": "gallery search exposes the renamed accessible name",
       "status": "pass",
       "detail": "search accessible name \"搜索视觉风格\" (expected \"搜索视觉风格\")",
-      "at": "2026-11-24T14:22:11.746Z"
+      "at": "2026-11-24T14:59:15.133Z"
     },
     {
       "id": "search.name",
       "title": "search: localized name filters to its card",
       "status": "pass",
       "detail": "query \"峡湾\" → 1 card(s): fjord",
-      "at": "2026-11-24T14:22:12.108Z"
+      "at": "2026-11-24T14:59:15.496Z"
     },
     {
       "id": "search.id",
       "title": "search: livery id filters to its card",
       "status": "pass",
       "detail": "query \"fjord\" → 1 card(s): fjord",
-      "at": "2026-11-24T14:22:12.466Z"
+      "at": "2026-11-24T14:59:15.858Z"
     },
     {
       "id": "search.tag",
       "title": "search: localized tag label filters the gallery",
       "status": "pass",
       "detail": "query \"安静\" → 7 card(s): catppuccin, moss, linen, everforest, fjord, nord, celadon",
-      "at": "2026-11-24T14:22:12.827Z"
+      "at": "2026-11-24T14:59:16.223Z"
     },
     {
       "id": "search.empty-state",
       "title": "search-empty state renders for an unknown query",
       "status": "pass",
       "detail": "0 card(s) remain; panel text: 视觉风格 v0.2.2 挑选配色、字体和界面细节。 风格 壁纸 默认外观 当前视觉风格 默认外观 DSH 自带的默认外观。 恢复默认外观 ID stock 清空搜索 全部 静谧 自然 明亮 复古 霓虹 深色 更多筛选 预览语言 跟随 DSH 中文 English 可用视觉风格 0 种视觉风格 没有匹配的视觉风格换一个名称、ID 或标签试试。清除筛选 方向键切换；回车预览。 自检 展开自检 DSH Livery 0.2.2 · 已适配 D",
-      "at": "2026-11-24T14:22:13.266Z"
+      "at": "2026-11-24T14:59:16.652Z"
     },
     {
       "id": "keyboard.arrow-right",
       "title": "ArrowRight moves roving focus to the next card",
       "status": "pass",
       "detail": "focus moved to \"bauhaus\" (expected \"bauhaus\")",
-      "at": "2026-11-24T14:22:13.810Z"
+      "at": "2026-11-24T14:59:17.183Z"
     },
     {
       "id": "keyboard.home",
       "title": "Home moves roving focus to the first card",
       "status": "pass",
       "detail": "focus is \"cinnabar\"",
-      "at": "2026-11-24T14:22:13.938Z"
+      "at": "2026-11-24T14:59:17.313Z"
     },
     {
       "id": "keyboard.end",
       "title": "End moves roving focus to the last card",
       "status": "pass",
       "detail": "focus is \"celadon\" (expected \"celadon\")",
-      "at": "2026-11-24T14:22:14.068Z"
+      "at": "2026-11-24T14:59:17.444Z"
     },
     {
       "id": "preview.previewing",
       "title": "previewing a different skin sets the preview attribute and tokens",
       "status": "pass",
       "detail": "body attr=plum tokens={\"--dsw-alias-bg-base\":\"#f7f2f5\",\"--dsw-alias-label-primary\":\"#2a1c25\",\"--dsw-alias-border-l1\":\"#0000000a\"} expected=[\"rgb(247, 242, 245)\",\"rgb(42, 28, 37)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-11-24T14:22:14.172Z"
+      "at": "2026-11-24T14:59:17.549Z"
     },
     {
       "id": "preview.style-element",
       "title": "preview uses a transient Livery style element",
       "status": "pass",
       "detail": "0 → 1 livery style element(s)",
-      "at": "2026-11-24T14:22:14.172Z"
+      "at": "2026-11-24T14:59:17.549Z"
     },
     {
       "id": "preview.card-state",
       "title": "the previewed card reports the previewing state",
       "status": "pass",
       "detail": "data-state=preview",
-      "at": "2026-11-24T14:22:14.173Z"
+      "at": "2026-11-24T14:59:17.550Z"
     },
     {
       "id": "preview.cancel",
@@ -1662,70 +1662,70 @@
         "beforeAttr": null,
         "afterAttr": null
       },
-      "at": "2026-11-24T14:22:14.285Z"
+      "at": "2026-11-24T14:59:17.657Z"
     },
     {
       "id": "preview.cancel-style",
       "title": "Cancel removes the transient preview style element",
       "status": "pass",
       "detail": "1 → 0 livery style element(s)",
-      "at": "2026-11-24T14:22:14.285Z"
+      "at": "2026-11-24T14:59:17.657Z"
     },
     {
       "id": "previewLocale.apply-copy",
       "title": "Apply control copy is unchanged while a preview language is pinned",
       "status": "pass",
       "detail": "pinned=true; apply text \"应用此视觉风格\" (expected \"应用此视觉风格\")",
-      "at": "2026-11-24T14:22:14.373Z"
+      "at": "2026-11-24T14:59:17.748Z"
     },
     {
       "id": "apply.commits",
       "title": "Apply commits the previewed skin as the active livery",
       "status": "pass",
       "detail": "body attr=fjord (expected fjord)",
-      "at": "2026-11-24T14:22:14.424Z"
+      "at": "2026-11-24T14:59:17.810Z"
     },
     {
       "id": "apply.card-state",
       "title": "the applied card reports the current state",
       "status": "pass",
       "detail": "data-state=active",
-      "at": "2026-11-24T14:22:14.519Z"
+      "at": "2026-11-24T14:59:17.886Z"
     },
     {
       "id": "apply.previewbar-cleared",
       "title": "the transient preview bar is gone after Apply",
       "status": "pass",
       "detail": "0 preview bar(s) remain",
-      "at": "2026-11-24T14:22:14.523Z"
+      "at": "2026-11-24T14:59:17.887Z"
     },
     {
       "id": "panel.no-degraded-notice",
       "title": "optional-only capability fallbacks do not surface as a degraded notice on the Livery page (runtime stays ready)",
       "status": "pass",
       "detail": "0 livery-degraded notice(s) with all required capabilities available",
-      "at": "2026-11-24T14:22:14.524Z"
+      "at": "2026-11-24T14:59:17.888Z"
     },
     {
       "id": "panel.no-offline-notice",
       "title": "the Livery page is not in catalog-unavailable state",
       "status": "pass",
       "detail": "0 livery-offline notice(s)",
-      "at": "2026-11-24T14:22:14.525Z"
+      "at": "2026-11-24T14:59:17.888Z"
     },
     {
       "id": "copy.selfcheck-labels-zh-active",
       "title": "zh self-check shows the full plain-language label set with an active style (incl. 未限定范围的变量)",
       "status": "pass",
       "detail": "missing=[]; panel=自检 收起自检 启动信息 没有启动数据 no first-frame payload 适配器: dsh-0.2.2-rc.3-r1 协议校验码: 0f583969a24e 插件版本: 0.2.2 宿主版本: 0.2.2-rc.3 颜色模式: 浅色 语言: zh 目录: 已加载 目录分组: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 配置中的视觉风格: fjord 实际应用的视觉风格: fjord 运行时轴 Full",
-      "at": "2026-11-24T14:22:14.605Z"
+      "at": "2026-11-24T14:59:17.966Z"
     },
     {
       "id": "previewLocale.apply-with-pinned",
       "title": "a pinned preview language survives Apply (thumbnails only) and the applied state is otherwise unchanged",
       "status": "pass",
       "detail": "en pressed=true; thumb locales=[\"en\"]",
-      "at": "2026-11-24T14:22:14.839Z"
+      "at": "2026-11-24T14:59:18.201Z"
     },
     {
       "id": "apply.one-mutation",
@@ -1740,14 +1740,14 @@
         "updatedInPlace": false,
         "skinRow": "- id: livery\n  name: dsh-livery\n  config:\n    skinId: fjord\n"
       },
-      "at": "2026-11-24T14:22:14.939Z"
+      "at": "2026-11-24T14:59:18.287Z"
     },
     {
       "id": "apply.persists",
       "title": "applied skin survives a hard reload (boot injection + client ready)",
       "status": "pass",
       "detail": "body attr=fjord handshake.skinId=fjord cssHash=sha256:ac9f7eb5812c7…",
-      "at": "2026-11-24T14:22:15.277Z"
+      "at": "2026-11-24T14:59:18.550Z"
     },
     {
       "id": "handshake.applied-boot",
@@ -1771,7 +1771,7 @@
         "entryId": "livery",
         "diagnostics": []
       },
-      "at": "2026-11-24T14:22:15.278Z"
+      "at": "2026-11-24T14:59:18.550Z"
     },
     {
       "id": "handshake.certified-adapter",
@@ -1801,21 +1801,21 @@
           }
         }
       },
-      "at": "2026-11-24T14:22:15.278Z"
+      "at": "2026-11-24T14:59:18.550Z"
     },
     {
       "id": "handshake.applied-skin",
       "title": "configured skin is echoed by the boot handshake",
       "status": "pass",
       "detail": "handshake.skinId=fjord (expected fjord)",
-      "at": "2026-11-24T14:22:15.278Z"
+      "at": "2026-11-24T14:59:18.550Z"
     },
     {
       "id": "nav.panel-after-reload",
       "title": "after a hard reload the Livery panel opens again from the sidebar row and shows the persisted skin",
       "status": "pass",
       "detail": "via=sidebar-panellist; panel visible=true; selected \"视觉风格\"",
-      "at": "2026-11-24T14:22:16.439Z"
+      "at": "2026-11-24T14:59:26.664Z"
     },
     {
       "id": "plugin.detail-no-config-slot",
@@ -1828,7 +1828,7 @@
         "detailKeysPresent": true,
         "forbidden": []
       },
-      "at": "2026-11-24T14:22:16.493Z"
+      "at": "2026-11-24T14:59:26.720Z"
     },
     {
       "id": "plugin.detail-section-renders",
@@ -1914,14 +1914,14 @@
           "boundary": "DSH 的插件管理器负责安装和更新 Livery；更新后请重新加载此页面。"
         }
       },
-      "at": "2026-11-24T14:22:17.178Z"
+      "at": "2026-11-24T14:59:27.637Z"
     },
     {
       "id": "plugin.detail-config-slot-clean",
       "title": "contributed Livery detail nodes render outside the host config-body slot on the bundle page",
       "status": "pass",
       "detail": "config sections=0; Livery nodes=18; inside config=0",
-      "at": "2026-11-24T14:22:17.178Z"
+      "at": "2026-11-24T14:59:27.637Z"
     },
     {
       "id": "plugin.detail-subject-filter",
@@ -1944,7 +1944,7 @@
           "items": 4
         }
       },
-      "at": "2026-11-24T14:22:17.877Z"
+      "at": "2026-11-24T14:59:28.316Z"
     },
     {
       "id": "theme.light-tokens",
@@ -1963,28 +1963,28 @@
           "--dsw-alias-border-l1": "#0000000a"
         }
       },
-      "at": "2026-11-24T14:22:17.952Z"
+      "at": "2026-11-24T14:59:28.372Z"
     },
     {
       "id": "theme.tokens-change-with-skin",
       "title": "applying a livery changes the computed host tokens versus the stock baseline",
       "status": "pass",
       "detail": "livery light tokens [\"rgb(240, 243, 246)\",\"rgb(27, 39, 51)\",\"rgba(0, 0, 0, 0.04)\"] vs stock [\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-11-24T14:22:17.952Z"
+      "at": "2026-11-24T14:59:28.372Z"
     },
     {
       "id": "theme.host-preference",
       "title": "host theme source stays system and no ui-theme row is written",
       "status": "pass",
       "detail": "html[data-ds-theme-source]=system",
-      "at": "2026-11-24T14:22:17.952Z"
+      "at": "2026-11-24T14:59:28.372Z"
     },
     {
       "id": "theme.host-preference-file",
       "title": "profile patch contains no ui-theme writes",
       "status": "pass",
       "detail": "no ui-theme row",
-      "at": "2026-11-24T14:22:17.952Z"
+      "at": "2026-11-24T14:59:28.372Z"
     },
     {
       "id": "handshake.catalog-identity",
@@ -2005,7 +2005,7 @@
           "catalogProfile": "sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04"
         }
       },
-      "at": "2026-11-24T14:22:17.952Z"
+      "at": "2026-11-24T14:59:28.372Z"
     },
     {
       "id": "handshake.body-hash-catalog",
@@ -2016,7 +2016,7 @@
         "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
         "catalogCssHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a"
       },
-      "at": "2026-11-24T14:22:17.953Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "handshake.hash-equality",
@@ -2046,7 +2046,7 @@
           "525b01890cf67f2ea0c58c9ecf2a5044d50c2c2c2fb530166b1971331f63c895"
         ]
       },
-      "at": "2026-11-24T14:22:17.953Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "handshake.hash-style-text",
@@ -2076,7 +2076,7 @@
           "525b01890cf67f2ea0c58c9ecf2a5044d50c2c2c2fb530166b1971331f63c895"
         ]
       },
-      "at": "2026-11-24T14:22:17.953Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "handshake.boot-style-adopted",
@@ -2106,7 +2106,7 @@
           "525b01890cf67f2ea0c58c9ecf2a5044d50c2c2c2fb530166b1971331f63c895"
         ]
       },
-      "at": "2026-11-24T14:22:17.953Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "css.token-scoping",
@@ -2118,14 +2118,14 @@
         "ruleCount": 0,
         "errors": []
       },
-      "at": "2026-11-24T14:22:17.954Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "css.no-important",
       "title": "Livery CSS contains 0 !important",
       "status": "pass",
       "detail": "0 occurrence(s)",
-      "at": "2026-11-24T14:22:17.954Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "css.no-hash-selectors",
@@ -2136,7 +2136,7 @@
         "ruleCount": 0,
         "errors": []
       },
-      "at": "2026-11-24T14:22:17.954Z"
+      "at": "2026-11-24T14:59:28.373Z"
     },
     {
       "id": "theme.dark-tokens",
@@ -2155,14 +2155,14 @@
           "--dsw-alias-border-l1": "#ffffff0f"
         }
       },
-      "at": "2026-11-24T14:22:18.025Z"
+      "at": "2026-11-24T14:59:28.429Z"
     },
     {
       "id": "theme.light-restored",
       "title": "returning to light restores exactly the light token branch",
       "status": "pass",
       "detail": "tokens={\"--dsw-alias-bg-base\":\"#f0f3f6\",\"--dsw-alias-label-primary\":\"#1b2733\",\"--dsw-alias-border-l1\":\"#0000000a\"}",
-      "at": "2026-11-24T14:22:18.105Z"
+      "at": "2026-11-24T14:59:28.541Z"
     },
     {
       "id": "theme.forced-colors",
@@ -2175,14 +2175,14 @@
         "bg": "rgb(255, 255, 255)",
         "color": "rgb(0, 0, 0)"
       },
-      "at": "2026-11-24T14:22:18.459Z"
+      "at": "2026-11-24T14:59:28.898Z"
     },
     {
       "id": "web.multi-tab",
       "title": "a second tab loads the same committed livery",
       "status": "pass",
       "detail": "tab2 attr=fjord tokens={\"--dsw-alias-bg-base\":\"#f0f3f6\",\"--dsw-alias-label-primary\":\"#1b2733\",\"--dsw-alias-border-l1\":\"#0000000a\"}",
-      "at": "2026-11-24T14:22:19.158Z"
+      "at": "2026-11-24T14:59:29.596Z"
     },
     {
       "id": "fonts.zh-cjk",
@@ -2984,7 +2984,7 @@
         "791": "\"",
         "792": "}"
       },
-      "at": "2026-11-24T14:22:19.230Z"
+      "at": "2026-11-24T14:59:29.667Z"
     },
     {
       "id": "fonts.zh-role-hooks",
@@ -2996,14 +2996,14 @@
         "roleCode": "\"SFMono-Regular\",Consolas,\"Liberation Mono\",\"Noto Sans Mono CJK SC\",monospace",
         "resolvedCodeFamily": "\"SFMono-Regular\",Consolas,\"Liberation Mono\",\"Noto Sans Mono CJK SC\",monospace, \"SF Mono\", \"JetBrains Mono\", \"Fira Code\", Consolas, \"Liberation Mono\", Menlo, Courier, \"PingFang SC\", \"Microsoft YaHei\""
       },
-      "at": "2026-11-24T14:22:19.230Z"
+      "at": "2026-11-24T14:59:29.667Z"
     },
     {
       "id": "fonts.zh-document-check",
       "title": "document.fonts.check() finds a CJK family from the stack",
       "status": "pass",
       "detail": "document.fonts.check(14px \"Hiragino Sans GB\") = true",
-      "at": "2026-11-24T14:22:19.236Z"
+      "at": "2026-11-24T14:59:29.667Z"
     },
     {
       "id": "fonts.en-latin",
@@ -3740,21 +3740,21 @@
         "726": "\"",
         "727": "}"
       },
-      "at": "2026-11-24T14:22:21.573Z"
+      "at": "2026-11-24T14:59:31.990Z"
     },
     {
       "id": "locale.en-gallery",
       "title": "English shell shows the Livery sidebar entry and English panel copy",
       "status": "pass",
       "detail": "sidebar row label \"Visual Style\" (expected \"Visual Style\"); via=sidebar-panellist",
-      "at": "2026-11-24T14:22:22.014Z"
+      "at": "2026-11-24T14:59:32.439Z"
     },
     {
       "id": "previewLocale.en-follow",
       "title": "Follow DSH follows the English host locale for thumbnails",
       "status": "pass",
       "detail": "28 thumbs; locales=[\"en\"]; follow pressed=true",
-      "at": "2026-11-24T14:22:22.019Z"
+      "at": "2026-11-24T14:59:32.440Z"
     },
     {
       "id": "selfcheck.capabilities",
@@ -3828,14 +3828,14 @@
         },
         "text": "Self-check\nHide self-check\nStartup check\n\nLoaded\n\nAdapter: dsh-0.2.2-rc.3-r1\n\nContract hash: 0f583969a24e\n\nPlugin: 0.2.2\n\nHost: 0.2.2-rc.3\n\nColor mode: Light\n\nLocale: en\n\nCatalog: Loaded\n\nCatalog profile: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04\n\nConfigured visual style: fjord\n\nApplied visual style: fjord\n\nRuntime axes\n\nFull\n\npalette: Full\n\ntypography: Full\n\ngeometry: Full\n\nborder: Full\n\nelevation: Full\n\nmaterial: Full\n\nchrome: Inherited\n\ndensity: Inherited\n\ntranscriptWidth: Inherited\n\ntexture: Inherited\n\nstudioDecoration: Full\n\nnavigationStructure: Inherited\n\nmessageFlow: Inherited\n\nmessageUser: Inherited\n\nmessageAssistant: Inherited\n\nornament: Inherited\n\nmotion: Inherited\n\nHost capabilities\n\n7 of 10 available\n\nforced-colors\nAvailable\nhost-density-tokens\nUnavailable\nhost-font-family\nAvailable\nRequired\nhost-font-role-hooks\nAvailable\nhost-message-flow\nUnavailable\nhost-transcript-width\nUnavailable\nreduced-motion\nAvailable\nreduced-transparency\nAvailable\nsurface-material\nAvailable\ntheme-css\nAvailable\nRequired\nContrast\n\nAll 118 checks pass\n\nStyle coverage\n\n90 cov, 83 inh, 0 miss\n\nCSS safety\n\nPass\n\n!important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0\n\nDegraded capabilities\n\nNone\n\nOptional layout features missing: .\n\nDiagnostics\nCopy diagnostics\nDSH Livery (dsh-livery) diagnostics\n\n## Environment\nPlugin: 0.2.2\nAdapter: dsh-0.2.2-rc.3-r1\nContract hash: 0f583969a24e\nHost: 0.2.2-rc.3\nCatalog profile: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04\nLocale: en\nColor mode: Light\n\n## Startup check\nStartup check: Loaded\n\n## Catalog\nCatalog: Loaded\n\n## Configuration\nConfigured visual style: fjord\nApplied visual style: fjord\n\n## Capabilities\nforced-colors: Available [Optional]\nhost-density-tokens: Unavailable [Optional]\nhost-font-family: Available [Required]\nhost-font-role-hooks: Available [Optional]\nhost-message-flow: Unavailable [Optional]\nhost-transcript-width: Unavailable [Optional]\nreduced-motion: Available [Optional]\nreduced-transparency: Available [Optional]\nsurface-material: Available [Optional]\ntheme-css: Available [Required]\n  7 of 10 available\n\n## Degraded capabilities\n(none)\n\n## Contrast\nContrast: All 118 checks pass\nStyle coverage: 90 cov, 83 inh, 0 miss\nCSS safety: Pass\n: !important rules: 0\n: Hashed class selectors: 0\n: Remote URLs: 0\n: Unscoped variables: 0\n\n## Boot diagnostics\n(none)"
       },
-      "at": "2026-11-24T14:22:24.160Z"
+      "at": "2026-11-24T14:59:34.572Z"
     },
     {
       "id": "copy.selfcheck-labels",
       "title": "self-check uses the round-12 plain-language labels",
       "status": "pass",
       "detail": "locale=en; missing=[]; panel=Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.2-rc.3-r1 Contract hash: 0f583969a24e Plugin: 0.2.2 Host: 0.2.2-rc.3 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c93704",
-      "at": "2026-11-24T14:22:24.160Z"
+      "at": "2026-11-24T14:59:34.572Z"
     },
     {
       "id": "selfcheck.style-coverage",
@@ -3866,7 +3866,7 @@
         },
         "coverageText": "Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.2-rc.3-r1 Contract hash: 0f583969a24e Plugin: 0.2.2 Host: 0.2.2-rc.3 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 Configured visual style: fjord Applied visual style: fjord Runtime axes Full palette: Full typography: Full geometry: Full border: Full elevation: Full material: Full chrome: Inherited density: Inherited transcriptWidth: Inherited texture: Inherited studioDecoration: Full navigationStructure: Inherited messageFlow: Inherited messageUser: Inherited messageAssistant: Inherited ornament: Inherited motion: Inherited Host capabilities 7 of 10 available forced-colors Available host-density-tokens Unavailable host-font-family Availab"
       },
-      "at": "2026-11-24T14:22:24.161Z"
+      "at": "2026-11-24T14:59:34.573Z"
     },
     {
       "id": "selfcheck.identity",
@@ -3876,35 +3876,35 @@
       "evidence": {
         "text": "Self-check Hide self-check Startup check Loaded Adapter: dsh-0.2.2-rc.3-r1 Contract hash: 0f583969a24e Plugin: 0.2.2 Host: 0.2.2-rc.3 Color mode: Light Locale: en Catalog: Loaded Catalog profile: sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 Configured visual style: fjord Applied visual style: fjord Runtime axes Full palette: Full typography: Full geometry: Full border: Full elevation: Full material: Full chrome: Inherited density: Inherited transcriptWidth: Inherited texture: Inherited studioDecoration: Full navigationStructure: Inherited messageFlow: Inherited messageUser: Inherited messageAssistant: Inherited ornament: Inherited motion: Inherited Host capabilities 7 of 10 available forced-colors Available host-density-tokens Unavailable host-font-family Available Required host-font-role-hooks Available host-message-flow Unavailable host-transcript-width Unavailable reduced-motion Available reduced-transparency Available surface-material Available theme-css Available Required Contrast All 118 checks pass Style coverage 90 cov, 83 inh, 0 miss CSS safety Pass !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z"
       },
-      "at": "2026-11-24T14:22:24.161Z"
+      "at": "2026-11-24T14:59:34.573Z"
     },
     {
       "id": "selfcheck.catalog-profile",
       "title": "self-check shows the catalog profile id",
       "status": "pass",
       "detail": "panel shows 5ce72e7e… (sha256:5ce72e7e7775556b5c707db…)",
-      "at": "2026-11-24T14:22:24.161Z"
+      "at": "2026-11-24T14:59:34.573Z"
     },
     {
       "id": "selfcheck.contrast",
       "title": "self-check reports 0 contrast failures",
       "status": "pass",
       "detail": "contrast failures=0 (panel: Self-check | Hide self-check | Startup check | Loaded | Adapter: dsh-0.2.2-rc.3-r1 | Contract hash: 0f583969a24e | Plugin: 0.2.2 | Host: 0.2.2-rc.3 | Color mode: Light | Locale: en | Catalog: Loaded |)",
-      "at": "2026-11-24T14:22:24.161Z"
+      "at": "2026-11-24T14:59:34.573Z"
     },
     {
       "id": "selfcheck.css-safety",
       "title": "self-check reports 0 !important / 0 hash selectors",
       "status": "pass",
       "detail": "!important=0 hashSelectors=0 (panel: !important rules: 0 · Hashed class selectors: 0 · Remote URLs: 0 · Unscoped variables: 0 · Fixed z-index values: 0)",
-      "at": "2026-11-24T14:22:24.161Z"
+      "at": "2026-11-24T14:59:34.573Z"
     },
     {
       "id": "selfcheck.optional-info",
       "title": "self-check discloses optional capability fallbacks (optional-info line, or a degraded notice on older builds)",
       "status": "pass",
       "detail": "1 livery-optional-info line(s)",
-      "at": "2026-11-24T14:22:24.164Z"
+      "at": "2026-11-24T14:59:34.574Z"
     },
     {
       "id": "selfcheck.copy-diagnostics",
@@ -3914,7 +3914,7 @@
       "evidence": {
         "preview": "DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.2.2 适配器：dsh-0.2.2-rc.3-r1 协议校验码：0f583969a24e 宿主版本：0.2.2-rc.3 目录分组：sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 语言：zh 颜色模式：浅色 ## 启动信息 启动信息：已加载 ## 目录 目录：已加载 ## 配置 配置中的视觉风格：fjord 实际应用的视觉风格：fjord ## 能力 forced-colors：可用 [可选] host-density-tokens：不可用 [可选] host-font-family：可用 [必需] host-font-role-hooks：可用 [可选] host-message-flow：不可用 [可选] host-transcript-width：不可用 [可选] reduced-motion：可用 [可选] reduced-transparency：可用 [可选] surface-material：可用 [可选] theme-css：可用 [必需] 10 项中 7 项可用 ## 降级能力 （无） ## 对比度 对比度：118 项全部达标 样式覆盖：90 覆盖，83 继承，0 缺失 CSS 安全：通过 ：!important 规则：0 ：哈希类选择器：0 ：远程 URL：0 ：未限定范围的变量：0 ## 启动诊断 （无）"
       },
-      "at": "2026-11-24T14:22:24.704Z"
+      "at": "2026-11-24T14:59:35.100Z"
     },
     {
       "id": "selfcheck.copy-diagnostics-content",
@@ -3924,17 +3924,17 @@
       "evidence": {
         "preview": "DSH Livery（dsh-livery）诊断信息 ## 环境 插件版本：0.2.2 适配器：dsh-0.2.2-rc.3-r1 协议校验码：0f583969a24e 宿主版本：0.2.2-rc.3 目录分组：sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04 语言：zh 颜色模式：浅色 ## 启动信息 启动信息：已加载 ## 目录 目录：已加载 ## 配置 配置中的视觉风格：fjord 实际应用的视觉风格：fjord ## 能力 forced-colors：可用 [可选] host-density-tokens：不可用 [可选] host-font-family：可用 [必需] host-font-role-hooks：可用 [可选] host-message-flow：不可用 [可选] host-transcript-width：不可用 [可选] reduced-motion：可用 [可选] reduced-transparency：可用 [可选] surface-material：可用 [可选] theme-css：可用 [必需] 10 项中 7 项可用 ## 降级能力 （无） ## 对比度 对比度：118 项全部达标 样式覆盖：90 覆盖，83 继承，0 缺失 CSS 安全：通过 ：!important 规则：0 ：哈希类选择器：0 ：远程 URL：0 ：未限定范围的变量：0 ## 启动诊断 （无）"
       },
-      "at": "2026-11-24T14:22:24.704Z"
+      "at": "2026-11-24T14:59:35.100Z"
     },
     {
       "id": "firstpaint.no-stock-frame",
       "title": "every painted frame after body creation already carries the livery body attribute and boot style",
       "status": "pass",
-      "detail": "46/48 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {\"t\":40,\"htmlLang\":\"zh-CN\",\"themeSource\":\"system\",\"dark\":false,\"attr\":\"fjord\",\"hash\":\"sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a\",\"tokenBg\":\"#f0f3f6\",\"bg\":\"rgb(240, 243, 246)\",\"bootStyle\":true,\"liveryStyles\":1}",
+      "detail": "46/48 painted rAF sample(s) considered (pre-first-paint samples ignored); 0 without attribute/boot style; first painted sample: {\"t\":114,\"htmlLang\":\"zh-CN\",\"themeSource\":\"system\",\"dark\":false,\"attr\":\"fjord\",\"hash\":\"sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a\",\"tokenBg\":\"#f0f3f6\",\"bg\":\"rgb(240, 243, 246)\",\"bootStyle\":true,\"liveryStyles\":1}",
       "evidence": {
         "samples": [
           {
-            "t": 40,
+            "t": 114,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3946,7 +3946,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 140,
+            "t": 131,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3958,19 +3958,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 156,
-            "htmlLang": "zh-CN",
-            "themeSource": "system",
-            "dark": false,
-            "attr": "fjord",
-            "hash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
-            "tokenBg": "#f0f3f6",
-            "bg": "rgb(240, 243, 246)",
-            "bootStyle": true,
-            "liveryStyles": 1
-          },
-          {
-            "t": 173,
+            "t": 164,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3982,7 +3970,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 190,
+            "t": 180,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -3994,7 +3982,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 206,
+            "t": 197,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4006,7 +3994,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 223,
+            "t": 214,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4018,7 +4006,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 240,
+            "t": 231,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4030,7 +4018,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 256,
+            "t": 247,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4042,7 +4030,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 273,
+            "t": 264,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4054,7 +4042,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 290,
+            "t": 280,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4066,7 +4054,19 @@
             "liveryStyles": 1
           },
           {
-            "t": 306,
+            "t": 297,
+            "htmlLang": "zh-CN",
+            "themeSource": "system",
+            "dark": false,
+            "attr": "fjord",
+            "hash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+            "tokenBg": "#f0f3f6",
+            "bg": "rgb(240, 243, 246)",
+            "bootStyle": false,
+            "liveryStyles": 1
+          },
+          {
+            "t": 314,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4078,9 +4078,9 @@
             "liveryStyles": 1
           }
         ],
-        "frames": 20
+        "frames": 18
       },
-      "at": "2026-11-24T14:22:25.667Z"
+      "at": "2026-11-24T14:59:36.047Z"
     },
     {
       "id": "firstpaint.first-colour",
@@ -4090,7 +4090,7 @@
       "evidence": {
         "samples": [
           {
-            "t": 40,
+            "t": 114,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4102,7 +4102,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 140,
+            "t": 131,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4114,7 +4114,7 @@
             "liveryStyles": 1
           },
           {
-            "t": 156,
+            "t": 164,
             "htmlLang": "zh-CN",
             "themeSource": "system",
             "dark": false,
@@ -4122,19 +4122,19 @@
             "hash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
             "tokenBg": "#f0f3f6",
             "bg": "rgb(240, 243, 246)",
-            "bootStyle": true,
+            "bootStyle": false,
             "liveryStyles": 1
           }
         ]
       },
-      "at": "2026-11-24T14:22:25.668Z"
+      "at": "2026-11-24T14:59:36.047Z"
     },
     {
       "id": "firstpaint.paint-timings",
       "title": "paint timing entries are recorded (first-paint / first-contentful-paint)",
       "status": "pass",
-      "detail": "first-paint=28ms fcp=44ms dcl=27.5ms load=150.30000007152557ms",
-      "at": "2026-11-24T14:22:25.668Z"
+      "detail": "first-paint=32ms fcp=32ms dcl=23.299999952316284ms load=135.70000004768372ms",
+      "at": "2026-11-24T14:59:36.047Z"
     },
     {
       "id": "css.size-budget",
@@ -4146,7 +4146,7 @@
         "targetBytes": 16384,
         "budgetBytes": 20480
       },
-      "at": "2026-11-24T14:22:25.669Z"
+      "at": "2026-11-24T14:59:36.048Z"
     },
     {
       "id": "css.no-whole-document-observers",
@@ -4160,27 +4160,27 @@
           "observations": [
             {
               "target": "document",
-              "t": 175,
+              "t": 148,
               "liveryAttributed": false,
               "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at InjectedScript._setupGlobalListenersRemovalDetection (<anonymous>:7992:8) | at new InjectedScript (<anonymous>:6933:10) | at <anonymous>:8388:16 | at <anonymous>:8389:11"
             },
             {
               "target": "html",
-              "t": 219,
+              "t": 189,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.j"
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.j"
             },
             {
               "target": "body",
-              "t": 392,
+              "t": 349,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
             },
             {
               "target": "html",
-              "t": 392,
+              "t": 349,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
             }
           ]
         },
@@ -4190,32 +4190,32 @@
           "observations": [
             {
               "target": "html",
-              "t": 60,
+              "t": 53,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.j"
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at installKeyboard (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client.j"
             },
             {
               "target": "document",
-              "t": 148,
+              "t": 134,
               "liveryAttributed": false,
               "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at InjectedScript._setupGlobalListenersRemovalDetection (<anonymous>:7992:8) | at new InjectedScript (<anonymous>:6933:10) | at <anonymous>:8388:16 | at <anonymous>:8389:11"
             },
             {
               "target": "body",
-              "t": 155,
+              "t": 140,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
             },
             {
               "target": "html",
-              "t": 155,
+              "t": 140,
               "liveryAttributed": false,
-              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:63135/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
+              "stack": "at LiveryTrackedMutationObserver.observe (<anonymous>:64:36) | at attachPixelWhale (http://127.0.0.1:55662/plugins/??@deepseek-ai/dsh-api-gateway/client.js,@deepseek-ai/dsh-client-ui-file-actions/client.js,@deepseek-ai/dsh-client-ui-context-menu/client.js,@deepseek-ai/dsh-client-ui-open-in-app/client.js,@deepseek-ai/dsh-api-job-controller/client.js,@deepseek-ai/dsh-api-terminal-controller/client.js,@deepseek-ai/dsh-api-workspace-files/client.js,@deepseek-ai/dsh-client-ui-settings-account/client."
             }
           ]
         }
       },
-      "at": "2026-11-24T14:22:25.670Z"
+      "at": "2026-11-24T14:59:36.048Z"
     },
     {
       "id": "web.no-overflow-1023",
@@ -4229,7 +4229,7 @@
         "bodyOverflowX": 0,
         "attr": "fjord"
       },
-      "at": "2026-11-24T14:22:26.183Z"
+      "at": "2026-11-24T14:59:36.538Z"
     },
     {
       "id": "web.no-overflow-767",
@@ -4243,245 +4243,245 @@
         "bodyOverflowX": 0,
         "attr": "fjord"
       },
-      "at": "2026-11-24T14:22:26.713Z"
+      "at": "2026-11-24T14:59:37.072Z"
     },
     {
       "id": "layout.style-wide-hero",
       "title": "style page uses the large no-rail hero with actions inside the current-style card",
       "status": "pass",
       "detail": "layout={\"present\":true,\"className\":\"livery-studio\",\"display\":\"flex\",\"gridTemplateColumns\":\"none\",\"tracks\":[\"none\"],\"trackCount\":1,\"width\":1112,\"height\":1469}; flags={\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":604,\"galleryColumns\":6,\"toolbarRows\":2,\"toolbarOverflowX\":false}",
-      "at": "2026-11-24T14:22:27.940Z"
+      "at": "2026-11-24T14:59:38.336Z"
     },
     {
       "id": "layout.style-wide-hero-preview",
       "title": "style hero shows a loaded 16:10 preview image",
       "status": "pass",
       "detail": "hero={\"present\":true,\"visible\":true,\"tag\":\"img\",\"src\":\"/livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/fjord-zh-light.svg\",\"naturalWidth\":640,\"width\":342,\"height\":215,\"aspect\":1.594}",
-      "at": "2026-11-24T14:22:27.940Z"
+      "at": "2026-11-24T14:59:38.336Z"
     },
     {
       "id": "layout.style-wide-gallery",
       "title": "style gallery follows the hero, is full width and renders 6 columns at 1440",
       "status": "pass",
       "detail": "flags={\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":604,\"galleryColumns\":6,\"toolbarRows\":2,\"toolbarOverflowX\":false}; gallery={\"left\":325,\"top\":604,\"width\":1070,\"height\":862}",
-      "at": "2026-11-24T14:22:27.940Z"
+      "at": "2026-11-24T14:59:38.336Z"
     },
     {
       "id": "layout.style-wide-toolbar",
       "title": "style toolbar stays within two rows and does not overflow at 1440",
       "status": "pass",
       "detail": "toolbarRows=2; overflowX=false",
-      "at": "2026-11-24T14:22:27.940Z"
+      "at": "2026-11-24T14:59:38.336Z"
     },
     {
       "id": "layout.style-wide-no-overflow",
       "title": "style page has no horizontal overflow at 1440×900",
       "status": "pass",
       "detail": "scrollWidth=1440 clientWidth=1440",
-      "at": "2026-11-24T14:22:27.940Z"
+      "at": "2026-11-24T14:59:38.336Z"
     },
     {
       "id": "layout.style-preview-in-hero",
       "title": "preview bar, apply and cancel render inside the current-style hero",
       "status": "pass",
       "detail": "{\"barInHero\":true,\"applyInHero\":true,\"cancelInHero\":true}",
-      "at": "2026-11-24T14:22:28.142Z"
+      "at": "2026-11-24T14:59:38.568Z"
     },
     {
       "id": "layout.style-1024-no-overflow",
       "title": "style page has no horizontal overflow at 1024px",
       "status": "pass",
       "detail": "scrollWidth=1024 clientWidth=1024",
-      "at": "2026-11-24T14:22:28.841Z"
+      "at": "2026-11-24T14:59:39.268Z"
     },
     {
       "id": "layout.style-1024-hero",
       "title": "style hero stays no-rail with actions inside at 1024px",
       "status": "pass",
       "detail": "{\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":604,\"galleryColumns\":3,\"toolbarRows\":2,\"toolbarOverflowX\":false}",
-      "at": "2026-11-24T14:22:28.841Z"
+      "at": "2026-11-24T14:59:39.268Z"
     },
     {
       "id": "layout.style-1024-gallery",
       "title": "style gallery is visible after the hero at 1024px",
       "status": "pass",
       "detail": "{\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":604,\"galleryColumns\":3,\"toolbarRows\":2,\"toolbarOverflowX\":false}",
-      "at": "2026-11-24T14:22:28.841Z"
+      "at": "2026-11-24T14:59:39.268Z"
     },
     {
       "id": "layout.style-1024-toolbar",
       "title": "style toolbar stays within two rows at 1024px",
       "status": "pass",
       "detail": "toolbarRows=2",
-      "at": "2026-11-24T14:22:28.841Z"
+      "at": "2026-11-24T14:59:39.268Z"
     },
     {
       "id": "layout.style-767-no-overflow",
       "title": "style page has no horizontal overflow at 767px",
       "status": "pass",
       "detail": "scrollWidth=767 clientWidth=767",
-      "at": "2026-11-24T14:22:29.238Z"
+      "at": "2026-11-24T14:59:39.646Z"
     },
     {
       "id": "layout.style-767-hero",
       "title": "style hero stays no-rail with actions inside at 767px",
       "status": "pass",
       "detail": "{\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":652,\"galleryColumns\":3,\"toolbarRows\":2,\"toolbarOverflowX\":false}",
-      "at": "2026-11-24T14:22:29.238Z"
+      "at": "2026-11-24T14:59:39.646Z"
     },
     {
       "id": "layout.style-767-gallery",
       "title": "style gallery is visible after the hero at 767px",
       "status": "pass",
       "detail": "{\"compactHero\":true,\"restoreInsideHero\":true,\"actionsInsideHero\":true,\"actionsCardPresent\":false,\"railPresent\":false,\"galleryAfterHero\":true,\"secondaryAfterGallery\":true,\"galleryInFirstViewport\":true,\"galleryTop\":652,\"galleryColumns\":3,\"toolbarRows\":2,\"toolbarOverflowX\":false}",
-      "at": "2026-11-24T14:22:29.238Z"
+      "at": "2026-11-24T14:59:39.646Z"
     },
     {
       "id": "layout.style-767-toolbar",
       "title": "style toolbar stays within two rows at 767px",
       "status": "pass",
       "detail": "toolbarRows=2",
-      "at": "2026-11-24T14:22:29.238Z"
+      "at": "2026-11-24T14:59:39.646Z"
     },
     {
       "id": "layout.wallpaper-workbench",
       "title": "wallpaper page uses the workbench + single source card, no old rail/layout",
       "status": "pass",
       "detail": "layout={\"present\":true,\"className\":\"wallpaper-workbench\",\"display\":\"grid\",\"gridTemplateColumns\":\"712.812px 375.172px\",\"tracks\":[\"712.812px\",\"375.172px\"],\"trackCount\":2,\"width\":1112,\"height\":385}; flags={\"workbench\":true,\"oldLayoutPresent\":false,\"railPresent\":false,\"sourceCard\":true,\"sourceTabs\":[{\"testid\":\"wallpaper-source-tab-online\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-builtin\",\"selected\":true},{\"testid\":\"wallpaper-source-tab-recent\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-local\",\"selected\":false}],\"hiddenPanels\":[\"wallpaper-source-panel-online\",\"wallpaper-source-panel-recent\",\"wallpaper-source-panel-local\"],\"visiblePanels\":[\"wallpaper-source-panel-builtin\"],\"workbenchChildren\":[\"wallpaper-hero\",\"wallpaper-effects-card\"],\"domOrder\":[{\"testid\":\"wallpaper-hero\",\"top\":-357},{\"testid\":\"wallpaper-effects-card\",\"top\":-357},{\"testid\":\"wallpaper-source-card\",\"top\":28},{\"testid\":\"wallpaper-manage\",\"top\":895}],\"effectsColumns\":1,\"positionPresent\":false,\"positionInsideEffects\":null,\"managePresent\":true,\"manageOpen\":false,\"pagerPresent\":false,\"resultCount\":0,\"recentTrack\":false,\"sourceTabsTop\":285}",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-order",
       "title": "wallpaper DOM order is hero → effects → source → managed data",
       "status": "pass",
       "detail": "children=[\"wallpaper-hero\",\"wallpaper-effects-card\"]; order=[{\"testid\":\"wallpaper-hero\",\"top\":-357},{\"testid\":\"wallpaper-effects-card\",\"top\":-357},{\"testid\":\"wallpaper-source-card\",\"top\":28},{\"testid\":\"wallpaper-manage\",\"top\":895}]",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-cards",
       "title": "wallpaper hero/effects/source/manage cards are visible and surfaced",
       "status": "pass",
       "detail": "wallpaper-hero:true:1px, wallpaper-effects-card:true:1px, wallpaper-source-card:true:1px, wallpaper-manage:true:1px",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-source-tabs",
       "title": "wallpaper source card exposes 4 tabs with exactly one visible panel",
       "status": "pass",
       "detail": "tabs=[{\"testid\":\"wallpaper-source-tab-online\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-builtin\",\"selected\":true},{\"testid\":\"wallpaper-source-tab-recent\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-local\",\"selected\":false}]; hidden=[\"wallpaper-source-panel-online\",\"wallpaper-source-panel-recent\",\"wallpaper-source-panel-local\"]; visible=[\"wallpaper-source-panel-builtin\"]",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-effects",
       "title": "wallpaper effects grid is one full-width column and sliders fill it at 1440",
       "status": "pass",
       "detail": "effects={\"present\":true,\"tracks\":1,\"columns\":\"333.172px\"}; sliders=[257,257,257,257]",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-no-overflow-1440",
       "title": "wallpaper page has no horizontal overflow at 1440×900",
       "status": "pass",
       "detail": "scrollWidth=1440 clientWidth=1440",
-      "at": "2026-11-24T14:22:30.165Z"
+      "at": "2026-11-24T14:59:40.630Z"
     },
     {
       "id": "layout.wallpaper-pager",
       "title": "wallpaper online results show at most 6 per page with a working pager",
       "status": "pass",
       "detail": "{\"visible\":true,\"results\":6,\"page\":\"第 1 / 2 页\",\"next\":true}",
-      "at": "2026-11-24T14:22:30.394Z"
+      "at": "2026-11-24T14:59:40.863Z"
     },
     {
       "id": "layout.wallpaper-pager-next",
       "title": "wallpaper pager next shows the second page of at most 6 results",
       "status": "pass",
       "detail": "{\"results\":6,\"page\":\"第 2 / 2 页\"}",
-      "at": "2026-11-24T14:22:30.721Z"
+      "at": "2026-11-24T14:59:41.188Z"
     },
     {
       "id": "layout.wallpaper-recent-tab",
       "title": "recent tab shows the recent history section (horizontal track when populated)",
       "status": "pass",
       "detail": "{\"card\":true,\"track\":false,\"hidden\":true}",
-      "at": "2026-11-24T14:22:30.938Z"
+      "at": "2026-11-24T14:59:41.421Z"
     },
     {
       "id": "layout.wallpaper-local-tab",
       "title": "local tab shows upload + custom-address side by side at 1440",
       "status": "pass",
       "detail": "{\"custom\":true,\"columns\":2,\"hidden\":true}",
-      "at": "2026-11-24T14:22:31.156Z"
+      "at": "2026-11-24T14:59:41.668Z"
     },
     {
       "id": "layout.wallpaper-manage-collapsed",
       "title": "managed presets/local-data section is collapsed by default",
       "status": "pass",
       "detail": "open=null",
-      "at": "2026-11-24T14:22:31.158Z"
+      "at": "2026-11-24T14:59:41.672Z"
     },
     {
       "id": "layout.wallpaper-manage-opens",
       "title": "managed presets/local-data section opens on toggle",
       "status": "pass",
       "detail": "open=true",
-      "at": "2026-11-24T14:22:31.418Z"
+      "at": "2026-11-24T14:59:41.953Z"
     },
     {
       "id": "layout.wallpaper-1024-stacked",
       "title": "wallpaper workbench stacks to one column at 1024px",
       "status": "pass",
       "detail": "layout={\"present\":true,\"className\":\"wallpaper-workbench\",\"display\":\"grid\",\"gridTemplateColumns\":\"696px\",\"tracks\":[\"696px\"],\"trackCount\":1,\"width\":696,\"height\":682}",
-      "at": "2026-11-24T14:22:32.026Z"
+      "at": "2026-11-24T14:59:42.604Z"
     },
     {
       "id": "layout.wallpaper-1024-no-overflow",
       "title": "wallpaper page has no horizontal overflow at 1024px",
       "status": "pass",
       "detail": "scrollWidth=1024 clientWidth=1024",
-      "at": "2026-11-24T14:22:32.026Z"
+      "at": "2026-11-24T14:59:42.604Z"
     },
     {
       "id": "layout.wallpaper-1024-source",
       "title": "wallpaper source tabs stay available at 1024px",
       "status": "pass",
       "detail": "{\"workbench\":true,\"oldLayoutPresent\":false,\"railPresent\":false,\"sourceCard\":true,\"sourceTabs\":[{\"testid\":\"wallpaper-source-tab-online\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-builtin\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-recent\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-local\",\"selected\":true}],\"hiddenPanels\":[\"wallpaper-source-panel-online\",\"wallpaper-source-panel-builtin\",\"wallpaper-source-panel-recent\"],\"visiblePanels\":[\"wallpaper-source-panel-local\"],\"workbenchChildren\":[\"wallpaper-hero\",\"wallpaper-effects-card\"],\"domOrder\":[{\"testid\":\"wallpaper-hero\",\"top\":178},{\"testid\":\"wallpaper-effects-card\",\"top\":597},{\"testid\":\"wallpaper-source-card\",\"top\":860},{\"testid\":\"wallpaper-manage\",\"top\":1472}],\"effectsColumns\":2,\"positionPresent\":false,\"positionInsideEffects\":null,\"managePresent\":true,\"manageOpen\":true,\"pagerPresent\":true,\"resultCount\":6,\"recentTrack\":false,\"sourceTabsTop\":1117}",
-      "at": "2026-11-24T14:22:32.026Z"
+      "at": "2026-11-24T14:59:42.604Z"
     },
     {
       "id": "layout.wallpaper-1024-effects",
       "title": "wallpaper effects grid has at most two columns at 1024px",
       "status": "pass",
       "detail": "{\"present\":true,\"tracks\":2,\"columns\":\"319px 319px\"}",
-      "at": "2026-11-24T14:22:32.026Z"
+      "at": "2026-11-24T14:59:42.604Z"
     },
     {
       "id": "layout.wallpaper-767-stacked",
       "title": "wallpaper workbench stacks to one column at 767px",
       "status": "pass",
       "detail": "layout={\"present\":true,\"className\":\"wallpaper-workbench\",\"display\":\"grid\",\"gridTemplateColumns\":\"719px\",\"tracks\":[\"719px\"],\"trackCount\":1,\"width\":719,\"height\":615}",
-      "at": "2026-11-24T14:22:32.643Z"
+      "at": "2026-11-24T14:59:43.228Z"
     },
     {
       "id": "layout.wallpaper-767-no-overflow",
       "title": "wallpaper page has no horizontal overflow at 767px",
       "status": "pass",
       "detail": "scrollWidth=767 clientWidth=767",
-      "at": "2026-11-24T14:22:32.643Z"
+      "at": "2026-11-24T14:59:43.228Z"
     },
     {
       "id": "layout.wallpaper-767-source",
       "title": "wallpaper source tabs stay available at 767px",
       "status": "pass",
       "detail": "{\"workbench\":true,\"oldLayoutPresent\":false,\"railPresent\":false,\"sourceCard\":true,\"sourceTabs\":[{\"testid\":\"wallpaper-source-tab-online\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-builtin\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-recent\",\"selected\":false},{\"testid\":\"wallpaper-source-tab-local\",\"selected\":true}],\"hiddenPanels\":[\"wallpaper-source-panel-online\",\"wallpaper-source-panel-builtin\",\"wallpaper-source-panel-recent\"],\"visiblePanels\":[\"wallpaper-source-panel-local\"],\"workbenchChildren\":[\"wallpaper-hero\",\"wallpaper-effects-card\"],\"domOrder\":[{\"testid\":\"wallpaper-hero\",\"top\":226},{\"testid\":\"wallpaper-effects-card\",\"top\":577},{\"testid\":\"wallpaper-source-card\",\"top\":840},{\"testid\":\"wallpaper-manage\",\"top\":1452}],\"effectsColumns\":2,\"positionPresent\":false,\"positionInsideEffects\":null,\"managePresent\":true,\"manageOpen\":true,\"pagerPresent\":true,\"resultCount\":6,\"recentTrack\":false,\"sourceTabsTop\":1097}",
-      "at": "2026-11-24T14:22:32.643Z"
+      "at": "2026-11-24T14:59:43.228Z"
     },
     {
       "id": "layout.wallpaper-767-effects",
       "title": "wallpaper effects grid has at most two columns at 767px",
       "status": "pass",
       "detail": "{\"present\":true,\"tracks\":2,\"columns\":\"330.5px 330.5px\"}",
-      "at": "2026-11-24T14:22:32.643Z"
+      "at": "2026-11-24T14:59:43.228Z"
     },
     {
       "id": "style.candidates",
@@ -4540,7 +4540,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:40.049Z"
+      "at": "2026-11-24T14:59:50.615Z"
     },
     {
       "id": "style.host-radius",
@@ -4729,7 +4729,7 @@
           ]
         }
       },
-      "at": "2026-11-24T14:22:40.050Z"
+      "at": "2026-11-24T14:59:50.615Z"
     },
     {
       "id": "style.host-font",
@@ -4768,7 +4768,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:40.050Z"
+      "at": "2026-11-24T14:59:50.615Z"
     },
     {
       "id": "style.host-elevation",
@@ -4939,7 +4939,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:40.050Z"
+      "at": "2026-11-24T14:59:50.615Z"
     },
     {
       "id": "style.material-glass",
@@ -4954,7 +4954,7 @@
           ]
         }
       },
-      "at": "2026-11-24T14:22:40.050Z"
+      "at": "2026-11-24T14:59:50.616Z"
     },
     {
       "id": "style.cascade-tokens",
@@ -5093,28 +5093,28 @@
           }
         ]
       },
-      "at": "2026-11-24T14:22:40.051Z"
+      "at": "2026-11-24T14:59:50.617Z"
     },
     {
       "id": "style.screenshots",
       "title": "multi-livery comparison screenshots were captured",
       "status": "pass",
       "detail": "8 style screenshot(s) for 4 style candidate(s)",
-      "at": "2026-11-24T14:22:40.051Z"
+      "at": "2026-11-24T14:59:50.617Z"
     },
     {
       "id": "wallpaper.tab",
       "title": "壁纸 page tab switches to the wallpaper studio panel",
       "status": "pass",
       "detail": "selected=true; wallpaper panel=true; style panel=false; label=\"壁纸\"",
-      "at": "2026-11-24T14:22:40.404Z"
+      "at": "2026-11-24T14:59:50.981Z"
     },
     {
       "id": "recent.hidden-empty",
       "title": "the Recent wallpapers card is absent while the local history is empty",
       "status": "pass",
       "detail": "present=false; items=0",
-      "at": "2026-11-24T14:22:40.406Z"
+      "at": "2026-11-24T14:59:50.983Z"
     },
     {
       "id": "wallpaper.no-request-before-online",
@@ -5131,21 +5131,21 @@
           "wikimedia": 0
         }
       },
-      "at": "2026-11-24T14:24:52.614Z"
+      "at": "2026-11-24T14:59:51.994Z"
     },
     {
       "id": "copy.wallpaper-online-hint",
       "title": "the online card copy says one batch loads on tab activation and explicit actions are the only other fetches",
       "status": "pass",
       "detail": "online card text=在线壁纸打开页签加载一批；其他操作点击请求。来源自动维基共享资源Auto 按顺序尝试来源；切换会清空结果。搜索随机换一批",
-      "at": "2026-11-24T14:24:52.626Z"
+      "at": "2026-11-24T14:59:51.995Z"
     },
     {
       "id": "copy.frost-label",
       "title": "effect slider keeps the plain 磨砂 (Frost) label",
       "status": "pass",
       "detail": "effects card labels=效果重置效果模糊8 px变暗25%磨砂35%全局氛围30%表面通过磨砂透出壁纸。为 0 时壁纸只透过透明表面显示。",
-      "at": "2026-11-24T14:24:52.628Z"
+      "at": "2026-11-24T14:59:51.996Z"
     },
     {
       "id": "wallpaper.preset-cards",
@@ -5175,7 +5175,7 @@
           "styleDisabledReason": ""
         }
       },
-      "at": "2026-11-24T14:24:52.628Z"
+      "at": "2026-11-24T14:59:51.996Z"
     },
     {
       "id": "wallpaper.builtin-visible-8",
@@ -5194,7 +5194,7 @@
           "sand"
         ]
       },
-      "at": "2026-11-24T14:24:52.628Z"
+      "at": "2026-11-24T14:59:51.996Z"
     },
     {
       "id": "wallpaper.builtin-classic",
@@ -5254,7 +5254,7 @@
           "glacier"
         ]
       },
-      "at": "2026-11-24T14:24:52.628Z"
+      "at": "2026-11-24T14:59:51.996Z"
     },
     {
       "id": "wallpaper.builtin-applied",
@@ -5264,42 +5264,42 @@
       "evidence": {
         "styleText": "body[data-dsh-wallpaper]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;background-image:repeating-linear-gradient(0deg, #f6f1e7 0 22px, #efe8da 22px 23px);background-position:center;background-size:cover;filter:blur(8px)}\nbody[data-dsh-wallpaper]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(0,0,0,0.25)}\nbody[data-dsh-wallpaper]{background-color:transparent}\n.dsh-livery-wallpaper-overlay{position:fixed;inset:0;z-index:90;pointer-events:none;background-image:repeating-linear-gradient(0deg, #f6f1e7 0 22px, #efe8da 22px 23px);background-size:cover;background-position:center;filter:blur(8px);opacity:0.30;mix-blend-mode:soft-light}\n@media (forced-colors: active){body[data-dsh-wallpaper]::before,body[data-dsh-wallpaper]::af"
       },
-      "at": "2026-11-24T14:24:52.698Z"
+      "at": "2026-11-24T14:59:52.034Z"
     },
     {
       "id": "wallpaper.atmosphere-default",
       "title": "the global atmosphere overlay exists at the default atmosphere with the expected computed styles",
       "status": "pass",
       "detail": "overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.3\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"repeating-linear-gradient(0deg, rgb(246, 241, 231) 0px, rgb(246, 241, 231) 22px, rgb(239, 232, 218) 22px, rgb(239, 232, 218) 23px)\"}; body::before cover=cover",
-      "at": "2026-11-24T14:24:52.698Z"
+      "at": "2026-11-24T14:59:52.035Z"
     },
     {
       "id": "wallpaper.selected-state",
       "title": "the active wallpaper and tab expose a visible selected state",
       "status": "pass",
       "detail": "selected=[{\"id\":\"paper\",\"pressed\":true,\"label\":\"纸纹\"}]; tab=rgb(52, 84, 138)/rgb(52, 84, 138); swatch outline=2px, shadow=color(srgb 0.203922 0.329412 0.541176 / 0.28) 0px 0px 0px 4px",
-      "at": "2026-11-24T14:24:52.702Z"
+      "at": "2026-11-24T14:59:52.035Z"
     },
     {
       "id": "wallpaper.host-surfaces-opaque",
       "title": "frost never rewrites host modal, input or tooltip surface tokens",
       "status": "pass",
       "detail": "--dsw-alias-bg-layer-2=#d9dadf; --dsw-alias-bg-layer-1=#d7d8dd; --dsw-alias-tooltip-bg=#484f6a",
-      "at": "2026-11-24T14:24:52.710Z"
+      "at": "2026-11-24T14:59:52.036Z"
     },
     {
       "id": "wallpaper.atmosphere-below-floating",
       "title": "the atmosphere layer stays below host Menu/Tooltip/HoverCard/Modal surfaces",
       "status": "pass",
       "detail": "atmosphere z-index=90; host ordinary floats=100/101, Modal=1000, Toast=1100",
-      "at": "2026-11-24T14:24:52.710Z"
+      "at": "2026-11-24T14:59:52.036Z"
     },
     {
       "id": "wallpaper.modal-clear",
       "title": "host Settings modal stays opaque above the atmosphere when wallpaper frost is active",
       "status": "pass",
       "detail": "overlay z=90; modal z=1; background=rgb(217, 218, 223); backdrop=none",
-      "at": "2026-11-24T14:24:53.246Z"
+      "at": "2026-11-24T14:59:52.560Z"
     },
     {
       "id": "wallpaper.builtin-current-classic",
@@ -5409,7 +5409,7 @@
           "hint": "内置设计离线加载；在线图片使用缓存。"
         }
       },
-      "at": "2026-11-24T14:24:53.798Z"
+      "at": "2026-11-24T14:59:53.082Z"
     },
     {
       "id": "wallpaper.online-first-batch",
@@ -5467,7 +5467,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:24:54.351Z"
+      "at": "2026-11-24T14:59:53.611Z"
     },
     {
       "id": "wallpaper.provider-selector",
@@ -5493,42 +5493,42 @@
           ]
         }
       },
-      "at": "2026-11-24T14:24:54.351Z"
+      "at": "2026-11-24T14:59:53.611Z"
     },
     {
       "id": "wallpaper.provider-served-by",
       "title": "Auto names the provider that served the results in a polite live region",
       "status": "pass",
       "detail": "servedBy=\"由 维基共享资源 提供\"; present=true",
-      "at": "2026-11-24T14:24:54.351Z"
+      "at": "2026-11-24T14:59:53.611Z"
     },
     {
       "id": "wallpaper.openverse-attribution-notice",
       "title": "the Openverse non-endorsement notice is shown when Openverse serves Auto results or is selected",
       "status": "skip",
       "detail": "Openverse was removed from the offered provider set in 0.2.2: the notice element and its copy no longer exist and the provider is never offered, so this check is recorded as a skip instead of a fake pass",
-      "at": "2026-11-24T14:24:54.351Z"
+      "at": "2026-11-24T14:59:53.611Z"
     },
     {
       "id": "wallpaper.library-removed",
       "title": "curated library/category UI is removed; the workbench is hero → effects → single source card",
       "status": "pass",
       "detail": "onlineCard=true; libraryElements=0; categoryChips=0; mainCardOrder=[\"wallpaper-hero\",\"wallpaper-effects-card\",\"wallpaper-source-card\"]",
-      "at": "2026-11-24T14:24:54.351Z"
+      "at": "2026-11-24T14:59:53.611Z"
     },
     {
       "id": "wallpaper.online-thumbnails",
       "title": "online result cards render the provider thumbnail image with a visible skeleton fallback",
       "status": "pass",
       "detail": "resultImages=4; loadedImages=4; fallbackSpans=4; results=4",
-      "at": "2026-11-24T14:24:54.355Z"
+      "at": "2026-11-24T14:59:53.614Z"
     },
     {
       "id": "wallpaper.online-no-refetch",
       "title": "later tab switches and effect-slider changes never refetch the online results",
       "status": "pass",
       "detail": "requests 1→1; status=ready; results=4",
-      "at": "2026-11-24T14:24:55.934Z"
+      "at": "2026-11-24T14:59:54.974Z"
     },
     {
       "id": "wallpaper.online-search",
@@ -5538,7 +5538,7 @@
       "evidence": {
         "searchRequest": "https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrsearch=aurora&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=1280&origin=*"
       },
-      "at": "2026-11-24T14:24:56.310Z"
+      "at": "2026-11-24T14:59:55.353Z"
     },
     {
       "id": "wallpaper.online-selectability",
@@ -5585,7 +5585,7 @@
           }
         ]
       },
-      "at": "2026-11-24T14:25:01.718Z"
+      "at": "2026-11-24T15:00:00.765Z"
     },
     {
       "id": "wallpaper.online-applied",
@@ -5608,7 +5608,7 @@
           }
         }
       },
-      "at": "2026-11-24T14:25:02.099Z"
+      "at": "2026-11-24T15:00:01.126Z"
     },
     {
       "id": "wallpaper.attribution-links",
@@ -5650,28 +5650,28 @@
           "sourceUrl": "https://commons.wikimedia.org/wiki/File:Morning_ridge.jpg"
         }
       },
-      "at": "2026-11-24T14:25:02.100Z"
+      "at": "2026-11-24T15:00:01.126Z"
     },
     {
       "id": "recent.online-entry",
       "title": "applying an online wallpaper records it in the Recent card (newest first, cached flag best-effort)",
       "status": "pass",
       "detail": "card=true; items=[{\"url\":\"https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg\",\"cached\":\"true\",\"label\":\"Morning_ridge.jpg · 已缓存\"}]; applied=https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg",
-      "at": "2026-11-24T14:25:02.223Z"
+      "at": "2026-11-24T15:00:01.209Z"
     },
     {
       "id": "recent.two-entries",
       "title": "two applied online wallpapers appear newest-first in the Recent card",
       "status": "pass",
       "detail": "items=[\"https://upload.wikimedia.org/wikipedia/commons/1/11/Calm_water.jpg\",\"https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg\"]",
-      "at": "2026-11-24T14:25:02.796Z"
+      "at": "2026-11-24T15:00:01.769Z"
     },
     {
       "id": "wallpaper.attribution-url-optional",
       "title": "creator/licence/source links render only when the corresponding URL exists (CC0 stays plain text)",
       "status": "pass",
       "detail": "url=https://upload.wikimedia.org/wikipedia/commons/1/11/Calm_water.jpg; links=[\"creator\",\"source\"]; hero=\"Calm_water.jpg · Tester · CC0 1.0 · 维基共享资源\"",
-      "at": "2026-11-24T14:25:02.799Z"
+      "at": "2026-11-24T15:00:01.774Z"
     },
     {
       "id": "wallpaper.provider-switch-no-fetch",
@@ -5681,14 +5681,14 @@
       "evidence": {
         "requests": 2
       },
-      "at": "2026-11-24T14:25:03.578Z"
+      "at": "2026-11-24T15:00:02.568Z"
     },
     {
       "id": "wallpaper.online-json-cap",
       "title": "streaming search JSON over the 2 MiB cap fails the request (reader cancelled) instead of surfacing results",
       "status": "pass",
       "detail": "wikimedia 2→3; status=invalid-response; results=0",
-      "at": "2026-11-24T14:25:03.624Z"
+      "at": "2026-11-24T15:00:02.644Z"
     },
     {
       "id": "wallpaper.provider-rate-limited",
@@ -5706,42 +5706,42 @@
         },
         "retryAfter": "约 5 秒后可以重试。"
       },
-      "at": "2026-11-24T14:25:03.688Z"
+      "at": "2026-11-24T15:00:02.711Z"
     },
     {
       "id": "wallpaper.online-retry",
       "title": "Retry repeats the failed request and renders the recovered results",
       "status": "pass",
       "detail": "status=ready; results=4; wikimedia 4→5",
-      "at": "2026-11-24T14:25:10.241Z"
+      "at": "2026-11-24T15:00:09.264Z"
     },
     {
       "id": "wallpaper.online-empty",
       "title": "a provider response with no results settles as data-status=\"empty\" with Built-in/None escapes and no error block",
       "status": "pass",
       "detail": "status=empty; empty={\"present\":true,\"builtin\":true,\"none\":true,\"text\":\"换个关键词搜索，或者改用内置设计。浏览内置设计不使用壁纸\"}; error=false",
-      "at": "2026-11-24T14:25:10.302Z"
+      "at": "2026-11-24T15:00:09.329Z"
     },
     {
       "id": "wallpaper.provider-failover",
       "title": "Auto fails over from a failing first provider to the next gate provider and names the provider that served the results",
       "status": "skip",
       "detail": "Openverse was removed from the offered provider set in 0.2.2; Auto now offers only Wikimedia Commons, so a two-provider failover cannot be exercised through the UI. The registry failover loop is covered by unit tests with synthetic providers.",
-      "at": "2026-11-24T14:25:10.302Z"
+      "at": "2026-11-24T15:00:09.329Z"
     },
     {
       "id": "wallpaper.provider-pinned-no-failover",
       "title": "a pinned Wikimedia Commons failure produces one typed failure with Retry/Built-in/None and never falls back to another provider",
       "status": "pass",
       "detail": "status=unavailable; error={\"present\":true,\"role\":\"alert\",\"text\":\"无法连接壁纸服务。重试浏览内置设计不使用壁纸\",\"retry\":true,\"builtin\":true,\"none\":true}; wikimedia 6→7",
-      "at": "2026-11-24T14:25:10.537Z"
+      "at": "2026-11-24T15:00:09.582Z"
     },
     {
       "id": "wallpaper.error-escape-builtin",
       "title": "the failure Built-in escape switches to the offline gallery without any provider request",
       "status": "pass",
       "detail": "selected=wallpaper-source-tab-builtin; panel=wallpaper-source-panel-builtin; wikimedia requests=7",
-      "at": "2026-11-24T14:25:10.880Z"
+      "at": "2026-11-24T15:00:09.925Z"
     },
     {
       "id": "wallpaper.online-random",
@@ -5751,68 +5751,68 @@
       "evidence": {
         "randomRequest": "https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=1280&origin=*&generator=random&grnnamespace=6&grnlimit=12"
       },
-      "at": "2026-11-24T14:25:11.444Z"
+      "at": "2026-11-24T15:00:10.503Z"
     },
     {
       "id": "wallpaper.online-refresh",
       "title": "Refresh repeats the active request for the pinned provider",
       "status": "pass",
       "detail": "wikimedia 8→9",
-      "at": "2026-11-24T14:25:11.500Z"
+      "at": "2026-11-24T15:00:10.558Z"
     },
     {
       "id": "wallpaper.provider-capabilities",
       "title": "capability-gated Random resolves for every offered provider (Auto and Wikimedia Commons both declare random images)",
       "status": "pass",
       "detail": "auto reason present=false randomDisabled=false; wikimedia reason present=false randomDisabled=false",
-      "at": "2026-11-24T14:25:11.875Z"
+      "at": "2026-11-24T15:00:10.952Z"
     },
     {
       "id": "wallpaper.style-disabled-no-catalog",
       "title": "without catalog tokens Follow style is disabled with a visible, programmatically-described reason",
       "status": "skip",
       "detail": "a certified host always supplies catalog tokens for the applied style; the disabled path is covered by unit tests (tests/client/wallpaper-panel.test.tsx) because it cannot be produced without a config write",
-      "at": "2026-11-24T14:25:11.878Z"
+      "at": "2026-11-24T15:00:10.956Z"
     },
     {
       "id": "wallpaper.style-card",
       "title": "Follow style is a single-select preset card; selecting it renders the generated style hero and clears the image-only controls",
       "status": "pass",
       "detail": "pressed=true/false; hero=style; position=false; links=0; attr=false; swatch=\"radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, rgb(52, 84, 138) 24%, transparent 76%) 0%, t\"",
-      "at": "2026-11-24T14:25:12.358Z"
+      "at": "2026-11-24T15:00:11.445Z"
     },
     {
       "id": "wallpaper.style-applied",
       "title": "Follow style writes one generated CSS layer (light+dark), never a blob/IndexedDB row/cache entry/url() and keeps the main record 0.2.1-readable",
       "status": "pass",
-      "detail": "attr=; css radial=true colorMix=true darkRule=true url=false blob=false; main={\"schemaVersion\":2,\"revision\":9,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":16,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"79e8aabb-441f-4457-bf5e-2aabeab6de4b\"}; sidecar={\"schemaVersion\":1,\"variant\":\"mesh\",\"revision\":9,\"sourceId\":\"79e8aabb-441f-4457-bf5e-2aabeab6de4b\"}; newImageRows=[]; recent 2→2; light≠dark=true",
+      "detail": "attr=; css radial=true colorMix=true darkRule=true url=false blob=false; main={\"schemaVersion\":2,\"revision\":9,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":16,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"8f60e9c4-af83-4b68-be48-7e718529f172\"}; sidecar={\"schemaVersion\":1,\"variant\":\"mesh\",\"revision\":9,\"sourceId\":\"8f60e9c4-af83-4b68-be48-7e718529f172\"}; newImageRows=[]; recent 2→2; light≠dark=true",
       "evidence": {
         "styleText": "body[data-dsh-wallpaper]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;background-image:radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, #34548a 24%, transparent) 0%, transparent 55%), radial-gradient(110% 130% at 88% 18%, color-mix(in srgb, #dbdce1 18%, transparent) 0%, transparent 60%), linear-gradient(160deg, #d5d6db 0%, #d9dadf 100%);background-position:center;background-size:cover;filter:blur(16px)}\nbody[data-dsh-wallpaper][data-ds-dark-theme]::before{background-image:radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, #7aa2f7 24%, transparent) 0%, transparent 55%), radial-gradient(110% 130% at 88% 18%, color-mix(in srgb, #545560 18%, transparent) 0%, transparent 60%), linear-gradient(160deg, #1a1b26 0%, #474854 100%)}\nbody[data-dsh-wallpaper]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(0,0,0,0.25)}\nbody[data-dsh-wallpaper]{background-color:transparent}\n.dsh-livery-wallpaper-overlay{position:fixed;inset:0;z-index:90;pointer-events:none;background-image:radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, #34548a 24%, transparent) 0%, transparent 55%), radial-gradient(110% 130% at 88% 18%, color-mix(in srgb, #dbdce1 18%, transparent) 0%, transparent 60%), linear-gradient(160deg, #d5d6db 0%, #d9dadf 100%);background-size:cover;background-position:center;filter:blur(16px);opacity:0.30;mix-blend-mode:soft-light}\nbody[data-ds-dark-theme] .dsh-livery-wallpaper-overlay{background-image:radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, #7aa2f7 24%, transparent) 0%, transparent 55%), ",
-        "main": "{\"schemaVersion\":2,\"revision\":9,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":16,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"79e8aabb-441f-4457-bf5e-2aabeab6de4b\"}",
+        "main": "{\"schemaVersion\":2,\"revision\":9,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":16,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"8f60e9c4-af83-4b68-be48-7e718529f172\"}",
         "sidecar": {
           "schemaVersion": 1,
           "variant": "mesh",
           "revision": 9,
-          "sourceId": "79e8aabb-441f-4457-bf5e-2aabeab6de4b"
+          "sourceId": "8f60e9c4-af83-4b68-be48-7e718529f172"
         },
         "lightHero": "radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, rgb(52, 84, 138) 24%, transparent 76%) 0%, transparent 55%), radial-gradient(110% 130% at 88% 18%, color-mix(in srgb, rgb(219, 220, 225) 18%, transparent 82%) 0%, transparent 60%), linear-gradient(160deg, rgb(213, 214, 219) 0%, rgb(217, 218, 22",
         "darkHero": "radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, rgb(122, 162, 247) 24%, transparent 76%) 0%, transparent 55%), radial-gradient(110% 130% at 88% 18%, color-mix(in srgb, rgb(84, 85, 96) 18%, transparent 82%) 0%, transparent 60%), linear-gradient(160deg, rgb(26, 27, 38) 0%, rgb(71, 72, 84) 100%"
       },
-      "at": "2026-11-24T14:25:12.997Z"
+      "at": "2026-11-24T15:00:12.126Z"
     },
     {
       "id": "wallpaper.style-clear",
       "title": "Clear from the style selection removes the generated layer and the style sidecar (no resurrectable style)",
       "status": "pass",
       "detail": "style=false; attr=null; sidecar=; pressed none=true style=false",
-      "at": "2026-11-24T14:25:13.329Z"
+      "at": "2026-11-24T15:00:12.476Z"
     },
     {
       "id": "wallpaper.effects-blur-dim",
       "title": "blur/dim sliders update the wallpaper layer (filter + veil)",
       "status": "pass",
       "detail": "sliders={\"blur\":20,\"dim\":60,\"frost\":35,\"atmosphere\":30}; filter=blur(20px); veil=rgba(0, 0, 0, 0.6) none repeat scroll 0% 0% / auto padding-box border-box",
-      "at": "2026-11-24T14:25:13.871Z"
+      "at": "2026-11-24T15:00:13.066Z"
     },
     {
       "id": "wallpaper.frost",
@@ -5822,126 +5822,126 @@
       "evidence": {
         "styleText": "body[data-dsh-wallpaper]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;background-image:repeating-linear-gradient(0deg, #f6f1e7 0 22px, #efe8da 22px 23px);background-position:center;background-size:cover;filter:blur(20px)}\nbody[data-dsh-wallpaper]::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:rgba(0,0,0,0.60)}\nbody[data-dsh-wallpaper]{background-color:transparent}\n.dsh-livery-wallpaper-overlay{position:fixed;inset:0;z-index:90;pointer-events:none;background-image:repeating-linear-gradient(0deg, #f6f1e7 0 22px, #efe8da 22px 23px);background-size:cover;background-position:center;filter:blur(20px);opacity:0.30;mix-blend-mode:soft-light}\n@media (forced-colors: active){body[data-dsh-wallpaper]::before,body[data-dsh-wallpaper]::after,.dsh-livery-wallpaper-overlay{display:none}body[data-dsh-wallpaper]{background-color:revert}}\n"
       },
-      "at": "2026-11-24T14:25:13.978Z"
+      "at": "2026-11-24T15:00:13.185Z"
     },
     {
       "id": "wallpaper.reset",
       "title": "reset restores the default blur/dim/frost/atmosphere values",
       "status": "pass",
       "detail": "sliders={\"blur\":8,\"dim\":25,\"frost\":35,\"atmosphere\":30}; filter=filter:blur(8px)",
-      "at": "2026-11-24T14:25:14.127Z"
+      "at": "2026-11-24T15:00:13.299Z"
     },
     {
       "id": "wallpaper.persistence-layer",
       "title": "the persisted wallpaper layer (body attribute + atmosphere overlay) is re-applied globally after a reload, before the panel mounts",
       "status": "pass",
       "detail": "attr=(present); style=true; overlay=true; opacity=0.6",
-      "at": "2026-11-24T14:25:35.542Z"
+      "at": "2026-11-24T15:00:34.733Z"
     },
     {
       "id": "recent.reload-persist",
       "title": "Recent wallpapers survive a hard reload (localStorage history + cached thumbnails)",
       "status": "pass",
       "detail": "items=2; cached=[\"true\",\"true\"]",
-      "at": "2026-11-24T14:25:36.167Z"
+      "at": "2026-11-24T15:00:35.364Z"
     },
     {
       "id": "wallpaper.persistence",
       "title": "selected wallpaper and effects persist across a hard reload",
       "status": "pass",
       "detail": "global layer attr=true; builtin=paper; sliders={\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60}; stored={\"schemaVersion\":2,\"revision\":19,\"selection\":{\"kind\":\"builtin\",\"id\":\"paper\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50",
-      "at": "2026-11-24T14:25:36.167Z"
+      "at": "2026-11-24T15:00:35.364Z"
     },
     {
       "id": "wallpaper.tab-reload",
       "title": "the wallpaper tab survives a hard reload (sessionStorage mirror)",
       "status": "pass",
       "detail": "reopened=true; wallpaper tab auto-selected after reload=true; overlay=true",
-      "at": "2026-11-24T14:25:36.167Z"
+      "at": "2026-11-24T15:00:35.364Z"
     },
     {
       "id": "wallpaper.upload-accept",
       "title": "upload input accepts the documented image MIME set",
       "status": "pass",
       "detail": "accept=\"image/jpeg,image/png,image/webp,image/avif\"",
-      "at": "2026-11-24T14:25:36.438Z"
+      "at": "2026-11-24T15:00:35.633Z"
     },
     {
       "id": "wallpaper.upload-applied",
       "title": "uploading a PNG applies a blob: wallpaper layer stored in IndexedDB",
       "status": "pass",
-      "detail": "blobInStyle=true; stored={\"schemaVersion\":2,\"revision\":20,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1795530336447-0tcuome2kt\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\"; error=\"\"",
-      "at": "2026-11-24T14:25:36.868Z"
+      "detail": "blobInStyle=true; stored={\"schemaVersion\":2,\"revision\":20,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1795532435642-0f035atezp\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\"; error=\"\"",
+      "at": "2026-11-24T15:00:36.071Z"
     },
     {
       "id": "wallpaper.upload-invalid-type",
       "title": "a non-image upload is rejected with a validation message",
       "status": "pass",
       "detail": "error=\"不支持的图片格式。\"",
-      "at": "2026-11-24T14:25:36.919Z"
+      "at": "2026-11-24T15:00:36.147Z"
     },
     {
       "id": "wallpaper.upload-invalid-size",
       "title": "an upload above the 10 MiB cap is rejected with a validation message",
       "status": "pass",
       "detail": "error=\"图片超过 10 MiB。\"",
-      "at": "2026-11-24T14:25:37.868Z"
+      "at": "2026-11-24T15:00:37.013Z"
     },
     {
       "id": "wallpaper.upload-reload",
       "title": "an uploaded wallpaper re-hydrates from IndexedDB after a hard reload",
       "status": "pass",
-      "detail": "blobInStyle=true; attribute=; stored={\"schemaVersion\":2,\"revision\":20,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1795530336447-0tcuome2kt\"},\"effects\":{\"blur\"",
-      "at": "2026-11-24T14:25:53.450Z"
+      "detail": "blobInStyle=true; attribute=; stored={\"schemaVersion\":2,\"revision\":20,\"selection\":{\"kind\":\"upload\",\"key\":\"upload-1795532435642-0f035atezp\"},\"effects\":{\"blur\"",
+      "at": "2026-11-24T15:00:52.596Z"
     },
     {
       "id": "wallpaper.url-validation",
       "title": "non-https / javascript / data URLs are rejected with a validation message",
       "status": "pass",
       "detail": "http://insecure.test/a.j rejected=true; javascript:alert(1) rejected=true; data:image/svg+xml,<svg/ rejected=true",
-      "at": "2026-11-24T14:25:53.817Z"
+      "at": "2026-11-24T15:00:52.995Z"
     },
     {
       "id": "wallpaper.url-accepted",
       "title": "https custom image URLs are accepted and applied through the owned layer",
       "status": "pass",
       "detail": "blob=true fetchOk=true rawInStyle=false; attr=; error=\"\" (custom URLs surface no attribution line by design)",
-      "at": "2026-11-24T14:25:54.118Z"
+      "at": "2026-11-24T15:00:53.302Z"
     },
     {
       "id": "wallpaper.remote-failure",
       "title": "failed remote cache (network/status/MIME/redirect) keeps the previous selection/storage, records no history/raw CSS, and never requests a private/insecure redirect target",
       "status": "pass",
       "detail": "[{\"label\":\"network/status failure\",\"url\":\"https://images.example.test/broken.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"non-image MIME failure\",\"url\":\"https://images.example.test/mime.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"private-host redirect rejection\",\"url\":\"https://images.example.test/redirect-private.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false},{\"label\":\"non-https final redirect rejection\",\"url\":\"https://images.example.test/redirect-http.jpg\",\"errorVisible\":true,\"oldSelectionPreserved\":true,\"oldStylePreserved\":true,\"rawInStyle\":false,\"history\":false}]; redirectedTargetRequests=[]",
-      "at": "2026-11-24T14:25:57.225Z"
+      "at": "2026-11-24T15:00:56.499Z"
     },
     {
       "id": "recent.three-entries",
       "title": "a custom https wallpaper is added as the newest Recent entry (3 entries, cached where possible)",
       "status": "pass",
       "detail": "items=[{\"url\":\"https://images.example.test/custom.jpg\",\"cached\":\"true\",\"label\":\"自定义地址 · 已缓存\"},{\"url\":\"https://upload.wikimedia.org/wikipedia/commons/1/11/Calm_water.jpg\",\"cached\":\"true\",\"label\":\"Calm_water.jpg · 已缓存\"},{\"url\":\"https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg\",\"cached\":\"true\",\"label\":\"Morning_ridge.jpg · 已缓存\"}]",
-      "at": "2026-11-24T14:25:57.228Z"
+      "at": "2026-11-24T15:00:56.504Z"
     },
     {
       "id": "recent.reapply",
       "title": "clicking a Recent item re-applies that wallpaper and moves it to newest (cached blob layer is legitimate)",
       "status": "pass",
       "detail": "newest=https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg; expected=https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg; blob=true fetchOk=true rawInStyle=false; hero=\"当前壁纸 移除壁纸 upload.wikimedia.org 维基共享资源 Morning_ridge.jpg · Artist Name · CC BY 4.0 · 维基共享资源 作者 Artist Name 许可 CC BY 4.0 来\"; expectedTitle=\"Morning_ridge.jpg\"",
-      "at": "2026-11-24T14:25:57.869Z"
+      "at": "2026-11-24T15:00:57.156Z"
     },
     {
       "id": "recent.cache-failure",
       "title": "a failed cache download leaves the previous wallpaper selected, records no history entry for the URL, and never falls back to raw CSS",
       "status": "pass",
       "detail": "history=false; rawInStyle=false; selection={\"kind\":\"remote\",\"url\":\"https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg\",\"provenance\":{\"providerId\":\"wikimedia\",\"title\":\"Morning_ridge.jpg\",\"creator\":\"Artist Name\",\"license\":\"CC BY 4.0\",\"source\":\"维基共享资源\",\"creatorUrl\":\"https://commons.wikimedia.org/wiki/User:Artist_Name\",\"licenseUrl\":\"https://creativecommons.org/licenses/by/4.0/\",\"sourceUrl\":\"https://commons.wikimedia.org/wiki/File:Morning_ridge.jpg\"}} vs {\"kind\":\"remote\",\"url\":\"https://upload.wikimedia.org/wikipedia/commons/2/22/Morning_ridge.jpg\",\"provenance\":{\"providerId\":\"wikimedia\",\"title\":\"Morning_ridge.jpg\",\"creator\":\"Artist Name\",\"license\":\"CC BY 4.0\",\"source\":\"维基共享资源\",\"creatorUrl\":\"https://commons.wikimedia.org/wiki/User:Artist_Name\",\"licenseUrl\":\"https://creativecommons.org/licenses/by/4.0/\",\"sourceUrl\":\"https://commons.wikimedia.org/wiki/File:Morning_ridge.jpg\"}}; recent 3→3",
-      "at": "2026-11-24T14:25:58.826Z"
+      "at": "2026-11-24T15:00:58.155Z"
     },
     {
       "id": "recent.clear",
       "title": "clear removes the Recent card, the localStorage history and the best-effort remote image cache",
       "status": "pass",
       "detail": "card=false; stored=null; remote cache keys 3→0",
-      "at": "2026-11-24T14:26:00.101Z"
+      "at": "2026-11-24T15:00:59.440Z"
     },
     {
       "id": "wallpaper.adaptive-cover",
@@ -5976,14 +5976,14 @@
           }
         ]
       },
-      "at": "2026-11-24T14:26:02.155Z"
+      "at": "2026-11-24T15:01:01.581Z"
     },
     {
       "id": "wallpaper.atmosphere-conversation",
       "title": "the atmosphere overlay stays present over the host conversation page",
       "status": "pass",
       "detail": "attr=; overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.6\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"repeating-linear-gradient(0deg, rgb(246, 241, 231) 0px, rgb(246, 241, 231) 22px, rgb(239, 232, 218) 22px, rgb(239, 232, 218) 23px)\"}",
-      "at": "2026-11-24T14:26:03.387Z"
+      "at": "2026-11-24T15:01:02.820Z"
     },
     {
       "id": "wallpaper.overlay-plugin",
@@ -5999,21 +5999,21 @@
         },
         "perceptible": true
       },
-      "at": "2026-11-24T14:26:07.265Z"
+      "at": "2026-11-24T15:01:06.807Z"
     },
     {
       "id": "wallpaper.clear",
       "title": "clear removes the owned stylesheet/overlay/attribute and stores a v2 cleared record (or removes the key)",
       "status": "pass",
-      "detail": "stylePresent=false; attribute=null; overlay=false; stored={\"schemaVersion\":2,\"revision\":26,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"484f9ba0-19ef-4845-b65d-91d98ae7d962\"}",
-      "at": "2026-11-24T14:26:15.327Z"
+      "detail": "stylePresent=false; attribute=null; overlay=false; stored={\"schemaVersion\":2,\"revision\":26,\"selection\":{\"kind\":\"none\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":55,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"4715a68e-6b93-4f43-a0ef-6f7ba95c1703\"}",
+      "at": "2026-11-24T15:01:14.890Z"
     },
     {
       "id": "wallpaper.tab-restore",
       "title": "returning to the 视觉风格 tab restores the gallery and the wallpaper layer stays cleared",
       "status": "pass",
       "detail": "style selected=true; stylePanel=true; wallpaperPanel=false",
-      "at": "2026-11-24T14:26:15.448Z"
+      "at": "2026-11-24T15:01:14.998Z"
     },
     {
       "id": "visual.matrix-shots",
@@ -6050,7 +6050,7 @@
           64358
         ]
       },
-      "at": "2026-11-24T14:26:24.509Z"
+      "at": "2026-11-24T15:01:24.214Z"
     },
     {
       "id": "visual.no-overflow-767",
@@ -6069,7 +6069,7 @@
           "bodyScrollWidth": 767
         }
       },
-      "at": "2026-11-24T14:26:25.511Z"
+      "at": "2026-11-24T15:01:25.247Z"
     },
     {
       "id": "visual.narrow-card-order",
@@ -6108,7 +6108,7 @@
           }
         }
       },
-      "at": "2026-11-24T14:26:25.511Z"
+      "at": "2026-11-24T15:01:25.247Z"
     },
     {
       "id": "visual.theme-tokens",
@@ -6145,7 +6145,7 @@
           "contentFontSize": "14px"
         }
       },
-      "at": "2026-11-24T14:26:26.793Z"
+      "at": "2026-11-24T15:01:26.584Z"
     },
     {
       "id": "visual.frost-steps",
@@ -6192,13 +6192,13 @@
           }
         ]
       },
-      "at": "2026-11-24T14:26:28.841Z"
+      "at": "2026-11-24T15:01:28.771Z"
     },
     {
       "id": "visual.atmosphere-steps",
       "title": "atmosphere 0/30/60 maps to no overlay / 0.30 / 0.60 opacity, below floating UI",
       "status": "pass",
-      "detail": "atmo=0 overlay={\"present\":false} | atmo=30 overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.3\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"url(\\\"blob:http://127.0.0.1:63135/d6c906f0-e662-4321-a807-c97d543f47e8\\\")\"} | atmo=60 overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.6\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"url(\\\"blob:http://127.0.0.1:63135/d6c906f0-e662-4321-a807-c97d543f47e8\\\")\"}",
+      "detail": "atmo=0 overlay={\"present\":false} | atmo=30 overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.3\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"url(\\\"blob:http://127.0.0.1:55662/b635bfc3-4c2b-4065-b170-0a18e8f574f0\\\")\"} | atmo=60 overlay={\"present\":true,\"id\":\"dsh-livery-wallpaper-overlay\",\"className\":\"dsh-livery-wallpaper-overlay\",\"ariaHidden\":\"true\",\"zIndex\":\"90\",\"pointerEvents\":\"none\",\"opacity\":\"0.6\",\"mixBlendMode\":\"soft-light\",\"backgroundSize\":\"cover\",\"backgroundImage\":\"url(\\\"blob:http://127.0.0.1:55662/b635bfc3-4c2b-4065-b170-0a18e8f574f0\\\")\"}",
       "evidence": {
         "atmosphereStates": [
           {
@@ -6219,7 +6219,7 @@
               "opacity": "0.3",
               "mixBlendMode": "soft-light",
               "backgroundSize": "cover",
-              "backgroundImage": "url(\"blob:http://127.0.0.1:63135/d6c906f0-e662-4321-a807-c97d543f47e8\")"
+              "backgroundImage": "url(\"blob:http://127.0.0.1:55662/b635bfc3-4c2b-4065-b170-0a18e8f574f0\")"
             }
           },
           {
@@ -6234,12 +6234,12 @@
               "opacity": "0.6",
               "mixBlendMode": "soft-light",
               "backgroundSize": "cover",
-              "backgroundImage": "url(\"blob:http://127.0.0.1:63135/d6c906f0-e662-4321-a807-c97d543f47e8\")"
+              "backgroundImage": "url(\"blob:http://127.0.0.1:55662/b635bfc3-4c2b-4065-b170-0a18e8f574f0\")"
             }
           }
         ]
       },
-      "at": "2026-11-24T14:26:30.657Z"
+      "at": "2026-11-24T15:01:30.703Z"
     },
     {
       "id": "visual.forced-colors",
@@ -6255,7 +6255,7 @@
           "boxShadow": "none"
         }
       },
-      "at": "2026-11-24T14:26:31.213Z"
+      "at": "2026-11-24T15:01:31.309Z"
     },
     {
       "id": "visual.reduced-transparency",
@@ -6271,7 +6271,7 @@
           "boxShadow": "none"
         }
       },
-      "at": "2026-11-24T14:26:31.803Z"
+      "at": "2026-11-24T15:01:31.921Z"
     },
     {
       "id": "visual.keyboard-focus",
@@ -6285,7 +6285,7 @@
           "boxShadow": "none"
         }
       },
-      "at": "2026-11-24T14:26:33.402Z"
+      "at": "2026-11-24T15:01:33.609Z"
     },
     {
       "id": "visual.selected-state",
@@ -6299,7 +6299,7 @@
           "pressed": "true"
         }
       },
-      "at": "2026-11-24T14:26:33.402Z"
+      "at": "2026-11-24T15:01:33.609Z"
     },
     {
       "id": "visual.floating-surfaces",
@@ -6314,14 +6314,14 @@
           "overlayZ": 90
         }
       },
-      "at": "2026-11-24T14:26:34.364Z"
+      "at": "2026-11-24T15:01:34.591Z"
     },
     {
       "id": "visual.other-floating-surfaces",
       "title": "confirm dialog / Toast / Tooltip / Menu / HoverCard stay opaque above the atmosphere",
       "status": "skip",
       "detail": "not triggerable without synthetic host interactions in this shell; Settings modal path covers the shared floating-surface token",
-      "at": "2026-11-24T14:26:34.364Z"
+      "at": "2026-11-24T15:01:34.591Z"
     },
     {
       "id": "visual.menu-surface-opaque",
@@ -6345,21 +6345,21 @@
           "tokenMenu": "#d7d8dd"
         }
       },
-      "at": "2026-11-24T14:26:34.366Z"
+      "at": "2026-11-24T15:01:34.592Z"
     },
     {
       "id": "visual.jobs-popover-opaque",
       "title": "the real background-jobs popover and subagent cards are opaque over a wallpaper",
       "status": "skip",
       "detail": "background jobs are not triggerable in this shell; visual.menu-surface-opaque + derive/unit tests cover the MenuSurface and fill-l1/l2 tokens",
-      "at": "2026-11-24T14:26:34.366Z"
+      "at": "2026-11-24T15:01:34.592Z"
     },
     {
       "id": "visual.stock-wallpaper-menu-opaque",
       "title": "stock style + active wallpaper gets opaque menu/fill surfaces from the wallpaper bridge rule",
       "status": "skip",
       "detail": "this matrix state always has an active Livery style; the stock-only branch is covered by the wallpaper CSS unit assertion and the stock token values",
-      "at": "2026-11-24T14:26:34.366Z"
+      "at": "2026-11-24T15:01:34.592Z"
     },
     {
       "id": "merged.position-remote",
@@ -6383,21 +6383,21 @@
           "y": 100
         }
       },
-      "at": "2026-11-24T14:26:37.015Z"
+      "at": "2026-11-24T15:01:37.296Z"
     },
     {
       "id": "merged.position-keyboard",
       "title": "position radios are keyboard operable with native radio semantics",
       "status": "pass",
       "detail": "keyboard={\"x\":100,\"y\":50} group={\"present\":true,\"radios\":9,\"name\":\"wallpaper-position\",\"checked\":\"wallpaper-position-right\",\"checkedValue\":\"100,50\"}",
-      "at": "2026-11-24T14:26:37.354Z"
+      "at": "2026-11-24T15:01:37.641Z"
     },
     {
       "id": "merged.position-builtin-hidden",
       "title": "built-in wallpaper hides the focal-position control",
       "status": "pass",
       "detail": "group={\"present\":false} attr=",
-      "at": "2026-11-24T14:26:37.585Z"
+      "at": "2026-11-24T15:01:37.883Z"
     },
     {
       "id": "merged.preset-export",
@@ -6407,7 +6407,7 @@
       "evidence": {
         "exported": "{ \"schemaVersion\": 2, \"createdWith\": \"dsh-livery/0.2.2\", \"styleId\": \"tokyo-night\", \"wallpaper\": { \"kind\": \"builtin\", \"id\": \"paper\" }, \"effects\": { \"blur\": 12, \"dim\": 40, \"frost\": 35, \"atmosphere\": 60 }, \"position\": { \"x\": 50, \"y\": 50 } }"
       },
-      "at": "2026-11-24T14:26:38.514Z"
+      "at": "2026-11-24T15:01:38.863Z"
     },
     {
       "id": "merged.preset-style-export",
@@ -6417,46 +6417,46 @@
       "evidence": {
         "exported": "{ \"schemaVersion\": 2, \"createdWith\": \"dsh-livery/0.2.2\", \"styleId\": \"tokyo-night\", \"wallpaper\": { \"kind\": \"style\", \"variant\": \"mesh\" }, \"effects\": { \"blur\": 12, \"dim\": 40, \"frost\": 35, \"atmosphere\": 60 }, \"position\": { \"x\": 50, \"y\": 50 } }"
       },
-      "at": "2026-11-24T14:26:39.714Z"
+      "at": "2026-11-24T15:01:40.095Z"
     },
     {
       "id": "merged.preset-style-roundtrip",
       "title": "importing and applying the exported style preset restores the CSS-only style selection through the sidecar",
       "status": "pass",
-      "detail": "applyStatus=\"预设已应用。关闭提示\"; selection={\"kind\":\"none\"}; sidecar={\"schemaVersion\":1,\"variant\":\"mesh\",\"revision\":55,\"sourceId\":\"484f9ba0-19ef-4845-b65d-91d98ae7d962\"}; heroKind=style; style=true",
+      "detail": "applyStatus=\"预设已应用。关闭提示\"; selection={\"kind\":\"none\"}; sidecar={\"schemaVersion\":1,\"variant\":\"mesh\",\"revision\":55,\"sourceId\":\"4715a68e-6b93-4f43-a0ef-6f7ba95c1703\"}; heroKind=style; style=true",
       "evidence": {
         "sidecar": {
           "schemaVersion": 1,
           "variant": "mesh",
           "revision": 55,
-          "sourceId": "484f9ba0-19ef-4845-b65d-91d98ae7d962"
+          "sourceId": "4715a68e-6b93-4f43-a0ef-6f7ba95c1703"
         },
         "selection": {
           "kind": "none"
         }
       },
-      "at": "2026-11-24T14:26:40.955Z"
+      "at": "2026-11-24T15:01:41.336Z"
     },
     {
       "id": "merged.preset-import-diff",
       "title": "valid preset import shows a diff with the changed style/wallpaper/effects/position",
       "status": "pass",
       "detail": "preset={\"card\":true,\"exportButton\":true,\"importFile\":true,\"diff\":true,\"diffRows\":4,\"apply\":true,\"cancel\":true,\"exportStatus\":\"\",\"importStatus\":\"已载入由 dsh-livery/0.1.4 创建的预设。\",\"applyStatus\":\"\",\"error\":null} diffRows=4",
-      "at": "2026-11-24T14:26:41.849Z"
+      "at": "2026-11-24T15:01:42.284Z"
     },
     {
       "id": "merged.preset-apply-atomic",
       "title": "preset apply switches style + wallpaper + effects + position together from one confirmed action",
       "status": "pass",
-      "detail": "applyStatus=\"预设已应用。关闭提示\" stored={\"schemaVersion\":2,\"revision\":57,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/preset.jpg\"},\"effects\":{\"blur\":14,\"dim\":30,\"frost\":45,\"atmosphere\":25},\"position\":{\"x\":100,\"y\":100},\"sourceId\":\"484f9ba0-19",
-      "at": "2026-11-24T14:26:42.453Z"
+      "detail": "applyStatus=\"预设已应用。关闭提示\" stored={\"schemaVersion\":2,\"revision\":57,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/preset.jpg\"},\"effects\":{\"blur\":14,\"dim\":30,\"frost\":45,\"atmosphere\":25},\"position\":{\"x\":100,\"y\":100},\"sourceId\":\"4715a68e-6b",
+      "at": "2026-11-24T15:01:42.895Z"
     },
     {
       "id": "merged.preset-invalid-rejected",
       "title": "invalid presets are rejected with a stable preset-error id and ARIA invalid/describedby/errormessage",
       "status": "pass",
       "detail": "[{\"name\":\"unknown-field\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"unknown-field\",\"text\":\"预设包含不支持的字段（css）。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"bad-url\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"wallpaper-url\",\"text\":\"预设壁纸不是有效的 https 图片地址。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"bad-position\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"position\",\"text\":\"预设的焦点位置无效。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}},{\"name\":\"oversize\",\"error\":{\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"too-large\",\"text\":\"预设文件超过 64 KB。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}}]",
-      "at": "2026-11-24T14:26:45.283Z"
+      "at": "2026-11-24T15:01:45.724Z"
     },
     {
       "id": "merged.preset-v2-attribution",
@@ -6498,21 +6498,21 @@
           }
         ]
       },
-      "at": "2026-11-24T14:26:46.245Z"
+      "at": "2026-11-24T15:01:46.702Z"
     },
     {
       "id": "merged.preset-v2-attribution-invalid",
       "title": "a v2 preset with a non-https attribution URL is rejected with the attribution problem code",
       "status": "pass",
       "detail": "error={\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"attribution\",\"text\":\"预设的图片署名无效。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}; selection={\"kind\":\"remote\",\"url\":\"https://images.example.test/preset-v2.jpg\",\"provenance\":{\"title\":\"Otter at Dawn\",\"creator\":\"V2 Tester\",\"license\":\"CC BY 4.0\",\"source\":\"Example\",\"creatorUrl\":\"https://images.example.test/creator\",\"licenseUrl\":\"https://creativecommons.org/licenses/by/4.0/\",\"sourceUrl\":\"https://images.example.test/source\"}}",
-      "at": "2026-11-24T14:26:46.753Z"
+      "at": "2026-11-24T15:01:47.218Z"
     },
     {
       "id": "merged.preset-v2-variant",
       "title": "the new wallpaper-variant problem code rejects unknown style variants; a v1 file claiming kind:style is wallpaper-kind",
       "status": "pass",
       "detail": "badVariant={\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"wallpaper-variant\",\"text\":\"预设使用了不支持的风格壁纸变体。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}; v1Style={\"id\":\"preset-error\",\"kind\":\"import\",\"code\":\"wallpaper-kind\",\"text\":\"预设使用了不支持的壁纸类型。关闭提示\",\"importAriaInvalid\":\"true\",\"importDescribedBy\":\"preset-error\",\"importErrorMessage\":\"preset-error\",\"retryWallpaper\":false}",
-      "at": "2026-11-24T14:26:48.413Z"
+      "at": "2026-11-24T15:01:48.908Z"
     },
     {
       "id": "merged.preset-partial-failure",
@@ -6542,42 +6542,42 @@
         },
         "heroAttribution": "Partial Preset · Tester · CC0 · https://images.example.test"
       },
-      "at": "2026-11-24T14:26:50.240Z"
+      "at": "2026-11-24T15:01:50.826Z"
     },
     {
       "id": "merged.state-migration-v1",
       "title": "legacy v1 flat records hydrate position 50/50 without clearing wallpaper, persist as v2 on the next change, and corrupt records are ignored",
       "status": "pass",
-      "detail": "visible={\"kind\":\"builtin\",\"id\":\"aurora\",\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60} style=true attr=\"\"; persisted={\"schemaVersion\":2,\"revision\":1,\"selection\":{\"kind\":\"builtin\",\"id\":\"aurora\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":60,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"9e943bb2-8ce7-4faa-8790-49b4507a6eb0\"} style=true attr=\"\"; corruptStyle=true corruptAttr=\"\" corruptStored={not-json",
-      "at": "2026-11-24T14:27:08.982Z"
+      "detail": "visible={\"kind\":\"builtin\",\"id\":\"aurora\",\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60} style=true attr=\"\"; persisted={\"schemaVersion\":2,\"revision\":1,\"selection\":{\"kind\":\"builtin\",\"id\":\"aurora\"},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":60,\"atmosphere\":60},\"position\":{\"x\":50,\"y\":50},\"sourceId\":\"78dc5e16-467f-469b-9a47-d4ceaa6e8abf\"} style=true attr=\"\"; corruptStyle=true corruptAttr=\"\" corruptStored={not-json",
+      "at": "2026-11-24T15:02:17.480Z"
     },
     {
       "id": "merged.clear-local-data",
       "title": "clear-local-data keeps the current wallpaper, reports a result, and clears disposable local history/cache",
       "status": "pass",
-      "detail": "dbBefore=[{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795530396143,\"lastUsedAt\":1795530410673,\"sourceUrl\":\"https://images.example.test/remote.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795530409825,\"lastUsedAt\":1795530410663,\"sourceUrl\":\"https://images.example.test/partial.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795530402004,\"lastUsedAt\":1795530410672,\"sourceUrl\":\"https://images.example.test/preset.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795530386194,\"lastUsedAt\":1795530410679,\"sourceUrl\":\"https://upload.wikimedia.org/wikipedia/commons/1/11/Calm_water.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795530405826,\"lastUsedAt\":1795530410671,\"sourceUrl\":\"https://images.example.test/preset-v2.jpg\",\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1795530336448,\"lastUsedAt\":1795530336448,\"sourceUrl\":null,\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1795530433532,\"lastUsedAt\":1795530433532,\"sourceUrl\":null,\"hasBlob\":true}]; cleared={\"status\":\"cleared\",\"removed\":\"5\",\"text\":\"已清理 5 个图片；当前壁纸保留。\"}; currentBlob=true attr=",
-      "at": "2026-11-24T14:27:14.957Z"
+      "detail": "dbBefore=[{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795532496355,\"lastUsedAt\":1795532519159,\"sourceUrl\":\"https://images.example.test/remote.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795532510369,\"lastUsedAt\":1795532519151,\"sourceUrl\":\"https://images.example.test/partial.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795532502392,\"lastUsedAt\":1795532519157,\"sourceUrl\":\"https://images.example.test/preset.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795532485971,\"lastUsedAt\":1795532519160,\"sourceUrl\":\"https://upload.wikimedia.org/wikipedia/commons/1/11/Calm_water.jpg\",\"hasBlob\":true},{\"kind\":\"remote\",\"size\":70,\"createdAt\":1795532506270,\"lastUsedAt\":1795532519156,\"sourceUrl\":\"https://images.example.test/preset-v2.jpg\",\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1795532435643,\"lastUsedAt\":1795532435643,\"sourceUrl\":null,\"hasBlob\":true},{\"kind\":\"upload\",\"size\":70,\"createdAt\":1795532541985,\"lastUsedAt\":1795532541985,\"sourceUrl\":null,\"hasBlob\":true}]; cleared={\"status\":\"cleared\",\"removed\":\"5\",\"text\":\"已清理 5 个图片；当前壁纸保留。\"}; currentBlob=true attr=",
+      "at": "2026-11-24T15:02:23.466Z"
     },
     {
       "id": "merged.two-tab-sync",
       "title": "a second real page in the same profile applies wallpaper/position changes through storage events without reload loops",
       "status": "pass",
       "detail": "selection={\"kind\":\"remote\",\"url\":\"https://images.example.test/sync.jpg\",\"provenance\":{\"title\":\"自定义地址\",\"source\":\"images.example.test\"}} position={\"x\":0,\"y\":0} style=true attr=\"\" storageEvents=8",
-      "at": "2026-11-24T14:27:33.065Z"
+      "at": "2026-11-24T15:02:41.539Z"
     },
     {
       "id": "merged.two-tab-clear",
       "title": "clearing wallpaper in page A clears page B through the same sync path",
       "status": "pass",
       "detail": "style=false attr=null",
-      "at": "2026-11-24T14:27:33.099Z"
+      "at": "2026-11-24T15:02:41.555Z"
     },
     {
       "id": "merged.two-tab-upload-ref",
       "title": "page B externally adopts an upload selection, publishes its own ref, and clear-local-data protects the current upload ref",
       "status": "pass",
-      "detail": "{\"uploadKey\":\"upload-1795530453104-075ovsg5nb\",\"refRows\":2,\"refsAfterAdopt\":[{\"key\":\"dsh-livery.wallpaper.ref.484f9ba0-19ef-4845-b65d-91d98ae7d962\",\"uploads\":[],\"updatedAt\":1795530409827},{\"key\":\"dsh-livery.wallpaper.ref.79e8aabb-441f-4457-bf5e-2aabeab6de4b\",\"uploads\":[],\"updatedAt\":1795530314368},{\"key\":\"dsh-livery.wallpaper.ref.dac518b4-71b2-444b-b280-b74927330acb\",\"uploads\":[\"upload-1795530336447-0tcuome2kt\"],\"updatedAt\":1795530336449},{\"key\":\"dsh-livery.wallpaper.ref.9e943bb2-8ce7-4faa-8790-49b4507a6eb0\",\"uploads\":[\"upload-1795530453104-075ovsg5nb\"],\"updatedAt\":1795530453105},{\"key\":\"dsh-livery.wallpaper.ref.c45a818c-a692-4769-ae93-2717e9676f90\",\"uploads\":[\"upload-1795530453104-075ovsg5nb\",\"upload-1795530433531-0k1sk7slon\"],\"updatedAt\":1795530453105}],\"uploadBSelection\":{\"kind\":\"upload\",\"key\":\"upload-1795530453104-075ovsg5nb\"},\"clearProtection\":{\"result\":\"cleared\",\"selectionKept\":true,\"refsStillContain\":true,\"stylePresent\":true}}",
-      "at": "2026-11-24T14:27:33.494Z"
+      "detail": "{\"uploadKey\":\"upload-1795532561562-0mlepkblbk\",\"refRows\":2,\"refsAfterAdopt\":[{\"key\":\"dsh-livery.wallpaper.ref.c9cfb5d2-2873-454f-b8f1-287fa6ef99a2\",\"uploads\":[\"upload-1795532435642-0f035atezp\"],\"updatedAt\":1795532435644},{\"key\":\"dsh-livery.wallpaper.ref.99b17195-a592-435d-8912-026ab46d427a\",\"uploads\":[\"upload-1795532561562-0mlepkblbk\",\"upload-1795532541985-0wjx80718h\"],\"updatedAt\":1795532561563},{\"key\":\"dsh-livery.wallpaper.ref.8f60e9c4-af83-4b68-be48-7e718529f172\",\"uploads\":[],\"updatedAt\":1795532413567},{\"key\":\"dsh-livery.wallpaper.ref.4715a68e-6b93-4f43-a0ef-6f7ba95c1703\",\"uploads\":[],\"updatedAt\":1795532510370},{\"key\":\"dsh-livery.wallpaper.ref.78dc5e16-467f-469b-9a47-d4ceaa6e8abf\",\"uploads\":[\"upload-1795532561562-0mlepkblbk\"],\"updatedAt\":1795532561563}],\"uploadBSelection\":{\"kind\":\"upload\",\"key\":\"upload-1795532561562-0mlepkblbk\"},\"clearProtection\":{\"result\":\"cleared\",\"selectionKept\":true,\"refsStillContain\":true,\"stylePresent\":true}}",
+      "at": "2026-11-24T15:02:41.959Z"
     },
     {
       "id": "perf.catalog-size",
@@ -6594,18 +6594,18 @@
           "method": "raw bytes of GET /livery/api/catalog in the isolated rc.2 Web run"
         }
       },
-      "at": "2026-11-24T14:27:37.648Z"
+      "at": "2026-11-24T15:02:46.123Z"
     },
     {
       "id": "perf.cold-start",
       "title": "cold-start time stays near the measured baseline (warn only unless extreme)",
       "status": "pass",
-      "detail": "actual boot=2223ms fcp=44ms; baseline p50=1919ms p95=2021ms; pass",
+      "detail": "actual boot=2040ms fcp=32ms; baseline p50=1919ms p95=2021ms; pass",
       "evidence": {
         "sample": {
-          "bootMs": 2223,
-          "firstContentfulPaintMs": 44,
-          "firstPaintMs": 28
+          "bootMs": 2040,
+          "firstContentfulPaintMs": 32,
+          "firstPaintMs": 32
         },
         "baseline": {
           "samplesMs": [
@@ -6618,14 +6618,14 @@
           "method": "host cold boot ready (dsh web line) with stock/off wallpaper, three serial boots on one isolated home"
         }
       },
-      "at": "2026-11-24T14:27:37.648Z"
+      "at": "2026-11-24T15:02:46.123Z"
     },
     {
       "id": "network.openverse-canary",
       "title": "real Openverse API canary is non-blocking",
       "status": "warn",
       "detail": "network unavailable/third-party failure: This operation was aborted",
-      "at": "2026-11-24T14:27:47.650Z"
+      "at": "2026-11-24T15:02:56.128Z"
     },
     {
       "id": "restore.stock",
@@ -6644,21 +6644,21 @@
           "rgba(0, 0, 0, 0.04)"
         ]
       },
-      "at": "2026-11-24T14:27:48.621Z"
+      "at": "2026-11-24T15:02:57.072Z"
     },
     {
       "id": "restore.no-styles",
       "title": "Restore removes Livery-owned style elements",
       "status": "pass",
       "detail": "0 livery style element(s)",
-      "at": "2026-11-24T14:27:48.621Z"
+      "at": "2026-11-24T15:02:57.072Z"
     },
     {
       "id": "restore.persists",
       "title": "stock restore survives a hard reload",
       "status": "pass",
       "detail": "body attr=null handshake=(absent)",
-      "at": "2026-11-24T14:27:49.766Z"
+      "at": "2026-11-24T15:02:58.190Z"
     },
     {
       "id": "console.no-livery-errors",
@@ -6671,95 +6671,88 @@
         "ownedFailed": [],
         "ownedHttpErrors": []
       },
-      "at": "2026-11-24T14:27:49.801Z"
+      "at": "2026-11-24T15:02:58.235Z"
     },
     {
       "id": "previews.no-404",
       "title": "no 404 responses for /livery/assets/previews/*",
       "status": "pass",
       "detail": "0 404 preview response(s)",
-      "at": "2026-11-24T14:27:49.801Z"
-    },
-    {
-      "id": "console.host-warnings",
-      "title": "host/plugin console warnings outside Livery ownership",
-      "status": "warn",
-      "detail": "2 warning(s): [connection] connection lost, retry #1 | [connection] connection lost, retry #1",
-      "at": "2026-11-24T14:27:49.801Z"
+      "at": "2026-11-24T15:02:58.235Z"
     },
     {
       "id": "lifecycle.sigterm",
       "title": "SIGTERM stops the web service cleanly and closes the port",
       "status": "pass",
-      "detail": "exit=0 signal=null shutdown=162ms portClosed=true forced=false",
-      "at": "2026-11-24T14:27:49.975Z"
+      "detail": "exit=0 signal=null shutdown=129ms portClosed=true forced=false",
+      "at": "2026-11-24T15:02:58.372Z"
     },
     {
       "id": "lifecycle.uninstall",
       "title": "official `dsh plugin remove` uninstalls without residue in the profile manifest",
       "status": "pass",
-      "detail": "exit=0 depPresent=false bundleSelected=false duration=534ms",
+      "detail": "exit=0 depPresent=false bundleSelected=false duration=108ms",
       "evidence": {
-        "stdout": "Packages: -1 - dependencies: - dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz Done in 393ms using pnpm v12.3.4",
+        "stdout": "Packages: -1 - dependencies: - dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz Done in 38ms using pnpm v12.3.4",
         "stderr": ""
       },
-      "at": "2026-11-24T14:27:50.510Z"
+      "at": "2026-11-24T15:02:58.480Z"
     },
     {
       "id": "residue.no-boot-row",
       "title": "after uninstall the boot graph has no plugin row",
       "status": "pass",
       "detail": "75 entries, none for dsh-livery",
-      "at": "2026-11-24T14:27:53.209Z"
+      "at": "2026-11-24T15:03:00.139Z"
     },
     {
       "id": "residue.no-dom",
       "title": "after uninstall + restart body has no Livery attributes or style elements",
       "status": "pass",
       "detail": "data-dsh-livery=null data-dsh-livery-hash=null styles=0",
-      "at": "2026-11-24T14:27:53.935Z"
+      "at": "2026-11-24T15:03:00.861Z"
     },
     {
       "id": "residue.stock-tokens",
       "title": "after uninstall + restart computed tokens equal the stock baseline",
       "status": "pass",
       "detail": "actual=[\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"] stock=[\"rgb(255, 255, 255)\",\"rgb(15, 17, 21)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-11-24T14:27:53.935Z"
+      "at": "2026-11-24T15:03:00.861Z"
     },
     {
       "id": "residue.no-boot-payload",
       "title": "after uninstall the first-frame handshake global is absent",
       "status": "pass",
       "detail": "window.__DSH_LIVERY_BOOT__=false",
-      "at": "2026-11-24T14:27:53.936Z"
+      "at": "2026-11-24T15:03:00.861Z"
     },
     {
       "id": "residue.catalog-route",
       "title": "after uninstall /livery/api/catalog returns 404",
       "status": "pass",
       "detail": "GET /livery/api/catalog → 404",
-      "at": "2026-11-24T14:27:53.937Z"
+      "at": "2026-11-24T15:03:00.862Z"
     },
     {
       "id": "residue.preview-route",
       "title": "after uninstall /livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/fjord-zh-light.svg returns 404",
       "status": "pass",
       "detail": "GET /livery/assets/previews/sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04/fjord-zh-light.svg → 404",
-      "at": "2026-11-24T14:27:53.938Z"
+      "at": "2026-11-24T15:03:00.863Z"
     },
     {
       "id": "residue.plugin-route",
       "title": "after uninstall /plugins/dsh-livery/client.js returns 404",
       "status": "pass",
       "detail": "GET /plugins/dsh-livery/client.js → 404",
-      "at": "2026-11-24T14:27:53.938Z"
+      "at": "2026-11-24T15:03:00.863Z"
     },
     {
       "id": "residue.old-bundle-url",
       "title": "after uninstall the previously served client bundle URL returns 404",
       "status": "pass",
-      "detail": "GET /plugins/??dsh-livery/client.js&rev=6045db031703 → 404",
-      "at": "2026-11-24T14:27:53.939Z"
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=478f1ba34488 → 404",
+      "at": "2026-11-24T15:03:00.863Z"
     },
     {
       "id": "residue.profile-manifest",
@@ -6771,14 +6764,14 @@
         "after": "# dsh-livery acceptance harness rows (isolated acceptance home — safe to discard)\n# Pin the locale exactly like the user's real web profile does, and skip the\n# first-run welcome notice so settings automation is deterministic.\n- id: locale\n  config:\n    preference: zh\n- id: ui-settings-general\n  name: '@deepseek-ai/dsh-client-ui-settings-general'\n  config:\n    welcomeNoticeVersion: 2026-09-28.1\n- id: livery\n  name: dsh-livery\n  config:\n    skinId: stock\n",
         "staleSettingsRow": false
       },
-      "at": "2026-11-24T14:27:53.982Z"
+      "at": "2026-11-24T15:03:00.905Z"
     },
     {
       "id": "lifecycle.final-stop",
       "title": "final SIGTERM stops the restarted service and closes the port",
       "status": "pass",
       "detail": "exit=0 portClosed=true forced=false",
-      "at": "2026-11-24T14:27:54.113Z"
+      "at": "2026-11-24T15:03:01.024Z"
     }
   ],
   "artifacts": {
@@ -7357,102 +7350,92 @@
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-000.png",
           "index": 0,
-          "t": 12
+          "t": 14
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-001.png",
           "index": 1,
-          "t": 31
+          "t": 42
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-002.png",
           "index": 2,
-          "t": 44
+          "t": 59
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-003.png",
           "index": 3,
-          "t": 52
+          "t": 75
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-004.png",
           "index": 4,
-          "t": 67
+          "t": 92
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-005.png",
           "index": 5,
-          "t": 82
+          "t": 108
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-006.png",
           "index": 6,
-          "t": 99
+          "t": 126
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-007.png",
           "index": 7,
-          "t": 116
+          "t": 142
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-008.png",
           "index": 8,
-          "t": 131
+          "t": 159
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-009.png",
           "index": 9,
-          "t": 148
+          "t": 182
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-010.png",
           "index": 10,
-          "t": 165
+          "t": 196
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-011.png",
           "index": 11,
-          "t": 183
+          "t": 208
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-012.png",
           "index": 12,
-          "t": 200
+          "t": 226
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-013.png",
           "index": 13,
-          "t": 216
+          "t": 247
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-014.png",
           "index": 14,
-          "t": 233
+          "t": 259
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-015.png",
           "index": 15,
-          "t": 254
+          "t": 274
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-016.png",
           "index": 16,
-          "t": 266
+          "t": 293
         },
         {
           "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-017.png",
           "index": 17,
-          "t": 285
-        },
-        {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-018.png",
-          "index": 18,
-          "t": 299
-        },
-        {
-          "path": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-019.png",
-          "index": 19,
-          "t": 324
+          "t": 315
         }
       ],
       "manifest": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-0.2.2-rc.3/filmstrip/0.2.2-rc.3-web-chrome/zh-light-firstpaint-manifest.json"
@@ -20728,19 +20711,19 @@
       }
     },
     "firstPaint": {
-      "frames": 20,
+      "frames": 18,
       "paintTimings": {
-        "timeOrigin": 1795530144757.3,
-        "responseStart": 11.600000023841858,
-        "domContentLoaded": 27.5,
-        "load": 150.30000007152557,
-        "firstPaint": 28,
-        "firstContentfulPaint": 44,
-        "duration": 150.30000007152557
+        "timeOrigin": 1795532375159.3,
+        "responseStart": 10.299999952316284,
+        "domContentLoaded": 23.299999952316284,
+        "load": 135.70000004768372,
+        "firstPaint": 32,
+        "firstContentfulPaint": 32,
+        "duration": 135.70000004768372
       },
       "samples": [
         {
-          "t": 6,
+          "t": 14,
           "htmlLang": "en",
           "themeSource": "system",
           "dark": false,
@@ -20752,19 +20735,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 23,
-          "htmlLang": "en",
-          "themeSource": "system",
-          "dark": false,
-          "attr": "fjord",
-          "hash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
-          "tokenBg": "#f0f3f6",
-          "bg": "rgb(240, 243, 246)",
-          "bootStyle": true,
-          "liveryStyles": 1
-        },
-        {
-          "t": 40,
+          "t": 30,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20776,7 +20747,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 140,
+          "t": 114,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20788,7 +20759,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 156,
+          "t": 131,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20800,7 +20771,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 173,
+          "t": 164,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20812,7 +20783,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 190,
+          "t": 180,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20824,7 +20795,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 206,
+          "t": 197,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20836,7 +20807,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 223,
+          "t": 214,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20848,7 +20819,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 240,
+          "t": 231,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20860,7 +20831,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 256,
+          "t": 247,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20872,7 +20843,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 273,
+          "t": 264,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20884,7 +20855,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 290,
+          "t": 280,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20896,7 +20867,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 306,
+          "t": 297,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20908,7 +20879,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 323,
+          "t": 314,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20920,7 +20891,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 340,
+          "t": 330,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20932,7 +20903,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 356,
+          "t": 347,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20944,7 +20915,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 373,
+          "t": 364,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20956,7 +20927,7 @@
           "liveryStyles": 1
         },
         {
-          "t": 390,
+          "t": 381,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20968,7 +20939,19 @@
           "liveryStyles": 1
         },
         {
-          "t": 406,
+          "t": 397,
+          "htmlLang": "zh-CN",
+          "themeSource": "system",
+          "dark": false,
+          "attr": "fjord",
+          "hash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+          "tokenBg": "#f0f3f6",
+          "bg": "rgb(240, 243, 246)",
+          "bootStyle": false,
+          "liveryStyles": 1
+        },
+        {
+          "t": 414,
           "htmlLang": "zh-CN",
           "themeSource": "system",
           "dark": false,
@@ -20991,44 +20974,44 @@
         "stopped": true,
         "exitCode": 0,
         "signal": null,
-        "shutdownMs": 162,
+        "shutdownMs": 129,
         "forceKilled": false,
-        "port": 63135,
+        "port": 55662,
         "portClosed": true,
-        "portClosedWaitedMs": 0,
+        "portClosedWaitedMs": 1,
         "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
-        "logTail": "dsh web: http://127.0.0.1:63135/?token=<redacted>\n"
+        "logTail": "dsh web: http://127.0.0.1:55662/?token=<redacted>\n"
       },
       "uninstall": {
         "phase": "uninstall",
         "command": "<tmp> plugin --profile web remove dsh-livery",
-        "startedAt": "2026-11-24T14:27:50.510Z",
+        "startedAt": "2026-11-24T15:02:58.480Z",
         "exitCode": 0,
         "signal": null,
         "timedOut": false,
-        "durationMs": 534,
-        "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz\n\nDone in 393ms using pnpm v12.3.4\n",
+        "durationMs": 108,
+        "stdout": "Packages: -1\n-\n\ndependencies:\n- dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz\n\nDone in 38ms using pnpm v12.3.4\n",
         "stderr": "",
         "dependencyPresent": false,
         "bundleSelected": false
       },
       "postUninstallBoot": {
-        "url": "http://127.0.0.1:65023/?token=<redacted>",
-        "baseUrl": "http://127.0.0.1:65023",
-        "port": 65023,
-        "readyMs": 2218
+        "url": "http://127.0.0.1:56178/?token=<redacted>",
+        "baseUrl": "http://127.0.0.1:56178",
+        "port": 56178,
+        "readyMs": 1226
       },
       "stopAfterResidue": {
         "stopped": true,
         "exitCode": 0,
         "signal": null,
-        "shutdownMs": 131,
+        "shutdownMs": 118,
         "forceKilled": false,
-        "port": 65023,
+        "port": 56178,
         "portClosed": true,
-        "portClosedWaitedMs": 0,
+        "portClosedWaitedMs": 1,
         "logPath": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web-post-uninstall.log",
-        "logTail": "dsh web: http://127.0.0.1:65023/?token=<redacted>\n"
+        "logTail": "dsh web: http://127.0.0.1:56178/?token=<redacted>\n"
       }
     },
     "profile": {
@@ -21044,11 +21027,11 @@
       },
       "pluginManagerLogs": [
         {
-          "operation": "operation-8qfliQ",
+          "operation": "operation-4b6U1s",
           "pnpmLogTail": ""
         },
         {
-          "operation": "operation-l4Je5B",
+          "operation": "operation-oePUyQ",
           "pnpmLogTail": ""
         }
       ]
