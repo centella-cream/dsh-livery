@@ -12,7 +12,7 @@
  */
 import { existsSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { ROOT, defaultCandidatePath, matrixEvidence, parseFlag, readMatrix, readPackageJson } from './release-lib.mjs'
+import { ROOT, defaultCandidatePath, matrixEvidence, parseFlag, readJson, readMatrix, readPackageJson } from './release-lib.mjs'
 
 const pkg = readPackageJson()
 const supplied = parseFlag(process.argv.slice(2), 'tgz')
@@ -26,9 +26,12 @@ const run = (args) => execFileSync(args[0], args.slice(1), { cwd: ROOT, stdio: '
 run(['node', 'scripts/release-check.mjs', '--tgz', tgz])
 run(['node', 'scripts/cli.mjs', 'gate:support-matrix', '--', '--all'])
 run(['node', 'scripts/cli.mjs', 'gate:release', '--', '--all'])
-const evidence = matrixEvidence(readMatrix())
+// The matrix retains historical evidence for audit. Only files for the package
+// version in package.json can bind this candidate; the older entries belong to
+// their own published artifacts and are verified by their own releases.
+const evidence = matrixEvidence(readMatrix()).filter((file) => readJson(file).packageVersion === pkg.version)
 if (evidence.length === 0) {
-  console.error('release-prepare: formal matrix has no evidence files')
+  console.error(`release-prepare: formal matrix has no evidence files for ${pkg.name}@${pkg.version}`)
   process.exit(1)
 }
 for (const file of evidence) run(['node', 'scripts/release-evidence.mjs', '--tgz', tgz, '--evidence', file])
