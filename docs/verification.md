@@ -94,19 +94,19 @@ Before packaging, acceptance must:
    the live `MenuSurface` used by the subagent popover rendered an opaque
    `--dsw-menu-surface-fill` layer in both light (`#f7f1e6` / material
    `rgb(247,241,230)`) and dark (`#35332e`); the same stayed opaque with stock
-   style + wallpaper; a remote preset imported with
+   style + wallpaper; a remote preset imported with a legacy stored
    `attribution.providerId=openverse` rendered immediately without reload and
-   kept the Openverse notice; Recent re-application kept providerId and the
-   notice; built-in/upload wallpapers, effects and preset export worked; the
+   kept its providerId; Recent re-application kept it as well (Openverse itself
+   is no longer offered or rendered with a notice); built-in/upload wallpapers, effects and preset export worked; the
    plugin-detail facts rendered as a compact grid with internal `详情` / `热更新`
    tabs (plus a top-level `热更新` action that jumps to them); built-in wallpaper
    swatches render as explicit 4-column rows (2 columns under 640 px); a 1024 px
    viewport had no horizontal overflow. This run found and fixed one real bug (preset
    provenance update blanked the cached wallpaper until reload) and one styling
-   gap (unstyled detail facts). The real Openverse/Wikimedia network endpoints
-   were unreachable from this environment (request timeout), so provider flows
-   were also exercised with Playwright route mocks; that is UI verification, not
-   provider acceptance.
+   gap (unstyled detail facts). The real Wikimedia network endpoint
+   was unreachable from this environment (request timeout), so the offered
+   provider flow was exercised with Playwright route mocks; that is UI
+   verification, not provider acceptance.
 3. **Bind the accepted transition in evidence schema v3** and keep that evidence
    file next to the ordinary fresh-install files for the same candidate. The
    update evidence is validated by `release-evidence.mjs`; `prepublish-check.mjs
@@ -311,7 +311,7 @@ status is unproven until the acceptance runs above produce evidence.
 - **Hot update is Web-only.** DSH client HMR is a Web-profile mechanism; Desktop
   update copy requires a reload/restart and no Desktop hot update is claimed.
   `0.2.1` has no stale path and fails closed on any plugin-version difference.
-- **No live-provider guarantee.** Openverse and Wikimedia Commons are accepted by
+- **No live-provider guarantee.** Wikimedia Commons is the only offered online source; Openverse was accepted by the gate but removed from the offered UI in 0.2.2 because anonymous limits made it unusable.
   the committed provider gate, but the probe exercises the online card with
   mocked responses, so third-party uptime, rate-limit enforcement and licence
   data are not acceptance claims.

@@ -97,7 +97,7 @@ until the 0.2.2 candidate is accepted and released.
 - **Component chrome.** `layout.chrome` can tint, outline, darken or block-fill the
   rail, composer, bubble, active row and selector from the palette seeds; six
   recipes ship and all 28 styles choose one.
-- **Wallpaper studio.** Access-gated Openverse and Wikimedia Commons sources with
+- **Wallpaper studio.** Access-gated Wikimedia Commons as the only online source (Openverse was removed in 0.2.2 because anonymous limits made it unusable) with
   per-image attribution, 24 CSS wallpapers total (8 curated + 16 Classic),
   Recent, a generated Follow-style background, and local/link uploads
   (IndexedDB). Blur 0–24 px, dim 0–70 %, frost 0–100 % and a global atmosphere
@@ -136,7 +136,7 @@ preview scenes.
 The wallpaper studio and its live 16:9 preview (screenshots will be refreshed
 from the accepted 0.2.2 build). In the 0.2.2 target, opening the wallpapers page
 triggers no provider batch: Built-in is the default image source, and the first
-Online activation requests one batch from Openverse or Wikimedia Commons; Auto
+Online activation requests one batch from Wikimedia Commons; Auto
 names the provider that served the results. Blur, dim, frost and the global
 atmosphere controls apply to the whole interface. Focal positioning is available
 for remote and uploaded wallpapers, not for built-in or Follow-style
@@ -250,5 +250,5 @@ MIT, see [LICENSE](LICENSE). Palette attributions are in [NOTICE.md](NOTICE.md).
 Preview thumbnails and built-in wallpapers are generated from the plugin's own data.
 The optional wallpaper studio loads online images only when you activate the
 Online tab or take an explicit action (see [SECURITY.md](SECURITY.md)); online
-images are fetched at runtime from Openverse or Wikimedia Commons, are not
+images are fetched at runtime from Wikimedia Commons, are not
 bundled, and carry their per-image attribution in the UI.

@@ -75,7 +75,8 @@
         "Existing 0.2.1 client already queries Openverse with license=cc0,pdm and page_size=12; the gate supports keeping that public-domain-only filter. The general API also returns CC BY/BY-SA/NC/ND results (sampled: by-nc-nd 2.0, by-sa 2.0), so any widening must render attribution, creator and license_url and must exclude licences whose terms the release cannot honour.",
         "Openverse ToS section 4 (trademark) requires: \"you must prominently indicate that it was made using Openverse but is not endorsed or certified by Openverse\" - the UI must carry that made-with-Openverse notice without implying endorsement.",
         "full_size=true returns the original bytes (sampled 1024x768, content-length 158236) while the default thumb is 600px-wide (sampled 600x449); the cache must keep its size cap because some originals are very large.",
-        "Proxied image responses are subject to CF caches and upstream availability; treat non-image content-type or 5xx as unavailable, never as a licence failure."
+        "Proxied image responses are subject to CF caches and upstream availability; treat non-image content-type or 5xx as unavailable, never as a licence failure.",
+        "0.2.2 product decision: Openverse is not offered as a built-in source; anonymous 20/min + 200/day limits and registration requirements made it unusable. The implementation is retained only to resolve already-stored providerId=openverse selections; Auto and the provider selector use Wikimedia Commons only."
       ]
     },
     {

@@ -16,7 +16,7 @@ packaging; they are folded into the `0.1.0` entry.
 
 - 壁纸工作室改为精选目录：主网格固定 8 张精选内置壁纸（`paper`、`ink`、`aurora`、`cyber`、`dusk`、`minimal`、`mono`、`sand`），其余 16 张收入折叠的 **Classic** 组；全部 24 个 ID 与 CSS 逐字节不变、不重映射。选中旧内置 ID 时显示置顶的 “Current (Classic)” 色板，且该 ID 不会在网格或 Classic 组中重复出现。
 - 新增 `kind:'style'` 壁纸：由当前 Livery 的 catalog token 按明/暗模式生成一条确定的 CSS 背景，不写 blob、IndexedDB 或缓存记录；不可重新定位（只有 remote/upload 可调整焦点），无 catalog token 时禁用并给出可见原因。新增 sidecar 存储键 `dsh-livery.wallpaper.style.v1`（schemaVersion 1，`{variant:'mesh', revision, sourceId}`），主记录仍是 0.2.1 可读的 v2；仅当 sidecar 解析成功、主记录 selection 为空且 `(revision, sourceId)` 完全一致时才 hydrate。
-- 在线图源注册表新增 **Openverse** 与 **Wikimedia Commons**（唯一通过 `docs/research/provider-access-gate.json` 的两个来源），均为免密钥；带来源选择器（Auto + 通过门禁的来源）、加载/空/超时/限流/不可用/无效响应状态与重试。Auto 使用 12 秒总时限、单次尝试 `min(6 s, remaining)`、最多两个来源，并显示实际服务来源；固定来源只尝试一次且不会静默切换。
+- 在线图源注册表只提供 **Wikimedia Commons**（唯一通过 `docs/research/provider-access-gate.json` 并实际可用的来源），免密钥；带来源选择器（Auto + 通过门禁的来源）、加载/空/超时/限流/不可用/无效响应状态与重试。Auto 使用 12 秒总时限、单次尝试 `min(6 s, remaining)`、最多两个来源，并显示实际服务来源；固定来源只尝试一次且不会静默切换。
 - 归属信息持久化：远程 selection 增加可选 `provenance`（provider/title/creator/creatorUrl/license/licenseUrl/source/sourceUrl）；creator/licence/source 链接必须为 https、公网主机、≤2048 字符，并以 `rel="noreferrer noopener"` 打开；`license:null` 的结果可见但不可选。Recent 历史增加归属 URL 字段，仅作展示镜像；旧的 attribution 存储迁移一次后移除。
 - 预设 schema v2：新增 `{kind:'style', variant:'mesh'}` 壁纸目标与 attribution URL（creatorUrl/licenseUrl/sourceUrl）；导出固定写 v2，导入同时接受 v1/v2；v1 文件声明 style 会被拒绝（`wallpaper-kind`），v2 style variant 错误使用 `wallpaper-variant`。
 - 新增 Livery 插件详情面：消费 `plugins.detail.actions`、`plugins.detail.badge`、`plugins.detail.section`（`scope:'root'`、`kind:'list'`、`ownerProps:['subject']`），展示构建版本、启动握手状态、宿主/adapter/契约哈希/catalog profile、目录阶段、已应用 CSS hash、当前风格与壁纸等可观测事实；提供真实操作 “Open Livery”（仅主面板注册存在时）与 “Copy diagnostics”。不添加更新按钮、不拦截宿主安装控件。slot 声明证明覆盖 8 个宿主中的 6 个；`0.2.1-rc.2`（Web）由运行时 detail 检查覆盖，`0.2.1-rc.3`（Desktop）暂无运行时 detail 检查，作为 per-scope limitation 记录，不是已通过声明。
@@ -51,6 +51,7 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 Openverse 商标提示在刷新/预设/Recent 后消失：现在也从持久化的 `provenance.providerId` 派生；429 无 `Retry-After` 时增加 30 s 客户端冷却，且服务端 `Retry-After` 上限钳制为 60 s，避免单个来源的 24h 头让整个 Online 页签瘫痪；Wikimedia Random 补 gate 证据；gate id 与 registry 统一并在 release-check 交叉校验，registry 解析改为从 `ProviderId` union 读取、新增 provider 漏门禁时 fail closed。
 - 修复 style sidecar 事件不被观察与 clear 顺序：controller 现在订阅 sidecar key，clear 按 plan 先删 sidecar 再写 tombstone；补 winner/sidecar-key 事件测试。
 - 修复宿主浮层菜单的真实表面：0.2.1 只把 `--dsw-specific-menu` 改成不透明，但 `MenuSurface.module.css` 实际绘制用 `--dsw-menu-surface-fill`，且 jobs live row 直接读取未声明的 `--dsw-alias-fill-l1/l2`。0.2.2 现在拥有 `menu-surface-fill`（不透明 layer-1，与 `specific-menu` 同步）并强制输出 `fill-l1/l2`（layer-1/2）；stock style + wallpaper 时通过 `body[data-dsh-wallpaper]:not([data-dsh-livery])` 补齐同样的不透明表面。0.2.1 的 `specific-menu` 修复不覆盖这些表面。
+- 移除 **Openverse** 内置图源：匿名 API 的每日限额/注册要求使其在真实使用中不可用；0.2.2 不再在来源选择器、Auto 或搜索结果中提供 Openverse。已保存的旧 Openverse 选择仍可通过 legacy 缓存/免责声明路径渲染，但不会发起新 Openverse 请求；相关 unit/acceptance 覆盖需随正式验收更新。
 - 移除在线壁纸打开页面即自动请求 Picsum 批次的行为。
 
 ### Removed

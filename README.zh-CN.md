@@ -39,7 +39,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
 - **跟随风格（Follow style）。** 新增 `kind:'style'` 背景，由当前 Livery 的 catalog token
   按明/暗模式生成；不可调整焦点；catalog token 不可用时会禁用并给出可见原因。预设 schema v2
   可携带 style 目标与归属链接；v1 预设仍可导入。
-- **两个通过访问门禁的在线图源。** 0.2.2 只提供 **Openverse** 与 **Wikimedia Commons**：
+- **两个通过访问门禁的在线图源。** 0.2.2 只提供 **Wikimedia Commons**（Openverse 因匿名限额不可用已移除）：
   两者都免密钥、已验证 CORS，并返回真实许可/归属元数据。NASA、大都会博物馆和芝加哥艺术
   博物馆未列入（权利或图片 CDN 验证受阻）；Picsum 已移除，因为 Unsplash 许可不允许这种
   用途。已有的 Picsum 远程选择仍从缓存渲染，新结果不再携带 Picsum 许可。
@@ -70,7 +70,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
   展示体、赤陶胶囊和绿色 CRT 终端表面。
 - **组件 chrome。** `layout.chrome` 可从 seeds 推导并着色/描边/压暗/块状填充侧栏、
   composer、气泡、active 行和 selector；随包提供 6 个配方，28 套风格各选一个。
-- **壁纸工作室。** 通过访问门禁的 Openverse 与 Wikimedia Commons（带逐图归属）、24 张 CSS 壁纸总量
+- **壁纸工作室。** 通过访问门禁的 Wikimedia Commons（带逐图归属）、24 张 CSS 壁纸总量
   （8 张精选 + 16 张 Classic）、Recent、跟随风格背景和本地/链接上传（IndexedDB）。
   模糊 0–24 px、变暗 0–70 %、磨砂 0–100 %、全局氛围。两层壁纸均为 viewport-relative `cover`，
   只裁切、不拉伸变形。打开页面不发请求，首次激活 Online 才请求一批。
@@ -190,5 +190,5 @@ scope，并在 Web 上运行更新探针：安装精确的已发布 `0.2.1` tarb
 
 MIT，见 [LICENSE](LICENSE)。配色来源见 [NOTICE.md](NOTICE.md)。预览缩略图和内置壁纸都由
 插件自己的数据生成；可选的壁纸工作室只在你激活 Online 页签或主动操作时才加载在线图片
-（见 [SECURITY.md](SECURITY.md)）。在线图片在运行时从 Openverse 或 Wikimedia Commons
+（见 [SECURITY.md](SECURITY.md)）。在线图片在运行时从 Wikimedia Commons
 获取，不随包分发，并在界面中展示逐图归属信息。

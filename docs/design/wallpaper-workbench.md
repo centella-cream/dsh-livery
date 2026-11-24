@@ -86,7 +86,7 @@ Rules:
   triggers.
 - The provider selector is a native `<select id="wallpaper-provider">` labelled
   “Source”, with `Auto` first and then the gate-passed providers in registry
-  order (0.2.2 ships Openverse and Wikimedia Commons). Changing the provider
+  order (0.2.2 ships Wikimedia Commons only; Openverse was removed from the offered registry). Changing the provider
   clears results to `idle` and never fetches implicitly. Native keyboard behaviour
   is the keyboard model; no custom listbox.
 - **Auto failover:** one overall 12 s deadline from request start; each attempt
