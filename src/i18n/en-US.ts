@@ -14,7 +14,6 @@ export const enUS = {
   'section.label': 'Visual Style',
   'section.title': 'Visual Style',
   'section.subtitle': 'Choose colors, type, and interface details.',
-  'section.loading': 'Loading visual styles…',
 
   // Sidebar plugin-navigation row + full-page panel.
   'panel.label': 'Visual Style',
@@ -25,14 +24,10 @@ export const enUS = {
   'current.title': 'Current visual style',
   'current.stockName': 'Stock appearance',
   'current.stockDescription': 'The built-in DSH look. No visual style is applied.',
-  'current.applied': 'Applied',
   'current.previewing': 'Previewing {name}',
   'current.incompatible': 'Unavailable on this host',
   'current.degraded': 'Limited',
-  'current.modes': 'Light and dark',
   'current.idLabel': 'ID',
-  'current.tagsLabel': 'Tags',
-  'current.previewNotice': 'This is only a preview. Apply it to keep it.',
 
   // Page tabs.
   'tab.label': 'Page tabs',
@@ -60,6 +55,7 @@ export const enUS = {
   'wallpaper.url.credentials': 'URLs with embedded credentials are not allowed.',
   'wallpaper.url.invalid': 'That is not a valid image link.',
   'wallpaper.onlineTitle': 'Online wallpapers',
+  'wallpaper.downloadFailed': 'Could not load that image. Try another wallpaper.',
   'wallpaper.onlineHint': 'Opening this tab loads one batch; other actions fetch on click.',
   'wallpaper.searchPlaceholder': 'Search CC0 images…',
   'wallpaper.search': 'Search',
@@ -138,11 +134,9 @@ export const enUS = {
   'wallpaper.uploadError.invalid': 'The file could not be decoded as an image.',
   'wallpaper.uploadError.empty': 'The file is empty.',
   'wallpaper.uploadSessionHint': 'This browser cannot save files; the image lasts only this page.',
-  'layout.actions': 'Actions',
   'wallpaper.currentTitle': 'Current wallpaper',
   'wallpaper.currentEmpty': 'No wallpaper selected. Pick a source or image.',
   'wallpaper.builtinKind': 'Built-in design',
-  'layout.currentStyle': 'Current style',
   'wallpaper.sourceTitle': 'Choose a wallpaper',
   'wallpaper.sourceHint': 'Preset cards and the four tabs are the only wallpaper pickers.',
   'wallpaper.sourceOnline': 'Online',
@@ -172,7 +166,6 @@ export const enUS = {
   'wallpaper.credit.license': 'Licence',
   'wallpaper.credit.source': 'Source',
   'wallpaper.localHint': 'Upload a local image or paste an https image URL.',
-  'gallery.modesNote': 'All visual styles support light and dark modes.',
   'wallpaper.recentTitle': 'Recent wallpapers',
   'wallpaper.recentHint': 'Online wallpapers you have used appear here.',
   'wallpaper.recentEmpty': 'No recent online wallpapers yet.',
@@ -193,8 +186,6 @@ export const enUS = {
   'search.clear': 'Clear search',
   'filter.label': 'Filter by tag',
   'filter.all': 'All',
-  'filter.clear': 'Clear filters',
-  'filter.none': 'No tags',
   'filter.familyLabel': 'Style family',
   'filter.more': 'More filters',
   'filter.fewer': 'Fewer filters',
@@ -202,7 +193,6 @@ export const enUS = {
   // Gallery.
   'gallery.title': 'Available visual styles',
   'gallery.aria': 'Visual style gallery',
-  'gallery.stockAria': 'Stock appearance card',
   'gallery.previewLanguage': 'Preview language',
   'gallery.previewLanguageHint': 'Only previews change; applied styles follow DSH language.',
   'gallery.followLocale': 'Follow DSH',
@@ -210,8 +200,6 @@ export const enUS = {
   'gallery.localeEn': 'English',
   'gallery.count': '{count} visual styles',
   'gallery.countOne': '1 visual style',
-  'gallery.stockCard': 'Stock appearance',
-  'gallery.stockDescription': 'No visual style: the built-in DSH look.',
 
   // Search empty state.
   'empty.title': 'No visual styles match',
@@ -219,13 +207,8 @@ export const enUS = {
   'empty.action': 'Clear filters',
 
   // One livery card.
-  'card.previewAria': 'Preview {name}',
-  'card.applyAria': 'Apply {name}',
   'card.current': 'Current',
   'card.previewing': 'Previewing',
-  'card.light': 'Light',
-  'card.dark': 'Dark',
-  'card.modesAria': 'Supports light and dark',
   'card.unavailable': 'Unavailable',
   'card.unavailableHint': 'A required host capability is missing.',
   'card.thumbnailAlt': '{name} preview in {mode} mode',
@@ -392,6 +375,7 @@ export const enUS = {
   'hint.keyboard': 'Use the arrow keys to switch visual styles and Enter to preview.',
 
   // Diagnostics report (copied to the clipboard; technical but still localized).
+  'diag.count': '{count}',
   'diag.header': 'DSH Livery (dsh-livery) diagnostics',
   'diag.environment': 'Environment',
   'diag.boot': 'Startup check',
@@ -400,15 +384,12 @@ export const enUS = {
   'diag.capabilities': 'Capabilities',
   'diag.degraded': 'Degraded capabilities',
   'diag.contrast': 'Contrast',
-  'diag.coverage': 'Style coverage',
-  'diag.cssSafety': 'CSS safety',
   'diag.diagnostics': 'Boot diagnostics',
   'diag.none': '(none)',
   'diag.line': '{label}: {value}',
   'diag.capabilityLine': '{id}: {state}{required}',
   'diag.degradedLine': '{id}: {reason} (fallback: {fallback})',
   'diag.ratio': '{value}:1',
-  'diag.count': '{count}',
 
   // Portable presets: export/import of style + wallpaper + effects.
   'preset.title': 'Presets',

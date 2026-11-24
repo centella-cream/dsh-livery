@@ -182,6 +182,28 @@ describe('online studio — request policy', () => {
     }
   })
 
+  it('caps a server Retry-After cooldown at 60s', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-11-23T00:00:00Z'))
+    try {
+      const { fetchPage, requests } = recorder([
+        failure({ failure: 'rate-limited', retryAfterMs: 86_400_000 }),
+        page([result()]),
+      ])
+      const studio = createOnlineStudio({ fetchPage })
+      await studio.activate()
+      expect(studio.getSnapshot().retryAfterMs).toBe(60_000)
+      await studio.retry()
+      expect(requests).toHaveLength(1)
+      vi.advanceTimersByTime(60_001)
+      await studio.retry()
+      expect(requests).toHaveLength(2)
+      studio.dispose()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('maps the failure union onto settled statuses only', () => {
     for (const status of ONLINE_FAILURE_STATUSES) {
       expect(onlineFailureOf(status)).toBe(status)

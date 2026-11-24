@@ -297,6 +297,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   }, [studio, injectedStudio])
   const [urlText, setUrlText] = useState('')
   const [problem, setProblem] = useState<WallpaperUrlProblem | undefined>(undefined)
+  const [remoteFailed, setRemoteFailed] = useState(false)
   const [uploadProblem, setUploadProblem] = useState<UploadProblem | undefined>(undefined)
   const [activeResult, setActiveResult] = useState(0)
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
@@ -562,6 +563,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   }
 
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
+    setRemoteFailed(false)
     void (async () => {
       const ticket = ++remoteCommitTicket.current
       const selectionVersion = controller?.getSelectionVersion()
@@ -577,7 +579,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
           : { kind: 'remote', url: entry.url, provenance }, record.blob)
         return
       }
-      await commitRemote(entry, provenance)
+      if (!(await commitRemote(entry, provenance)) && mounted.current) setRemoteFailed(true)
     })()
   }
 
@@ -728,6 +730,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   const selectResult = (result: WallpaperProviderResult): void => {
     if (result.license === null) return
     setProblem(undefined)
+    setRemoteFailed(false)
     void commitRemote({
       url: result.fullUrl,
       thumbnail: result.thumbUrl,
@@ -740,6 +743,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
       licenseUrl: result.license.url,
       sourceUrl: result.sourceUrl,
     }, provenanceOfProviderResult(result), providerImagePolicy(result.providerId))
+      .then(ok => { if (!ok && mounted.current) setRemoteFailed(true) })
   }
   const applyUrl = (): void => {
     const check = validateWallpaperUrl(urlText)
@@ -1056,6 +1060,11 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
             </ul>
           )}
         </section>
+          {remoteFailed && (
+            <p id="wallpaper-download-error" className="livery-notice livery-notice--error" data-testid="wallpaper-download-error" role="alert">
+              {t('wallpaper.downloadFailed')}
+            </p>
+          )}
         <section className="livery-ui-card" data-testid="wallpaper-effects-card">
           <div className="livery-ui-card__head">
             <h3 className="livery-ui-card__title">{t('wallpaper.effects')}</h3>

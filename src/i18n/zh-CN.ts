@@ -12,7 +12,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'section.label': '视觉风格',
   'section.title': '视觉风格',
   'section.subtitle': '挑选配色、字体和界面细节。',
-  'section.loading': '正在加载视觉风格…',
 
   // Sidebar plugin-navigation row + full-page panel.
   'panel.label': '视觉风格',
@@ -23,14 +22,10 @@ export const zhCN: Record<LiveryKey, string> = {
   'current.title': '当前视觉风格',
   'current.stockName': '默认外观',
   'current.stockDescription': 'DSH 自带的默认外观。',
-  'current.applied': '已应用',
   'current.previewing': '正在预览「{name}」',
   'current.incompatible': '当前宿主不支持',
   'current.degraded': '部分受限',
-  'current.modes': '浅色与深色',
   'current.idLabel': 'ID',
-  'current.tagsLabel': '标签',
-  'current.previewNotice': '这只是预览，应用后才会保存。',
 
   // Page tabs.
   'tab.label': '页面标签',
@@ -58,6 +53,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.url.credentials': '不允许在地址中携带账号密码。',
   'wallpaper.url.invalid': '这不是有效的图片链接。',
   'wallpaper.onlineTitle': '在线壁纸',
+  'wallpaper.downloadFailed': '无法加载该图片，请换一张壁纸。',
   'wallpaper.onlineHint': '打开此页签加载一批；其他操作点击时请求。',
   'wallpaper.searchPlaceholder': '搜索 CC0 图片…',
   'wallpaper.search': '搜索',
@@ -136,11 +132,9 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.uploadError.invalid': '文件无法解码为图片。',
   'wallpaper.uploadError.empty': '文件为空。',
   'wallpaper.uploadSessionHint': '浏览器无法保存文件，这张图片只在当前页面有效。',
-  'layout.actions': '操作',
   'wallpaper.currentTitle': '当前壁纸',
   'wallpaper.currentEmpty': '还没有选择壁纸。可以从在线壁纸、内置壁纸或上传图片开始。',
   'wallpaper.builtinKind': '内置设计',
-  'layout.currentStyle': '当前风格',
   'wallpaper.sourceTitle': '选择壁纸',
   'wallpaper.sourceHint': '只有预设卡和四个标签页能更改壁纸。',
   'wallpaper.sourceOnline': '在线壁纸',
@@ -170,7 +164,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.credit.license': '许可',
   'wallpaper.credit.source': '来源',
   'wallpaper.localHint': '上传本地图片，或粘贴 https 图片地址。',
-  'gallery.modesNote': '所有视觉风格均支持浅色与深色。',
   'wallpaper.recentTitle': '最近使用',
   'wallpaper.recentHint': '最近用过的在线壁纸会显示在这里。',
   'wallpaper.recentEmpty': '还没有用过的在线壁纸。',
@@ -191,8 +184,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'search.clear': '清空搜索',
   'filter.label': '按标签筛选',
   'filter.all': '全部',
-  'filter.clear': '清除筛选',
-  'filter.none': '暂无标签',
   'filter.familyLabel': '风格分组',
   'filter.more': '更多筛选',
   'filter.fewer': '收起筛选',
@@ -200,7 +191,6 @@ export const zhCN: Record<LiveryKey, string> = {
   // Gallery.
   'gallery.title': '可用视觉风格',
   'gallery.aria': '视觉风格画廊',
-  'gallery.stockAria': '默认外观卡片',
   'gallery.previewLanguage': '预览语言',
   'gallery.previewLanguageHint': '只影响预览图；应用后的字体仍跟随 DSH 当前语言。',
   'gallery.followLocale': '跟随 DSH',
@@ -208,8 +198,6 @@ export const zhCN: Record<LiveryKey, string> = {
   'gallery.localeEn': 'English',
   'gallery.count': '{count} 种视觉风格',
   'gallery.countOne': '1 种视觉风格',
-  'gallery.stockCard': '默认外观',
-  'gallery.stockDescription': '不使用视觉风格，保持 DSH 自带外观。',
 
   // Search empty state.
   'empty.title': '没有匹配的视觉风格',
@@ -217,13 +205,8 @@ export const zhCN: Record<LiveryKey, string> = {
   'empty.action': '清除筛选',
 
   // One livery card.
-  'card.previewAria': '预览「{name}」',
-  'card.applyAria': '应用「{name}」',
   'card.current': '当前',
   'card.previewing': '预览中',
-  'card.light': '浅色',
-  'card.dark': '深色',
-  'card.modesAria': '支持浅色与深色',
   'card.unavailable': '不可用',
   'card.unavailableHint': '缺少必需的宿主能力。',
   'card.thumbnailAlt': '「{name}」的{mode}模式预览',
@@ -390,6 +373,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'hint.keyboard': '用方向键切换视觉风格，按回车预览。',
 
   // Diagnostics report.
+  'diag.count': '{count}',
   'diag.header': 'DSH Livery（dsh-livery）诊断信息',
   'diag.environment': '环境',
   'diag.boot': '启动信息',
@@ -398,15 +382,12 @@ export const zhCN: Record<LiveryKey, string> = {
   'diag.capabilities': '能力',
   'diag.degraded': '降级能力',
   'diag.contrast': '对比度',
-  'diag.coverage': '样式覆盖',
-  'diag.cssSafety': 'CSS 安全',
   'diag.diagnostics': '启动诊断',
   'diag.none': '（无）',
   'diag.line': '{label}：{value}',
   'diag.capabilityLine': '{id}：{state}{required}',
   'diag.degradedLine': '{id}：{reason}（回退：{fallback}）',
   'diag.ratio': '{value}:1',
-  'diag.count': '{count}',
 
   // Portable presets: export/import of style + wallpaper + effects.
   'preset.title': '预设',

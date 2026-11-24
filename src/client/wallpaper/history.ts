@@ -132,6 +132,7 @@ export function addRecentEntry(
   const merged: RecentWallpaperEntry = {
     url: sanitized.url,
     addedAt: Math.max(previous?.addedAt ?? 0, sanitized.addedAt),
+    ...(sanitized.providerId ?? previous?.providerId) === undefined ? {} : { providerId: sanitized.providerId ?? previous?.providerId },
     ...(sanitized.thumbnail ?? previous?.thumbnail) === undefined ? {} : { thumbnail: sanitized.thumbnail ?? previous?.thumbnail },
     ...(sanitized.title ?? previous?.title) === undefined ? {} : { title: sanitized.title ?? previous?.title },
     ...(sanitized.creator ?? previous?.creator) === undefined ? {} : { creator: sanitized.creator ?? previous?.creator },
@@ -172,6 +173,7 @@ export function mergeRecentEntries(
     const merged: RecentWallpaperEntry = {
       url: newer.url,
       addedAt: Math.max(previous.addedAt, parsed.addedAt),
+      ...(newer.providerId ?? older.providerId) === undefined ? {} : { providerId: newer.providerId ?? older.providerId },
       ...(newer.thumbnail ?? older.thumbnail) === undefined ? {} : { thumbnail: newer.thumbnail ?? older.thumbnail },
       ...(newer.title ?? older.title) === undefined ? {} : { title: newer.title ?? older.title },
       ...(newer.creator ?? older.creator) === undefined ? {} : { creator: newer.creator ?? older.creator },

@@ -93,6 +93,26 @@ describe('recent wallpaper history', () => {
     expect(parseRecentEntry('nope')).toBeUndefined()
   })
 
+  it('round-trips providerId through the write path and cross-tab merge', () => {
+    const storage = new MemoryStorage()
+    rememberRecentWallpaper(storage, {
+      url: 'https://cdn.example/provider.jpg',
+      providerId: 'openverse',
+      title: 'Sea',
+      addedAt: 10,
+    })
+    expect(readRecentWallpapers(storage)[0]).toMatchObject({
+      providerId: 'openverse',
+      title: 'Sea',
+    })
+
+    const merged = mergeRecentEntries(
+      [{ url: 'https://cdn.example/provider.jpg', addedAt: 11, title: 'Local' }],
+      [{ url: 'https://cdn.example/provider.jpg', providerId: 'openverse', addedAt: 10 }],
+    )
+    expect(merged[0]).toMatchObject({ providerId: 'openverse', title: 'Local' })
+  })
+
   it('parses optional attribution links (old entries without them stay valid)', () => {
     const legacy = parseRecentEntry({ url: 'https://cdn.example/a.jpg', title: 'Old', addedAt: 1 })
     expect(legacy).toEqual({ url: 'https://cdn.example/a.jpg', title: 'Old', addedAt: 1 })

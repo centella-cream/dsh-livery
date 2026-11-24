@@ -307,9 +307,11 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
       return
     }
     const cooldownMs = outcome.failure === 'rate-limited'
-      // Use the server hint when present, otherwise back off locally. Gate
-      // review observed Openverse 429s without Retry-After.
-      ? outcome.retryAfterMs ?? 30_000
+      // Use the server hint when present, otherwise back off locally. A
+      // hostile/buggy Retry-After (up to 24h) must not disable the studio for
+      // the whole session, so cap it at 60s. Gate review observed Openverse
+      // 429s without Retry-After.
+      ? Math.min(outcome.retryAfterMs ?? 30_000, 60_000)
       : 0
     if (outcome.failure === 'rate-limited') cooldownUntil = Date.now() + cooldownMs
     publish({
