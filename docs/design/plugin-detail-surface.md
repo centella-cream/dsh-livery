@@ -87,7 +87,16 @@ files change and must be re-accepted.
 
 ## Content
 
-The section is a labelled `<section>` with a `<dl>`; values come from the runtime
+The section is a labelled `<section>` with an internal tab strip: **详情** shows
+the full facts `<dl>`, and **热更新** shows the update-critical subset (client
+build, handshake, installed package, host, catalog) plus the single boundary
+statement. A top-level **热更新** action in the actions slot scrolls to and
+selects that tab. This is deliberately an in-section tab: the inspected host
+documentation says `plugins.tab` entries are **hidden on a bundle's page**, so
+the bundle detail page cannot receive a real page-level tab without replacing
+the host surface (which Livery does not do). The README remains host-owned.
+
+Values come from the runtime
 snapshot, the wallpaper controller snapshot and the subject (the runtime snapshot
 does not carry wallpaper state):
 

@@ -98,8 +98,10 @@ Before packaging, acceptance must:
    `attribution.providerId=openverse` rendered immediately without reload and
    kept the Openverse notice; Recent re-application kept providerId and the
    notice; built-in/upload wallpapers, effects and preset export worked; the
-   plugin-detail facts rendered as a compact grid; a 1024 px viewport had no
-   horizontal overflow. This run found and fixed one real bug (preset
+   plugin-detail facts rendered as a compact grid with internal `详情` / `热更新`
+   tabs (plus a top-level `热更新` action that jumps to them); built-in wallpaper
+   swatches render as explicit 4-column rows (2 columns under 640 px); a 1024 px
+   viewport had no horizontal overflow. This run found and fixed one real bug (preset
    provenance update blanked the cached wallpaper until reload) and one styling
    gap (unstyled detail facts). The real Openverse/Wikimedia network endpoints
    were unreachable from this environment (request timeout), so provider flows
@@ -232,10 +234,10 @@ renders the transition table.
 
 | Measure | Current working-tree candidate | Budget | Accepted `0.2.1` probe |
 |---|---|---|---|
-| Client bundle gzip | **73,517 B** build gate (`lib/build-report.json`; 279,590 B raw) / **73,561 B** acceptance probe (279,657 B served raw) — **167 B headroom at the gate** | **73,728 B** (72 KiB) | 60,902 B (cap 61,440 B / 60 KiB) |
+| Client bundle gzip | **73,630 B** build gate (`lib/build-report.json`; 280,268 B raw) / **73,675 B** acceptance probe (280,335 B served raw) — **53 B headroom at the gate** | **73,728 B** (72 KiB) | 60,902 B (cap 61,440 B / 60 KiB) |
 | Largest livery/boot CSS | **10,366 B** (bauhaus) | **14,336 B** (14 KiB) | 9,066 B (cap 13,312 B) |
 | Host bundle gzip | **15,506 B** (61,649 B raw) | **368,640 B** (360 KiB) | — |
-| Package tarball | **3,421,600 B** (993 files; the fresh probe ran on `eb17d22b…`; any later packaged-doc edit changes the tarball and requires a re-run on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
+| Package tarball | **3,422,883 B** (993 files; the fresh probe ran on `e55507d8…`; any later packaged-doc edit changes the tarball and requires a re-run on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
 
 The client/host/CSS numbers come from the latest working-tree build and the fresh
 Web quick acceptance probe. The acceptance probe now compresses the served

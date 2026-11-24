@@ -39,6 +39,8 @@ packaging; they are folded into the `0.1.0` entry.
 - 修复 0.2.1 client 对任意插件版本差异 fail closed、导致 HMR 重试与 stale-profile 分支不可达的问题。stale 路径不信任 `catalogUrl`/`bootStyleId`，config fallback 不回退到旧 boot skin；catalog 重试失败时 fail closed 到 degraded/stock 并移除 boot artifacts，`retryCatalog()` 可在不刷新页面的情况下恢复。
 - 修复 stale boot HMR 期间只校验 `compilerVersion` 是否为字符串的问题：上一构建编译的 catalog 即使 200/自洽也视为瞬态失败，继续消耗重试并在最终失败时 fail closed 到 degraded/stock；update probe 现在断言捕获的 catalog `compilerVersion === 候选版本`。
 - 修复 preset 导入远程壁纸后当前会话已选中但图片为空、必须 reload 才显示的问题：provider attribution 的二次 provenance 写入不再清除已缓存图片的 object URL（本地图片 URL 是渲染状态，不是 credit 元数据）。
+- 插件详情增加内部 `详情` / `热更新` tab 与顶部 `热更新` 跳转操作；说明：宿主 bundle 详情页不提供 page-level tab slot（`plugins.tab` 在 bundle 页被宿主隐藏），所以 tab 落在 Livery 自己的详情区块内，而不是替换 README。
+- 内置壁纸网格改为显式 4 列（窄屏 2 列），精选 8 张呈 4×2、Classic 16 张呈 4×4，消除 7+1 的孤行。
 - 插件详情 facts 从 UA `<dl>` 默认排版改为紧凑网格（`.livery-detail__facts`），并补 `dd` 间距归零；真实插件详情页截图验证。
 - 在线结果与 Recent 重应用下载失败时不再静默丢弃：显示带稳定 id/role=alert 的错误提示，提示词新增 `wallpaper.downloadFailed`。
 - 修复远程 selection 写入时重建紧凑对象、丢弃 provenance 的问题；0.2.1 产生的重写仍显示图片，但会丢弃 provenance（0.2.1 无该字段）。
