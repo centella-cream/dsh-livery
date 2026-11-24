@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "runId": "2026-11-24T15-07-35-998Z-isolated",
+  "runId": "2026-11-24T15-58-23-571Z-isolated",
   "mode": "isolated",
   "ok": true,
-  "startedAt": "2026-11-24T15:07:35.998Z",
-  "finishedAt": "2026-11-24T15:07:43.413Z",
+  "startedAt": "2026-11-24T15:58:23.572Z",
+  "finishedAt": "2026-11-24T15:58:34.036Z",
   "summary": {
     "pass": 35,
     "fail": 0,
@@ -13,8 +13,8 @@
     "total": 38
   },
   "environment": {
-    "date": "2026-11-24T15:07:43.405Z",
-    "commit": "5dfff96185e3adc80d0554ddc58eb530ddd343e8",
+    "date": "2026-11-24T15:58:34.026Z",
+    "commit": "a09c68a4c6b32ecffa8c028e46d62a327f5b7b6b",
     "dshVersion": "0.2.2-rc.5",
     "dshBin": "<tmp>",
     "hostRuntime": "installed-package",
@@ -134,52 +134,52 @@
     "reportPath": "<home>/Personal/openprojects/dsh-livery/artifacts/acceptance/final3-web-update-0.2.1-to-0.2.2/report.md",
     "readOnly": false
   },
-  "dshWebLine": "dsh web: http://127.0.0.1:56841/?token=<redacted>",
+  "dshWebLine": "dsh web: http://127.0.0.1:50396/?token=<redacted>",
   "boot": {
-    "readyMs": 1224,
-    "installMs": 190,
-    "port": 56841
+    "readyMs": 2024,
+    "installMs": 261,
+    "port": 50396
   },
   "phases": [
     {
       "name": "prepare",
-      "startedAt": "2026-11-24T15:07:35.999Z",
-      "durationMs": 509,
+      "startedAt": "2026-11-24T15:58:23.573Z",
+      "durationMs": 741,
       "ok": true,
-      "detail": "dsh 0.2.2-rc.5; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz → exit 0 in 190ms"
+      "detail": "dsh 0.2.2-rc.5; <tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz → exit 0 in 261ms"
     },
     {
       "name": "boot",
-      "startedAt": "2026-11-24T15:07:36.508Z",
-      "durationMs": 1224,
+      "startedAt": "2026-11-24T15:58:24.314Z",
+      "durationMs": 2026,
       "ok": true,
-      "detail": "ready in 1224ms port 56841"
+      "detail": "ready in 2024ms port 50396"
     },
     {
       "name": "browser",
-      "startedAt": "2026-11-24T15:07:37.732Z",
-      "durationMs": 395,
+      "startedAt": "2026-11-24T15:58:26.340Z",
+      "durationMs": 888,
       "ok": true,
       "detail": "Chrome 156.0.8078.48"
     },
     {
       "name": "boot-graph",
-      "startedAt": "2026-11-24T15:07:38.338Z",
-      "durationMs": 337,
+      "startedAt": "2026-11-24T15:58:27.670Z",
+      "durationMs": 448,
       "ok": true,
       "detail": ""
     },
     {
       "name": "boot-handshake",
-      "startedAt": "2026-11-24T15:07:38.256Z",
-      "durationMs": 419,
+      "startedAt": "2026-11-24T15:58:27.496Z",
+      "durationMs": 622,
       "ok": true,
       "detail": ""
     },
     {
       "name": "update",
-      "startedAt": "2026-11-24T15:07:38.675Z",
-      "durationMs": 4518,
+      "startedAt": "2026-11-24T15:58:28.118Z",
+      "durationMs": 5294,
       "ok": true,
       "detail": ""
     }
@@ -213,7 +213,7 @@
           }
         }
       },
-      "at": "2026-11-24T15:07:36.039Z"
+      "at": "2026-11-24T15:58:23.638Z"
     },
     {
       "id": "lifecycle.update-source",
@@ -251,19 +251,19 @@
           "bytes": 3417842
         }
       },
-      "at": "2026-11-24T15:07:36.313Z"
+      "at": "2026-11-24T15:58:24.045Z"
     },
     {
       "id": "lifecycle.update-from-install",
       "title": "official `dsh plugin --profile web add file:<from.tgz>` installs and selects the previous bundle before the Host-manager update",
       "status": "pass",
-      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz → exit 0 in 190ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
+      "detail": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz → exit 0 in 261ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
       "evidence": {
         "command": "<tmp> plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz",
-        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz\n\nDone in 117ms using pnpm v12.3.4\n",
+        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/fixtures/dsh-livery-0.2.1.tgz\n\nDone in 141ms using pnpm v12.3.4\n",
         "stderr": "dsh: initialized profile web at <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-update-0.2.1-to-0.2.2-home/profiles/web\n"
       },
-      "at": "2026-11-24T15:07:36.508Z"
+      "at": "2026-11-24T15:58:24.313Z"
     },
     {
       "id": "update.baseline-config",
@@ -275,40 +275,40 @@
         "added": true,
         "liveryId": "fjord"
       },
-      "at": "2026-11-24T15:07:36.508Z"
+      "at": "2026-11-24T15:58:24.314Z"
     },
     {
       "id": "lifecycle.profile-initialized",
       "title": "isolated profile initialized from the shipped web template",
       "status": "pass",
       "detail": "home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-update-0.2.1-to-0.2.2-home; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final3-web-update-0.2.1-to-0.2.2-home/profiles/web; initialized=true; sha256=78f1c8d108e5647dd666f6489b7766b11877f812c42519e314f8174dbb9b55a7",
-      "at": "2026-11-24T15:07:36.508Z"
+      "at": "2026-11-24T15:58:24.314Z"
     },
     {
       "id": "lifecycle.boot",
       "title": "`dsh --profile web --no-open --port 0` boots and prints its authenticated URL",
       "status": "pass",
-      "detail": "ready in 1224ms on port 56841; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
+      "detail": "ready in 2024ms on port 50396; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
       "evidence": {
-        "url": "http://127.0.0.1:56841/?token=<redacted>",
-        "readyMs": 1224,
-        "pid": 75580
+        "url": "http://127.0.0.1:50396/?token=<redacted>",
+        "readyMs": 2024,
+        "pid": 13087
       },
-      "at": "2026-11-24T15:07:37.732Z"
+      "at": "2026-11-24T15:58:26.339Z"
     },
     {
       "id": "lifecycle.boot-warnings",
       "title": "boot log has no skipped-bundle or compatibility warnings",
       "status": "pass",
       "detail": "no skipped/incompatible/warning lines in the boot log",
-      "at": "2026-11-24T15:07:37.732Z"
+      "at": "2026-11-24T15:58:26.340Z"
     },
     {
       "id": "env.browser",
       "title": "Chrome launches through playwright-core (no automatic browser download)",
       "status": "pass",
       "detail": "Chrome 156.0.8078.48 (explicit Chrome-for-Testing executable); playwright-core 1.63.0 at <home>/Personal/openprojects/dsh-livery/node_modules/playwright-core/index.mjs",
-      "at": "2026-11-24T15:07:38.126Z"
+      "at": "2026-11-24T15:58:27.228Z"
     },
     {
       "id": "env.browser-version",
@@ -323,46 +323,46 @@
           "152.0.7977.130"
         ]
       },
-      "at": "2026-11-24T15:07:38.127Z"
+      "at": "2026-11-24T15:58:27.228Z"
     },
     {
       "id": "boot.token-exchange",
       "title": "launch token is exchanged for the signed cookie and dropped from the URL",
       "status": "pass",
-      "detail": "final url http://127.0.0.1:56841/; navigation 82ms",
+      "detail": "final url http://127.0.0.1:50396/; navigation 174ms",
       "evidence": {
-        "requestedUrl": "http://127.0.0.1:56841/?token=<redacted>",
-        "finalUrl": "http://127.0.0.1:56841/",
+        "requestedUrl": "http://127.0.0.1:50396/?token=<redacted>",
+        "finalUrl": "http://127.0.0.1:50396/",
         "tokenDropped": true,
-        "navigationMs": 82
+        "navigationMs": 174
       },
-      "at": "2026-11-24T15:07:38.338Z"
+      "at": "2026-11-24T15:58:27.670Z"
     },
     {
       "id": "boot.graph-entry",
       "title": "__DSH_BOOT__ lists client entry \"dsh-livery\"",
       "status": "pass",
-      "detail": "url plugins/??dsh-livery/client.js&rev=21a743f9a278",
+      "detail": "url plugins/??dsh-livery/client.js&rev=91f484d0afd8",
       "evidence": {
         "entry": {
           "id": "dsh-livery",
-          "url": "plugins/??dsh-livery/client.js&rev=21a743f9a278"
+          "url": "plugins/??dsh-livery/client.js&rev=91f484d0afd8"
         }
       },
-      "at": "2026-11-24T15:07:38.644Z"
+      "at": "2026-11-24T15:58:28.069Z"
     },
     {
       "id": "bundle.serves-client-js",
       "title": "plugin client bundle (boot-graph URL) is served as JavaScript",
       "status": "pass",
-      "detail": "GET /plugins/??dsh-livery/client.js&rev=21a743f9a278 → 200 text/javascript; charset=utf-8 (230487 bytes)",
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=91f484d0afd8 → 200 text/javascript; charset=utf-8 (230487 bytes)",
       "evidence": {
-        "url": "http://127.0.0.1:56841/plugins/??dsh-livery/client.js&rev=21a743f9a278",
+        "url": "http://127.0.0.1:50396/plugins/??dsh-livery/client.js&rev=91f484d0afd8",
         "status": 200,
         "contentType": "text/javascript; charset=utf-8",
         "bytes": 230487
       },
-      "at": "2026-11-24T15:07:38.662Z"
+      "at": "2026-11-24T15:58:28.099Z"
     },
     {
       "id": "bundle.requires-rev",
@@ -370,10 +370,10 @@
       "status": "pass",
       "detail": "GET graph URL without rev → 404",
       "evidence": {
-        "url": "http://127.0.0.1:56841/plugins/??dsh-livery/client.js",
+        "url": "http://127.0.0.1:50396/plugins/??dsh-livery/client.js",
         "status": 404
       },
-      "at": "2026-11-24T15:07:38.662Z"
+      "at": "2026-11-24T15:58:28.099Z"
     },
     {
       "id": "bundle.canonical-route",
@@ -383,10 +383,10 @@
       "evidence": {
         "canonicalStatus": 404,
         "canonicalNoRevStatus": 404,
-        "rev": "21a743f9a278",
-        "entryUrl": "http://127.0.0.1:56841/plugins/??dsh-livery/client.js&rev=21a743f9a278"
+        "rev": "91f484d0afd8",
+        "entryUrl": "http://127.0.0.1:50396/plugins/??dsh-livery/client.js&rev=91f484d0afd8"
       },
-      "at": "2026-11-24T15:07:38.662Z"
+      "at": "2026-11-24T15:58:28.099Z"
     },
     {
       "id": "bundle.gzip-budget",
@@ -398,7 +398,7 @@
         "rawBytes": 230487,
         "budgetBytes": 73728
       },
-      "at": "2026-11-24T15:07:38.666Z"
+      "at": "2026-11-24T15:58:28.105Z"
     },
     {
       "id": "handshake.boot-global",
@@ -422,7 +422,7 @@
         "entryId": "livery",
         "diagnostics": []
       },
-      "at": "2026-11-24T15:07:38.675Z"
+      "at": "2026-11-24T15:58:28.118Z"
     },
     {
       "id": "handshake.echo",
@@ -446,7 +446,7 @@
         "entryId": "livery",
         "diagnostics": []
       },
-      "at": "2026-11-24T15:07:38.675Z"
+      "at": "2026-11-24T15:58:28.118Z"
     },
     {
       "id": "handshake.certified-adapter",
@@ -476,14 +476,14 @@
           }
         }
       },
-      "at": "2026-11-24T15:07:38.675Z"
+      "at": "2026-11-24T15:58:28.118Z"
     },
     {
       "id": "handshake.catalog-url",
       "title": "handshake advertises the catalog route",
       "status": "pass",
       "detail": "catalogUrl=/livery/api/catalog",
-      "at": "2026-11-24T15:07:38.675Z"
+      "at": "2026-11-24T15:58:28.118Z"
     },
     {
       "id": "update.from-artifact-verified",
@@ -527,7 +527,7 @@
           "contracts/dsh/evidence/0.2.1/0.2.2-rc.5-web-chrome.json"
         ]
       },
-      "at": "2026-11-24T15:07:38.675Z"
+      "at": "2026-11-24T15:58:28.119Z"
     },
     {
       "id": "update.from-installed",
@@ -546,7 +546,7 @@
         "panelVersion": "v0.2.1",
         "installedVersion": "0.2.1"
       },
-      "at": "2026-11-24T15:07:39.127Z"
+      "at": "2026-11-24T15:58:28.693Z"
     },
     {
       "id": "update.baseline-style-applied",
@@ -559,21 +559,22 @@
         "bodyHash": "sha256:0fb9a8b1e90ba0a4083269160673d4569d7bbfed2792f639944abae108169d24",
         "panelVersion": "v0.2.1"
       },
-      "at": "2026-11-24T15:07:39.127Z"
+      "at": "2026-11-24T15:58:28.693Z"
     },
     {
       "id": "update.dialog-available",
       "title": "the running Host plugin-manager page exposes the Add plugin install dialog for a local tarball path",
       "status": "pass",
-      "detail": "dialog phases=[\"done\"]; spec=file:<candidate:dsh-livery-0.2.2.tgz>",
+      "detail": "dialog phases=[\"running\",\"done\"]; spec=file:<candidate:dsh-livery-0.2.2.tgz>",
       "evidence": {
         "trigger": "host-install-dialog",
         "phases": [
+          "running",
           "done"
         ],
         "spec": "file:<candidate:dsh-livery-0.2.2.tgz>"
       },
-      "at": "2026-11-24T15:07:40.507Z"
+      "at": "2026-11-24T15:58:30.698Z"
     },
     {
       "id": "update.dialog-install-completed",
@@ -582,12 +583,13 @@
       "detail": "manager phase=done outcome=applied heading=\"已安装\" restart=false",
       "evidence": {
         "phases": [
+          "running",
           "done"
         ],
         "heading": "已安装",
         "failureText": null
       },
-      "at": "2026-11-24T15:07:40.507Z"
+      "at": "2026-11-24T15:58:30.698Z"
     },
     {
       "id": "update.manager-outcome",
@@ -598,10 +600,11 @@
         "managerOutcome": "applied",
         "restartRequired": false,
         "phases": [
+          "running",
           "done"
         ]
       },
-      "at": "2026-11-24T15:07:40.507Z"
+      "at": "2026-11-24T15:58:30.698Z"
     },
     {
       "id": "update.new-client-bundle-loaded",
@@ -613,7 +616,7 @@
         "after": 2,
         "catalogs": [
           {
-            "at": 1795532860331,
+            "at": 1795535910494,
             "status": 200,
             "bytes": 1262052,
             "compilerVersion": "0.2.2",
@@ -656,7 +659,7 @@
           }
         ]
       },
-      "at": "2026-11-24T15:07:40.509Z"
+      "at": "2026-11-24T15:58:30.713Z"
     },
     {
       "id": "update.no-page-navigation",
@@ -665,9 +668,9 @@
       "detail": "sentinel=intact; timeOrigin=unchanged; navigation entries 1→1; history 2→2; load events=0",
       "evidence": {
         "baseline": {
-          "id": "d17408a8-0b59-4fe2-bcab-6b5ab6c562e0",
-          "installedAt": 1795532859127,
-          "timeOrigin": 1795532858258.8,
+          "id": "026bf647-8a34-44e0-9cc7-ef533812fb6e",
+          "installedAt": 1795535908693,
+          "timeOrigin": 1795535907500.8,
           "navigationEntries": 1,
           "historyLength": 2,
           "clientBundleResources": 1,
@@ -679,9 +682,9 @@
         },
         "post": {
           "sentinel": {
-            "id": "d17408a8-0b59-4fe2-bcab-6b5ab6c562e0",
-            "installedAt": 1795532859127,
-            "timeOrigin": 1795532858258.8,
+            "id": "026bf647-8a34-44e0-9cc7-ef533812fb6e",
+            "installedAt": 1795535908693,
+            "timeOrigin": 1795535907500.8,
             "navigationEntries": 1,
             "historyLength": 2,
             "clientBundleResources": 1,
@@ -692,7 +695,7 @@
             "panelVersion": "v0.2.1"
           },
           "navigationEntries": 1,
-          "timeOrigin": 1795532858258.8,
+          "timeOrigin": 1795535907500.8,
           "historyLength": 2,
           "clientBundleResources": 2,
           "catalogResources": 2,
@@ -713,7 +716,7 @@
           "loads": 0
         }
       },
-      "at": "2026-11-24T15:07:40.509Z"
+      "at": "2026-11-24T15:58:30.713Z"
     },
     {
       "id": "update.boot-payload-previous",
@@ -728,7 +731,7 @@
         "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
         "accepted": true
       },
-      "at": "2026-11-24T15:07:40.509Z"
+      "at": "2026-11-24T15:58:30.713Z"
     },
     {
       "id": "update.live-client-build-candidate",
@@ -740,7 +743,7 @@
         "expected": "v0.2.2",
         "error": null
       },
-      "at": "2026-11-24T15:07:40.554Z"
+      "at": "2026-11-24T15:58:30.812Z"
     },
     {
       "id": "update.catalog-refetched",
@@ -750,7 +753,7 @@
       "evidence": {
         "catalogs": [
           {
-            "at": 1795532860331,
+            "at": 1795535910494,
             "status": 200,
             "bytes": 1262052,
             "compilerVersion": "0.2.2",
@@ -794,7 +797,7 @@
         ],
         "expectedCompilerVersion": "0.2.2"
       },
-      "at": "2026-11-24T15:07:40.554Z"
+      "at": "2026-11-24T15:58:30.812Z"
     },
     {
       "id": "update.catalog-applied",
@@ -805,7 +808,7 @@
         "bodyAttribute": "fjord",
         "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
         "catalog": {
-          "at": 1795532860331,
+          "at": 1795535910494,
           "status": 200,
           "bytes": 1262052,
           "compilerVersion": "0.2.2",
@@ -853,7 +856,7 @@
           "panelVersion": "v0.2.1"
         }
       },
-      "at": "2026-11-24T15:07:42.070Z"
+      "at": "2026-11-24T15:58:32.321Z"
     },
     {
       "id": "update.stale-boot-observed",
@@ -940,7 +943,7 @@
           "open": true
         }
       },
-      "at": "2026-11-24T15:07:42.192Z"
+      "at": "2026-11-24T15:58:32.410Z"
     },
     {
       "id": "update.detail-section-renders",
@@ -1027,7 +1030,7 @@
           "open": true
         }
       },
-      "at": "2026-11-24T15:07:42.192Z"
+      "at": "2026-11-24T15:58:32.410Z"
     },
     {
       "id": "update.transition-recorded",
@@ -1046,7 +1049,7 @@
         "catalogReadopted": true,
         "managerOutcome": "applied"
       },
-      "at": "2026-11-24T15:07:43.193Z"
+      "at": "2026-11-24T15:58:33.411Z"
     },
     {
       "id": "console.no-livery-errors",
@@ -1059,28 +1062,28 @@
         "ownedFailed": [],
         "ownedHttpErrors": []
       },
-      "at": "2026-11-24T15:07:43.193Z"
+      "at": "2026-11-24T15:58:33.412Z"
     },
     {
       "id": "previews.no-404",
       "title": "no 404 responses for /livery/assets/previews/*",
       "status": "pass",
       "detail": "0 404 preview response(s)",
-      "at": "2026-11-24T15:07:43.193Z"
+      "at": "2026-11-24T15:58:33.412Z"
     },
     {
       "id": "lifecycle.install-uninstall",
       "title": "official install → boot → uninstall → restart residue",
       "status": "skip",
       "detail": "update-probe run: the transition is the subject; fresh-install lifecycle evidence is a separate schema-v2 run on the final candidate",
-      "at": "2026-11-24T15:07:43.193Z"
+      "at": "2026-11-24T15:58:33.412Z"
     },
     {
       "id": "lifecycle.sigterm",
       "title": "SIGTERM stops the service and closes the port",
       "status": "skip",
       "detail": "update-probe run: the isolated Host is stopped by the harness after the probe",
-      "at": "2026-11-24T15:07:43.193Z"
+      "at": "2026-11-24T15:58:33.412Z"
     }
   ],
   "artifacts": {
@@ -1122,7 +1125,7 @@
       "sha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
       "bytes": 3417842
     },
-    "startedAt": "2026-11-24T15:07:38.675Z",
+    "startedAt": "2026-11-24T15:58:28.119Z",
     "trigger": "host-install-dialog",
     "requiredChecks": [
       "env.certified-host",
@@ -1144,14 +1147,15 @@
     ],
     "responses": [],
     "phases": [
+      "running",
       "done"
     ],
     "observations": {
       "pre": {
         "sentinel": {
-          "id": "d17408a8-0b59-4fe2-bcab-6b5ab6c562e0",
-          "installedAt": 1795532859127,
-          "timeOrigin": 1795532858258.8,
+          "id": "026bf647-8a34-44e0-9cc7-ef533812fb6e",
+          "installedAt": 1795535908693,
+          "timeOrigin": 1795535907500.8,
           "navigationEntries": 1,
           "historyLength": 2,
           "clientBundleResources": 1,
@@ -1162,7 +1166,7 @@
           "panelVersion": "v0.2.1"
         },
         "navigationEntries": 1,
-        "timeOrigin": 1795532858258.8,
+        "timeOrigin": 1795535907500.8,
         "historyLength": 2,
         "clientBundleResources": 2,
         "catalogResources": 2,
@@ -1273,9 +1277,9 @@
       "managerOutcome": "applied"
     },
     "baseline": {
-      "id": "d17408a8-0b59-4fe2-bcab-6b5ab6c562e0",
-      "installedAt": 1795532859127,
-      "timeOrigin": 1795532858258.8,
+      "id": "026bf647-8a34-44e0-9cc7-ef533812fb6e",
+      "installedAt": 1795535908693,
+      "timeOrigin": 1795535907500.8,
       "navigationEntries": 1,
       "historyLength": 2,
       "clientBundleResources": 1,
@@ -1289,6 +1293,7 @@
       "trigger": "host-install-dialog",
       "spec": "file:<candidate:dsh-livery-0.2.2.tgz>",
       "phases": [
+        "running",
         "done"
       ],
       "phase": "done",
@@ -1297,7 +1302,7 @@
       "heading": "已安装",
       "failureText": null,
       "dialogTail": "已安装 file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.2.tgz 压缩包 版本 0.2.2 查看安装详情 立即启用",
-      "durationMs": 879,
+      "durationMs": 1305,
       "expectedOutcomes": [
         "applied",
         "restart-required",
@@ -1308,7 +1313,7 @@
     },
     "catalogCaptures": [
       {
-        "at": 1795532860331,
+        "at": 1795535910494,
         "status": 200,
         "bytes": 1262052,
         "compilerVersion": "0.2.2",
@@ -1351,7 +1356,7 @@
       }
     ],
     "pageReloaded": false,
-    "finishedAt": "2026-11-24T15:07:43.193Z"
+    "finishedAt": "2026-11-24T15:58:33.411Z"
   },
   "evidence": {
     "catalog": null,
@@ -1379,12 +1384,12 @@
       },
       "pluginManagerLogs": [
         {
-          "operation": "operation-2h70NM",
+          "operation": "operation-CkTCaI",
           "pnpmLogTail": ""
         },
         {
-          "operation": "operation-E5mVNI",
-          "pnpmLogTail": "✓ Lockfile passes supply-chain policies (verified 3s ago)\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 119ms using pnpm v12.3.4\n"
+          "operation": "operation-ruvxOE",
+          "pnpmLogTail": "✓ Lockfile passes supply-chain policies (verified 5s ago)\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 139ms using pnpm v12.3.4\n"
         }
       ]
     },
