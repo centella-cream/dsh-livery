@@ -115,7 +115,7 @@ try {
 }
 
 // Documentation files required to ship.
-for (const file of ['docs/design/interfaces.md', 'docs/verification.md', 'README.md', 'README.zh-CN.md', 'CONTRIBUTING.md', 'CONTRIBUTING.zh-CN.md', 'SECURITY.md', 'CODE_OF_CONDUCT.md', 'LICENSE', 'schemas/livery.schema.json']) {
+for (const file of ['docs/design/interfaces.md', 'docs/verification.md', 'README.md', 'README.zh.md', 'CONTRIBUTING.md', 'CONTRIBUTING.zh-CN.md', 'SECURITY.md', 'CODE_OF_CONDUCT.md', 'LICENSE', 'schemas/livery.schema.json']) {
   try {
     await stat(join(root, file))
   } catch {

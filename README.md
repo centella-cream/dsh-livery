@@ -26,7 +26,7 @@ plugin, not a host theme takeover.
 > builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
 
-English · [中文](README.zh-CN.md)
+English · [中文](README.zh.md)
 
 ![DSH Livery 0.2.1 Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
 

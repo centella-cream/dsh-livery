@@ -103,7 +103,7 @@ const required = [
   'lib/index.js',
   'lib/client.js',
   'README.md',
-  'README.zh-CN.md',
+  'README.zh.md',
   'LICENSE',
   'NOTICE.md',
   'SECURITY.md',
@@ -127,7 +127,7 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-const readme = [readFileSync(join(root, 'README.md'), 'utf8'), readFileSync(join(root, 'README.zh-CN.md'), 'utf8')].join('\n')
+const readme = [readFileSync(join(root, 'README.md'), 'utf8'), readFileSync(join(root, 'README.zh.md'), 'utf8')].join('\n')
 const broken = []
 for (const [, target] of readme.matchAll(/\]\(([^)]+)\)/g)) {
   if (target.startsWith('http') || target.startsWith('#') || target.startsWith('mailto:')) continue

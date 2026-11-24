@@ -174,7 +174,7 @@ Documentation is part of the product, not an afterthought.
 
 - **Release docs move with the release.** A version bump, host adaptation,
   user-visible style/UX change, layout change or new capability must update
-  `README.md`, `README.zh-CN.md`, `SECURITY.md` (when scope changes),
+  `README.md`, `README.zh.md`, `SECURITY.md` (when scope changes),
   `CHANGELOG.md` and `docs/verification.md` in the same change set, before the
   candidate artifact is frozen. Do not discover stale install/status text during
   the pre-release audit.
