@@ -1088,10 +1088,9 @@ const DETAIL_SURFACE_COPY = {
 
 /** Every runtime plugin-detail check, so one page-open failure can skip them all with one honest reason. */
 const PLUGIN_DETAIL_RUNTIME_CHECKS = [
-  ['plugin.detail-section-renders', 'the Livery bundle detail page renders the live-build badge, the facts section and the two truthful actions'],
+  ['plugin.detail-section-renders', 'the Livery bundle detail page renders the live-build badge, the facts section and the Open Livery / hot-update actions'],
   ['plugin.detail-config-slot-clean', 'contributed Livery detail nodes render outside the host config-body slot on the bundle page'],
   ['plugin.detail-subject-filter', 'Livery detail contributions render nothing for other bundles, rows and official items'],
-  ['plugin.detail-copy-diagnostics', 'Copy diagnostics writes the existing diagnostics report and announces the copied outcome'],
 ]
 
 /**
@@ -1186,7 +1185,7 @@ export async function checkPluginDetail(ctx) {
     expect(
       runner,
       'plugin.detail-section-renders',
-      'the Livery bundle detail page renders the live-build badge, the facts section and the two truthful actions',
+      'the Livery bundle detail page renders the live-build badge, the facts section and the Open Livery / hot-update actions',
       detail.bundle === 'dsh-livery' &&
         detail.badge.present === true &&
         clientVersion.length > 0 &&
@@ -1194,7 +1193,6 @@ export async function checkPluginDetail(ctx) {
         detail.actions.present === true &&
         detail.actions.beforeTitle === true &&
         detail.actions.open === true &&
-        detail.actions.copyDiagnostics === true &&
         detail.section.present === true &&
         detail.section.headingId === 'dsh-livery-detail-heading' &&
         detail.section.heading === copy.heading &&
@@ -1218,42 +1216,6 @@ export async function checkPluginDetail(ctx) {
       'contributed Livery detail nodes render outside the host config-body slot on the bundle page',
       detail.liveryNodesInsideConfig === 0 && detail.liveryNodeCount >= 4,
       `config sections=${detail.configSectionCount}; Livery nodes=${detail.liveryNodeCount}; inside config=${detail.liveryNodesInsideConfig}`,
-    )
-
-    // ---- Copy diagnostics: clipboard content + polite announcement ----
-    try {
-      await session.context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(ctx.config.baseUrl).origin })
-    } catch {
-      /* clipboard permissions are best effort */
-    }
-    await page.evaluate(() => {
-      window.__CLIPBOARD_CAPTURED__ = null
-      const clipboard = navigator.clipboard
-      if (clipboard && typeof clipboard.writeText === 'function') {
-        const original = clipboard.writeText.bind(clipboard)
-        clipboard.writeText = async (text) => {
-          window.__CLIPBOARD_CAPTURED__ = String(text)
-          try { return await original(text) } catch { return undefined }
-        }
-      }
-    })
-    await page.locator('[data-testid="livery-detail-copy-diagnostics"]').click({ timeout: 8_000 })
-    await page.waitForFunction((expected) => (document.querySelector('[data-testid="livery-detail-copy-status"]')?.textContent ?? '').trim() === expected, copy.copied, { timeout: 10_000 }).catch(() => {})
-    await sleep(300)
-    const copyStatus = (await page.locator('[data-testid="livery-detail-copy-status"]').innerText().catch(() => '')) || ''
-    const copied = await page.evaluate(() => window.__CLIPBOARD_CAPTURED__).catch(() => null)
-    const clipboardText = typeof copied === 'string' && copied.length > 0
-      ? copied
-      : (await readClipboardText(page).catch(() => ({ ok: false, text: '' }))).text ?? ''
-    expect(
-      runner,
-      'plugin.detail-copy-diagnostics',
-      'Copy diagnostics writes the existing diagnostics report to the clipboard and announces the copied outcome',
-      copyStatus.trim() === copy.copied &&
-        clipboardText.includes('DSH Livery') &&
-        (expectedAdapter === '' || clipboardText.includes(expectedAdapter)),
-      `status="${oneLine(copyStatus, 100)}"; clipboard ${clipboardText.length} bytes; header=${clipboardText.includes('DSH Livery')}; adapter=${expectedAdapter === '' ? '(no expectation)' : clipboardText.includes(expectedAdapter)}`,
-      { clipboardBytes: clipboardText.length, status: copyStatus },
     )
 
     // ---- subject filter: other bundle / row / official item render nothing ----

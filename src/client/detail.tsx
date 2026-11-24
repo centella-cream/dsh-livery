@@ -21,9 +21,8 @@
 import { useCallback, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
-import { Button, Tag, writeClipboard } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import { HASH_ATTRIBUTE, LIVERY_VERSION, LOCALE_NS } from '../core/types.js'
-import { formatDiagnostics } from './diagnostics.js'
 import type {
   LayoutService,
   LiveryDetailProps,
@@ -123,28 +122,6 @@ export function detailBoundaryKey(state: string, catalogUnavailable: boolean, re
   return 'detail.boundary.valid'
 }
 
-/**
- * Dictionary key announcing the outcome of the copy-diagnostics action.
- * @param ok - whether the clipboard write succeeded.
- * @returns the success or failure announcement key.
- */
-export function copyAnnouncementKey(ok: boolean): LiveryKey {
-  return ok ? 'detail.copy.copied' : 'detail.copy.failed'
-}
-
-/**
- * Copy the diagnostics report to the clipboard.
- * @param t - dictionary-bound translate of the `dsh-livery` namespace.
- * @param snapshot - current runtime snapshot.
- * @returns whether the clipboard write succeeded.
- */
-export async function copyDiagnosticsReport(
-  t: LiveryDetailProps['t'],
-  snapshot: LiveryRuntimeSnapshot,
-): Promise<boolean> {
-  return writeClipboard(formatDiagnostics(t, snapshot, snapshot.locale))
-}
-
 /** Read the applied CSS hash from the public body attribute, when present. */
 function appliedCssHash(): string | undefined {
   const body = globalThis.document?.body
@@ -237,8 +214,9 @@ export type DetailActionsProps = LiveryDetailProps & DetailActionsContext
 
 /**
  * Page-head actions: open Livery's own panel when this host registered it, and
- * copy the diagnostics report. No update control: the Host's own control stays
- * the only update path.
+ * jump to the Livery detail tabs. No update or diagnostics-copy control: the
+ * Host's own controls stay the only update path and diagnostics live in the
+ * Livery self-check panel.
  * @param props - owner props, locale seat and installer context.
  * @returns the actions element, or null for a subject this plugin does not own.
  */
@@ -247,21 +225,7 @@ export function DetailActions(props: DetailActionsProps): JSX.Element | null {
   return <LiveryDetailActions {...props} />
 }
 
-function LiveryDetailActions({ t, runtime, isMainPanelRegistered, openLivery }: DetailActionsProps): JSX.Element {
-  const [announcement, setAnnouncement] = useState<'copied' | 'failed' | undefined>(undefined)
-
-  const copy = async (): Promise<void> => {
-    let ok = false
-    try {
-      ok = await copyDiagnosticsReport(t, runtime.getSnapshot())
-    } catch {
-      // The clipboard helper reports failure as a value; a thrown writer (an
-      // exotic composition) still has to announce the failure, not crash.
-      ok = false
-    }
-    setAnnouncement(ok ? 'copied' : 'failed')
-  }
-
+function LiveryDetailActions({ t, isMainPanelRegistered, openLivery }: DetailActionsProps): JSX.Element {
   return (
     <div className="livery-section">
       <div className="livery-actions" data-testid="livery-detail-actions">
@@ -286,41 +250,8 @@ function LiveryDetailActions({ t, runtime, isMainPanelRegistered, openLivery }: 
         >
           {t('detail.tab.hotUpdate')}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          data-testid="livery-detail-copy-diagnostics"
-          onClick={() => { void copy() }}
-        >
-          {t('detail.action.copyDiagnostics')}
-        </Button>
-        <DetailCopyStatus t={t} outcome={announcement} />
       </div>
     </div>
-  )
-}
-
-/** Outcome of the last copy attempt, rendered in the polite live region. */
-export type DetailCopyOutcome = 'copied' | 'failed' | undefined
-
-/**
- * Polite live region announcing the last copy-diagnostics outcome. It stays
- * mounted while empty so the host page's assistive technology observes the
- * text replacement, not a newly inserted node.
- */
-export function DetailCopyStatus({ t, outcome }: {
-  readonly t: LiveryDetailProps['t']
-  readonly outcome: DetailCopyOutcome
-}): JSX.Element {
-  return (
-    <p
-      className="livery-check__value"
-      role="status"
-      aria-live="polite"
-      data-testid="livery-detail-copy-status"
-    >
-      {outcome === undefined ? '' : t(copyAnnouncementKey(outcome === 'copied'))}
-    </p>
   )
 }
 

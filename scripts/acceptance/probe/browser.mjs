@@ -1916,8 +1916,6 @@ export async function readPluginDetail(page) {
         present: actions !== null,
         beforeTitle: actionsBeforeTitle,
         open: present('[data-testid="livery-detail-open"]'),
-        copyDiagnostics: present('[data-testid="livery-detail-copy-diagnostics"]'),
-        copyStatus: text('[data-testid="livery-detail-copy-status"]'),
       },
       section: {
         present: section !== null,

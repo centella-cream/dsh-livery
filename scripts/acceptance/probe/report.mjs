@@ -390,8 +390,8 @@ export const PLAN20_ROWS = [
   },
   {
     criterion: 'Plugin detail surface: live-build badge, observable-facts section, truthful actions, subject filter',
-    checks: ['plugin.detail-section-renders', 'plugin.detail-subject-filter', 'plugin.detail-no-config-slot', 'plugin.detail-config-slot-clean', 'plugin.detail-copy-diagnostics'],
-    note: 'Plugins → Livery bundle page renders the Livery 0.2.2 badge, the facts <dl>, the handshake-selected update-boundary statement, Open Livery (only while the main panel is registered) and Copy diagnostics; only the three plugins.detail.* slots are consumed (no plugins.bundle.config / plugins.item registration) and other bundle/row/item subjects render nothing. A host without the plugin-manager page records skipped checks with the limitation, never a fake pass.',
+    checks: ['plugin.detail-section-renders', 'plugin.detail-subject-filter', 'plugin.detail-no-config-slot', 'plugin.detail-config-slot-clean'],
+    note: 'Plugins → Livery bundle page renders the Livery 0.2.2 badge, the facts <dl>, the handshake-selected update-boundary statement, Open Livery (only while the main panel is registered) and the hot-update tab action; only the three plugins.detail.* slots are consumed (no plugins.bundle.config / plugins.item registration) and other bundle/row/item subjects render nothing. A host without the plugin-manager page records skipped checks with the limitation, never a fake pass.',
   },
   {
     criterion: 'Round-10 card layout: two-column card hierarchy, responsive stacking, bounded sliders, no overflow',

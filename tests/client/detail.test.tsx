@@ -4,14 +4,12 @@
  * The plugin-manager detail page renders every registered entry for every
  * subject, so the contributions are tested through static server rendering
  * (the repo's React test pattern): subject filtering, badge identity, the
- * observable-facts section, the state-selected update boundary, the action
- * gates, and the copy-diagnostics announcement/helper.
+ * observable-facts section, the state-selected update boundary and the action
+ * gates.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
-
-const clipboard = vi.hoisted(() => ({ write: vi.fn(async () => true) }))
 
 vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
   const React = await import('react')
@@ -24,7 +22,6 @@ vi.mock('@deepseek-ai/dsh-client-ui-primitives', async () => {
     Tag: passthrough('span'),
     Modal: () => null,
     Toast: () => null,
-    writeClipboard: clipboard.write,
   }
 })
 import type { Context } from '@deepseek-ai/cordis'
@@ -33,12 +30,9 @@ import {
   DETAIL_HEADING_ID,
   DetailActions,
   DetailBadge,
-  DetailCopyStatus,
   DetailSection,
   bootStateKey,
   catalogStateKey,
-  copyAnnouncementKey,
-  copyDiagnosticsReport,
   detailBoundaryKey,
   installDetailSlots,
   isLiverySubject,
@@ -439,8 +433,8 @@ describe('actions', () => {
   it('hides Open Livery while the main panel is not registered', () => {
     const html = renderActions({ registered: false })
     expect(html).not.toContain('data-testid="livery-detail-open"')
-    expect(html).toContain('data-testid="livery-detail-copy-diagnostics"')
-    expect(html).toContain(enUS['detail.action.copyDiagnostics'])
+    expect(html).toContain('data-testid="livery-detail-open-hot"')
+    expect(html).toContain(enUS['detail.tab.hotUpdate'])
   })
 
   it('shows Open Livery only when the main panel is registered', () => {
@@ -449,19 +443,17 @@ describe('actions', () => {
     expect(html).toContain(enUS['detail.action.open'])
   })
 
-  it('has a polite live region for the copy result and no update control', () => {
+  it('has no update or diagnostics-copy control', () => {
     const html = renderActions({ registered: true })
-    expect(html).toContain('role="status"')
-    expect(html).toContain('aria-live="polite"')
-    expect(html).toContain('data-testid="livery-detail-copy-status"')
     expect(html).not.toContain('livery-detail-update')
+    expect(html).not.toContain('livery-detail-copy-diagnostics')
     expect(html).not.toMatch(/>\s*Update\s*</u)
   })
 
   it('localizes the action labels', () => {
     const html = renderActions({ registered: true, t: ZH })
     expect(html).toContain(zhCN['detail.action.open'])
-    expect(html).toContain(zhCN['detail.action.copyDiagnostics'])
+    expect(html).toContain(zhCN['detail.tab.hotUpdate'])
   })
 })
 
@@ -484,36 +476,6 @@ describe('Open Livery action', () => {
       get: () => ({ selectPanel: () => { throw new Error('unregistered main key') } }),
     } as unknown as Context
     expect(() => openLiveryPanel(throwing)).not.toThrow()
-  })
-})
-
-describe('copy diagnostics announcement', () => {
-  it('renders a polite live region that announces the copied/failed outcome', () => {
-    const idle = renderToStaticMarkup(<DetailCopyStatus t={EN} outcome={undefined} />)
-    expect(idle).toContain('role="status"')
-    expect(idle).toContain('aria-live="polite"')
-    expect(idle).not.toContain(enUS['detail.copy.copied'])
-    expect(renderToStaticMarkup(<DetailCopyStatus t={EN} outcome="copied" />)).toContain(enUS['detail.copy.copied'])
-    expect(renderToStaticMarkup(<DetailCopyStatus t={EN} outcome="failed" />)).toContain(enUS['detail.copy.failed'])
-    expect(renderToStaticMarkup(<DetailCopyStatus t={ZH} outcome="copied" />)).toContain(zhCN['detail.copy.copied'])
-  })
-})
-
-describe('copy diagnostics', () => {
-  it('writes the existing diagnostics report to the clipboard', async () => {
-    clipboard.write.mockResolvedValueOnce(true)
-    await expect(copyDiagnosticsReport(EN, makeSnapshot())).resolves.toBe(true)
-    expect(clipboard.write).toHaveBeenCalledWith(expect.stringContaining('DSH Livery'))
-    expect(clipboard.write).toHaveBeenCalledWith(expect.stringContaining(TEST_ADAPTER.adapterId))
-  })
-
-  it('reports clipboard failure and selects the matching announcement', async () => {
-    clipboard.write.mockResolvedValueOnce(false)
-    await expect(copyDiagnosticsReport(EN, makeSnapshot())).resolves.toBe(false)
-    expect(copyAnnouncementKey(true)).toBe('detail.copy.copied')
-    expect(copyAnnouncementKey(false)).toBe('detail.copy.failed')
-    expect(enUS['detail.copy.copied']).not.toBe(enUS['detail.copy.failed'])
-    expect(zhCN['detail.copy.copied']).not.toBe(zhCN['detail.copy.failed'])
   })
 })
 
