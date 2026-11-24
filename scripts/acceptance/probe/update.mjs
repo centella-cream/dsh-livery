@@ -381,6 +381,7 @@ export async function installCatalogFetchRecorder(page) {
             at: Date.now(),
             status: response.status,
             bytes: text.length,
+            compilerVersion: payload?.compilerVersion ?? null,
             catalogHash: payload?.catalogHash ?? null,
             hostVersion: payload?.hostVersion ?? null,
             adapterId: payload?.adapterId ?? null,
@@ -674,14 +675,15 @@ export async function checkUpdateProbe(ctx) {
     { panelVersion, expected: panelVersionOf(candidate.version), error: panelError },
   )
 
-  const catalogRefetched = catalogCaptures.some((capture) => capture.status === 200)
-  const latestCatalog = catalogCaptures.filter((capture) => capture.status === 200).at(-1) ?? null
+  const versionedCatalog = catalogCaptures.find((capture) => capture.status === 200 && capture.compilerVersion === candidate.version) ?? null
+  const catalogRefetched = versionedCatalog !== null
+  const latestCatalog = versionedCatalog ?? catalogCaptures.filter((capture) => capture.status === 200).at(-1) ?? null
   record(
     catalogRefetched ? 'pass' : 'fail',
     'update.catalog-refetched',
-    'the updated client re-fetches the catalog route after the in-process update',
-    `${catalogCaptures.length} catalog fetch(es) by the updated client; last=${latestCatalog === null ? '(none)' : `status=${latestCatalog.status} bytes=${latestCatalog.bytes} catalogHash=${oneLine(latestCatalog.catalogHash ?? '', 24)} liveries=${String(latestCatalog.liveryCount ?? '?')}`}`,
-    { catalogs: catalogCaptures },
+    'the updated client re-fetches a catalog compiled by the candidate version after the in-process update',
+    `${catalogCaptures.length} catalog fetch(es) by the updated client; last=${latestCatalog === null ? '(none)' : `status=${latestCatalog.status} compilerVersion=${String(latestCatalog.compilerVersion ?? '?')} bytes=${latestCatalog.bytes} catalogHash=${oneLine(latestCatalog.catalogHash ?? '', 24)} liveries=${String(latestCatalog.liveryCount ?? '?')}`}`,
+    { catalogs: catalogCaptures, expectedCompilerVersion: candidate.version },
   )
 
   await sleep(1_500)

@@ -156,7 +156,9 @@ export function validateProviderGate(value, expectedRelease) {
 export function readRegistryProviderIds(root) {
   try {
     const source = readFileSync(join(root, 'src/client/wallpaper/providers.ts'), 'utf8')
-    return [...source.matchAll(/\bid:\s*'(openverse|wikimedia)'/gu)].map(match => match[1])
+    const union = /export type ProviderId =([^\n]+)/u.exec(source)
+    if (union === null) return []
+    return [...union[1].matchAll(/'([a-z0-9][a-z0-9-]*)'/gu)].map(match => match[1])
   } catch {
     return []
   }
