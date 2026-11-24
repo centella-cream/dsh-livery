@@ -287,132 +287,168 @@ async function readStoredWallpaper(page) {
 }
 
 /**
- * Openverse fixture rows for the anonymous search API (0.2.2).
+ * Wikimedia Commons fixture rows for the MediaWiki `generator=search|random`
+ * API (0.2.2).
  *
- * The first two rows are selectable with real licence/attribution metadata (CC0
- * and CC BY 4.0 with every URL field); the third uses a non-selectable licence
- * slug so the UI's `license: null` rendering can be asserted. `count` > 3 pads
- * the page with CC0 rows so the online pager has a second page.
- * @param count - number of rows to return (default 3).
- * @returns Openverse API result rows.
+ * Wikimedia Commons is the only offered online source after Openverse was
+ * removed from the offered provider set; these rows carry the three selectable
+ * attribution shapes the studio asserts plus one file with no usable licence
+ * (rendered but never selectable):
+ *
+ * - row 0: CC0 1.0, creator/source links only (no licence URL);
+ * - row 1: CC BY 4.0, creator/licence/source links (the applied result);
+ * - row 2: CC BY-SA 4.0 with a full attribution record;
+ * - row 3: no extmetadata → `license: null` → non-selectable.
+ *
+ * `wikimediaFixtureBody(count)` pads beyond these four rows with CC0 files so
+ * the online pager has a second page.
  */
-function openverseFixtureRows(count = 3) {
-  const rows = [
-    {
-      id: 'ov-acceptance-1',
-      title: 'Aurora One',
-      creator: 'Tester',
-      creator_url: 'https://openverse.org/user/tester',
-      license: 'cc0',
-      foreign_landing_url: 'https://openverse.org/image/ov-acceptance-1',
-      width: 1200,
-      height: 800,
-    },
-    {
-      id: 'ov-acceptance-2',
-      title: 'Aurora Two',
-      creator: 'Artist',
-      creator_url: 'https://openverse.org/user/artist',
-      license: 'by',
-      license_version: '4.0',
-      license_url: 'https://creativecommons.org/licenses/by/4.0/',
-      foreign_landing_url: 'https://openverse.org/image/ov-acceptance-2',
-      width: 1600,
-      height: 1000,
-    },
-    {
-      id: 'ov-acceptance-3',
-      title: 'Restricted Three',
-      creator: 'Tester',
-      license: 'by-nc',
-      foreign_landing_url: 'https://openverse.org/image/ov-acceptance-3',
-      width: 800,
-      height: 600,
-    },
-  ]
-  for (let index = rows.length; index < count; index += 1) {
-    const id = `ov-acceptance-page-${index + 1}`
-    rows.push({
-      id,
-      title: `Aurora Page ${index + 1}`,
-      creator: 'Tester',
-      license: 'cc0',
-      foreign_landing_url: `https://openverse.org/image/${id}`,
-      width: 1200,
-      height: 800,
-    })
+const WIKIMEDIA_FIXTURE_ROWS = Object.freeze([
+  {
+    pageid: 101,
+    index: 0,
+    title: 'Calm water',
+    creator: 'Tester',
+    creatorPage: 'User:Tester',
+    licenseShortName: 'CC0 1.0',
+    slug: '1/11/Calm_water',
+    width: 1200,
+    height: 800,
+  },
+  {
+    pageid: 102,
+    index: 1,
+    title: 'Morning ridge',
+    creator: 'Artist Name',
+    creatorPage: 'User:Artist_Name',
+    licenseShortName: 'CC BY 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    slug: '2/22/Morning_ridge',
+    width: 1600,
+    height: 1000,
+  },
+  {
+    pageid: 103,
+    index: 2,
+    title: 'Harbour at dusk',
+    creator: 'Photographer',
+    creatorPage: 'User:Photographer',
+    licenseShortName: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    slug: '3/33/Harbour_at_dusk',
+    width: 1600,
+    height: 1000,
+  },
+  {
+    pageid: 104,
+    index: 3,
+    title: 'Restricted map',
+    restricted: true,
+    slug: '4/44/Restricted_map',
+    width: 800,
+    height: 600,
+  },
+])
+
+/** Derived fixture metadata shared by the mock body and the assertions. */
+const WIKIMEDIA_FIXTURE = Object.freeze(WIKIMEDIA_FIXTURE_ROWS.map((row) => {
+  const file = `${row.title.replace(/ /gu, '_')}.jpg`
+  return {
+    ...row,
+    file,
+    pageTitle: `File:${file}`,
+    // MediaWiki page titles use underscores; the provider strips only the
+    // `File:` prefix, so this is the exact result/attribution title.
+    displayTitle: file,
+    fullUrl: `https://upload.wikimedia.org/wikipedia/commons/${row.slug}.jpg`,
+    thumbUrl: `https://upload.wikimedia.org/wikipedia/commons/thumb/${row.slug}.jpg/1280px-${file}`,
+    sourceUrl: `https://commons.wikimedia.org/wiki/File:${file}`,
+    creatorUrl: row.creatorPage === undefined
+      ? undefined
+      : `https://commons.wikimedia.org/wiki/${row.creatorPage}`,
+    license: row.restricted === true || row.licenseShortName === undefined
+      ? null
+      : (row.licenseUrl === undefined ? { name: row.licenseShortName } : { name: row.licenseShortName, url: row.licenseUrl }),
   }
-  return rows.slice(0, Math.max(count, 3))
+}))
+
+/** Map one fixture entry to a Commons `query.pages` `generator` row. */
+function wikimediaFixturePage(entry) {
+  const extmetadata = entry.restricted === true
+    ? {}
+    : {
+        LicenseShortName: { value: entry.licenseShortName },
+        ...(entry.licenseUrl === undefined ? {} : { LicenseUrl: { value: entry.licenseUrl } }),
+        Artist: { value: `<a href="https://commons.wikimedia.org/wiki/${entry.creatorPage}">${entry.creator}</a>` },
+      }
+  return {
+    pageid: entry.pageid,
+    title: entry.pageTitle,
+    index: entry.index,
+    imageinfo: [{
+      url: entry.fullUrl,
+      thumburl: entry.thumbUrl,
+      descriptionurl: entry.sourceUrl,
+      width: entry.width,
+      height: entry.height,
+      mime: 'image/jpeg',
+      extmetadata,
+    }],
+  }
 }
 
 /**
- * MediaWiki Commons fixture body (0.2.2): one CC BY-SA file with a full
- * attribution record and one file with no usable licence (rendered but not
- * selectable), in `generator=search` / `generator=random` shape.
+ * MediaWiki Commons fixture body: one `query.pages` entry per fixture row, plus
+ * padded CC0 files when `count` exceeds the four core rows (online pager).
+ * @param count - number of rows to return (default 4).
  * @returns a Commons API `query.pages` body.
  */
-function wikimediaFixtureBody() {
-  return {
-    query: {
-      pages: {
-        101: {
-          pageid: 101,
-          title: 'File:Harbour at dusk.jpg',
-          index: 0,
-          imageinfo: [
-            {
-              url: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Harbour_at_dusk.jpg',
-              thumburl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Harbour_at_dusk.jpg/1280px-Harbour_at_dusk.jpg',
-              descriptionurl: 'https://commons.wikimedia.org/wiki/File:Harbour_at_dusk.jpg',
-              width: 1600,
-              height: 1000,
-              extmetadata: {
-                LicenseShortName: { value: 'CC BY-SA 4.0' },
-                LicenseUrl: { value: 'https://creativecommons.org/licenses/by-sa/4.0/' },
-                Artist: { value: '<a href="https://commons.wikimedia.org/wiki/User:Photographer">Photographer</a>' },
-                AttributionRequired: { value: 'true' },
-              },
-            },
-          ],
+function wikimediaFixtureBody(count = WIKIMEDIA_FIXTURE.length) {
+  const pages = {}
+  for (const entry of WIKIMEDIA_FIXTURE) pages[entry.pageid] = wikimediaFixturePage(entry)
+  for (let index = WIKIMEDIA_FIXTURE.length; index < count; index += 1) {
+    const pageid = 200 + index
+    const file = `Page_${index + 1}.jpg`
+    pages[pageid] = {
+      pageid,
+      title: `File:${file}`,
+      index,
+      imageinfo: [{
+        url: `https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/${file}/1280px-${file}`,
+        thumburl: `https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/${file}/1280px-${file}`,
+        descriptionurl: `https://commons.wikimedia.org/wiki/File:${file}`,
+        width: 1200,
+        height: 800,
+        mime: 'image/jpeg',
+        extmetadata: {
+          LicenseShortName: { value: 'CC0 1.0' },
+          Artist: { value: '<a href="https://commons.wikimedia.org/wiki/User:Tester">Tester</a>' },
         },
-        102: {
-          pageid: 102,
-          title: 'File:Unknown licence.jpg',
-          index: 1,
-          imageinfo: [
-            {
-              url: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Unknown_licence.jpg',
-              thumburl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Unknown_licence.jpg/1280px-Unknown_licence.jpg',
-              descriptionurl: 'https://commons.wikimedia.org/wiki/File:Unknown_licence.jpg',
-              width: 800,
-              height: 600,
-              extmetadata: {},
-            },
-          ],
-        },
-      },
-    },
+      }],
+    }
   }
+  return { query: { pages } }
 }
 
 /**
- * Deterministic mocks for the two gate-accepted online wallpaper providers
- * (Openverse, Wikimedia Commons) and their declared image hosts.
+ * Deterministic Wikimedia Commons API + image-host mock for the online wallpaper
+ * studio (0.2.2).
  *
- * The product only ever contacts provider JSON APIs and `imageHosts`-declared
- * image URLs, so fulfilling exactly these hosts keeps the run offline-safe while
- * still exercising Auto failover (`openverseMode`/`wikimediaMode`), typed
- * failures (401/429/5xx/malformed/oversized JSON) and the local image cache.
+ * The product only ever contacts the MediaWiki API (`commons.wikimedia.org`) and
+ * the provider's declared image hosts (`upload.wikimedia.org` /
+ * `thumb.wikimedia.org`), so fulfilling exactly these hosts keeps the run
+ * offline-safe while it still exercises the first-batch request policy, explicit
+ * search/random/refresh, typed failures (429/5xx/malformed/oversized JSON) and
+ * the local image cache. Modes mutate only the API outcome; image requests are
+ * always served from `tinyPng`.
  * @param tinyPng - one valid PNG buffer used for every mocked image response.
- * @param options - fixture overrides (`openverseRows`, `wikimediaBody`).
+ * @param options - fixture overrides (`wikimediaBody`, e.g. the 12-row pager body).
  * @returns the mock handle: `install`, `uninstall`, modes and request logs.
  */
-function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), wikimediaBody = wikimediaFixtureBody() } = {}) {
+function createProviderMock(tinyPng, { wikimediaBody = wikimediaFixtureBody() } = {}) {
   const state = {
-    openverseMode: 'ok',
-    openverseRetryAfter: 21,
     wikimediaMode: 'ok',
-    openverseRequests: [],
+    wikimediaRetryAfterSeconds: 5,
     wikimediaRequests: [],
     imageRequests: [],
   }
@@ -423,10 +459,10 @@ function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), w
     headers: { ...corsHeaders, ...extraHeaders },
     body: JSON.stringify(body),
   })
-  const text = (route, status, body, extraHeaders = {}) => route.fulfill({
+  const text = (route, status, body) => route.fulfill({
     status,
     contentType: 'text/plain',
-    headers: { ...corsHeaders, ...extraHeaders },
+    headers: corsHeaders,
     body,
   })
   const image = (url, route) => {
@@ -434,25 +470,24 @@ function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), w
     return route.fulfill({ status: 200, contentType: 'image/png', headers: corsHeaders, body: tinyPng })
   }
   const install = async (page) => {
-    await page.route('https://api.openverse.org/**', (route) => {
-      const url = new URL(route.request().url())
-      // Image bytes are proxied under /v1/images/<id>/thumb/; the list endpoint
-      // is /v1/images/ itself.
-      if (url.pathname.startsWith('/v1/images/') && url.pathname !== '/v1/images/') {
-        return image(url.href, route)
-      }
-      state.openverseRequests.push(url.href)
-      switch (state.openverseMode) {
+    await page.route('https://commons.wikimedia.org/**', (route) => {
+      const url = route.request().url()
+      state.wikimediaRequests.push(url)
+      switch (state.wikimediaMode) {
         case 'empty':
-          return json(route, { results: [], page: 1, page_count: 0 })
+          return json(route, {})
         case 'rate-limited':
-          return json(route, { detail: 'throttled' }, 429, { 'retry-after': String(state.openverseRetryAfter) })
+          // Retry-After is not a CORS-safelisted response header: expose it so
+          // the cross-origin page can read the server hint (otherwise the client
+          // falls back to its local 30 s cooldown and the typed copy differs).
+          return json(route, { error: { code: 'ratelimited', info: 'throttled' } }, 429, {
+            'retry-after': String(state.wikimediaRetryAfterSeconds),
+            'access-control-expose-headers': 'retry-after',
+          })
         case 'unavailable':
-          return text(route, 500, 'openverse unavailable')
-        case 'auth-required':
-          return text(route, 401, 'openverse requires auth')
+          return text(route, 500, 'wikimedia unavailable')
         case 'invalid-response':
-          return json(route, '{not valid json')
+          return route.fulfill({ status: 200, contentType: 'application/json', headers: corsHeaders, body: '{not valid json' })
         case 'oversized':
           // > WALLPAPER_JSON_MAX_BYTES (2 MiB) with a lying small Content-Length,
           // so the product must cancel the streaming reader instead of trusting
@@ -464,20 +499,6 @@ function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), w
             body: Buffer.alloc(2 * 1024 * 1024 + 8192, 0x20),
           })
         default:
-          return json(route, { results: openverseRows, page: 1, page_count: 1 })
-      }
-    })
-    await page.route('https://commons.wikimedia.org/**', (route) => {
-      const url = route.request().url()
-      state.wikimediaRequests.push(url)
-      switch (state.wikimediaMode) {
-        case 'empty':
-          return json(route, {})
-        case 'unavailable':
-          return text(route, 500, 'wikimedia unavailable')
-        case 'invalid-response':
-          return json(route, { error: { code: 'badvalue' } })
-        default:
           return json(route, wikimediaBody)
       }
     })
@@ -486,7 +507,7 @@ function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), w
     }
   }
   const uninstall = async (page) => {
-    for (const pattern of ['https://api.openverse.org/**', 'https://commons.wikimedia.org/**', 'https://upload.wikimedia.org/**', 'https://thumb.wikimedia.org/**']) {
+    for (const pattern of ['https://commons.wikimedia.org/**', 'https://upload.wikimedia.org/**', 'https://thumb.wikimedia.org/**']) {
       await page.unroute(pattern).catch(() => {})
     }
   }
@@ -494,14 +515,12 @@ function createProviderMock(tinyPng, { openverseRows = openverseFixtureRows(), w
     state,
     install,
     uninstall,
-    get openverseRequests() { return state.openverseRequests },
     get wikimediaRequests() { return state.wikimediaRequests },
     get imageRequests() { return state.imageRequests },
-    get openverseMode() { return state.openverseMode },
-    set openverseMode(value) { state.openverseMode = value },
-    set openverseRetryAfter(value) { state.openverseRetryAfter = value },
     get wikimediaMode() { return state.wikimediaMode },
     set wikimediaMode(value) { state.wikimediaMode = value },
+    get wikimediaRetryAfterSeconds() { return state.wikimediaRetryAfterSeconds },
+    set wikimediaRetryAfterSeconds(value) { state.wikimediaRetryAfterSeconds = value },
   }
 }
 
@@ -1044,11 +1063,12 @@ const DETAIL_SURFACE_COPY = {
     badge: (version) => `Livery 版本 ${version}`,
     copied: '诊断信息已复制',
     boundary: {
-      valid: 'DSH 的插件管理器负责安装和更新 Livery。如果已安装更新，请重新加载此页面，让浏览器加载新的 Livery 客户端。',
-      stale: '已在不重新加载页面的情况下更新；启动画面来自上一个构建。',
-      staleDegraded: 'Livery 客户端已更新，但其样式目录不可用；请重试或重新加载此页面。',
-      mismatch: '需要重新加载：此页面仍在运行上一个 Livery 启动画面。',
-      absent: 'Livery 在此宿主上未启用；安装与更新仍由插件管理器负责。',
+      valid: 'DSH 的插件管理器负责安装和更新 Livery；更新后请重新加载此页面。',
+      stale: '已热更新；启动画面来自上一构建。',
+      staleDegraded: '客户端已更新，但样式目录不可用；请重试或重载。',
+      mismatch: '需要重新加载以完成更新。',
+      mismatchUnsupported: '此 DSH 构建不受支持；请安装匹配的 Livery 版本。',
+      absent: 'Livery 在此宿主未启用；更新仍由插件管理器负责。',
     },
   },
   en: {
@@ -1056,11 +1076,12 @@ const DETAIL_SURFACE_COPY = {
     badge: (version) => `Livery ${version}`,
     copied: 'Diagnostics copied',
     boundary: {
-      valid: "DSH's plugin manager installs and updates Livery. If an update is installed, reload this page so the browser loads the new Livery client.",
-      stale: 'Updated without a page reload; the startup frame came from the previous build.',
-      staleDegraded: 'The Livery client updated, but its catalog is unavailable; Retry or reload this page.',
-      mismatch: 'Reload required: this page still runs the previous Livery startup frame.',
-      absent: 'Livery is not active on this host; the plugin manager still owns installation and updates.',
+      valid: "DSH's plugin manager installs and updates Livery; reload this page after an update.",
+      stale: 'Updated in place; startup frame from previous build.',
+      staleDegraded: 'Client updated; catalog unavailable. Retry or reload.',
+      mismatch: 'Reload required to finish the update.',
+      mismatchUnsupported: 'Unsupported DSH build; install a matching Livery build.',
+      absent: 'Livery inactive here; updates stay in the plugin manager.',
     },
   },
 }
@@ -1236,61 +1257,107 @@ export async function checkPluginDetail(ctx) {
     )
 
     // ---- subject filter: other bundle / row / official item render nothing ----
-    const subjectEvidence = { otherBundle: null, row: null, item: null }
+    // Robust by design: a fresh isolated Web profile can expose only the
+    // dsh-livery bundle (the host hides its base bundles), the Livery bundle's
+    // rows have no configure form, and no official plugins.item may be
+    // registered. When no other subject kind is reachable in this host the check
+    // is recorded as an explicit skip instead of a false failure; when one is
+    // reachable it must render zero Livery detail nodes.
+    const subjectEvidence = { otherBundle: null, row: null, item: null, available: {} }
+    const attemptSubject = async (key, fn) => {
+      try {
+        const value = await fn()
+        if (value !== null && value !== undefined) subjectEvidence[key] = value
+      } catch (error) {
+        subjectEvidence.navigationError = `${key}: ${error instanceof Error ? error.message : String(error)}`
+        // Recover the list view so the next subject kind can still be tried.
+        await backToPluginList(page).catch(() => {})
+      }
+    }
     try {
-      // A row of the Livery bundle is subject.kind === 'row'.
-      const rowButton = page.locator('[data-plugin-detail="dsh-livery"] [data-plugin-rows] [data-plugin-row] button[aria-label]').first()
-      if ((await rowButton.count().catch(() => 0)) > 0) {
+      // A row of the Livery bundle is subject.kind === 'row'. Only the host's
+      // configure-row button opens a detail page: a plain `button[aria-label]`
+      // inside a row is the row enable/disable Switch and clicking it would
+      // disable the Livery client mid-run (the contributed row has no config
+      // form on this host, so no row detail is reachable here).
+      await attemptSubject('row', async () => {
+        const rowButton = page
+          .locator('[data-plugin-detail="dsh-livery"] [data-plugin-rows] [data-plugin-row] button[aria-label^="配置 "], [data-plugin-detail="dsh-livery"] [data-plugin-rows] [data-plugin-row] button[aria-label^="Configure "]')
+          .first()
+        if ((await rowButton.count().catch(() => 0)) === 0) return null
         await rowButton.click({ timeout: 8_000 })
         await page.waitForSelector('[data-plugin-row-detail]', { timeout: 15_000 })
         const rowDetail = await readPluginDetail(page)
-        subjectEvidence.row = { id: rowDetail.row, liveryNodes: rowDetail.liveryNodeCount }
+        const result = { id: rowDetail.row, liveryNodes: rowDetail.liveryNodeCount }
         const rowCrumb = page.locator('[data-plugin-row-detail] [data-window-drag] button').first()
         if ((await rowCrumb.count().catch(() => 0)) > 0) await rowCrumb.click({ timeout: 8_000 }).catch(() => {})
         await page.waitForSelector('[data-plugin-detail="dsh-livery"]', { timeout: 15_000 }).catch(() => {})
+        return result
+      })
+      await backToPluginList(page).catch(() => {})
+      await sleep(500)
+      // The host's plugin inventory (official bundles and ledger items) can
+      // settle a moment after the list paints; give it a bounded window so the
+      // check exercises a real other subject instead of skipping on a race.
+      const extraSubjectDeadline = Date.now() + 8_000
+      while (Date.now() < extraSubjectDeadline) {
+        const otherBundles = await page.locator('[data-plugin-package]:not([data-plugin-package="dsh-livery"])').count().catch(() => 0)
+        const items = await page.locator('[data-plugin-item]').count().catch(() => 0)
+        if (otherBundles > 0 || items > 0) break
+        await sleep(250)
       }
-      await backToPluginList(page)
       // Another installed bundle is subject.kind === 'bundle' with another pkg.
-      const otherCards = page.locator('[data-plugin-package]:not([data-plugin-package="dsh-livery"])')
-      if ((await otherCards.count().catch(() => 0)) > 0) {
+      subjectEvidence.available.bundles = await page.locator('[data-plugin-package]').count().catch(() => 0)
+      subjectEvidence.available.otherBundles = await page.locator('[data-plugin-package]:not([data-plugin-package="dsh-livery"])').count().catch(() => 0)
+      await attemptSubject('otherBundle', async () => {
+        const otherCards = page.locator('[data-plugin-package]:not([data-plugin-package="dsh-livery"])')
+        if ((await otherCards.count().catch(() => 0)) === 0) return null
         const otherCard = otherCards.first()
         const otherName = await otherCard.getAttribute('data-plugin-package')
         const otherTitle = otherCard.locator('button[aria-label^="查看 "], button[aria-label^="View "]').first()
-        if ((await otherTitle.count().catch(() => 0)) > 0) {
-          await otherTitle.click({ timeout: 8_000 })
-          await page.waitForSelector(`[data-plugin-detail="${otherName}"]`, { timeout: 15_000 })
-          const otherDetail = await readPluginDetail(page)
-          subjectEvidence.otherBundle = { name: otherDetail.bundle, liveryNodes: otherDetail.liveryNodeCount }
-          await backToPluginList(page)
-        }
-      }
+        if ((await otherTitle.count().catch(() => 0)) === 0) return null
+        await otherTitle.click({ timeout: 8_000 })
+        await page.waitForSelector(`[data-plugin-detail="${otherName}"]`, { timeout: 15_000 })
+        const otherDetail = await readPluginDetail(page)
+        const result = { name: otherDetail.bundle, liveryNodes: otherDetail.liveryNodeCount }
+        await backToPluginList(page)
+        return result
+      })
       // An official item is subject.kind === 'item'.
-      const itemCards = page.locator('[data-plugin-item]')
-      if ((await itemCards.count().catch(() => 0)) > 0) {
+      subjectEvidence.available.items = await page.locator('[data-plugin-item]').count().catch(() => 0)
+      await attemptSubject('item', async () => {
+        const itemCards = page.locator('[data-plugin-item]')
+        if ((await itemCards.count().catch(() => 0)) === 0) return null
         const itemCard = itemCards.first()
         const itemTitle = itemCard.locator('button[aria-label^="查看 "], button[aria-label^="View "]').first()
-        if ((await itemTitle.count().catch(() => 0)) > 0) {
-          await itemTitle.click({ timeout: 8_000 })
-          await page.waitForSelector('[data-plugin-item-detail]', { timeout: 15_000 })
-          const itemDetail = await readPluginDetail(page)
-          subjectEvidence.item = { id: itemDetail.item, liveryNodes: itemDetail.liveryNodeCount }
-          await backToPluginList(page).catch(() => {})
-        }
-      }
+        if ((await itemTitle.count().catch(() => 0)) === 0) return null
+        await itemTitle.click({ timeout: 8_000 })
+        await page.waitForSelector('[data-plugin-item-detail]', { timeout: 15_000 })
+        const itemDetail = await readPluginDetail(page)
+        const result = { id: itemDetail.item, liveryNodes: itemDetail.liveryNodeCount }
+        await backToPluginList(page).catch(() => {})
+        return result
+      })
     } catch (error) {
       subjectEvidence.navigationError = error instanceof Error ? error.message : String(error)
     }
     const exercised = [subjectEvidence.otherBundle, subjectEvidence.row, subjectEvidence.item].filter((entry) => entry !== null)
-    expect(
-      runner,
-      'plugin.detail-subject-filter',
-      'Livery detail contributions render nothing for other bundles, rows and official items',
-      exercised.length >= 2 &&
-        exercised.every((entry) => entry.liveryNodes === 0) &&
-        (subjectEvidence.otherBundle !== null || subjectEvidence.item !== null),
-      `otherBundle=${JSON.stringify(subjectEvidence.otherBundle)}; row=${JSON.stringify(subjectEvidence.row)}; item=${JSON.stringify(subjectEvidence.item)}; exercised=${exercised.length}; navigationError=${subjectEvidence.navigationError ?? '(none)'}`,
-      subjectEvidence,
-    )
+    if (exercised.length === 0) {
+      runner.skip(
+        'plugin.detail-subject-filter',
+        'Livery detail contributions render nothing for other bundles, rows and official items',
+        `this host exposes no other detail subject to exercise: package cards=${subjectEvidence.available.bundles ?? 'unknown'} (other bundles=${subjectEvidence.available.otherBundles ?? 'unknown'}, dsh-base/dsh-web-app are hidden by the host), official items=${subjectEvidence.available.items ?? 'unknown'}, and the dsh-livery bundle has no configurable row (its rows declare no configure form). The contribution filter itself is covered by unit tests and by the static no-config-slot assertion; navigationError=${subjectEvidence.navigationError ?? '(none)'}`,
+      )
+    } else {
+      expect(
+        runner,
+        'plugin.detail-subject-filter',
+        'Livery detail contributions render nothing for other bundles, rows and official items',
+        exercised.every((entry) => entry.liveryNodes === 0),
+        `otherBundle=${JSON.stringify(subjectEvidence.otherBundle)}; row=${JSON.stringify(subjectEvidence.row)}; item=${JSON.stringify(subjectEvidence.item)}; exercised=${exercised.length}; available=${JSON.stringify(subjectEvidence.available)}; navigationError=${subjectEvidence.navigationError ?? '(none)'}`,
+        subjectEvidence,
+      )
+    }
   } finally {
     // Return to Livery's own panel for the groups that follow.
     try {
@@ -3537,10 +3604,13 @@ async function measureOneStyle(ctx, livery, { previewOnly, uiLabels }) {
  *
  * Network policy under test: opening the wallpaper page performs **no** request
  * (default image tab is Built-in); the first Online activation performs exactly
- * one batch; later tab switches do not refetch. Only the two gate-accepted
- * providers are mocked (Openverse JSON/image host and Wikimedia Commons
- * JSON/image hosts), so Auto failover and typed failures are deterministic and
- * offline-safe.
+ * one batch; later tab switches do not refetch. Wikimedia Commons is the only
+ * offered online provider after Openverse was removed from the offered set in
+ * 0.2.2, so its MediaWiki API and declared image hosts are the only mocked
+ * endpoints; the first batch, provider selection, search/selectability,
+ * attribution and typed failures are deterministic and offline-safe. Behaviour
+ * that only existed for the removed Openverse provider is recorded with
+ * `runner.skip` (never a fake pass).
  */
 export async function checkWallpaperStudio(ctx) {
   const { runner, session, config, state } = ctx
@@ -3551,49 +3621,39 @@ export async function checkWallpaperStudio(ctx) {
   const zh = uiLocale !== 'en'
   const copy = zh
     ? {
-        onlineHint: '打开这个标签页会加载一批壁纸；搜索、随机、换一批和重试只在点击时联网。',
-        noRequestHint: '内置设计完全离线；打开此页面不会发起网络请求。',
+        onlineHint: '打开页签加载一批；其他操作点击请求。',
+        noRequestHint: '内置设计离线加载；在线图片使用缓存。',
         presetsTitle: '背景预设',
         presetNone: '无壁纸',
         presetStyle: '跟随风格',
         classicSummary: '经典内置设计（16）',
         classicPinned: '1 个已置顶',
         currentClassic: '当前（经典）',
-        servedByOpenverse: '由 Openverse 提供',
-        servedByWikimedia: '维基共享资源',
-        retryAfter: '21',
-        openverseNotice: '未获得 Openverse 认可或认证',
+        retryAfter: '5',
         styleDisabled: '请先应用视觉风格',
         styleSelectedText: '正在跟随已应用的视觉风格',
         providerLabel: '来源',
         providerAuto: '自动',
-        providerOpenverse: 'Openverse',
         providerWikimedia: '维基共享资源',
-        capabilityRandom: '没有随机图片',
         emptyBody: '换个关键词搜索',
         search: '搜索',
         random: '随机',
       }
     : {
-        onlineHint: 'Opening this tab loads one batch. Search, Random, Refresh and Retry fetch only when clicked.',
-        noRequestHint: 'Built-in designs are offline; opening this page sends no request.',
+        onlineHint: 'Opening this tab loads one batch; actions click to fetch.',
+        noRequestHint: 'Built-in designs load offline; online uses the cache.',
         presetsTitle: 'Background presets',
         presetNone: 'No wallpaper',
         presetStyle: 'Follow style',
         classicSummary: 'Classic built-in designs (16)',
         classicPinned: '1 pinned above',
         currentClassic: 'Current (Classic)',
-        servedByOpenverse: 'Served by Openverse',
-        servedByWikimedia: 'Served by Wikimedia Commons',
-        retryAfter: '21 seconds',
-        openverseNotice: 'Not endorsed or certified by Openverse',
+        retryAfter: '5',
         styleDisabled: 'Apply a visual style first',
         styleSelectedText: 'Following the applied visual style',
         providerLabel: 'Source',
         providerAuto: 'Auto',
-        providerOpenverse: 'Openverse',
         providerWikimedia: 'Wikimedia Commons',
-        capabilityRandom: 'no random images',
         emptyBody: 'Try a different search',
         search: 'Search',
         random: 'Random',
@@ -3635,9 +3695,8 @@ export async function checkWallpaperStudio(ctx) {
     }
     return false
   }
-  const openverseCount = () => providers.openverseRequests.length
   const wikimediaCount = () => providers.wikimediaRequests.length
-  const allRequestCount = () => openverseCount() + wikimediaCount()
+  const allRequestCount = () => wikimediaCount()
   /** Wait until at least `minimum` result cards are rendered (React commit after a settled status). */
   const waitForResultCards = async (minimum, timeoutMs = 15_000) => {
     await page.waitForFunction(
@@ -3749,19 +3808,20 @@ export async function checkWallpaperStudio(ctx) {
         beforeOnline.status === null &&
         beforeOnline.results.length === 0 &&
         beforeOnline.builtinGallery.gridCount === 8 &&
-        beforeOnline.builtinGallery.noRequestHint.includes(zh ? '不会发起网络请求' : 'sends no request') &&
+        beforeOnline.builtinGallery.noRequestHint.includes(zh ? '内置设计离线加载' : 'Built-in designs load offline') &&
         allRequestCount() === 0 &&
         beforeOnline.servedByPresent === false,
-      `default tab=${beforeOnline.sourceTab.selected}; visible panel=${beforeOnline.sourceTab.visiblePanel}; status=${beforeOnline.status}; results=${beforeOnline.results.length}; grid=${beforeOnline.builtinGallery.gridCount}; openverse=${openverseCount()} wikimedia=${wikimediaCount()}; hint="${oneLine(beforeOnline.builtinGallery.noRequestHint, 120)}"`,
-      { sourceTab: beforeOnline.sourceTab, requests: { openverse: openverseCount(), wikimedia: wikimediaCount() } },
+      `default tab=${beforeOnline.sourceTab.selected}; visible panel=${beforeOnline.sourceTab.visiblePanel}; status=${beforeOnline.status}; results=${beforeOnline.results.length}; grid=${beforeOnline.builtinGallery.gridCount}; wikimedia=${wikimediaCount()}; hint="${oneLine(beforeOnline.builtinGallery.noRequestHint, 120)}"`,
+      { sourceTab: beforeOnline.sourceTab, requests: { wikimedia: wikimediaCount() } },
     )
     const onlineCardText = await textOf('wallpaper-online-card')
     expect(
       runner,
       'copy.wallpaper-online-hint',
       'the online card copy says one batch loads on tab activation and explicit actions are the only other fetches',
-      onlineCardText.includes(zh ? '打开这个标签页会加载一批壁纸' : 'Opening this tab loads one batch') &&
-        onlineCardText.includes(zh ? '只在点击时联网' : 'fetch only when clicked'),
+      onlineCardText.includes(copy.onlineHint) &&
+        onlineCardText.includes(zh ? '来源' : 'Source') &&
+        onlineCardText.includes(copy.providerWikimedia),
       `online card text=${oneLine(onlineCardText, 260)}`,
     )
     const effectsCardText = await textOf('wallpaper-effects-card')
@@ -3983,54 +4043,53 @@ export async function checkWallpaperStudio(ctx) {
       { pinned: classicPinned.builtinGallery.pinned, classic: classicPinned.builtinGallery.classic, afterUnpin: afterUnpin.builtinGallery },
     )
 
-    // ---- online: exactly one batch on the first Online activation ----
+    // ---- online: exactly one Wikimedia Commons batch on the first activation ----
     await selectWallpaperSource(page, 'online')
     const firstBatchArrived = await waitForOnlineStatus('ready', 25_000)
-    await waitForRequestCount(allRequestCount, 1)
-    await waitForResultCards(3)
+    await waitForRequestCount(wikimediaCount, 1)
+    await waitForResultCards(4)
     await sleep(300)
     const firstBatch = await readState()
+    const firstBatchProviders = [...new Set(firstBatch.results.map((result) => result.provider))]
     expect(
       runner,
       'wallpaper.online-first-batch',
-      'the first activation of the Online tab performs exactly one batch for Auto (no mount-time batch)',
+      'the first activation of the Online tab performs exactly one Wikimedia Commons batch for Auto (no mount-time batch)',
       firstBatchArrived === true &&
         firstBatch.status === 'ready' &&
-        firstBatch.results.length >= 3 &&
-        openverseCount() === 1 &&
-        wikimediaCount() === 0 &&
-        firstBatch.results.every((result) => result.provider === 'openverse'),
-      `status=${firstBatch.status}; results=${firstBatch.results.length}; openverse=${openverseCount()} wikimedia=${wikimediaCount()}; providers=${JSON.stringify([...new Set(firstBatch.results.map((result) => result.provider))])}`,
-      { requests: { openverse: providers.openverseRequests, wikimedia: providers.wikimediaRequests }, results: firstBatch.results },
+        firstBatch.results.length === 4 &&
+        wikimediaCount() === 1 &&
+        firstBatchProviders.length === 1 &&
+        firstBatchProviders[0] === 'wikimedia',
+      `status=${firstBatch.status}; results=${firstBatch.results.length}; wikimedia=${wikimediaCount()}; providers=${JSON.stringify(firstBatchProviders)}`,
+      { requests: providers.wikimediaRequests, results: firstBatch.results },
     )
     expect(
       runner,
       'wallpaper.provider-selector',
-      'the Online tab exposes a native provider <select> (Auto, Openverse, Wikimedia Commons) in registry order',
+      'the Online tab exposes a native provider <select> with Auto and Wikimedia Commons only (Openverse is not offered)',
       firstBatch.providerSelect.present === true &&
         firstBatch.providerSelect.tagName === 'select' &&
         firstBatch.providerSelect.id === 'wallpaper-provider' &&
         firstBatch.providerSelect.labelText === copy.providerLabel &&
-        JSON.stringify(firstBatch.providerSelect.options.map((option) => option.value)) === JSON.stringify(['auto', 'openverse', 'wikimedia']) &&
+        JSON.stringify(firstBatch.providerSelect.options.map((option) => option.value)) === JSON.stringify(['auto', 'wikimedia']) &&
         firstBatch.providerSelect.options[0].text === copy.providerAuto &&
-        firstBatch.providerSelect.options[1].text === copy.providerOpenverse &&
-        firstBatch.providerSelect.options[2].text === copy.providerWikimedia,
-      `provider=${JSON.stringify(firstBatch.providerSelect)}`,
+        firstBatch.providerSelect.options[1].text === copy.providerWikimedia &&
+        firstBatch.openverseNoticePresent === false,
+      `provider=${JSON.stringify(firstBatch.providerSelect)}; openverseNotice=${firstBatch.openverseNoticePresent}`,
       { providerSelect: firstBatch.providerSelect },
     )
     expect(
       runner,
       'wallpaper.provider-served-by',
       'Auto names the provider that served the results in a polite live region',
-      firstBatch.servedByPresent === true && firstBatch.servedByText.includes('Openverse'),
+      firstBatch.servedByPresent === true && firstBatch.servedByText.includes(copy.providerWikimedia),
       `servedBy="${oneLine(firstBatch.servedByText, 120)}"; present=${firstBatch.servedByPresent}`,
     )
-    expect(
-      runner,
+    runner.skip(
       'wallpaper.openverse-attribution-notice',
       'the Openverse non-endorsement notice is shown when Openverse serves Auto results or is selected',
-      firstBatch.openverseNoticePresent === true && firstBatch.openverseNoticeText.includes(copy.openverseNotice),
-      `notice present=${firstBatch.openverseNoticePresent}; text="${oneLine(firstBatch.openverseNoticeText, 180)}"`,
+      'Openverse was removed from the offered provider set in 0.2.2: the notice element and its copy no longer exist and the provider is never offered, so this check is recorded as a skip instead of a fake pass',
     )
     const mainOrder = firstBatch.mainCardOrder ?? []
     expect(
@@ -4094,26 +4153,28 @@ export async function checkWallpaperStudio(ctx) {
       `requests ${requestsBeforeSwitches}→${allRequestCount()}; status=${afterSwitches.status}; results=${afterSwitches.results.length}`,
     )
 
-    // ---- explicit Openverse search through Auto ----
-    const beforeSearch = openverseCount()
+    // ---- explicit search through Auto (the only offered provider) ----
+    const beforeSearch = wikimediaCount()
     await page.locator('[data-testid="wallpaper-search"]').fill('aurora')
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
-    await waitForRequestCount(openverseCount, beforeSearch + 1)
+    await waitForRequestCount(wikimediaCount, beforeSearch + 1)
     await waitForOnlineStatus('ready')
-    await waitForResultCards(3)
+    await waitForResultCards(4)
     await sleep(300)
     const searched = await readState()
-    const searchRequest = providers.openverseRequests[providers.openverseRequests.length - 1] ?? ''
+    const searchRequest = providers.wikimediaRequests[providers.wikimediaRequests.length - 1] ?? ''
     expect(
       runner,
       'wallpaper.online-search',
-      'explicit search with Auto queries the first provider and renders the mocked results',
-      openverseCount() === beforeSearch + 1 &&
+      'explicit search with Auto queries Wikimedia Commons (the only offered provider) and renders the mocked results',
+      wikimediaCount() === beforeSearch + 1 &&
         searched.status === 'ready' &&
-        searched.results.length === 3 &&
-        (searched.results[0]?.label ?? '').includes('Aurora') &&
-        searchRequest.includes('q=aurora'),
-      `openverse ${beforeSearch}→${openverseCount()}; status=${searched.status}; results=${searched.results.length}; request=${oneLine(searchRequest, 200)}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 120)}"`,
+        searched.results.length === 4 &&
+        searched.results.every((result) => result.provider === 'wikimedia') &&
+        (searched.results[0]?.label ?? '').includes(WIKIMEDIA_FIXTURE[0].displayTitle) &&
+        searchRequest.includes('generator=search') &&
+        searchRequest.includes('gsrsearch=aurora'),
+      `wikimedia ${beforeSearch}→${wikimediaCount()}; status=${searched.status}; results=${searched.results.length}; request=${oneLine(searchRequest, 200)}; firstLabel="${oneLine(searched.results[0]?.label ?? '', 120)}"`,
       { searchRequest },
     )
     const nonSelectable = page.locator('[data-testid="wallpaper-result"][data-selectable="false"]')
@@ -4124,9 +4185,9 @@ export async function checkWallpaperStudio(ctx) {
     expect(
       runner,
       'wallpaper.online-selectability',
-      'results carry data-provider/data-selectable; a licence-null result is read-only and cannot become the selection',
-      searched.results.every((result) => result.provider === 'openverse') &&
-        searched.results.filter((result) => result.selectable === 'true').length === 2 &&
+      'results carry data-provider/data-selectable; the licence-null Wikimedia Commons result is read-only and cannot become the selection',
+      searched.results.every((result) => result.provider === 'wikimedia') &&
+        searched.results.filter((result) => result.selectable === 'true').length === 3 &&
         searched.results.filter((result) => result.selectable === 'false').length === 1 &&
         searched.results.find((result) => result.selectable === 'false')?.ariaDisabled === 'true' &&
         JSON.stringify(storedAfterNonSelectable?.selection) === JSON.stringify(storedBeforeNonSelectable?.selection),
@@ -4135,9 +4196,9 @@ export async function checkWallpaperStudio(ctx) {
     )
 
     // ---- attribution links + recent history from applied online results ----
-    const attributionResult = searched.results[1] ?? searched.results[0] ?? null
+    const attributionFixture = WIKIMEDIA_FIXTURE[1]
+    const attributionResult = searched.results[1] ?? null
     const appliedOnlineUrl = attributionResult?.url ?? ''
-    const appliedOnlineTitle = (attributionResult?.label ?? '').split(' · ')[0]
     await page.locator('[data-testid="wallpaper-result"]').nth(1).click({ timeout: 8_000 })
     await waitForStoredRemote(page, appliedOnlineUrl)
     const onlineLayer = await waitForCacheOnlyLayer(page, appliedOnlineUrl)
@@ -4152,8 +4213,8 @@ export async function checkWallpaperStudio(ctx) {
         onlineApplied.styleText.includes('background-image') &&
         onlineLayer.hasBlob && onlineLayer.blobFetchOk && !onlineLayer.rawInStyle &&
         onlineApplied.heroAttributionPresent &&
-        appliedOnlineTitle.length > 0 &&
-        onlineApplied.heroAttributionText.includes(appliedOnlineTitle),
+        appliedOnlineUrl === attributionFixture.fullUrl &&
+        onlineApplied.heroAttributionText.includes(attributionFixture.displayTitle),
       `url=${oneLine(appliedOnlineUrl, 140)}; blob=${onlineLayer.hasBlob} fetchOk=${onlineLayer.blobFetchOk} rawInStyle=${onlineLayer.rawInStyle}; attr=${onlineApplied.attribute !== null}; attribution="${oneLine(onlineApplied.heroAttributionText, 160)}"`,
       { storedSelection: onlineStored?.selection ?? null },
     )
@@ -4166,14 +4227,15 @@ export async function checkWallpaperStudio(ctx) {
         onlineApplied.attributionLinks.length === 3 &&
         JSON.stringify(linkKinds) === JSON.stringify(['creator', 'license', 'source']) &&
         onlineApplied.attributionLinks.every((link) => /^https:\/\//.test(link.href ?? '') && link.target === '_blank' && (link.rel ?? '').includes('noreferrer') && (link.rel ?? '').includes('noopener') && (link.text ?? '').length > 0) &&
-        onlineApplied.heroAttributionText.includes('Aurora Two') &&
-        onlineApplied.heroAttributionText.includes('Artist') &&
-        onlineApplied.heroAttributionText.includes('CC BY 4.0') &&
+        onlineApplied.heroAttributionText.includes(attributionFixture.displayTitle) &&
+        onlineApplied.heroAttributionText.includes(attributionFixture.creator) &&
+        onlineApplied.heroAttributionText.includes(attributionFixture.license.name) &&
+        onlineApplied.heroAttributionText.includes(copy.providerWikimedia) &&
         onlineStored?.selection?.kind === 'remote' &&
         onlineStored.selection.url === appliedOnlineUrl &&
-        onlineStored.selection.provenance?.creatorUrl === 'https://openverse.org/user/artist' &&
-        onlineStored.selection.provenance?.licenseUrl === 'https://creativecommons.org/licenses/by/4.0/' &&
-        onlineStored.selection.provenance?.sourceUrl === 'https://openverse.org/image/ov-acceptance-2',
+        onlineStored.selection.provenance?.creatorUrl === attributionFixture.creatorUrl &&
+        onlineStored.selection.provenance?.licenseUrl === attributionFixture.license.url &&
+        onlineStored.selection.provenance?.sourceUrl === attributionFixture.sourceUrl,
       `links=${JSON.stringify(onlineApplied.attributionLinks)}; hero="${oneLine(onlineApplied.heroAttributionText, 160)}"; provenance=${JSON.stringify(onlineStored?.selection?.provenance ?? null)}`,
       { links: onlineApplied.attributionLinks, provenance: onlineStored?.selection?.provenance ?? null },
     )
@@ -4195,8 +4257,10 @@ export async function checkWallpaperStudio(ctx) {
         recentOne.recentCard.items[0]?.cached === 'true',
       `card=${recentOne.recentCard.present}; items=${JSON.stringify(recentOne.recentCard.items)}; applied=${oneLine(appliedOnlineUrl, 120)}`,
     )
-    // second applied result: history grows, newest first; CC0 has no licence URL
-    // so only creator/source links render while the licence stays plain text.
+    // second applied result: history grows, newest first; the CC0 row has no
+    // licence URL so only creator/source links render while the licence stays
+    // plain text.
+    const plainFixture = WIKIMEDIA_FIXTURE[0]
     const secondAppliedResult = searched.results[0] ?? null
     const secondUrl = secondAppliedResult?.url ?? ''
     await page.locator('[data-testid="wallpaper-result"]').nth(0).click({ timeout: 8_000 })
@@ -4218,44 +4282,43 @@ export async function checkWallpaperStudio(ctx) {
       runner,
       'wallpaper.attribution-url-optional',
       'creator/licence/source links render only when the corresponding URL exists (CC0 stays plain text)',
-      optionalAttribution.attributionLinks.length === 2 &&
+      secondUrl === plainFixture.fullUrl &&
+        optionalAttribution.attributionLinks.length === 2 &&
         !optionalAttribution.attributionLinks.some((link) => link.kind === 'license') &&
         optionalAttribution.attributionLinks.some((link) => link.kind === 'creator') &&
         optionalAttribution.attributionLinks.some((link) => link.kind === 'source') &&
-        optionalAttribution.heroAttributionText.includes('CC0'),
-      `links=${JSON.stringify(optionalAttribution.attributionLinks.map((link) => link.kind))}; hero="${oneLine(optionalAttribution.heroAttributionText, 140)}"`,
+        optionalAttribution.heroAttributionText.includes(plainFixture.license.name),
+      `url=${oneLine(secondUrl, 140)}; links=${JSON.stringify(optionalAttribution.attributionLinks.map((link) => link.kind))}; hero="${oneLine(optionalAttribution.heroAttributionText, 140)}"`,
     )
 
     // ---- provider switching clears state and never fetches implicitly ----
     const requestsBeforeProviderSwitch = allRequestCount()
     await selectProvider('wikimedia')
     const afterWikimediaSwitch = await readState()
-    await selectProvider('openverse')
-    const afterOpenverseSwitch = await readState()
     await selectProvider('auto')
     const afterAutoSwitch = await readState()
     await sleep(400)
     expect(
       runner,
       'wallpaper.provider-switch-no-fetch',
-      'changing the provider clears results to idle, refreshes the Openverse notice and never fetches implicitly',
+      'changing the provider clears results to idle and never fetches implicitly; the removed Openverse provider is not offered',
       afterWikimediaSwitch.status === null &&
         afterWikimediaSwitch.results.length === 0 &&
         afterWikimediaSwitch.servedByPresent === false &&
         afterWikimediaSwitch.openverseNoticePresent === false &&
-        afterOpenverseSwitch.openverseNoticePresent === true &&
+        afterAutoSwitch.status === null &&
+        afterAutoSwitch.results.length === 0 &&
         afterAutoSwitch.openverseNoticePresent === false &&
         allRequestCount() === requestsBeforeProviderSwitch,
-      `after wikimedia: status=${afterWikimediaSwitch.status} results=${afterWikimediaSwitch.results.length} notice=${afterWikimediaSwitch.openverseNoticePresent}; after openverse: notice=${afterOpenverseSwitch.openverseNoticePresent}; after auto: notice=${afterAutoSwitch.openverseNoticePresent}; requests ${requestsBeforeProviderSwitch}→${allRequestCount()}`,
-      { afterWikimediaSwitch: afterWikimediaSwitch.sourceTab, requests: allRequestCount() },
+      `after wikimedia: status=${afterWikimediaSwitch.status} results=${afterWikimediaSwitch.results.length}; after auto: status=${afterAutoSwitch.status} results=${afterAutoSwitch.results.length}; requests ${requestsBeforeProviderSwitch}→${allRequestCount()}`,
+      { requests: allRequestCount() },
     )
 
     // ---- JSON cap: >2 MiB provider body with a lying Content-Length ----
-    // Pin Openverse: Auto would fail over to the healthy second provider and the
-    // typed invalid-response would never reach the UI.
-    await selectProvider('openverse')
-    providers.openverseMode = 'oversized'
-    const beforeOversized = openverseCount()
+    // Auto is safe here: Wikimedia Commons is the only offered provider, so the
+    // typed invalid-response reaches the UI without a second-provider fallback.
+    providers.wikimediaMode = 'oversized'
+    const beforeOversized = wikimediaCount()
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
     await waitForOnlineStatus('invalid-response', 25_000)
     const oversizedState = await readState()
@@ -4263,24 +4326,24 @@ export async function checkWallpaperStudio(ctx) {
       runner,
       'wallpaper.online-json-cap',
       'streaming search JSON over the 2 MiB cap fails the request (reader cancelled) instead of surfacing results',
-      openverseCount() === beforeOversized + 1 &&
+      wikimediaCount() === beforeOversized + 1 &&
         oversizedState.status === 'invalid-response' &&
         oversizedState.results.length === 0,
-      `openverse ${beforeOversized}→${openverseCount()}; status=${oversizedState.status}; results=${oversizedState.results.length}`,
+      `wikimedia ${beforeOversized}→${wikimediaCount()}; status=${oversizedState.status}; results=${oversizedState.results.length}`,
     )
-    providers.openverseMode = 'ok'
+    providers.wikimediaMode = 'ok'
 
-    // ---- typed rate limit + retry ----
-    providers.openverseMode = 'rate-limited'
-    providers.openverseRetryAfter = 21
-    const beforeRateLimited = openverseCount()
+    // ---- typed rate limit + Retry-After + retry ----
+    providers.wikimediaMode = 'rate-limited'
+    providers.wikimediaRetryAfterSeconds = 5
+    const beforeRateLimited = wikimediaCount()
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
     await waitForOnlineStatus('rate-limited', 20_000)
     const rateLimited = await readState()
     expect(
       runner,
       'wallpaper.provider-rate-limited',
-      'a 429 becomes data-status="rate-limited" with the Retry-After copy and Retry/Built-in/None actions',
+      'a 429 from Wikimedia Commons becomes data-status="rate-limited" with the Retry-After copy and Retry/Built-in/None actions',
       rateLimited.status === 'rate-limited' &&
         rateLimited.onlineError.present === true &&
         rateLimited.onlineError.role === 'alert' &&
@@ -4289,27 +4352,30 @@ export async function checkWallpaperStudio(ctx) {
         rateLimited.onlineError.none === true &&
         rateLimited.retryAfterPresent === true &&
         rateLimited.retryAfterText.includes(copy.retryAfter) &&
-        openverseCount() === beforeRateLimited + 1,
-      `status=${rateLimited.status}; error=${JSON.stringify(rateLimited.onlineError)}; retryAfter="${oneLine(rateLimited.retryAfterText, 120)}"; openverse ${beforeRateLimited}→${openverseCount()}`,
+        wikimediaCount() === beforeRateLimited + 1,
+      `status=${rateLimited.status}; error=${JSON.stringify(rateLimited.onlineError)}; retryAfter="${oneLine(rateLimited.retryAfterText, 120)}"; wikimedia ${beforeRateLimited}→${wikimediaCount()}`,
       { error: rateLimited.onlineError, retryAfter: rateLimited.retryAfterText },
     )
-    providers.openverseMode = 'ok'
-    const beforeRetry = openverseCount()
+    providers.wikimediaMode = 'ok'
+    // The studio honours the server Retry-After as a client-side cooldown; wait
+    // it out so Retry issues a fresh request instead of replaying the 429 state.
+    await sleep(6_500)
+    const beforeRetry = wikimediaCount()
     await page.locator('[data-testid="wallpaper-online-retry"]').click({ timeout: 8_000 })
     await waitForOnlineStatus('ready', 20_000)
-    await waitForRequestCount(openverseCount, beforeRetry + 1)
-    await waitForResultCards(3)
+    await waitForRequestCount(wikimediaCount, beforeRetry + 1)
+    await waitForResultCards(4)
     const retried = await readState()
     expect(
       runner,
       'wallpaper.online-retry',
       'Retry repeats the failed request and renders the recovered results',
-      retried.status === 'ready' && retried.results.length === 3 && openverseCount() === beforeRetry + 1,
-      `status=${retried.status}; results=${retried.results.length}; openverse ${beforeRetry}→${openverseCount()}`,
+      retried.status === 'ready' && retried.results.length === 4 && wikimediaCount() === beforeRetry + 1,
+      `status=${retried.status}; results=${retried.results.length}; wikimedia ${beforeRetry}→${wikimediaCount()}`,
     )
 
     // ---- explicit empty is a settled state, not a failure ----
-    providers.openverseMode = 'empty'
+    providers.wikimediaMode = 'empty'
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
     await waitForOnlineStatus('empty', 20_000)
     const emptyState = await readState()
@@ -4327,51 +4393,31 @@ export async function checkWallpaperStudio(ctx) {
       `status=${emptyState.status}; empty=${JSON.stringify(emptyState.onlineEmpty)}; error=${emptyState.onlineError.present}`,
     )
 
-    // ---- Auto failover: first provider 500, second succeeds and is named ----
-    await selectProvider('auto')
-    providers.openverseMode = 'unavailable'
-    providers.wikimediaMode = 'ok'
-    const beforeFailover = { openverse: openverseCount(), wikimedia: wikimediaCount() }
-    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
-    await waitForOnlineStatus('ready', 25_000)
-    await waitForRequestCount(wikimediaCount, beforeFailover.wikimedia + 1)
-    await waitForResultCards(2)
-    await sleep(300)
-    const failoverState = await readState()
-    expect(
-      runner,
+    // ---- Auto failover is no longer observable with one offered provider ----
+    runner.skip(
       'wallpaper.provider-failover',
       'Auto fails over from a failing first provider to the next gate provider and names the provider that served the results',
-      failoverState.status === 'ready' &&
-        failoverState.results.length === 2 &&
-        failoverState.results.every((result) => result.provider === 'wikimedia') &&
-        openverseCount() === beforeFailover.openverse + 1 &&
-        wikimediaCount() === beforeFailover.wikimedia + 1 &&
-        failoverState.servedByPresent === true &&
-        failoverState.servedByText.includes(copy.servedByWikimedia) &&
-        failoverState.openverseNoticePresent === false,
-      `status=${failoverState.status}; results=${JSON.stringify(failoverState.results.map((result) => result.provider))}; requested openverse +${openverseCount() - beforeFailover.openverse} wikimedia +${wikimediaCount() - beforeFailover.wikimedia}; servedBy="${oneLine(failoverState.servedByText, 140)}"; notice=${failoverState.openverseNoticePresent}`,
+      'Openverse was removed from the offered provider set in 0.2.2; Auto now offers only Wikimedia Commons, so a two-provider failover cannot be exercised through the UI. The registry failover loop is covered by unit tests with synthetic providers.',
     )
 
     // ---- a pinned provider makes exactly one attempt and never silently changes ----
-    await selectProvider('openverse')
-    providers.openverseMode = 'unavailable'
-    const beforePinnedFailure = { openverse: openverseCount(), wikimedia: wikimediaCount() }
+    await selectProvider('wikimedia')
+    providers.wikimediaMode = 'unavailable'
+    const beforePinnedFailure = wikimediaCount()
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
     await waitForOnlineStatus('unavailable', 20_000)
     const pinnedFailure = await readState()
     expect(
       runner,
       'wallpaper.provider-pinned-no-failover',
-      'a pinned provider that fails produces one typed failure with Retry/Built-in/None and never falls back to another provider',
+      'a pinned Wikimedia Commons failure produces one typed failure with Retry/Built-in/None and never falls back to another provider',
       pinnedFailure.status === 'unavailable' &&
         pinnedFailure.onlineError.present === true &&
         pinnedFailure.onlineError.retry === true &&
         pinnedFailure.onlineError.builtin === true &&
         pinnedFailure.onlineError.none === true &&
-        openverseCount() === beforePinnedFailure.openverse + 1 &&
-        wikimediaCount() === beforePinnedFailure.wikimedia,
-      `status=${pinnedFailure.status}; error=${JSON.stringify(pinnedFailure.onlineError)}; openverse +${openverseCount() - beforePinnedFailure.openverse} wikimedia +${wikimediaCount() - beforePinnedFailure.wikimedia}`,
+        wikimediaCount() === beforePinnedFailure + 1,
+      `status=${pinnedFailure.status}; error=${JSON.stringify(pinnedFailure.onlineError)}; wikimedia ${beforePinnedFailure}→${wikimediaCount()}`,
     )
     // Built-in escape switches the visible source tab without a request.
     await page.locator('[data-testid="wallpaper-online-builtin"]').click({ timeout: 8_000 })
@@ -4383,29 +4429,27 @@ export async function checkWallpaperStudio(ctx) {
       'the failure Built-in escape switches to the offline gallery without any provider request',
       escaped.sourceTab.selected === 'wallpaper-source-tab-builtin' &&
         escaped.sourceTab.visiblePanel === 'wallpaper-source-panel-builtin' &&
-        allRequestCount() === beforePinnedFailure.openverse + beforePinnedFailure.wikimedia + 1,
-      `selected=${escaped.sourceTab.selected}; panel=${escaped.sourceTab.visiblePanel}; requests openverse=${openverseCount()} wikimedia=${wikimediaCount()}`,
+        allRequestCount() === beforePinnedFailure + 1,
+      `selected=${escaped.sourceTab.selected}; panel=${escaped.sourceTab.visiblePanel}; wikimedia requests=${wikimediaCount()}`,
     )
     await selectWallpaperSource(page, 'online')
-    providers.openverseMode = 'ok'
-
-    // ---- Random pins the first provider that declares it; Refresh repeats it ----
-    await selectProvider('wikimedia')
     providers.wikimediaMode = 'ok'
+
+    // ---- Random pins the provider that declares it; Refresh repeats it ----
     const beforeRandom = wikimediaCount()
     await page.locator('[data-testid="wallpaper-random"]').click({ timeout: 8_000 })
     await waitForRequestCount(wikimediaCount, beforeRandom + 1)
     await waitForOnlineStatus('ready', 20_000)
-    await waitForResultCards(2)
+    await waitForResultCards(4)
     await sleep(300)
     const randomState = await readState()
     const randomRequest = providers.wikimediaRequests[providers.wikimediaRequests.length - 1] ?? ''
     expect(
       runner,
       'wallpaper.online-random',
-      'Random pins the provider that declares it and requests its random gallery',
+      'Random pins Wikimedia Commons (the offered provider that declares random) and requests its random gallery',
       wikimediaCount() === beforeRandom + 1 &&
-        randomState.results.length > 0 &&
+        randomState.results.length === 4 &&
         randomState.results.every((result) => result.provider === 'wikimedia') &&
         randomRequest.includes('generator=random'),
       `wikimedia ${beforeRandom}→${wikimediaCount()}; results=${randomState.results.length}; request=${oneLine(randomRequest, 220)}`,
@@ -4422,21 +4466,23 @@ export async function checkWallpaperStudio(ctx) {
       wikimediaCount() === beforeRefresh + 1,
       `wikimedia ${beforeRefresh}→${wikimediaCount()}`,
     )
-    // Capability-gated Random: pinned Openverse has no random capability.
-    await selectProvider('openverse')
-    const openverseCapability = await readState()
-    const randomDisabled = await page.locator('[data-testid="wallpaper-random"]').isDisabled().catch(() => false)
+    // Capability-gated actions: every offered provider declares both
+    // capabilities, so Random stays enabled and no disabled reason is rendered.
+    await selectProvider('auto')
+    const autoCapability = await readState()
+    const autoRandomEnabled = (await page.locator('[data-testid="wallpaper-random"]').isDisabled().catch(() => true)) === false
     await selectProvider('wikimedia')
-    const randomEnabled = await page.locator('[data-testid="wallpaper-random"]').isDisabled().catch(() => true) === false
+    const pinnedCapability = await readState()
+    const pinnedRandomEnabled = (await page.locator('[data-testid="wallpaper-random"]').isDisabled().catch(() => true)) === false
     expect(
       runner,
       'wallpaper.provider-capabilities',
-      'capability-gated Random is disabled with a described reason for a provider that declares no random images',
-      openverseCapability.capabilityReasonPresent === true &&
-        openverseCapability.capabilityReasonText.includes(copy.capabilityRandom) &&
-        randomDisabled === true &&
-        randomEnabled === true,
-      `openverse reason="${oneLine(openverseCapability.capabilityReasonText, 180)}" disabled=${randomDisabled}; wikimedia enabled=${randomEnabled}`,
+      'capability-gated Random resolves for every offered provider (Auto and Wikimedia Commons both declare random images)',
+      autoCapability.capabilityReasonPresent === false &&
+        autoRandomEnabled === true &&
+        pinnedCapability.capabilityReasonPresent === false &&
+        pinnedRandomEnabled === true,
+      `auto reason present=${autoCapability.capabilityReasonPresent} randomDisabled=${!autoRandomEnabled}; wikimedia reason present=${pinnedCapability.capabilityReasonPresent} randomDisabled=${!pinnedRandomEnabled}`,
     )
 
     // ---- Follow style: CSS-only layer, no blob/IndexedDB/cache record ----
@@ -5049,10 +5095,11 @@ export async function checkWallpaperStudio(ctx) {
       builtinTotal: initial.builtinGallery.allIds.length,
       builtin: builtinApplied.selectedBuiltin,
       online: {
-        firstBatchRequests: { openverse: firstBatch.status === 'ready' ? 1 : 0, wikimedia: 0 },
-        providerRequests: { openverse: openverseCount(), wikimedia: wikimediaCount() },
-        servedBy: failoverState.servedByText,
-        failover: true,
+        offeredProviders: ['auto', 'wikimedia'],
+        firstBatchRequests: { wikimedia: firstBatch.status === 'ready' ? 1 : 0 },
+        providerRequests: { wikimedia: wikimediaCount() },
+        servedBy: firstBatch.servedByText,
+        pinnedFailure: pinnedFailure.status,
         rateLimited: rateLimited.status,
         retrySucceeded: retried.results.length > 0,
         libraryRemoved: firstBatch.libraryElementCount === 0 && firstBatch.categoryChipCount === 0,
@@ -5120,9 +5167,9 @@ export async function checkLayoutStructure(ctx) {
     try { expect(runner, id, title, Boolean(condition), detail) } catch (error) { failSafe(id, title, error) }
   }
   let routed = false
-  // Provider-registry fixtures: 12 Openverse results exercise the online pager;
-  // the only requests are the gate-accepted provider APIs/image hosts.
-  const layoutProviders = createProviderMock(seedImage, { openverseRows: openverseFixtureRows(12) })
+  // Provider-registry fixtures: 12 Wikimedia Commons results exercise the online
+  // pager; the only requests are the offered provider's API/image hosts.
+  const layoutProviders = createProviderMock(seedImage, { wikimediaBody: wikimediaFixtureBody(12) })
   try {
     await layoutProviders.install(page)
     await page.route('https://images.example.test/**', (route) =>
@@ -5263,7 +5310,7 @@ export async function checkLayoutStructure(ctx) {
       wallpaperWide.overflow.horizontal === false,
       `scrollWidth=${wallpaperWide.overflow.scrollWidth} clientWidth=${wallpaperWide.overflow.clientWidth}`)
 
-    // online pager (first Online batch renders 12 Openverse mock results → max 6 per page).
+    // online pager (first Online batch renders 12 Wikimedia Commons mock results → max 6 per page).
     await selectSource('online')
     await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length > 0, undefined, { timeout: 12_000 }).catch(() => {})
     const pager = await page.evaluate(() => ({
