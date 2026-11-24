@@ -76,7 +76,7 @@ Before packaging, acceptance must:
    (and on one `0.2.1`-line Web scope when that line's manager proves it can
    apply the candidate in process). The harness mode and evidence schema are
    implemented; a local probe on the working-tree candidate **passed**
-   (`0.2.1` `78f1c8d1…` → `0.2.2` candidate `bd5594d3…`, 35 pass / 0 fail /
+   (`0.2.1` `78f1c8d1…` → `0.2.2` candidate `3b2e4b38…`, 35 pass / 0 fail /
    2 skip / 1 warn, no page reload, stale boot observed, catalog re-adopted,
    manager `applied`). No schema-v3 evidence is committed yet, so the formal
    transition remains to be re-run and bound on the frozen candidate. The claim
@@ -84,7 +84,7 @@ Before packaging, acceptance must:
 
    Local working-tree smoke (explicitly not acceptance evidence): the fresh
    Web quick run passed **88 / 0 / 5 skip / 1 warn**, and the update probe
-   passed **35 / 0 / 2 skip / 1 warn** on candidate `bd5594d3…`; neither run has
+   passed **35 / 0 / 2 skip / 1 warn** on candidate `3b2e4b38…`; neither run has
    committed evidence, and both must be repeated on the frozen candidate.
 3. **Bind the accepted transition in evidence schema v3** and keep that evidence
    file next to the ordinary fresh-install files for the same candidate. The
@@ -213,10 +213,10 @@ renders the transition table.
 
 | Measure | Current working-tree candidate | Budget | Accepted `0.2.1` probe |
 |---|---|---|---|
-| Client bundle gzip | **73,632 B** build gate (`lib/build-report.json`; 280,236 B raw) / **73,678 B** acceptance probe (280,303 B served raw) — **50 B headroom at the gate** | **73,728 B** (72 KiB) | 60,902 B (cap 61,440 B / 60 KiB) |
+| Client bundle gzip | **73,442 B** build gate (`lib/build-report.json`; 279,075 B raw) / **73,488 B** acceptance probe (279,142 B served raw) — **240 B headroom at the gate** | **73,728 B** (72 KiB) | 60,902 B (cap 61,440 B / 60 KiB) |
 | Largest livery/boot CSS | **10,366 B** (bauhaus) | **14,336 B** (14 KiB) | 9,066 B (cap 13,312 B) |
 | Host bundle gzip | **15,506 B** (61,649 B raw) | **368,640 B** (360 KiB) | — |
-| Package tarball | **3,420,694 B** (993 files; the probe above ran on `bd5594d3…`; any later packaged-doc edit changes the tarball and requires a re-run on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
+| Package tarball | **3,420,829 B** (993 files; the probe above ran on `3b2e4b38…`; any later packaged-doc edit changes the tarball and requires a re-run on the frozen candidate) | **4,194,304 B** (4 MiB) | 3,529,494 B |
 
 The client/host/CSS numbers come from the latest working-tree build and the fresh
 Web quick acceptance probe. The acceptance probe now compresses the served
