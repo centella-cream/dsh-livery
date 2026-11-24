@@ -482,6 +482,21 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     return b.kind === 'upload' && a.key === b.key
   }
 
+  /**
+   * Whether two selections resolve to the same rendered image. Provenance is
+   * credit metadata, not image identity: a credit-only update (for example a
+   * preset applying its attribution after the blob was cached) must keep the
+   * local object URL instead of blanking the wallpaper until reload.
+   */
+  const sameSelectionImage = (a: WallpaperSelection, b: WallpaperSelection): boolean => {
+    if (a === undefined || b === undefined) return a === b
+    if (a.kind !== b.kind) return false
+    if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
+    if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
+    if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
+    return b.kind === 'upload' && a.key === b.key
+  }
+
   const hydrate = (): void => {
     if (storage === undefined) return
     let text: string | null
@@ -641,6 +656,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   const setState = (patch: WallpaperStatePatch, stateOptions: WallpaperStateOptions = {}): WallpaperState => {
     if (disposed) return snapshot
     const hasSelection = Object.prototype.hasOwnProperty.call(patch, 'selection')
+    const previousSelection = selection
     const nextSelection = hasSelection ? normalizeWallpaperSelection(patch.selection) : selection
     // Following the style is only possible with an active catalog token context:
     // reject the transition instead of painting an empty layer. Changes while a
@@ -673,7 +689,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       : normalizeWallpaperRevision(stateOptions.revision)
     // A local write owns the new revision even when it reuses a stored counter.
     winnerSourceId = sourceId
-    if (selectionChanged || stateOptions.blob !== undefined) replaceLocalImageUrl(stateOptions.blob)
+    if (stateOptions.blob !== undefined || !sameSelectionImage(previousSelection, nextSelection)) {
+      replaceLocalImageUrl(stateOptions.blob)
+    }
     apply()
     if (selectionChanged) selectionPersistable = stateOptions.persist !== false
     else if (stateOptions.persist === false) selectionPersistable = false

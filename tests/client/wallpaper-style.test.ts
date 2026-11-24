@@ -743,6 +743,37 @@ describe('style controller persistence', () => {
   })
 })
 
+describe('remote provenance updates', () => {
+  it('keeps the rendered object URL when only provenance changes', () => {
+    const { controller, objectUrls } = harness()
+    const blob = new Blob(['image'])
+    controller.setState(
+      { selection: { kind: 'remote', url: 'https://cdn.example/a.jpg' } },
+      { blob, flush: true },
+    )
+    expect(controller.getRenderImage()).toBeTruthy()
+    expect(objectUrls.create).toHaveBeenCalledTimes(1)
+
+    controller.setState({
+      selection: {
+        kind: 'remote',
+        url: 'https://cdn.example/a.jpg',
+        provenance: { providerId: 'openverse', title: 'Sea' },
+      },
+    }, { flush: true })
+
+    // A credit-only update must not revoke the local image and blank the
+    // wallpaper until reload.
+    expect(objectUrls.revoke).not.toHaveBeenCalled()
+    expect(controller.getRenderImage()).toBeTruthy()
+    expect(controller.getSnapshot().selection).toMatchObject({
+      kind: 'remote',
+      provenance: { providerId: 'openverse' },
+    })
+    controller.dispose()
+  })
+})
+
 describe('style preset application', () => {
   it('applies a style preset target through the sidecar write path and verifies its snapshot', () => {
     const storage = new MemoryStorage()
