@@ -157,7 +157,7 @@ describe('preset card — import diff preview', () => {
     expect(markup).toContain('Style midnight')
     // Position 100/0 is the top-right cell; effects show all four numbers.
     expect(markup).toContain('Top right')
-    expect(markup).toContain('Blur 2 px')
+    expect(markup).toContain('Blur 2px')
     expect(markup).toContain('→')
     expect(markup).not.toContain('!preset.')
   })
@@ -272,7 +272,7 @@ describe('preset card — stable error region and ARIA', () => {
     const error: PresetCardError = { kind: 'copy', code: 'clipboard' }
     const markup = render({ initialError: error })
     expectErrorWiring(markup, 'preset-export', error)
-    expect(markup).toContain('Could not copy to the clipboard')
+    expect(markup).toContain('Copy failed')
   })
 
   it('wires a partial-apply failure to the apply control and offers wallpaper retry', () => {

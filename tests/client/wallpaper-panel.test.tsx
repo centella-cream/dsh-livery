@@ -546,7 +546,7 @@ describe('focal position nine-grid', () => {
     expect(zh).toContain('左上')
     expect(zh).toContain('居中')
     expect(zh).toContain('右下')
-    expect(zh).toContain('内置壁纸始终居中')
+    expect(zh).toContain('只有在线/上传图片可调整焦点。')
     const en = renderPanel()
     expect(en).toContain('Top left')
     expect(en).toContain('Center')

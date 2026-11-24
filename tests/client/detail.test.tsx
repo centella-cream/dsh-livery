@@ -279,6 +279,9 @@ describe('facts section', () => {
     expect(html).toContain(`aria-labelledby="${DETAIL_HEADING_ID}"`)
     expect(html).toContain('<dl')
     expect(html).toContain('>Livery details</h3>')
+    expect(html).toContain('role="tablist"')
+    expect(html).toContain(enUS['detail.tab.facts'])
+    expect(html).toContain(enUS['detail.tab.hotUpdate'])
     // Client build + installed package version.
     expect(html).toContain(LIVERY_VERSION)
     expect(html).toContain('0.2.2')

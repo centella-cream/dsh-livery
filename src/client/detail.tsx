@@ -278,6 +278,17 @@ function LiveryDetailActions({ t, runtime, isMainPanelRegistered, openLivery }: 
         <Button
           variant="outline"
           size="sm"
+          data-testid="livery-detail-open-hot"
+          onClick={() => {
+            document.getElementById('livery-detail-tab-hot')?.click()
+            document.getElementById('livery-detail-section')?.scrollIntoView({ block: 'start' })
+          }}
+        >
+          {t('detail.tab.hotUpdate')}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           data-testid="livery-detail-copy-diagnostics"
           onClick={() => { void copy() }}
         >
@@ -334,6 +345,7 @@ export function DetailSection(props: DetailSectionProps): JSX.Element | null {
 
 function LiveryDetailSection({ subject, t, runtime }: DetailSectionProps): JSX.Element {
   const snapshot = useRuntimeSnapshot(runtime)
+  const [tab, setTab] = useState<'facts' | 'hot'>('facts')
   const identity = snapshot.identity
   const reason = snapshot.bootReason
   // The exported wrapper already narrowed the subject; re-reading through a
@@ -364,6 +376,7 @@ function LiveryDetailSection({ subject, t, runtime }: DetailSectionProps): JSX.E
     snapshot.catalogStatus === 'unavailable',
     snapshot.reloadRequired,
   ))
+  const hotFacts = facts.filter(entry => ['client-build', 'handshake', 'installed', 'host', 'catalog'].includes(entry.id))
 
   return (
     <div className="livery-section livery-detail">
@@ -374,14 +387,46 @@ function LiveryDetailSection({ subject, t, runtime }: DetailSectionProps): JSX.E
       >
         <div className="livery-check__body">
           <h3 className="livery-check__title" id={DETAIL_HEADING_ID}>{t('detail.section.title')}</h3>
-          <dl className="livery-detail__facts">
-            {facts.map(entry => (
-              <div className="livery-detail__fact" key={entry.id}>
-                <dt className="livery-check__title">{entry.label}</dt>
-                <dd className="livery-check__value" data-testid={`livery-detail-${entry.id}`}>{entry.value}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="livery-detail__tabs" role="tablist" aria-label={t('detail.section.title')}>
+            <button
+              type="button"
+              role="tab"
+              id="livery-detail-tab-facts"
+              className="livery-detail__tab"
+              aria-selected={tab === 'facts'}
+              aria-controls="livery-detail-panel-facts"
+              tabIndex={tab === 'facts' ? 0 : -1}
+              onClick={() => { setTab('facts') }}
+            >
+              {t('detail.tab.facts')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="livery-detail-tab-hot"
+              className="livery-detail__tab"
+              aria-selected={tab === 'hot'}
+              aria-controls="livery-detail-panel-hot"
+              tabIndex={tab === 'hot' ? 0 : -1}
+              onClick={() => { setTab('hot') }}
+            >
+              {t('detail.tab.hotUpdate')}
+            </button>
+          </div>
+          <div
+            id={`livery-detail-panel-${tab}`}
+            role="tabpanel"
+            aria-labelledby={`livery-detail-tab-${tab === 'facts' ? 'facts' : 'hot'}`}
+          >
+            <dl className="livery-detail__facts">
+              {(tab === 'facts' ? facts : hotFacts).map(entry => (
+                <div className="livery-detail__fact" key={entry.id}>
+                  <dt className="livery-check__title">{entry.label}</dt>
+                  <dd className="livery-check__value" data-testid={`livery-detail-${tab === 'hot' ? 'hot-' : ''}${entry.id}`}>{entry.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
           <p className="livery-check__value" data-testid="livery-detail-boundary">{boundary}</p>
         </div>
       </section>

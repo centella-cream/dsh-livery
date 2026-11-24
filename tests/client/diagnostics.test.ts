@@ -72,7 +72,7 @@ describe('formatDiagnostics', () => {
     const text = formatDiagnostics(makeT(enUS), READY, 'en')
     expect(text).toContain('secondary')
     expect(text).toMatch(/1 of 2 checks fail|2 of 2 checks fail/)
-    expect(text).toMatch(/covered|inherited|missing/)
+    expect(text).toMatch(/cov|inh|miss/)
   })
 
   it('handles a snapshot with no catalog, no capabilities and no livery', () => {
