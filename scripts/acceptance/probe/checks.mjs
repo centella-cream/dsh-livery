@@ -450,6 +450,8 @@ function createProviderMock(tinyPng, { wikimediaBody = wikimediaFixtureBody() } 
     wikimediaMode: 'ok',
     wikimediaRetryAfterSeconds: 5,
     wikimediaRequests: [],
+    clevelandRequests: [],
+    metRequests: [],
     imageRequests: [],
   }
   const corsHeaders = { 'access-control-allow-origin': '*', 'cache-control': 'no-store' }
@@ -468,6 +470,30 @@ function createProviderMock(tinyPng, { wikimediaBody = wikimediaFixtureBody() } 
   const image = (url, route) => {
     state.imageRequests.push(url)
     return route.fulfill({ status: 200, contentType: 'image/png', headers: corsHeaders, body: tinyPng })
+  }
+  const clevelandBody = {
+    info: { total: 1 },
+    data: [{
+      id: 'cleveland-1',
+      title: 'Cleveland Art',
+      share_license_status: 'CC0',
+      url: 'https://www.clevelandart.org/art/1',
+      creators: [{ description: 'Cleveland Artist' }],
+      images: {
+        web: { url: 'https://openaccess-cdn.clevelandart.org/1_web.jpg' },
+        print: { url: 'https://openaccess-cdn.clevelandart.org/1_print.jpg' },
+      },
+    }],
+  }
+  const metSearchBody = { total: 1, objectIDs: [1] }
+  const metObjectBody = {
+    objectID: 1,
+    title: 'Met Art',
+    isPublicDomain: true,
+    primaryImage: 'https://images.metmuseum.org/1_full.jpg',
+    primaryImageSmall: 'https://images.metmuseum.org/1_small.jpg',
+    objectURL: 'https://www.metmuseum.org/art/collection/search/1',
+    artistDisplayName: 'Met Artist',
   }
   const install = async (page) => {
     await page.route('https://commons.wikimedia.org/**', (route) => {
@@ -505,9 +531,25 @@ function createProviderMock(tinyPng, { wikimediaBody = wikimediaFixtureBody() } 
     for (const pattern of ['https://upload.wikimedia.org/**', 'https://thumb.wikimedia.org/**']) {
       await page.route(pattern, (route) => image(route.request().url(), route))
     }
+    await page.route('https://openaccess-api.clevelandart.org/**', (route) => {
+      state.clevelandRequests.push(route.request().url())
+      return json(route, clevelandBody)
+    })
+    await page.route('https://openaccess-cdn.clevelandart.org/**', (route) => image(route.request().url(), route))
+    await page.route('https://collectionapi.metmuseum.org/**', (route) => {
+      state.metRequests.push(route.request().url())
+      const path = new URL(route.request().url()).pathname
+      if (path.includes('/objects/1')) return json(route, metObjectBody)
+      return json(route, metSearchBody)
+    })
+    await page.route('https://images.metmuseum.org/**', (route) => image(route.request().url(), route))
   }
   const uninstall = async (page) => {
-    for (const pattern of ['https://commons.wikimedia.org/**', 'https://upload.wikimedia.org/**', 'https://thumb.wikimedia.org/**']) {
+    for (const pattern of [
+      'https://commons.wikimedia.org/**', 'https://upload.wikimedia.org/**', 'https://thumb.wikimedia.org/**',
+      'https://openaccess-api.clevelandart.org/**', 'https://openaccess-cdn.clevelandart.org/**',
+      'https://collectionapi.metmuseum.org/**', 'https://images.metmuseum.org/**',
+    ]) {
       await page.unroute(pattern).catch(() => {})
     }
   }
@@ -516,6 +558,8 @@ function createProviderMock(tinyPng, { wikimediaBody = wikimediaFixtureBody() } 
     install,
     uninstall,
     get wikimediaRequests() { return state.wikimediaRequests },
+    get clevelandRequests() { return state.clevelandRequests },
+    get metRequests() { return state.metRequests },
     get imageRequests() { return state.imageRequests },
     get wikimediaMode() { return state.wikimediaMode },
     set wikimediaMode(value) { state.wikimediaMode = value },
@@ -1063,7 +1107,7 @@ const DETAIL_SURFACE_COPY = {
     badge: (version) => `Livery 版本 ${version}`,
     copied: '诊断信息已复制',
     boundary: {
-      valid: 'DSH 的插件管理器负责安装和更新 Livery；更新后请重新加载此页面。',
+      valid: '插件更新后请重新加载。',
       stale: '已热更新；启动画面来自上一构建。',
       staleDegraded: '客户端已更新，但样式目录不可用；请重试或重载。',
       mismatch: '需要重新加载以完成更新。',
@@ -1076,7 +1120,7 @@ const DETAIL_SURFACE_COPY = {
     badge: (version) => `Livery ${version}`,
     copied: 'Diagnostics copied',
     boundary: {
-      valid: "DSH's plugin manager installs and updates Livery; reload this page after an update.",
+      valid: 'Reload after a plugin update.',
       stale: 'Updated in place; startup frame from previous build.',
       staleDegraded: 'Client updated; catalog unavailable. Retry or reload.',
       mismatch: 'Reload required to finish the update.',
@@ -3565,7 +3609,7 @@ async function measureOneStyle(ctx, livery, { previewOnly, uiLabels }) {
  * follow-style layer, effects, persistence, uploads and the custom-URL path.
  *
  * Network policy under test: opening the wallpaper page performs **no** request
- * (default image tab is Built-in); the first Online activation performs exactly
+ * (default image tab is Online and opens with one automatic Random batch); the
  * one batch; later tab switches do not refetch. Wikimedia Commons is the only
  * offered online provider after Openverse was removed from the offered set in
  * 0.2.2, so its MediaWiki API and declared image hosts are the only mocked
@@ -3583,13 +3627,13 @@ export async function checkWallpaperStudio(ctx) {
   const zh = uiLocale !== 'en'
   const copy = zh
     ? {
-        onlineHint: '打开页签加载一批；其他操作点击请求。',
+        onlineHint: '打开即加载一批；操作按钮点击获取。',
         noRequestHint: '内置设计离线加载；在线图片使用缓存。',
         presetsTitle: '背景预设',
         presetNone: '无壁纸',
         presetStyle: '跟随风格',
-        classicSummary: '经典内置设计（16）',
-        classicPinned: '1 个已置顶',
+        classicSummary: '经典内置设计',
+        classicPinned: '1 个置顶',
         currentClassic: '当前（经典）',
         retryAfter: '5',
         styleDisabled: '请先应用视觉风格',
@@ -3597,17 +3641,19 @@ export async function checkWallpaperStudio(ctx) {
         providerLabel: '来源',
         providerAuto: '自动',
         providerWikimedia: '维基共享资源',
-        emptyBody: '换个关键词搜索',
+        providerCleveland: '克利夫兰艺术博物馆',
+        providerMet: '大都会艺术博物馆',
+        emptyBody: '换一个搜索词或选内置设计。',
         search: '搜索',
         random: '随机',
       }
     : {
-        onlineHint: 'Opening this tab loads one batch; actions click to fetch.',
+        onlineHint: 'Opening loads one batch; actions fetch.',
         noRequestHint: 'Built-in designs load offline; online uses the cache.',
         presetsTitle: 'Background presets',
         presetNone: 'No wallpaper',
         presetStyle: 'Follow style',
-        classicSummary: 'Classic built-in designs (16)',
+        classicSummary: 'Classic designs',
         classicPinned: '1 pinned above',
         currentClassic: 'Current (Classic)',
         retryAfter: '5',
@@ -3616,7 +3662,9 @@ export async function checkWallpaperStudio(ctx) {
         providerLabel: 'Source',
         providerAuto: 'Auto',
         providerWikimedia: 'Wikimedia Commons',
-        emptyBody: 'Try a different search',
+        providerCleveland: 'Cleveland Museum of Art',
+        providerMet: 'The Metropolitan Museum of Art',
+        emptyBody: 'Try another search or a built-in design.',
         search: 'Search',
         random: 'Random',
       }
@@ -3637,6 +3685,31 @@ export async function checkWallpaperStudio(ctx) {
       : 0
     return { avg: Number(avg.toFixed(2)), grid: Number(grid.toFixed(2)), score: Number((avg + grid).toFixed(2)) }
   }
+  // ---- Host provider-manifest route: reviewed data, canonical hash, no-store ----
+  try {
+    const providersUrl = new URL('/livery/api/providers', ctx.config.baseUrl).href
+    const providersResponse = await rawRequest(providersUrl, ctx.state.cookieHeader ? { headers: { Cookie: ctx.state.cookieHeader } } : undefined)
+    const document = JSON.parse(providersResponse.text)
+    const ids = Array.isArray(document.providers) ? document.providers.map((provider) => provider.id) : []
+    const deliveries = Array.isArray(document.providers) ? document.providers.map((provider) => provider.delivery) : []
+    expect(
+      runner,
+      'providers.route-shape',
+      'the Host serves the reviewed provider manifests with a canonical hash and no-store cache policy',
+      providersResponse.status === 200 &&
+        document.schemaVersion === 1 &&
+        typeof document.manifestHash === 'string' &&
+        /^sha256:[0-9a-f]{64}$/.test(document.manifestHash) &&
+        JSON.stringify(ids) === JSON.stringify(['cleveland', 'met-open-access']) &&
+        deliveries.every((delivery) => delivery === 'direct') &&
+        String(providersResponse.headers?.['cache-control'] ?? '').includes('no-store'),
+      `status=${providersResponse.status}; ids=${JSON.stringify(ids)}; deliveries=${JSON.stringify(deliveries)}; hash=${String(document.manifestHash).slice(0, 18)}…`,
+      { ids, deliveries, manifestHash: document.manifestHash },
+    )
+  } catch (error) {
+    runner.fail('providers.route-shape', 'the Host serves the reviewed provider manifests with a canonical hash and no-store cache policy', `provider-manifest route probe failed: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
   const allCover = (value) => typeof value === 'string' && value.length > 0 && value.split(',').every((part) => part.trim() === 'cover')
   const liveryRowLabels = ['视觉风格', 'Visual Style', '皮肤', 'Livery']
   const textOf = async (testId) => page.evaluate((id) => (document.querySelector(`[data-testid="${id}"]`)?.textContent ?? '').trim(), testId).catch(() => '')
@@ -3749,7 +3822,7 @@ export async function checkWallpaperStudio(ctx) {
       `selected=${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.selected}; wallpaper panel=${tabState.wallpaperPanel}; style panel=${tabState.stylePanel}; label="${tabState.tabs.find((tab) => tab.id === 'wallpaper')?.text}"`,
     )
 
-    // ---- no provider request on page open; default image tab is Built-in ----
+    // ---- Online is the default tab and opens one automatic Random batch ----
     const recentInitial = await readState()
     expect(
       runner,
@@ -3758,24 +3831,28 @@ export async function checkWallpaperStudio(ctx) {
       recentInitial.recentCard.present === false && recentInitial.recentCard.itemCount === 0,
       `present=${recentInitial.recentCard.present}; items=${recentInitial.recentCard.itemCount}`,
     )
-    // Give a wrong mount-time batch time to arrive before asserting zero.
-    await sleep(1_000)
+    await waitForOnlineStatus('ready', 25_000)
+    await waitForRequestCount(wikimediaCount, 1)
+    await waitForResultCards(4)
+    await sleep(300)
     const beforeOnline = await readState()
     expect(
       runner,
-      'wallpaper.no-request-before-online',
-      'opening the wallpaper page makes no provider request and shows the offline Built-in gallery by default',
-      beforeOnline.sourceTab.selected === 'wallpaper-source-tab-builtin' &&
-        beforeOnline.sourceTab.visiblePanel === 'wallpaper-source-panel-builtin' &&
-        beforeOnline.status === null &&
-        beforeOnline.results.length === 0 &&
+      'wallpaper.online-auto-random',
+      'opening the wallpaper page defaults to Online and automatically performs exactly one Random batch',
+      beforeOnline.sourceTab.selected === 'wallpaper-source-tab-online' &&
+        beforeOnline.sourceTab.visiblePanel === 'wallpaper-source-panel-online' &&
+        beforeOnline.status === 'ready' &&
+        beforeOnline.results.length === 4 &&
+        beforeOnline.servedByPresent === true &&
         beforeOnline.builtinGallery.gridCount === 8 &&
-        beforeOnline.builtinGallery.noRequestHint.includes(zh ? '内置设计离线加载' : 'Built-in designs load offline') &&
-        allRequestCount() === 0 &&
-        beforeOnline.servedByPresent === false,
-      `default tab=${beforeOnline.sourceTab.selected}; visible panel=${beforeOnline.sourceTab.visiblePanel}; status=${beforeOnline.status}; results=${beforeOnline.results.length}; grid=${beforeOnline.builtinGallery.gridCount}; wikimedia=${wikimediaCount()}; hint="${oneLine(beforeOnline.builtinGallery.noRequestHint, 120)}"`,
-      { sourceTab: beforeOnline.sourceTab, requests: { wikimedia: wikimediaCount() } },
+        allRequestCount() === 1 &&
+        (providers.wikimediaRequests[0] ?? '').includes('generator=random'),
+      `default tab=${beforeOnline.sourceTab.selected}; visible panel=${beforeOnline.sourceTab.visiblePanel}; status=${beforeOnline.status}; results=${beforeOnline.results.length}; servedBy=${beforeOnline.servedByPresent}; wikimedia=${wikimediaCount()}; request=${oneLine(providers.wikimediaRequests[0] ?? '', 160)}`,
+      { sourceTab: beforeOnline.sourceTab, requests: { wikimedia: wikimediaCount() }, results: beforeOnline.results.length },
     )
+    // The offline gallery is a hidden secondary tab now; open it for built-in checks.
+    await selectWallpaperSource(page, 'builtin')
     const onlineCardText = await textOf('wallpaper-online-card')
     expect(
       runner,
@@ -4029,14 +4106,16 @@ export async function checkWallpaperStudio(ctx) {
     expect(
       runner,
       'wallpaper.provider-selector',
-      'the Online tab exposes a native provider <select> with Auto and Wikimedia Commons only (Openverse is not offered)',
+      'the Online tab exposes a native provider <select> with Auto and the three reviewed keyless sources (Openverse is not offered)',
       firstBatch.providerSelect.present === true &&
         firstBatch.providerSelect.tagName === 'select' &&
         firstBatch.providerSelect.id === 'wallpaper-provider' &&
         firstBatch.providerSelect.labelText === copy.providerLabel &&
-        JSON.stringify(firstBatch.providerSelect.options.map((option) => option.value)) === JSON.stringify(['auto', 'wikimedia']) &&
+        JSON.stringify(firstBatch.providerSelect.options.map((option) => option.value)) === JSON.stringify(['auto', 'wikimedia', 'cleveland', 'met-open-access']) &&
         firstBatch.providerSelect.options[0].text === copy.providerAuto &&
         firstBatch.providerSelect.options[1].text === copy.providerWikimedia &&
+        firstBatch.providerSelect.options[2].text === copy.providerCleveland &&
+        firstBatch.providerSelect.options[3].text === copy.providerMet &&
         firstBatch.openverseNoticePresent === false,
       `provider=${JSON.stringify(firstBatch.providerSelect)}; openverseNotice=${firstBatch.openverseNoticePresent}`,
       { providerSelect: firstBatch.providerSelect },
@@ -4047,11 +4126,6 @@ export async function checkWallpaperStudio(ctx) {
       'Auto names the provider that served the results in a polite live region',
       firstBatch.servedByPresent === true && firstBatch.servedByText.includes(copy.providerWikimedia),
       `servedBy="${oneLine(firstBatch.servedByText, 120)}"; present=${firstBatch.servedByPresent}`,
-    )
-    runner.skip(
-      'wallpaper.openverse-attribution-notice',
-      'the Openverse non-endorsement notice is shown when Openverse serves Auto results or is selected',
-      'Openverse was removed from the offered provider set in 0.2.2: the notice element and its copy no longer exist and the provider is never offered, so this check is recorded as a skip instead of a fake pass',
     )
     const mainOrder = firstBatch.mainCardOrder ?? []
     expect(
@@ -4277,8 +4351,9 @@ export async function checkWallpaperStudio(ctx) {
     )
 
     // ---- JSON cap: >2 MiB provider body with a lying Content-Length ----
-    // Auto is safe here: Wikimedia Commons is the only offered provider, so the
-    // typed invalid-response reaches the UI without a second-provider fallback.
+    // Pin Wikimedia so this exercises the typed invalid-response path instead of
+    // Auto failing over to a manifest source.
+    await selectProvider('wikimedia')
     providers.wikimediaMode = 'oversized'
     const beforeOversized = wikimediaCount()
     await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
@@ -4355,11 +4430,26 @@ export async function checkWallpaperStudio(ctx) {
       `status=${emptyState.status}; empty=${JSON.stringify(emptyState.onlineEmpty)}; error=${emptyState.onlineError.present}`,
     )
 
-    // ---- Auto failover is no longer observable with one offered provider ----
-    runner.skip(
+    // ---- Auto failover across the three offered providers ----
+    await selectProvider('auto')
+    providers.wikimediaMode = 'unavailable'
+    const beforeFailover = { wikimedia: wikimediaCount(), cleveland: providers.clevelandRequests.length }
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await waitForOnlineStatus('ready', 25_000)
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length === 1, undefined, { timeout: 20_000 }).catch(() => {})
+    const failover = await readState()
+    providers.wikimediaMode = 'ok'
+    expect(
+      runner,
       'wallpaper.provider-failover',
-      'Auto fails over from a failing first provider to the next gate provider and names the provider that served the results',
-      'Openverse was removed from the offered provider set in 0.2.2; Auto now offers only Wikimedia Commons, so a two-provider failover cannot be exercised through the UI. The registry failover loop is covered by unit tests with synthetic providers.',
+      'Auto fails over from a failing Wikimedia request to the next offered manifest source and names the provider that served the results',
+      failover.status === 'ready' &&
+        failover.results.length === 1 &&
+        failover.results[0]?.provider === 'cleveland' &&
+        failover.servedByText.includes(copy.providerCleveland) &&
+        wikimediaCount() === beforeFailover.wikimedia + 1 &&
+        providers.clevelandRequests.length === beforeFailover.cleveland + 1,
+      `status=${failover.status}; results=${JSON.stringify(failover.results)}; servedBy="${oneLine(failover.servedByText, 120)}"; requests wikimedia ${beforeFailover.wikimedia}→${wikimediaCount()} cleveland ${beforeFailover.cleveland}→${providers.clevelandRequests.length}`,
     )
 
     // ---- a pinned provider makes exactly one attempt and never silently changes ----
@@ -5033,6 +5123,162 @@ export async function checkWallpaperStudio(ctx) {
     } else {
       runner.skip('wallpaper.overlay-plugin', 'atmosphere overlay is present over a third-party plugin page', 'no third-party plugin panel in this profile')
     }
+
+    // ---- direct sources: manifest provider, full <img> layer, thumbnail hero ----
+    await selectWallpaperSource(page, 'online')
+    await selectProvider('cleveland')
+    const beforeCleveland = providers.clevelandRequests.length
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await waitForOnlineStatus('ready', 25_000)
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length === 1, undefined, { timeout: 20_000 }).catch(() => {})
+    const clevelandBatch = await readState()
+    expect(
+      runner,
+      'wallpaper.source-cleveland-first-batch',
+      'the pinned Cleveland manifest source performs one keyless search and renders its direct result',
+      clevelandBatch.status === 'ready' &&
+        clevelandBatch.results.length === 1 &&
+        clevelandBatch.results[0]?.provider === 'cleveland' &&
+        providers.clevelandRequests.length === beforeCleveland + 1,
+      `status=${clevelandBatch.status}; results=${JSON.stringify(clevelandBatch.results)}; requests=${beforeCleveland}→${providers.clevelandRequests.length}`,
+    )
+    await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
+    await page.waitForFunction(() => {
+      const wrapper = document.getElementById('dsh-livery-wallpaper-direct')
+      const image = wrapper?.querySelector('img')
+      return wrapper !== null && image !== null && image.complete && image.naturalWidth > 0
+    }, undefined, { timeout: 20_000 }).catch(() => {})
+    const direct = await page.evaluate(() => {
+      const wrapper = document.getElementById('dsh-livery-wallpaper-direct')
+      const image = wrapper?.querySelector('img')
+      const hero = document.querySelector('[data-testid="wallpaper-hero-preview"] img')
+      const style = document.querySelector('style#dsh-livery-wallpaper')
+      let stored = null
+      try { stored = JSON.parse(window.localStorage.getItem('dsh-livery.wallpaper.v1') ?? 'null') } catch { stored = 'unparseable' }
+      return {
+        wrapperPresent: wrapper !== null,
+        wrapperFailed: wrapper?.getAttribute('data-failed') === 'true',
+        imageSrc: image?.getAttribute('src') ?? null,
+        referrerPolicy: image?.getAttribute('referrerpolicy') ?? null,
+        naturalWidth: image?.naturalWidth ?? 0,
+        heroSrc: hero?.getAttribute('src') ?? null,
+        heroObjectFit: hero === null ? null : getComputedStyle(hero).objectFit,
+        heroWidth: hero === null ? 0 : hero.getBoundingClientRect().width,
+        heroHeight: hero === null ? 0 : hero.getBoundingClientRect().height,
+        directHint: (document.querySelector('[data-testid="wallpaper-direct-hint"]')?.textContent ?? '').trim(),
+        styleHasRemote: /openaccess-cdn\.clevelandart\.org/.test(style?.textContent ?? ''),
+        storedSchema: stored?.schemaVersion ?? null,
+        storedDelivery: stored?.selection?.delivery ?? null,
+      }
+    })
+    expect(
+      runner,
+      'wallpaper.direct-image-loads',
+      'selecting a direct-only provider renders a real plugin-owned <img> layer (no body background URL)',
+      direct.wrapperPresent === true && direct.wrapperFailed === false && direct.naturalWidth > 0 &&
+        direct.imageSrc === 'https://openaccess-cdn.clevelandart.org/1_print.jpg' &&
+        direct.heroObjectFit === 'cover' && direct.heroWidth > 0 && direct.heroHeight > 0 &&
+        direct.styleHasRemote === false,
+      JSON.stringify(direct),
+      { direct },
+    )
+    expect(
+      runner,
+      'wallpaper.direct-disclosure',
+      'direct selections disclose online-only/no-cache/atmosphere/large-original limits in the panel',
+      direct.directHint.includes(zh ? '仅在线显示' : 'Online only') &&
+        direct.directHint.includes(zh ? '不缓存' : 'not cached'),
+      `hint="${oneLine(direct.directHint, 160)}"`,
+      { directHint: direct.directHint },
+    )
+    expect(
+      runner,
+      'wallpaper.direct-img-referrer-policy',
+      'the direct <img> uses referrerpolicy=no-referrer',
+      direct.referrerPolicy === 'no-referrer',
+      `referrerpolicy=${direct.referrerPolicy}`,
+    )
+    expect(
+      runner,
+      'wallpaper.direct-preview-thumb',
+      'the hero and result grid use the provider thumbnail; only the body layer uses the full image',
+      direct.heroSrc === 'https://openaccess-cdn.clevelandart.org/1_web.jpg' &&
+        clevelandBatch.results[0]?.thumbSrc === 'https://openaccess-cdn.clevelandart.org/1_web.jpg',
+      `hero=${direct.heroSrc}; resultThumb=${clevelandBatch.results[0]?.thumbSrc}`,
+    )
+    expect(
+      runner,
+      'wallpaper.direct-effect-pipeline',
+      'direct CSS emits the image layer/effect pipeline without a body background-image or cached URL',
+      direct.storedSchema === 3 && direct.storedDelivery === 'direct' && direct.styleHasRemote === false,
+      `schema=${direct.storedSchema}; delivery=${direct.storedDelivery}; remoteInCss=${direct.styleHasRemote}`,
+    )
+
+    await selectProvider('met-open-access')
+    const beforeMet = providers.metRequests.length
+    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await waitForOnlineStatus('ready', 25_000)
+    await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length === 1, undefined, { timeout: 20_000 }).catch(() => {})
+    const metBatch = await readState()
+    expect(
+      runner,
+      'wallpaper.source-met-first-batch',
+      'the pinned Met manifest source performs one keyless search plus object detail and renders a public-domain direct result',
+      metBatch.status === 'ready' &&
+        metBatch.results.length === 1 &&
+        metBatch.results[0]?.provider === 'met-open-access' &&
+        providers.metRequests.length >= beforeMet + 2,
+      `status=${metBatch.status}; results=${JSON.stringify(metBatch.results)}; metRequests=${beforeMet}→${providers.metRequests.length}`,
+    )
+
+    // ---- legacy Openverse selection: visible notice, never a new request ----
+    const openverseRequests = []
+    const onOpenverseRequest = (request) => { if (request.url().includes('api.openverse.org')) openverseRequests.push(request.url()) }
+    page.on('request', onOpenverseRequest)
+    try {
+      await page.evaluate(() => {
+        const record = {
+          schemaVersion: 2,
+          revision: 999999,
+          sourceId: 'acceptance-legacy',
+          selection: {
+            kind: 'remote',
+            url: 'https://api.openverse.org/v1/images/legacy/thumb/',
+            provenance: { providerId: 'openverse', source: 'Openverse' },
+          },
+          effects: { blur: 8, dim: 25, frost: 35, atmosphere: 30 },
+          position: { x: 50, y: 50 },
+        }
+        const value = JSON.stringify(record)
+        window.localStorage.setItem('dsh-livery.wallpaper.v1', value)
+        window.dispatchEvent(new StorageEvent('storage', { key: 'dsh-livery.wallpaper.v1', newValue: value }))
+      })
+      await page.waitForFunction(() => document.querySelector('[data-testid="wallpaper-openverse-notice"]') !== null, undefined, { timeout: 8_000 }).catch(() => {})
+      const legacy = await readState()
+      await sleep(400)
+      expect(
+        runner,
+        'wallpaper.openverse-notice-legacy',
+        'a stored legacy Openverse selection shows the non-endorsement notice and never fetches api.openverse.org',
+        legacy.openverseNoticePresent === true &&
+          legacy.openverseNoticeText.includes('Openverse') &&
+          openverseRequests.length === 0,
+        `notice=${legacy.openverseNoticePresent}; text="${oneLine(legacy.openverseNoticeText, 120)}"; requests=${JSON.stringify(openverseRequests)}`,
+      )
+    } finally {
+      page.off('request', onOpenverseRequest)
+    }
+    // The synthetic high-revision legacy record must not leak into the later
+    // cross-tab ordering tests. Reload into a clean revision and choose a
+    // built-in so the clear check still has a layer to remove.
+    await page.evaluate(() => { window.localStorage.removeItem('dsh-livery.wallpaper.v1') })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await sleep(1_200)
+    await dismissFirstRunDialogs(page).catch(() => {})
+    await reopenLivery()
+    await ensureWallpaperPanel()
+    await selectWallpaperSource(page, 'builtin')
+    await page.locator('[data-testid="wallpaper-builtin"]').first().click({ timeout: 8_000 })
 
     // ---- clear removes the layer/overlay/attribute/stored record ----
     await page.locator('[data-testid="wallpaper-clear"]').click({ timeout: 8_000 })
