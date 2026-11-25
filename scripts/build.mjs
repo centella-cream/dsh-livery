@@ -18,6 +18,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
+import { minify } from 'terser'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
@@ -90,10 +91,23 @@ async function buildHost() {
 
 async function buildClient() {
   const outfile = join(root, 'lib', 'client.js')
-  await build({
+  // Keep the loader envelope byte-for-byte stable while minifying only the
+  // factory body with terser. The loader contract checks the exact
+  // `factory: (require) =>` envelope; esbuild alone costs ~1.1 KiB gzip more.
+  const envelope = {
+    head: `window.__ModuleLoader__.load({
+  id: ${JSON.stringify(pkg.name)},
+  factory: (require) => {
+    var module = { exports: {} };
+    var exports = module.exports;\n`,
+    tail: `\n    return module.exports;
+  }
+});\n`,
+  }
+  const result = await build({
     entryPoints: [join(root, 'src', 'client', 'index.tsx')],
-    outfile,
     bundle: true,
+    write: false,
     platform: 'browser',
     format: 'cjs',
     target: 'chrome120',
@@ -103,27 +117,25 @@ async function buildClient() {
     jsx: 'automatic',
     external: PLATFORM_MODULES,
     define: { 'process.env.NODE_ENV': '"production"' },
-    banner: {
-      js: `window.__ModuleLoader__.load({
-  id: ${JSON.stringify(pkg.name)},
-  factory: (require) => {
-    var module = { exports: {} };
-    var exports = module.exports;`,
-    },
-    footer: {
-      js: `    return module.exports;
-  }
-});`,
-    },
   })
+  const body = result.outputFiles?.[0]?.text
+  if (body === undefined) throw new Error('client bundle produced no output')
+  const compressed = await minify(body, {
+    compress: { passes: 3 },
+    mangle: { toplevel: true, reserved: ['require', 'module', 'exports'] },
+    format: { comments: false },
+  })
+  if (typeof compressed.code !== 'string') throw new Error('terser produced no client code')
+  await writeFile(outfile, `${envelope.head}${compressed.code}${envelope.tail}`)
   console.log('build: lib/client.js')
 }
 
 async function checkSizes() {
   // Performance budgets from docs/design/interfaces.md / style-system.md, per
   // catalog profile. The client cap was explicitly raised to 72 KiB for the
-  // 0.2.2 wallpaper studio + provider registry + detail surface content.
+  // 0.2.3 wallpaper studio + provider manifests + detail surface content.
   const CLIENT_GZIP_BUDGET = 72 * 1024
+  const CLIENT_GZIP_HEADROOM_REVIEW_BYTES = 100
   const HOST_GZIP_BUDGET = 360 * 1024
   const PER_LIVERY_CSS_BUDGET = 14 * 1024
   const client = await readFile(join(root, 'lib', 'client.js'))
@@ -231,6 +243,7 @@ async function checkSizes() {
     nodeVersion: process.version,
     clientBytes: client.byteLength,
     clientGzip,
+    clientGzipHeadroom: CLIENT_GZIP_BUDGET - clientGzip,
     hostBytes: host.byteLength,
     hostGzip,
     budgets: { clientGzip: CLIENT_GZIP_BUDGET, hostGzip: HOST_GZIP_BUDGET, bootCss: 14 * 1024, perLiveryCss: PER_LIVERY_CSS_BUDGET },
@@ -243,8 +256,13 @@ async function checkSizes() {
   }
   await writeFile(join(root, 'lib', 'build-report.json'), `${JSON.stringify(report, null, 2)}\n`)
   console.log(
-    `build: host ${host.byteLength}B (gzip ${hostGzip}B) · client ${client.byteLength}B (gzip ${clientGzip}B) · profiles ${profileIds.join(', ')} · max livery css ${maxLiveryCss}B`,
+    `build: host ${host.byteLength}B (gzip ${hostGzip}B) · client ${client.byteLength}B (gzip ${clientGzip}B, headroom ${CLIENT_GZIP_BUDGET - clientGzip}B) · profiles ${profileIds.join(', ')} · max livery css ${maxLiveryCss}B`,
   )
+  // Release-readiness warning, not a build failure: the frozen candidate must
+  // explicitly record and review a sub-100 B client headroom before tagging.
+  if (CLIENT_GZIP_BUDGET - clientGzip >= 0 && CLIENT_GZIP_BUDGET - clientGzip < CLIENT_GZIP_HEADROOM_REVIEW_BYTES) {
+    console.warn(`build: WARN client gzip headroom ${CLIENT_GZIP_BUDGET - clientGzip}B is below the ${CLIENT_GZIP_HEADROOM_REVIEW_BYTES}B pre-release review threshold`)
+  }
   if (problems.length > 0) {
     for (const problem of problems) console.error(`build: BUDGET FAIL ${problem}`)
     throw new Error('build budget gate failed')

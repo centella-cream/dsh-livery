@@ -6,7 +6,7 @@
  * adapter in `sourceAdapters` serves these exact CSS bytes and previews.
  * Source manifests: `liveries/<id>/manifest.json`.
  * 
- * compilerVersion: 0.2.2
+ * compilerVersion: 0.2.3
  * profiles: sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150, sha256:53e0ceb22a79f9f96cebdaa7250cb801a99ad5864dbe623afff96dba7abeb6ae, sha256:d79417c43791d0dc1ed795d6309001c66185eaef168d5521ea2a4de263602f05, sha256:b67980c9300f2eaa594180a91af0a4ea24821963bc43227c3dd87944a44a2b1a, sha256:78b5b7bb57f333aa61a40f523927e364be7e47aac2f5cb86aefba48a1c55560c, sha256:5261f8acff0ab84417fc51a6d5c6b1b2b20fba0deee3560e49e8d4c8d613139e, sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04, sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94
  * 
  * `liveries:check` fails the build if this file drifts from the manifests.
@@ -18,7 +18,7 @@ export type CatalogProfile = CatalogProfileData
 
 export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
   "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94": {
-    "compiledAt": "2026-04-29T23:50:50.000Z",
+    "compiledAt": "2026-04-30T21:29:38.000Z",
     "liveries": [
       {
         "audit": {
@@ -48226,10 +48226,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.5"
     ],
-    "sourceHash": "sha256:ad8b625ae03ed24ecc3f02ec8087ff16c9971bfdc3a504b12121b415a32d8b01"
+    "sourceHash": "sha256:a607c4c247c23b0882320df5e4e8c0b1800b072071bf340b97dd2be39170efd2"
   },
   "sha256:5261f8acff0ab84417fc51a6d5c6b1b2b20fba0deee3560e49e8d4c8d613139e": {
-    "compiledAt": "2026-08-29T14:30:58.000Z",
+    "compiledAt": "2026-11-28T01:46:37.000Z",
     "liveries": [
       {
         "audit": {
@@ -96437,10 +96437,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.2"
     ],
-    "sourceHash": "sha256:c2d8eca28900b698a0c63725c29a8ebf3357e38024c37c31540ff78eebd106a4"
+    "sourceHash": "sha256:455fb77ddf28b07bbcab3ff9261096185a2206d5bf07c6dc4a2ff3b9718d4519"
   },
   "sha256:53e0ceb22a79f9f96cebdaa7250cb801a99ad5864dbe623afff96dba7abeb6ae": {
-    "compiledAt": "2026-12-29T17:29:26.000Z",
+    "compiledAt": "2026-07-03T05:58:38.000Z",
     "liveries": [
       {
         "audit": {
@@ -143124,10 +143124,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.1-rc.3"
     ],
-    "sourceHash": "sha256:d82723f6211b563254b9159aab590fb1e0b8b2a3d6d644f30079971c0946d84d"
+    "sourceHash": "sha256:0695310efec50d61c630f195b952e1412c3c109da604140795235cfafd5f76a5"
   },
   "sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04": {
-    "compiledAt": "2026-07-31T06:22:55.000Z",
+    "compiledAt": "2026-03-14T05:42:37.000Z",
     "liveries": [
       {
         "audit": {
@@ -191335,10 +191335,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.3"
     ],
-    "sourceHash": "sha256:8e109cbf1761789fbc2853d84d7da2ad6e3fca40d893276219c772587ddfa27c"
+    "sourceHash": "sha256:b2f158cdad78ef12645b2f9f3beab15b4693985ca807d9b07e20d4544dea2075"
   },
   "sha256:78b5b7bb57f333aa61a40f523927e364be7e47aac2f5cb86aefba48a1c55560c": {
-    "compiledAt": "2026-03-25T19:41:39.000Z",
+    "compiledAt": "2026-05-01T21:59:23.000Z",
     "liveries": [
       {
         "audit": {
@@ -238734,10 +238734,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.2-rc.1"
     ],
-    "sourceHash": "sha256:1e81b973cdf4f8b72645178ac8094c7b126f52ccb4314e0c0be554e41ea2da1c"
+    "sourceHash": "sha256:82524abb6b32c265af80229a15078b664795de60cd172047dd2d20c915a0f976"
   },
   "sha256:b67980c9300f2eaa594180a91af0a4ea24821963bc43227c3dd87944a44a2b1a": {
-    "compiledAt": "2026-10-28T04:50:38.000Z",
+    "compiledAt": "2026-01-01T04:00:28.000Z",
     "liveries": [
       {
         "audit": {
@@ -285421,10 +285421,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.1-rc.5"
     ],
-    "sourceHash": "sha256:f225861e661f04a6dda86a944ea231ad6771577ad34a4ffbd74f59d5c410c875"
+    "sourceHash": "sha256:1e13705c834444254d8e61e6b06be789ddb1edf3c09f2ccea7a71a28ec776df0"
   },
   "sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150": {
-    "compiledAt": "2026-09-09T06:55:08.000Z",
+    "compiledAt": "2026-02-18T22:04:39.000Z",
     "liveries": [
       {
         "audit": {
@@ -332108,10 +332108,10 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.1-rc.2"
     ],
-    "sourceHash": "sha256:e4bca14c0e04738ad1cbde58c47acde05280ad407cc06c6e8655ef26feb2fd35"
+    "sourceHash": "sha256:0b87b37746cdc9398d3452ca3f25556cf15994e58206c5a58cd8ce387bb56c02"
   },
   "sha256:d79417c43791d0dc1ed795d6309001c66185eaef168d5521ea2a4de263602f05": {
-    "compiledAt": "2026-04-28T16:13:42.000Z",
+    "compiledAt": "2026-06-03T13:44:35.000Z",
     "liveries": [
       {
         "audit": {
@@ -378795,7 +378795,7 @@ export const CATALOG_PROFILES: Readonly<Record<string, CatalogProfile>> = {
     "sourceAdapters": [
       "0.2.1-rc.4"
     ],
-    "sourceHash": "sha256:f8b9b1b6557f4a4aa2a635ecf97ffa9bf4fb33ecef3d4c53c9647fcc039a1aee"
+    "sourceHash": "sha256:f707d143b3689de74683c825eb049bf4de87a308bff5b75426c03c972a1cecfa"
   }
 }
 

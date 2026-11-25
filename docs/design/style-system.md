@@ -163,10 +163,15 @@ licences).
   The accepted `0.2.1` probe measured a largest livery of **9,066 B** (bauhaus);
   the current `0.2.2` candidate measures **10,366 B** and must be re-measured on
   the final tarball.
-- Client gzip budget is **72 KiB (73,728 B)** for 0.2.2 — an explicit, reviewed
-  increase from 60 KiB for the wallpaper studio, provider registry and detail
-  surface. The accepted `0.2.2` build stays within this cap; the exact measured
-  bytes are recorded by the build gate and the acceptance probe.
+- Client gzip budget is **72 KiB (73,728 B)** — an explicit, reviewed increase
+  from 60 KiB for the wallpaper studio, provider registry, direct layer and
+  detail surface. The accepted `0.2.2` build measured 73,094 B; the 0.2.3
+  candidate measures **73,655 B (73 B headroom)**. The exact measured bytes and
+  headroom are recorded by `lib/build-report.json` and the acceptance probe.
+- **Pre-release review item:** when client gzip headroom is **< 100 B**, the
+  candidate must record the exact headroom in the build report and re-measure it
+  after all packaged docs/code are frozen. This is a warning in `build`, not a
+  failure; only exceeding the 73,728 B cap fails the build.
 - Host gzip budget stays at **360 KiB (368,640 B)** for the 28-style catalog;
   `scripts/build.mjs` enforces the cap on the accepted build.
 - Package tarball cap stays at **4 MiB (4,194,304 B)**. The accepted `0.2.2`
