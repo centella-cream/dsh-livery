@@ -83,8 +83,12 @@ Rules:
   offered provider that declares `random` (Wikimedia Commons), unless a pinned
   provider overrides it. Built-in remains one tab click away.
 - Re-entering the Wallpapers page remounts the panel and starts a new Random
-  batch. In-page source-tab switches do not refetch. Search, Random, Refresh and
-  Retry are the only other request triggers. There is no polling or prefetch.
+  batch. In-page source-tab switches do not refetch. Selecting a **direct**
+  provider (Cleveland/Met) auto-loads its default batch; those sources are
+  search-only, so Random is disabled. Search, Random, Refresh and Retry are the
+  only other request triggers. There is no polling or prefetch. Met caps its
+  detail batch at 8 and defaults to `landscape` so the batch fits the 6 s
+  provider attempt.
 - The provider selector is a native `<select id="wallpaper-provider">` labelled
   “Source”, with `Auto` first and then the gate-passed providers in registry
   order (0.2.2 ships Wikimedia Commons only; Openverse was removed from the offered registry). Changing the provider

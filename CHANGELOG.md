@@ -57,8 +57,8 @@ rebuilt tarball are still missing; this is not a release claim.
   rows against `src/provider-manifests.json`.
 - Client gzip stays under the existing **72 KiB** cap without raising it. The
   build now minifies the factory body with pinned `terser` while preserving the
-  loader envelope byte-for-byte; the candidate measures **73,655 B** at the
-  time of this entry (73 B headroom), so the cap remains the hard gate.
+  loader envelope byte-for-byte; the candidate measures **73,662 B** at the
+  time of this entry (66 B headroom), so the cap remains the hard gate.
 - Non-essential i18n copy was shortened to keep the 72 KiB budget; the client
   stylesheet string is whitespace-compacted with selector semantics preserved.
 

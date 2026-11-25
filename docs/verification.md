@@ -49,7 +49,10 @@ Web `0.2.2-rc.1` passed **309/0** (7 skipped), Desktop `0.2.2-rc.5` passed
 **35/0**, and the `0.2.2 → 0.2.3` update transition on `0.2.2-rc.5` passed
 **35/0** (`stale=true`, `catalogReadopted=true`, manager `applied`). The other
 scopes were last validated before these review fixes; a full 13-scope rerun on the
-final rebuilt tarball is required for formal evidence.
+final rebuilt tarball is required for formal evidence. A local web-profile
+manual check after the direct-source fix saw Cleveland load 12 and Met load 6
+results on source selection; Met's prior 20-detail batch timed out at the 6 s
+provider attempt.
 
 ## Release `0.2.2` (current published)
 

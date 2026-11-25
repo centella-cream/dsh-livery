@@ -146,7 +146,9 @@ preview scenes.
 
 The wallpaper studio and its live 16:9 preview. Opening the wallpapers page
 defaults to Online and automatically requests one Random batch; Built-in remains
-one click away. Auto names the provider that served the results. Blur, dim, frost and the global
+one click away. Selecting Cleveland or The Met loads their default batch
+immediately (both are search-only; Random is disabled). Auto names the provider
+that served the results. Blur, dim, frost and the global
 atmosphere controls apply to the whole interface. Focal positioning is available
 for remote and uploaded wallpapers, not for built-in or Follow-style
 backgrounds. Wallpaper choices stay local.
