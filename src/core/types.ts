@@ -16,7 +16,7 @@ export const LEGACY_CATALOG_SCHEMA_VERSION = 1 as const
 export const SCHEMA_VERSION = LEGACY_MANIFEST_SCHEMA_VERSION
 
 /** DSH Livery release line. */
-export const LIVERY_VERSION = '0.2.2' as const
+export const LIVERY_VERSION = '0.2.3' as const
 
 /**
  * Adapter identity of the oldest certified host build. Runtime selection always
@@ -53,6 +53,8 @@ export const ENTRY_ID = 'livery' as const
 export const LOCALE_NS = 'dsh-livery' as const
 /** Read-only catalog route served by the Host. */
 export const CATALOG_ROUTE = '/livery/api/catalog' as const
+/** Public exact route for the provider-manifest document (0.2.3+). */
+export const PROVIDERS_ROUTE = '/livery/api/providers' as const
 /** Read-only preview asset route prefix; the Host serves `<prefix><catalogProfile>/<file>`. */
 export const PREVIEW_ROUTE_PREFIX = '/livery/assets/previews/' as const
 /** CSS cascade layer holding host-node compensation rules only. */

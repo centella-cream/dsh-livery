@@ -49,7 +49,7 @@ export function validateProviderGate(value, expectedRelease) {
     return ['gate record is not an object']
   }
   const record = value
-  if (record.schemaVersion !== 1) problems.push('schemaVersion must be 1')
+  if (record.schemaVersion !== 2) problems.push('schemaVersion must be 2')
   if (record.release !== expectedRelease) {
     problems.push(`release must be ${expectedRelease} (got ${String(record.release)})`)
   }
@@ -124,7 +124,16 @@ export function validateProviderGate(value, expectedRelease) {
     }
     if (provider.decision === 'accepted') {
       if (provider.auth !== 'keyless') {
-        problems.push(`${at}: an accepted provider must be keyless in 0.2.2`)
+        problems.push(`${at}: an accepted provider must be keyless in 0.2.3`)
+      }
+      if (provider.delivery !== 'cached' && provider.delivery !== 'direct') {
+        problems.push(`${at}: an accepted provider needs delivery cached|direct`)
+      }
+      if (provider.delivery === 'direct') {
+        const probe = provider.browserImageProbe
+        if (typeof probe !== 'object' || probe === null || probe.status !== 'pass') {
+          problems.push(`${at}: a direct provider needs a passed browserImageProbe`)
+        }
       }
       if (license?.wallpaperUseAllowed !== true) {
         problems.push(`${at}: accepted provider must record wallpaperUseAllowed: true`)
@@ -138,34 +147,53 @@ export function validateProviderGate(value, expectedRelease) {
       if (!Array.isArray(provider.imageHosts) || provider.imageHosts.length === 0) {
         problems.push(`${at}: accepted provider needs imageHosts`)
       }
-      if (typeof cors?.imageHostCors === 'string' && cors.imageHostCors === 'unverified') {
-        problems.push(`${at}: accepted provider needs verified image-host CORS`)
+      if (provider.delivery !== 'direct'
+        && (typeof cors?.imageHostCors !== 'string' || cors.imageHostCors === 'unverified')) {
+        problems.push(`${at}: a cached accepted provider needs verified image-host CORS`)
+      }
+      if (provider.delivery === 'direct'
+        && (typeof cors?.imageHostCors !== 'string' || !cors.imageHostCors.startsWith('absent'))) {
+        problems.push(`${at}: a direct accepted provider must record absent image-host CORS`)
+      }
+    }
+    if (provider.requiredNotice !== undefined) {
+      const notice = provider.requiredNotice
+      if (typeof notice !== 'object' || notice === null
+        || typeof notice.key !== 'string' || notice.key.length === 0
+        || typeof notice.scope !== 'string' || notice.scope.length === 0
+        || typeof notice.text !== 'string' || notice.text.length === 0) {
+        problems.push(`${at}.requiredNotice must carry key/scope/text`)
       }
     }
   }
   return problems
 }
 
-/**
- * Read the shipped provider ids from the registry source. The registry is
- * TypeScript and this script is plain ESM, so a narrow source read keeps the
- * release gate independent of the build graph.
- * @param {string} root repository root.
- * @returns {string[]} provider ids in source order.
- */
-export function readRegistryProviderIds(root) {
-  try {
-    const source = readFileSync(join(root, 'src/client/wallpaper/providers.ts'), 'utf8')
-    const union = /export type ProviderId =([^\n]+)/u.exec(source)
-    if (union === null) return []
-    return [...union[1].matchAll(/'([a-z0-9][a-z0-9-]*)'/gu)].map(match => match[1])
-  } catch {
-    return []
-  }
+/** Read the reviewed provider manifest data. */
+function readManifestDocument(root) {
+  const read = readJson(join(root, 'src/provider-manifests.json'))
+  return 'error' in read ? undefined : read.value
 }
 
 /**
- * Validate the committed gate file against the code registry.
+ * Read the shipped provider ids: the two compiled providers plus the Host-served
+ * manifest providers. This is derived data, not a TypeScript source regex.
+ * @param {string} root repository root.
+ * @returns {string[]} provider ids.
+ */
+export function readRegistryProviderIds(root) {
+  const ids = ['openverse', 'wikimedia']
+  const manifest = readManifestDocument(root)
+  if (manifest !== undefined && Array.isArray(manifest.providers)) {
+    for (const provider of manifest.providers) {
+      if (typeof provider?.id === 'string') ids.push(provider.id)
+    }
+  }
+  return ids
+}
+
+/**
+ * Validate the committed gate file against the code registry and manifest data.
  * @param {string} root repository root.
  * @param {string} expectedRelease package version.
  * @returns {string[]} problems; empty means valid.
@@ -176,15 +204,56 @@ export function verifyProviderGate(root, expectedRelease) {
   if ('error' in read) return [`cannot read ${GATE_PATH}: ${read.error}`]
   const problems = validateProviderGate(read.value, expectedRelease)
   if (problems.length > 0) return problems
-  const accepted = new Set((read.value.providers ?? [])
+  const accepted = new Map((read.value.providers ?? [])
     .filter(provider => provider?.decision === 'accepted')
-    .map(provider => provider.id))
+    .map(provider => [provider.id, provider]))
   const shipped = new Set(readRegistryProviderIds(root))
-  for (const id of accepted) {
+  for (const id of accepted.keys()) {
     if (!shipped.has(id)) problems.push(`accepted gate provider ${id} is not shipped by the registry`)
   }
   for (const id of shipped) {
     if (!accepted.has(id)) problems.push(`shipped provider ${id} has no accepted gate record`)
+  }
+  const manifest = readManifestDocument(root)
+  if (manifest === undefined || manifest.schemaVersion !== 1 || !Array.isArray(manifest.providers)) {
+    problems.push('src/provider-manifests.json is missing or malformed')
+  } else {
+    const seen = new Set()
+    for (const provider of manifest.providers) {
+      const id = provider?.id
+      if (typeof id !== 'string' || seen.has(id)) {
+        problems.push(`manifest provider id ${String(id)} is missing/duplicate`)
+        continue
+      }
+      seen.add(id)
+      const gate = accepted.get(id)
+      if (gate === undefined) {
+        problems.push(`manifest provider ${id} has no accepted gate record`)
+        continue
+      }
+      if (gate.delivery !== provider.delivery) {
+        problems.push(`manifest provider ${id} delivery ${String(provider.delivery)} != gate ${String(gate.delivery)}`)
+      }
+      if (provider.auth !== 'keyless') problems.push(`manifest provider ${id} must be keyless`)
+      const gateHosts = Array.isArray(gate.imageHosts) ? [...gate.imageHosts].sort() : []
+      const manifestHosts = Array.isArray(provider.imageHosts) ? [...provider.imageHosts].sort() : []
+      if (JSON.stringify(gateHosts) !== JSON.stringify(manifestHosts)) {
+        problems.push(`manifest provider ${id} imageHosts do not match the gate record`)
+      }
+      const gateHost = (() => {
+        try { return new URL(gate.api.baseUrl).hostname } catch { return undefined }
+      })()
+      const manifestOrigin = (() => {
+        try { return new URL(provider.api.origin).hostname } catch { return undefined }
+      })()
+      if (gateHost === undefined || gateHost !== manifestOrigin) {
+        problems.push(`manifest provider ${id} API origin does not match the gate record`)
+      }
+      const openverseGate = read.value.providers.find(entry => entry.id === 'openverse')
+      if (openverseGate?.requiredNotice === undefined) {
+        problems.push('accepted Openverse gate row must carry requiredNotice')
+      }
+    }
   }
   return problems.filter(problem => !problem.startsWith('cannot read'))
 }

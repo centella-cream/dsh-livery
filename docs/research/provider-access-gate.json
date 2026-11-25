@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "release": "0.2.2",
-  "retrievedAt": "2026-11-23",
+  "schemaVersion": 2,
+  "release": "0.2.3",
+  "retrievedAt": "2026-11-25",
   "reviewer": "lead-agent",
   "providers": [
     {
@@ -77,7 +77,13 @@
         "full_size=true returns the original bytes (sampled 1024x768, content-length 158236) while the default thumb is 600px-wide (sampled 600x449); the cache must keep its size cap because some originals are very large.",
         "Proxied image responses are subject to CF caches and upstream availability; treat non-image content-type or 5xx as unavailable, never as a licence failure.",
         "0.2.2 product decision: Openverse is not offered as a built-in source; anonymous 20/min + 200/day limits and registration requirements made it unusable. The implementation is retained only to resolve already-stored providerId=openverse selections; Auto and the provider selector use Wikimedia Commons only."
-      ]
+      ],
+      "delivery": "cached",
+      "requiredNotice": {
+        "key": "wallpaper.online.openverseNotice",
+        "scope": "stored-legacy",
+        "text": "Made using Openverse. Not endorsed or certified by Openverse."
+      }
     },
     {
       "id": "wikimedia",
@@ -150,7 +156,8 @@
         "Thumbnails are generated on the separate thumb.wikimedia.org host (e.g. 1280px URL with utm query parameters) while originals live on upload.wikimedia.org; both must stay in imageHosts.",
         "API:Etiquette also recommends serial requests and caching query results; the client should not parallel-hammer the API.",
         "Random mode (generator=random, namespace 6) verified with the same anonymous CORS requirements as search; 0.2.2 may declare random:true."
-      ]
+      ],
+      "delivery": "cached"
     },
     {
       "id": "nasa-image-library",
@@ -227,7 +234,7 @@
         "preflightStatus": "204 No Content for OPTIONS https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=cat with 'Origin: https://example.com' and 'Access-Control-Request-Method: GET'; response has access-control-allow-origin: *, access-control-allow-methods: GET,HEAD,PUT,PATCH,POST,DELETE, Allow: OPTIONS, GET. GET responses carry access-control-allow-origin: * and Vary: Origin.",
         "allowOrigin": "*",
         "allowedMethods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-        "imageHostCors": "FAILING: the image host images.metmuseum.org serves image bytes WITHOUT Access-Control-Allow-Origin. Node fetch GET https://images.metmuseum.org/CRDImages/ep/original/DP-42549-001.jpg -> 200 image/jpeg, redirected=false, content-length 8291194, ACAO null; GET /CRDImages/ep/web-large/DP-42549-001.jpg -> 200 image/jpeg (content-length 221383 in the multi-Origin batch), ACAO null with Origin https://example.com, https://www.metmuseum.org and https://example.org - no access-control headers in any response. Curl requests to the same image host are intercepted by Imperva with an HTML 'Pardon Our Interruption' page (200 text/html) rather than the JPEG, so curl cannot be used as the CORS oracle here; the Node fetch responses are the real origin responses. (A 404 on that host does carry access-control-allow-origin:*, but 200 image responses do not.)",
+        "imageHostCors": "absent: 200 image/jpeg responses from images.metmuseum.org carry no Access-Control-Allow-Origin for any tested Origin; direct <img> display is the only browser path. The image host is behind Imperva and must be re-probed at acceptance.",
         "evidence": "Commands: curl -H 'Origin: ...' -D - https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds=1 (200, ACAO *, Vary: Origin); OPTIONS as above; curl -H 'Origin: ...' 'https://collectionapi.metmuseum.org/public/collection/v1.1/search?q=cat&hasImages=true&limit=2' (200 {total:1595,objectIDs:[...]}); node fetch to images.metmuseum.org with three Origins (200 image/jpeg, no ACAO). Live metmuseum.org terms page returned HTTP 429 to this review network; the CC0/API terms text was read from the Wayback Machine snapshot 20261004090902 of that URL."
       },
       "rateLimits": {
@@ -267,14 +274,23 @@
         ],
         "policy": "No redirects observed. Declare images.metmuseum.org and use redirect:'error' with no redirectHosts; do not accept http:/non-public URLs, and filter results to isPublicDomain===true only."
       },
-      "decision": "deferred",
-      "decisionReason": "Licence and API verification passed (CC0 Open Access terms, isPublicDomain filter, full-size image URLs, ACAO '*' on the JSON API, pagination verified) but the required fetch()+blob local cache cannot read image bytes from images.metmuseum.org: 200 image/jpeg responses carry no Access-Control-Allow-Origin for any tested Origin, so a cross-origin fetch would be blocked by the browser. Deferred for 0.2.2 (not listed, not in Auto); re-gate if the Met adds CORS to its image CDN or the product gains a compliant image-fetch path.",
+      "decision": "accepted",
+      "decisionReason": "Licence and API verification passed (CC0 Open Access terms, isPublicDomain filter, full-size image URLs, ACAO * on the JSON API, pagination verified). Direct <img> display bypasses the CORS-less image CDN; the image layer uses referrerpolicy=no-referrer and a visible error fallback. Accepted conditionally for 0.2.3 direct display, subject to the final real-host repeat probe.",
       "notes": [
         "The images.metmuseum.org host also fronts Imperva bot mitigation: plain curl requests to image URLs received an HTML 'Pardon Our Interruption' page (200 text/html, 5996 bytes) instead of the JPEG. That is a second, independent practical risk for an image-fetching client even if CORS were fixed.",
         "Only objects with isPublicDomain=true may be listed; the API still returns identifying data for in-copyright artworks, so this filter is mandatory.",
         "Search endpoint migration: use /public/collection/v1.1/search (offset/limit); the retired /public/collection/v1/search returns 410 after 2026-10-01.",
-        "The Met terms page itself returned 429 to the review network; the quoted clause is from the Wayback snapshot of the same URL (2026-10-04), while the CC0 grant and 80 req/s limit were also confirmed live on the official API documentation at https://metmuseum.github.io/."
-      ]
+        "The Met terms page itself returned 429 to the review network; the quoted clause is from the Wayback snapshot of the same URL (2026-10-04), while the CC0 grant and 80 req/s limit were also confirmed live on the official API documentation at https://metmuseum.github.io/.",
+        "0.2.3 direct-only: images.metmuseum.org still has no ACAO, so the fetch()+Blob cache path is forbidden; the direct <img> layer is the security boundary."
+      ],
+      "delivery": "direct",
+      "browserImageProbe": {
+        "status": "pass",
+        "runs": 3,
+        "networks": 2,
+        "probedAt": "2026-11-25",
+        "evidence": "Three headless Chrome 156 <img referrerpolicy=no-referrer> loads of images.metmuseum.org returned naturalWidth > 0; the object API was read with ACAO *. This is a M0 pre-gate, not the final acceptance evidence; the plan still requires real DSH Web/Desktop checks and alarm-imperva repeatability. A fourth load through the system HTTP proxy also returned naturalWidth > 0 for both hosts; the two paths are recorded as two network paths, not two separate days."
+      }
     },
     {
       "id": "art-institute-of-chicago",
@@ -382,6 +398,75 @@
         "CORS and redirects are technically clean (ACAO * on list API, 302, and CDN image; preflight supported), so the rejection is purely licensing/provenance, not transport.",
         "If a future release ever accepts Picsum, the registry must fix the current 0.2.1 fields: creator=author, creatorUrl=list-row url (Unsplash page), license='Unsplash License', licenseUrl='https://unsplash.com/license', sourceUrl='https://picsum.photos/', and render non-selectable when the list row has no valid Unsplash page URL.",
         "Live Unsplash License retrieval was blocked by bot mitigation (307 -> /.within.website); the quote is from the Wayback snapshot of the same URL. Current Unsplash terms are unchanged in substance per the earlier 0.2.2 review, but the exact current wording was not re-read this session."
+      ]
+    },
+    {
+      "id": "cleveland",
+      "role": "CC0 open-access art museum collection (Cleveland Museum of Art Open Access API)",
+      "api": {
+        "baseUrl": "https://openaccess-api.clevelandart.org/api/artworks/",
+        "docsUrl": "https://www.clevelandart.org/open-access-api",
+        "termsUrl": "https://www.clevelandart.org/open-access-api",
+        "exampleRequest": "GET https://openaccess-api.clevelandart.org/api/artworks/?q=landscape&has_image=1&cc0=1&limit=2 with 'Origin: https://example.com' -> HTTP 200 application/json with access-control-allow-origin: *; images.print.url -> https://openaccess-cdn.clevelandart.org/..._print.jpg (image/jpeg, no ACAO)."
+      },
+      "auth": "keyless",
+      "cors": {
+        "preflightStatus": "Simple GET; API returns access-control-allow-origin: * for Origin requests. No custom headers required.",
+        "allowOrigin": "*",
+        "allowedMethods": "GET",
+        "imageHostCors": "absent: openaccess-cdn.clevelandart.org returns image/jpeg without Access-Control-Allow-Origin; direct <img> display only, never fetch()+Blob.",
+        "evidence": "2026-11-25 probes: API GET 200 with ACAO *; image GET 200 image/jpeg with no ACAO; headless Chrome 156 loaded the image with referrerpolicy=no-referrer (naturalWidth > 0)."
+      },
+      "rateLimits": {
+        "anonymous": "No API key or registration. The Open Access API does not publish a hard anonymous rate limit; one batch per user activation and no polling.",
+        "observedHeaders": {},
+        "retryAfter": "not observed"
+      },
+      "pagination": {
+        "style": "skip/limit offset pagination; response data[] plus info.total.",
+        "cursorField": "skip",
+        "pageSizeMax": "not documented; client requests 12"
+      },
+      "license": {
+        "fields": [
+          "share_license_status (CC0)",
+          "title",
+          "creators[].description",
+          "url",
+          "images.web/print/full.url",
+          "creditline",
+          "image_credit"
+        ],
+        "attributionRequired": false,
+        "licenseUrlField": "none returned per object; Cleveland Open Access data and images are released under CC0.",
+        "termsClauseQuote": "\"The Cleveland Museum of Art is pleased to offer its Open Access collection data and images under a Creative Commons Zero (CC0) license for unrestricted commercial and noncommercial use.\" (Cleveland Open Access API documentation, 2026-11-25)",
+        "termsRetrievedAt": "2026-11-25",
+        "wallpaperUseAllowed": true
+      },
+      "imageHosts": [
+        "openaccess-cdn.clevelandart.org"
+      ],
+      "redirects": {
+        "chain": [
+          "GET API 200 (no redirect)",
+          "GET image 200 image/jpeg (no redirect)"
+        ],
+        "policy": "Declare openaccess-cdn.clevelandart.org and never use images.full (TIFF) or non-allowlisted hosts."
+      },
+      "decision": "accepted",
+      "delivery": "direct",
+      "browserImageProbe": {
+        "status": "pass",
+        "runs": 3,
+        "networks": 2,
+        "probedAt": "2026-11-25",
+        "evidence": "Three headless Chrome 156 <img referrerpolicy=no-referrer> loads of openaccess-cdn.clevelandart.org returned naturalWidth > 0; API ACAO * observed. M0 pre-gate only; final real-host acceptance required. A fourth load through the system HTTP proxy also returned naturalWidth > 0 for both hosts; the two paths are recorded as two network paths, not two separate days."
+      },
+      "decisionReason": "Keyless CC0 source with a CORS-clean JSON API and a CORS-less image CDN. Direct <img> display is the only browser path; use images.print (not images.full) and show real licence/credit. Accepted for 0.2.3 direct display.",
+      "notes": [
+        "images.full is a TIFF; never display it. Use images.web for thumbnails and images.print for the wallpaper.",
+        "Image responses have no ACAO; the direct layer cannot use fetch(), Blob cache, IndexedDB or a byte-cap precheck. The API filesize may drive a UI warning only.",
+        "CC0 means no attribution is legally required, but the UI still shows source title, creator and source link."
       ]
     }
   ]

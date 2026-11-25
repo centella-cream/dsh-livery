@@ -19,9 +19,10 @@
 
 import { readFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { CATALOG_ROUTE, PREVIEW_ROUTE_PREFIX, type LiveryCatalog } from '../core/types.js'
+import { CATALOG_ROUTE, PREVIEW_ROUTE_PREFIX, PROVIDERS_ROUTE, type LiveryCatalog } from '../core/types.js'
 import type { AdapterRecord } from '../generated/contract.js'
 import { bindPreviews, buildCatalog, serializeCatalog } from './catalog.js'
+import { PROVIDER_MANIFEST_RESPONSE } from './provider-manifests.js'
 
 /** A webserver route handler: owns the whole response lifecycle. */
 export type LiveryRouteHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>
@@ -70,6 +71,8 @@ export interface LiveryRouteOptions {
   readonly whenReady?: () => Promise<unknown>
   /** Maximum readiness wait per request; defaults to {@link DEFAULT_READINESS_TIMEOUT_MS}. */
   readonly readinessTimeoutMs?: number
+  /** Provider-manifest response seam for tests; defaults to the bundled document. */
+  readonly providerManifestResponse?: string
 }
 
 /**
@@ -83,6 +86,7 @@ export const DEFAULT_READINESS_TIMEOUT_MS = 1500
 /** Both handlers, wired with one consistent option set. */
 export interface LiveryRouteHandlers {
   readonly catalog: LiveryRouteHandler
+  readonly providers: LiveryRouteHandler
   readonly preview: LiveryRouteHandler
 }
 
@@ -433,6 +437,42 @@ function safetyNet(handler: LiveryRouteHandler): LiveryRouteHandler {
 }
 
 /**
+ * Build the provider-manifest handler.
+ *
+ * The reviewed manifest document is fixed for the running build. The handler is
+ * gated by the same live adapter as the catalog: an uncertified host serves no
+ * provider list. The response is small, hash-bound and never cached.
+ * @param options - adapter resolver and test seam.
+ * @returns route handler.
+ */
+export function createProvidersHandler(options: LiveryRouteOptions = {}): LiveryRouteHandler {
+  const currentAdapter = adapterResolver(options)
+  const body = options.providerManifestResponse ?? PROVIDER_MANIFEST_RESPONSE
+  return async (req, res) => {
+    if (!isReadMethod(req)) {
+      respond(res, 405, METHOD_NOT_ALLOWED_HEADERS)
+      return
+    }
+    await awaitReadiness(options)
+    if (currentAdapter() === undefined) {
+      respond(res, 404, NOT_FOUND_HEADERS)
+      return
+    }
+    if (typeof body !== 'string' || body.length === 0) {
+      respond(res, 500, INTERNAL_ERROR_HEADERS, 'providers unavailable')
+      return
+    }
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+      'content-length': String(Buffer.byteLength(body)),
+    }
+    respond(res, 200, headers, methodOf(req) === 'HEAD' ? undefined : body)
+  }
+}
+
+/**
  * Create both handlers with one consistent option set.
  * @param options - adapter resolver and preview/catalog seams.
  * @returns the two handlers.
@@ -440,6 +480,7 @@ function safetyNet(handler: LiveryRouteHandler): LiveryRouteHandler {
 export function createLiveryRouteHandlers(options: LiveryRouteOptions = {}): LiveryRouteHandlers {
   return {
     catalog: safetyNet(createCatalogHandler(options)),
+    providers: safetyNet(createProvidersHandler(options)),
     preview: safetyNet(createPreviewHandler(options)),
   }
 }
@@ -458,15 +499,15 @@ export function previewRouteBase(): string {
 }
 
 /**
- * Register the catalog and preview routes on the webserver.
+ * Register the catalog, provider-manifest and preview routes on the webserver.
  *
- * Both registrations happen or neither: if the second throws (a route collision
+ * All registrations happen or none: if one throws (a route collision
  * is a composition misconfiguration), the first is disposed before the error
  * escapes. The returned aggregator disposes in reverse registration order and
  * tolerates a disposer throwing so one failed teardown cannot strand the other.
  * @param webServer - webserver service (or a compatible real one).
  * @param options - adapter resolver and preview/catalog seams.
- * @returns a disposer aggregator for both routes.
+ * @returns a disposer aggregator for all routes.
  */
 export function registerLiveryRoutes(
   webServer: LiveryWebServerLike,
@@ -490,6 +531,11 @@ export function registerLiveryRoutes(
       kind: 'exact',
       path: CATALOG_ROUTE,
       handler: handlers.catalog,
+    }))
+    disposers.push(webServer.register({
+      kind: 'exact',
+      path: PROVIDERS_ROUTE,
+      handler: handlers.providers,
     }))
     disposers.push(webServer.register({
       kind: 'prefix',

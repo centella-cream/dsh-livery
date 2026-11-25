@@ -23,7 +23,7 @@ import { Config } from '../../src/host/config.js'
 import type { LiveryHostConfig } from '../../src/host/config.js'
 import { ADAPTERS } from '../../src/generated/contract.js'
 import { CATALOG_PROFILES } from '../../src/generated/liveries.js'
-import { CATALOG_ROUTE, STOCK_ID } from '../../src/core/types.js'
+import { CATALOG_ROUTE, PROVIDERS_ROUTE, STOCK_ID } from '../../src/core/types.js'
 import { fakeRequest } from './fixtures.js'
 
 /** First generated certified adapter, when a compiled catalog exists. */
@@ -290,13 +290,14 @@ describe('apply', () => {
     expect(getLastGateStatus()?.payload.skinId).toBe(first.id)
   })
 
-  it('registers both routes through ctx.inject([webServer]) and disposes them via effect', () => {
+  it('registers all routes through ctx.inject([webServer]) and disposes them via effect', () => {
     const webServer = makeWebServer()
     const host = makeHostContext({ webServer })
     apply(host.context, Config() as LiveryHostConfig)
     expect(host.injected).toContainEqual(['webServer'])
     expect([...webServer.routes.keys()]).toEqual([
       `exact:${CATALOG_ROUTE}`,
+      `exact:${PROVIDERS_ROUTE}`,
       'prefix:/livery/assets/previews',
     ])
     const routeEffect = host.effects.find((effect) => effect.label === 'livery: routes')

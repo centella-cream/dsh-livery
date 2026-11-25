@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "providers": [
+    {
+      "id": "cleveland",
+      "labels": {
+        "zh-CN": "克利夫兰艺术博物馆",
+        "en-US": "Cleveland Museum of Art"
+      },
+      "delivery": "direct",
+      "auth": "keyless",
+      "capabilities": { "search": true, "random": false, "auto": true },
+      "api": {
+        "origin": "https://openaccess-api.clevelandart.org",
+        "path": "/api/artworks/",
+        "queryParam": "q",
+        "pageSizeParam": "limit",
+        "extraParams": { "has_image": "1", "cc0": "1" },
+        "defaultQuery": "landscape"
+      },
+      "list": "data",
+      "select": {
+        "id": "id",
+        "title": "title",
+        "creator": "creators.0.description",
+        "sourceUrl": "url",
+        "fullImage": "images.print.url",
+        "thumbImage": "images.web.url",
+        "license": {
+          "name": "CC0 1.0",
+          "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+        },
+        "filter": { "path": "share_license_status", "equals": "CC0" }
+      },
+      "imageHosts": ["openaccess-cdn.clevelandart.org"],
+      "fetchLimit": 12,
+      "resultLimit": 12
+    },
+    {
+      "id": "met-open-access",
+      "labels": {
+        "zh-CN": "大都会艺术博物馆",
+        "en-US": "The Metropolitan Museum of Art"
+      },
+      "delivery": "direct",
+      "auth": "keyless",
+      "capabilities": { "search": true, "random": false, "auto": false },
+      "api": {
+        "origin": "https://collectionapi.metmuseum.org",
+        "path": "/public/collection/v1.1/search",
+        "queryParam": "q",
+        "pageSizeParam": "limit",
+        "extraParams": { "hasImages": "true" },
+        "defaultQuery": "art"
+      },
+      "list": "objectIDs",
+      "detail": {
+        "path": "/public/collection/v1/objects/{id}",
+        "id": "."
+      },
+      "select": {
+        "id": "objectID",
+        "title": "title",
+        "creator": "artistDisplayName",
+        "sourceUrl": "objectURL",
+        "fullImage": "primaryImage",
+        "thumbImage": "primaryImageSmall",
+        "license": { "name": "Public Domain" },
+        "filter": { "path": "isPublicDomain", "equals": true }
+      },
+      "imageHosts": ["images.metmuseum.org"],
+      "fetchLimit": 20,
+      "resultLimit": 12
+    }
+  ]
+}

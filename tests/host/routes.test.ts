@@ -4,19 +4,22 @@
  * on a public HTTP surface — traversal and a response that is already finished.
  */
 
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import {
   createCatalogHandler,
   createLiveryRouteHandlers,
   createPreviewHandler,
+  createProvidersHandler,
   previewRouteBase,
   registerLiveryRoutes,
   type LiveryRouteHandler,
   type LiveryWebServerLike,
 } from '../../src/host/routes.js'
 import { buildCatalog, previewsBaseFor } from '../../src/host/catalog.js'
-import { CATALOG_ROUTE, PREVIEW_ROUTE_PREFIX } from '../../src/core/types.js'
+import { PROVIDER_MANIFEST_DOCUMENT } from '../../src/host/provider-manifests.js'
+import { CATALOG_ROUTE, PREVIEW_ROUTE_PREFIX, PROVIDERS_ROUTE } from '../../src/core/types.js'
 import type { AdapterRecord } from '../../src/generated/contract.js'
 import {
   SYNTHETIC_PROFILE_A,
@@ -396,8 +399,48 @@ class FakeWebServer implements LiveryWebServerLike {
   }
 }
 
+/** Canonical JSON used by the Host manifest hash. */
+function canonical(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`
+  const record = value as Record<string, unknown>
+  return `{${Object.keys(record).sort().map(key => `${JSON.stringify(key)}:${canonical(record[key])}`).join(',')}}`
+}
+
+describe('provider-manifest handler', () => {
+  it('serves the reviewed manifest document with a hash and no-store headers', async () => {
+    const handler = createProvidersHandler({ adapter: ADAPTER })
+    const response = await invoke(handler, 'GET', PROVIDERS_ROUTE)
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toBe('application/json')
+    expect(response.headers['cache-control']).toBe('no-store')
+    const document = JSON.parse(String(response.body))
+    expect(document.schemaVersion).toBe(1)
+    expect(document.manifestHash).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(document.providers.map((provider: { id: string }) => provider.id)).toEqual(['cleveland', 'met-open-access'])
+    expect(document.providers[0].delivery).toBe('direct')
+    const expected = `sha256:${createHash('sha256').update(canonical(PROVIDER_MANIFEST_DOCUMENT), 'utf8').digest('hex')}`
+    expect(document.manifestHash).toBe(expected)
+  })
+
+  it('answers HEAD without a body and rejects non-read methods', async () => {
+    const handler = createProvidersHandler({ adapter: ADAPTER })
+    const head = await invoke(handler, 'HEAD', PROVIDERS_ROUTE)
+    expect(head.statusCode).toBe(200)
+    expect(head.body).toBeUndefined()
+    const post = await invoke(handler, 'POST', PROVIDERS_ROUTE)
+    expect(post.statusCode).toBe(405)
+  })
+
+  it('fails closed without a certified adapter', async () => {
+    const handler = createProvidersHandler({ adapterFor: () => undefined })
+    const response = await invoke(handler, 'GET', PROVIDERS_ROUTE)
+    expect(response.statusCode).toBe(404)
+  })
+})
+
 describe('registerLiveryRoutes', () => {
-  it('registers the exact catalog route and the preview prefix route', () => {
+  it('registers the catalog, provider-manifest and preview routes', () => {
     const webServer = new FakeWebServer()
     const release = registerLiveryRoutes(webServer, {
       adapter: ADAPTER,
@@ -407,6 +450,7 @@ describe('registerLiveryRoutes', () => {
     })
     expect([...webServer.routes.keys()]).toEqual([
       `exact:${CATALOG_ROUTE}`,
+      `exact:${PROVIDERS_ROUTE}`,
       `prefix:${previewRouteBase()}`,
     ])
     expect(previewRouteBase()).toBe('/livery/assets/previews')
@@ -414,6 +458,7 @@ describe('registerLiveryRoutes', () => {
     expect(webServer.routes.size).toBe(0)
     expect(webServer.disposed).toEqual([
       `prefix:${previewRouteBase()}`,
+      `exact:${PROVIDERS_ROUTE}`,
       `exact:${CATALOG_ROUTE}`,
     ])
   })
@@ -425,12 +470,12 @@ describe('registerLiveryRoutes', () => {
     expect(() => release()).not.toThrow()
   })
 
-  it('disposes the first route when the second registration fails, then rethrows', () => {
+  it('disposes already-registered routes when a later registration fails, then rethrows', () => {
     const webServer = new FakeWebServer()
     webServer.failOnPath = previewRouteBase()
     expect(() => registerLiveryRoutes(webServer, { adapterFor: () => undefined }))
       .toThrow(/duplicate route/)
     expect(webServer.routes.size).toBe(0)
-    expect(webServer.disposed).toEqual([`exact:${CATALOG_ROUTE}`])
+    expect(webServer.disposed).toEqual([`exact:${PROVIDERS_ROUTE}`, `exact:${CATALOG_ROUTE}`])
   })
 })
