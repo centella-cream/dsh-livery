@@ -1,9 +1,16 @@
 # Documentation
 
-**`0.2.2` is the current release (`dsh-livery@0.2.2`).** The authoritative
-support policy is `contracts/dsh/support-matrix.json`; the exact accepted artifact
-and probe evidence are recorded in `contracts/dsh/evidence/0.2.2/` and
-`docs/verification.md`.
+**`0.2.2` is the current published release (`dsh-livery@0.2.2`).** The
+authoritative support policy is `contracts/dsh/support-matrix.json`; the exact
+accepted artifact and probe evidence are recorded in
+`contracts/dsh/evidence/0.2.2/` and `docs/verification.md`.
+
+`0.2.3` is an **implementation candidate on this branch, not yet published**.
+It adds two keyless direct-display sources (Cleveland Museum of Art, The Met),
+data-driven Host provider manifests, a dedicated direct `<img>` layer, the
+legacy-Openverse notice, and the `0.2.2 → 0.2.3` update transition. Acceptance
+evidence for `0.2.3` does not exist yet; the tables below remain the frozen
+`0.2.2` release record.
 
 ## Livery 0.2.2 acceptance scope
 
@@ -61,8 +68,15 @@ Windows, Web Edge and any other DSH build are not supported.
   Slot proof covers 6 of 8 hosts: `0.2.1-rc.2` (Web) is covered by the runtime
   detail check; `0.2.1-rc.3` (Desktop) has no runtime detail check, so it is a
   documented per-scope limitation, not a passed claim.
+- **[0.2.3 plan](design/0.2.3-plan.md)** — implementation candidate for two new keyless wallpaper
+  sources (Cleveland + Met), data-driven provider manifests with **no client
+  gzip increase**, direct-display mode, the 0.2.2 legacy Openverse-notice fix
+  (Openverse itself is not re-added) and the robustness backlog. **Planning
+  only; not shipped.** Source probes:
+  [0.2.3 wallpaper-source research](research/wallpaper-sources-0.2.3.md).
 
-Repository-only records (not shipped in the npm package): the 0.2.2 provider
+Repository-only records (not shipped in the npm package): the 0.2.3 wallpaper
+source research `docs/research/wallpaper-sources-0.2.3.md`, the 0.2.2 provider
 access-gate record `docs/research/provider-access-gate.json` and the per-host
 slot declaration proof `contracts/dsh/client-slot-declarations.json`.
 
@@ -118,8 +132,10 @@ DSH Desktop Windows、Web Edge 及其他 DSH 版本不在支持范围内。
 - **[0.2.0 视觉语言](design/0.2.0-visual-language.md)** 与 **[0.2.0 方案稿](design/0.2.0-proposal.md)**：已实现的字体/标签/L5a/sidebar 视觉语言，以及 manifest v2 多轴设计。
 - **[0.2.2 实施方案](design/0.2.2-plan.md)**：已发布的 0.2.2 壁纸工作室、provider 注册表、stale boot HMR 握手与插件详情面；作为设计与验收记录保留。
 - **[插件详情面](design/plugin-detail-surface.md)**：0.2.2 的 detail slots、可观测事实区块、真实操作与更新边界文案；per-host slot 证明覆盖 8 个宿主中的 6 个，`0.2.1-rc.2` / `0.2.1-rc.3` 为显式缺口，其中 `0.2.1-rc.2`（Web）由运行时 detail 检查覆盖；`0.2.1-rc.3`（Desktop）没有运行时 detail 检查，属于文档化的 per-scope limitation，不是已通过声明。
+- **[0.2.3 目标](design/0.2.3-plan.md)**：Cleveland + Met 两个新增 keyless 源、Host manifest 路由、direct `<img>` 层、**不提高 client gzip**，以及 0.2.2 legacy Openverse 提示修复；Openverse 不再重加。**已实现为候选，尚未验收/发布；下表仍是 0.2.2 冻结记录。** 源调研见 [0.2.3 壁纸源研究](research/wallpaper-sources-0.2.3.md)。
 
-仅仓库记录（不随 npm 包发布）：0.2.2 provider 访问门禁记录
+仅仓库记录（不随 npm 包发布）：0.2.3 壁纸源研究
+`docs/research/wallpaper-sources-0.2.3.md`、0.2.2 provider 访问门禁记录
 `docs/research/provider-access-gate.json`，以及 per-host slot 声明证明
 `contracts/dsh/client-slot-declarations.json`。
 

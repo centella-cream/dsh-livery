@@ -1,6 +1,57 @@
 # Verification
 
-## Release `0.2.2` (current)
+## Candidate `0.2.3` (implementation only)
+
+The `0.2.3` candidate is on the current branch: package/client catalog version
+`0.2.3`, two Host-served keyless provider manifests (Cleveland, The Met) with a
+direct `<img>` display layer, legacy-Openverse notice/state guards and the
+`0.2.2 → 0.2.3` stale-boot allowlist. **No acceptance evidence exists yet** and
+`contracts/dsh/evidence/0.2.3/` is intentionally absent. The frozen `0.2.2`
+record below remains current until the candidate is frozen, accepted and
+published from the exact tarball.
+
+Candidate validation performed on 2026-11-25 against a candidate tarball
+generated from this branch. **All 13 declared scopes passed**:
+DSH `0.2.1-rc.2`/`rc.4`/`rc.5`, `0.2.2-rc.1`/`rc.2`/`rc.3`/`rc.5` Web
+(308 passed / 0 failed / 7 skipped each) and DSH `0.2.1-rc.3`/`rc.5`,
+`0.2.2-rc.1`/`rc.2`/`rc.3`/`rc.5` Desktop (35 passed / 0 failed / 2 skipped
+each). The isolated `0.2.2 → 0.2.3` Web update transition passed on both
+`0.2.2-rc.1` and `0.2.2-rc.5` (35 passed / 0 failed; no page reload, stale
+startup frame, catalog re-adopted, manager outcome `applied`), from the published
+`0.2.2` artefact
+`sha256:46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff`.
+
+These are local candidate-validation runs, **not** the committed formal
+`contracts/dsh/evidence/0.2.3/` record: probes/reports are not yet frozen under
+the evidence directory, the build commit is not committed, and the final rebuilt
+tarball must be re-verified after the packaged documentation is frozen. No
+release claim is made here.
+
+Still pending for the formal candidate:
+
+- a full 13-scope rerun on the docs-frozen tarball and the
+  `0.2.2 → 0.2.3` update transition on the required host(s);
+- frozen probes/reports under `contracts/dsh/evidence/0.2.3/` plus the audit
+  envelope;
+- the plan §1.5 real **jobs popover / subagent-card visual evidence** on the
+  final candidate (unit/static coverage is not a substitute);
+- explicit review of the recorded client gzip headroom (<100 B threshold).
+
+**Met residual risk:** `primaryImage` is a direct, browser-managed request with
+no byte/pixel precheck (the object record has no dimensions/file size). The
+reviewed mitigation remains: Met stays **pinned-only** (`capabilities.auto=false`)
+and direct selections show the “originals may be large” disclosure. This is an
+accepted plan risk, not a claim of bounded image size.
+
+After the final review fixes (direct import/state host policy, hero CSS/dim,
+onerror reset, direct disclosure, SECURITY/README outlets and handshake copy),
+Web `0.2.2-rc.1` passed **309/0** (7 skipped), Desktop `0.2.2-rc.5` passed
+**35/0**, and the `0.2.2 → 0.2.3` update transition on `0.2.2-rc.5` passed
+**35/0** (`stale=true`, `catalogReadopted=true`, manager `applied`). The other
+scopes were last validated before these review fixes; a full 13-scope rerun on the
+final rebuilt tarball is required for formal evidence.
+
+## Release `0.2.2` (current published)
 
 The `0.2.2` artifact is `dsh-livery-0.2.2.tgz`. Its exact sha256, byte size, file
 count and run commit are recorded in every committed evidence file under
@@ -54,13 +105,16 @@ shell.
 | Measure | Budget | Result |
 |---|---|---|
 | Client bundle gzip | 72 KiB (73,728 B) | within budget (build gate) |
+| Client gzip headroom | review if <100 B | 0.2.3 candidate: 73,655 B / 73 B headroom — explicit pre-release review item |
 | Largest livery/boot CSS | 14 KiB (14,336 B) | within budget (build gate) |
 | Host bundle gzip | 360 KiB (368,640 B) | within budget (build gate) |
 | Package tarball | 4 MiB (4,194,304 B) | within budget (`release-check`) |
 
 The exact measured values are in `.tmp/release-check/release-manifest.json` and
 the project build report; the budget gates run as part of `pnpm verify` and
-`pnpm release:check`. The accepted probe compresses the served client at the same
+`pnpm release:check`. The build report records `clientGzipHeadroom`; a headroom
+below **100 B** is emitted as an explicit warning and must be reviewed on the
+final frozen candidate before tagging, even though it is not a build failure. The accepted probe compresses the served client at the same
 zlib level 9 as `scripts/build.mjs`.
 
 Every run used a fresh isolated `DSH_HOME` under `.tmp/acceptance/`, its own run

@@ -22,6 +22,14 @@ plugin, not a host theme takeover.
 > builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
 
+> **Candidate `0.2.3` (not yet published).** This branch implements the
+> approved `0.2.3` plan: two keyless direct-display sources (Cleveland Museum of
+> Art and The Met), Host-served provider manifests, a dedicated direct `<img>`
+> layer with state/preset/Recent compatibility, and a legacy-Openverse notice.
+> It keeps the 72 KiB client gzip cap and adds the `0.2.2 → 0.2.3` update
+> transition. It has **no acceptance evidence yet** and is not a supported
+> release until the exact tarball passes all 13 scopes.
+
 English · [中文](README.zh.md)
 
 ![DSH Livery Visual Style page: live preview, current style, and 28-style catalog](docs/assets/hero-en.jpg)
@@ -55,10 +63,10 @@ adapters as `0.2.1`; it adds no host adapter and no new host capability.
   (rights or image-CDN verification blocked); Picsum is removed because the
   Unsplash licence does not permit this use. Existing Picsum remote selections
   still render from cache; no new result carries a Picsum licence.
-- **Predictable requests.** Opening the wallpapers page triggers no online-provider
-  batch; a persisted online wallpaper may still load through the guarded local
-  cache. The first activation of the Online tab requests exactly one batch; later
-  tab switches do not refetch, and there is no polling or prefetch. Auto tries the offered
+- **Predictable requests.** Opening the wallpapers page defaults to the Online tab
+  and automatically requests exactly one Random batch; a persisted online
+  wallpaper may still load through the guarded local cache. Later tab switches do
+  not refetch, and there is no polling or prefetch. Auto tries the offered
   gate-passed providers under a 12 s deadline and names the provider that served
   the results; a pinned provider never switches silently. Empty and
   failure states are explicit, with Retry and links back to Built-in/None.
@@ -98,14 +106,16 @@ adapters as `0.2.1`; it adds no host adapter and no new host capability.
 - **Component chrome.** `layout.chrome` can tint, outline, darken or block-fill the
   rail, composer, bubble, active row and selector from the palette seeds; six
   recipes ship and all 28 styles choose one.
-- **Wallpaper studio.** Access-gated Wikimedia Commons as the only online source (Openverse was removed in 0.2.2 because anonymous limits made it unusable) with
-  per-image attribution, 24 CSS wallpapers total (8 curated + 16 Classic),
+- **Wallpaper studio.** Access-gated Wikimedia Commons plus the 0.2.3 direct-display
+  Cleveland Museum of Art and The Met sources (Openverse was removed in 0.2.2
+  because anonymous limits made it unusable) with per-image attribution, 24 CSS
+  wallpapers total (8 curated + 16 Classic),
   Recent, a generated Follow-style background, and local/link uploads
   (IndexedDB). Blur 0–24 px, dim 0–70 %, frost 0–100 % and a global atmosphere
   overlay. The painted wallpaper layers are viewport-relative `cover`, so images
-  crop without geometric distortion. Opening the page triggers no provider batch
-  (a saved online image may load from cache); the first Online activation requests
-  one batch.
+  crop without geometric distortion. Opening the page defaults to Online and
+  automatically requests one Random batch (a saved online image may also load
+  from cache); later source-tab switches do not refetch.
 - **Presets and focal position.** Export/import style + wallpaper + effects +
   nine-grid focal point; remote/upload wallpapers support pointer and keyboard
   focal positioning. Schema v2 adds the Follow-style target and attribution URLs
@@ -135,9 +145,8 @@ preview scenes.
 ## Wallpapers
 
 The wallpaper studio and its live 16:9 preview. Opening the wallpapers page
-triggers no provider batch: Built-in is the default image source, and the first
-Online activation requests one batch from Wikimedia Commons; Auto
-names the provider that served the results. Blur, dim, frost and the global
+defaults to Online and automatically requests one Random batch; Built-in remains
+one click away. Auto names the provider that served the results. Blur, dim, frost and the global
 atmosphere controls apply to the whole interface. Focal positioning is available
 for remote and uploaded wallpapers, not for built-in or Follow-style
 backgrounds. Wallpaper choices stay local.

@@ -7,6 +7,84 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
+## [0.2.3] — 2026-11-25 (unreleased candidate)
+
+`0.2.3` is a client/Host feature candidate on the same eight exact-certified host
+adapters as `0.2.2`. It is not published and has no formal acceptance evidence
+yet; the `0.2.2` record below remains the frozen release until the candidate is
+accepted. Local candidate validation: all 13 declared scopes passed
+(7 Web × 308/0, 6 Desktop × 35/0) plus the isolated `0.2.2 → 0.2.3` update
+transition on Web `0.2.2-rc.1` and `0.2.2-rc.5` (35/0 each). Formal evidence
+directories, committed probe/report artifacts, the audit envelope and the final
+rebuilt tarball are still missing; this is not a release claim.
+
+### Added
+
+- Two keyless direct-display wallpaper sources: **Cleveland Museum of Art**
+  (CC0, `openaccess-api.clevelandart.org`, `openaccess-cdn.clevelandart.org`)
+  and **The Met** (public-domain filter, `collectionapi.metmuseum.org` v1.1
+  search + object detail, `images.metmuseum.org`). Both image CDNs have no
+  CORS; they are displayed only through a plugin-owned `<img>` with
+  `referrerpolicy="no-referrer"`, never fetched into a Blob cache.
+- Host provider-manifest route `/livery/api/providers`: reviewed data in
+  `src/provider-manifests.json`, bundled into the Host with a canonical
+  `manifestHash`, and lazily loaded by the client when Online first activates.
+  No provider code is added per source.
+- Dedicated direct image layer (`#dsh-livery-wallpaper-direct`) plus direct
+  state schema v3, preset schema v3 and a separate Recent v2 key, so `0.2.2`
+  clients fail closed instead of trying to fetch a CORS-less image.
+- Legacy Openverse selections, presets and cold Recent entries show a
+  `Made using Openverse. Not endorsed or certified by Openverse.` notice and
+  never make a new Openverse request; a cold cache shows the generic load
+  failure.
+- `0.2.2 → 0.2.3` is added to the exact stale-boot allowlist (`0.2.1`, `0.2.2`)
+  with the existing same-profile reload boundary.
+- Direct-image load failure falls back once to the provider thumbnail, then
+  marks the layer failed and surfaces the visible load error.
+
+### Changed
+
+- The Wallpapers page now defaults to the **Online** tab and automatically
+  performs exactly one Random batch when it opens (user-requested 0.2.3
+  adjustment). Later tab switches do not refetch; Built-in is one click away.
+  This supersedes the 0.2.2 "no request on panel mount" policy and its
+  acceptance check.
+- Openverse is retained only as legacy cached/credit metadata; its anonymous
+  fetch implementation and offered registry entry are removed. The static
+  Wikimedia Commons provider remains compiled client-side.
+- Provider access gate schema v2 records `delivery`, direct/no-CORS image-host
+  evidence and passed browser image probes; the verifier cross-checks the gate
+  rows against `src/provider-manifests.json`.
+- Client gzip stays under the existing **72 KiB** cap without raising it. The
+  build now minifies the factory body with pinned `terser` while preserving the
+  loader envelope byte-for-byte; the candidate measures **73,655 B** at the
+  time of this entry (73 B headroom), so the cap remains the hard gate.
+- Non-essential i18n copy was shortened to keep the 72 KiB budget; the client
+  stylesheet string is whitespace-compacted with selector semantics preserved.
+
+### Fixed
+
+- **Review hardening:** direct full/thumbnail URLs are now validated against a
+  reviewed provider-host allowlist at both the v3 preset-import and v3
+  persisted-state boundaries (providerId required), closing the arbitrary-https
+  `<img>` bypass; a unit test keeps the client allowlist equal to
+  `src/provider-manifests.json`.
+- The direct hero `<img>` now uses the shared `object-fit:cover` CSS and renders
+  the existing dim layer; the direct body `onerror` fallback state resets for
+  each new selection, so it no longer restores the previous selection's
+  thumbnail.
+- Direct selections show an explicit "online only / not cached / no atmosphere /
+  originals may be large" disclosure in the panel.
+- SECURITY.md and README/README.zh now disclose the three offered sources, all
+  four new provider endpoints, and the default-Online automatic Random request;
+  the stale "no request on open/default Built-in" wording and code docstrings were
+  removed. The update-boundary acceptance copy was aligned with the shortened
+  packaged handshake text.
+- Direct selections skip the Blob cache path, never place a remote URL in body
+  CSS, and restore as server-independent direct images.
+- A caller abort during a pinned provider request now maps to `timeout` even
+  when the underlying fetch rejects first.
+
 ## [0.2.2] — 2026-11-24
 
 `0.2.2` 是只改客户端的正式版本，沿用与 `0.2.1` 相同的 8 个 exact-certified 宿主 adapter。

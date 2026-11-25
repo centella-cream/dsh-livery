@@ -143,6 +143,11 @@ const STALE_BOOT_VERSIONS: readonly string[] = Object.freeze(['0.2.1'])
 
 - `GET /livery/api/catalog` — active adapter identity plus the compiled catalog;
   `cache-control: no-store`; same-origin GET only.
+- `GET /livery/api/providers` — 0.2.3 reviewed provider-manifest document
+  bundled into the Host from `src/provider-manifests.json`; the response carries
+  canonical `manifestHash`, `cache-control: no-store`, same-origin GET/HEAD only.
+  The client lazily fetches it on the first Online activation; it is not part of
+  boot or catalog.
 - `GET /livery/assets/previews/<catalogProfile>/<file>.svg` — whitelist lookup
   from `lib/previews/<profile>/index.json`; filenames are
   `<id>-<zh|en>-<light|dark>.svg`; other profiles 404.
@@ -245,6 +250,12 @@ into the main record; it lives in the sidecar `dsh-livery.wallpaper.style.v1` as
   write and preset import. Recent history is a display mirror that also carries
   the attribution URLs; the current image's credit resolves from the selection,
   and the legacy attribution key is migrated once.
+- 0.2.3 direct-provider selections (`delivery:'direct'`) are never fetch()ed or
+  blob-cached. They are stored as state schema v3, preset schema v3 and in a
+  separate Recent v2 key; `0.2.2` writes/reads only v2/v1 and therefore fails
+  closed instead of attempting a CORS-less fetch. The direct image lives in a
+  plugin-owned `<img id="dsh-livery-wallpaper-direct">` with
+  `referrerpolicy="no-referrer"`; raw provider URLs never enter body CSS.
 - Preset schema v2 (`PRESET_SCHEMA_VERSION = 2`) adds
   `{kind: 'style', variant: 'mesh'}` and the attribution URLs; v1 files stay
   importable and a v1 file claiming `kind: 'style'` is rejected

@@ -75,14 +75,16 @@ Rules:
   preset does not pin anything.
 - No ID is remapped, and a preset referencing a legacy ID still applies.
 
-## Online requests and states (0.2.2)
+## Online requests and states (0.2.3)
 
-- **No request on panel mount or app boot.** The default image tab is Built-in,
-  so opening the Wallpapers page renders the 8 curated swatches without network.
-- The first activation of the Online tab triggers exactly one batch for the
-  current provider/query (guarded to run only from `idle`). Later tab switches do
-  not refetch. Search, Random, Refresh and Retry are the only other request
-  triggers.
+- **Opening the page performs one automatic Random batch.** Online is the default
+  image tab; mounting the Wallpapers panel calls `studio.random()` once, which
+  loads the manifest registry and requests one Random batch from the first
+  offered provider that declares `random` (Wikimedia Commons), unless a pinned
+  provider overrides it. Built-in remains one tab click away.
+- Re-entering the Wallpapers page remounts the panel and starts a new Random
+  batch. In-page source-tab switches do not refetch. Search, Random, Refresh and
+  Retry are the only other request triggers. There is no polling or prefetch.
 - The provider selector is a native `<select id="wallpaper-provider">` labelled
   “Source”, with `Auto` first and then the gate-passed providers in registry
   order (0.2.2 ships Wikimedia Commons only; Openverse was removed from the offered registry). Changing the provider
