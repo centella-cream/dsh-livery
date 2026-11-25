@@ -34,7 +34,7 @@ export interface HostIdentity {
  * and a payload can never influence which catalog/profile is fetched. Extending
  * this list is a reviewed release change tied to an accepted update transition.
  */
-export const STALE_BOOT_VERSIONS: readonly string[] = Object.freeze(['0.2.1'])
+export const STALE_BOOT_VERSIONS: readonly string[] = Object.freeze(['0.2.1', '0.2.2'])
 
 /**
  * Fields every handshake classification carries.

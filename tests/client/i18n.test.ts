@@ -173,7 +173,7 @@ describe('entry rename — 视觉风格 / Visual Style', () => {
 
   it('keeps plugin identity copy separate from the entry label', () => {
     expect(enUS['about.plugin']).toContain('DSH Livery')
-    expect(zhCN['diag.header']).toContain('dsh-livery')
+    expect(zhCN['diag.header']).toContain('Livery')
   })
 })
 

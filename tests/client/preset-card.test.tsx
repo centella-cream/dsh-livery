@@ -258,7 +258,7 @@ describe('preset card — stable error region and ARIA', () => {
     const error: PresetCardError = { kind: 'import', code: 'wallpaper-variant' }
     const markup = render({ initialError: error })
     expectErrorWiring(markup, 'preset-import', error)
-    expect(markup).toContain('unsupported style wallpaper variant')
+    expect(markup).toContain('unsupported wallpaper variant')
   })
 
   it('wires the style-unavailable export error', () => {

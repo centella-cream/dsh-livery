@@ -9,7 +9,7 @@ import {
 import { createWallpaperController } from '../../src/client/wallpaper/controller.js'
 import type { WallpaperStorage } from '../../src/client/wallpaper/controller.js'
 import { DEFAULT_WALLPAPER_EFFECTS, DEFAULT_WALLPAPER_POSITION, serializeWallpaperState, WALLPAPER_STORAGE_KEY } from '../../src/client/wallpaper.js'
-import { RECENT_WALLPAPER_KEY } from '../../src/client/wallpaper/history.js'
+import { DIRECT_RECENT_WALLPAPER_KEY, RECENT_WALLPAPER_KEY } from '../../src/client/wallpaper/history.js'
 import { WALLPAPER_STYLE_ID } from '../../src/client/wallpaper/apply.js'
 import { FakeDocument, flush } from './fixtures.js'
 
@@ -101,12 +101,14 @@ describe('sync helpers', () => {
     expect(shouldApplyExternalState({ ...base, incomingRevision: 2.5 })).toBe(false)
   })
 
-  it('reads recent history only for its own key', () => {
+  it('reads both cached and direct recent-history keys, but ignores foreign keys', () => {
     const storage = new MemoryStorage()
     storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify([{ url: 'https://cdn.example/a.jpg', addedAt: 1 }]))
+    storage.setItem(DIRECT_RECENT_WALLPAPER_KEY, JSON.stringify([{ url: 'https://cdn.example/b.jpg', addedAt: 2, delivery: 'direct' }]))
     expect(readRecentFromStorageEvent({ key: 'other', newValue: 'x' }, storage)).toBeUndefined()
-    expect(readRecentFromStorageEvent({ key: RECENT_WALLPAPER_KEY, newValue: '[]' }, storage)?.[0]?.url)
-      .toBe('https://cdn.example/a.jpg')
+    const merged = readRecentFromStorageEvent({ key: RECENT_WALLPAPER_KEY, newValue: '[]' }, storage)
+    expect(merged?.map(entry => entry.url)).toEqual(['https://cdn.example/b.jpg', 'https://cdn.example/a.jpg'])
+    expect(merged?.find(entry => entry.url.endsWith('/b.jpg'))?.delivery).toBe('direct')
     expect(readRecentFromStorageEvent({ key: RECENT_WALLPAPER_KEY, newValue: null }, storage)).toEqual([])
   })
 })

@@ -615,7 +615,9 @@ export class LiveryRuntime implements LiveryRuntimeApi {
     // plus module replacement). Keep retrying longer for a hot update, while a
     // cold start still fails immediately.
     const attempts = hotReloaded ? 8 : 1
+    const retryDeadline = hotReloaded ? Date.now() + 15_000 : 0
     for (let attempt = 0; attempt < attempts; attempt += 1) {
+      if (retryDeadline > 0 && Date.now() >= retryDeadline) break
       let fetched: LiveryCatalog | undefined
       try {
         fetched = await this.deps.fetchCatalog()
@@ -632,7 +634,9 @@ export class LiveryRuntime implements LiveryRuntimeApi {
       }
       if (this.disposed || generation !== this.generation) break
       if (attempt + 1 < attempts) {
-        await new Promise(resolve => setTimeout(resolve, Math.min(1000, 250 * (attempt + 1))))
+        const wait = Math.min(1000, 250 * (attempt + 1))
+        if (retryDeadline > 0 && Date.now() + wait > retryDeadline) break
+        await new Promise(resolve => setTimeout(resolve, wait))
       }
     }
     if (this.disposed || generation !== this.generation) return

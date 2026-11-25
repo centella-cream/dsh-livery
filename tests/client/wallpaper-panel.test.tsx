@@ -292,13 +292,13 @@ describe('page tabs', () => {
 })
 
 describe('online request policy (panel)', () => {
-  it('opens on Built-in with no request state and no network trigger', () => {
+  it('defaults to the Online tab before the automatic Random batch settles', () => {
     const html = renderPanel()
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="true"/)
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="false"/)
-    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden/)
-    expect(html).toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden=""/)
-    // A request that never ran has no state at all.
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="false"/)
+    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden/)
+    expect(html).toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden=""/)
+    // Server rendering runs no effects; the client auto-Random effect owns the request.
     expect(html).not.toContain('data-testid="wallpaper-status"')
     expect(html).not.toContain('data-testid="wallpaper-result"')
     expect(html).not.toContain('data-testid="wallpaper-served-by"')
@@ -375,17 +375,44 @@ describe('online request policy (panel)', () => {
     })
     studio.setProvider('openverse')
     const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
-    // Openverse declares search but not random; the pinned source gates Random.
-    expect(html).not.toMatch(/data-testid="wallpaper-search-go"[^>]*disabled/)
+    // Openverse is legacy-only and declares neither capability.
+    expect(html).toMatch(/data-testid="wallpaper-search-go"[^>]*disabled/)
     expect(html).toMatch(/data-testid="wallpaper-random"[^>]*disabled/)
     expect(html).toMatch(/data-testid="wallpaper-random"[^>]*aria-describedby="wallpaper-capability-reason"/)
     expect(html).toContain('id="wallpaper-capability-reason"')
+    expect(html).toContain('This source cannot search')
     expect(html).toContain('This source has no random images')
     // Refresh has nothing to repeat before a request runs.
     expect(html).toMatch(/data-testid="wallpaper-refresh"[^>]*disabled/)
   })
 
 
+
+  it('shows the Openverse notice for a stored legacy selection without fetching it', () => {
+    controller.setSelection({
+      kind: 'remote',
+      url: 'https://api.openverse.org/v1/images/abc/thumb/',
+      provenance: { providerId: 'openverse', source: 'Openverse' },
+    })
+    const html = renderPanel()
+    expect(html).toContain('data-testid="wallpaper-openverse-notice"')
+    expect(html).toContain('Not endorsed or certified by Openverse')
+  })
+
+  it('renders a direct selection as an <img> with the thumbnail and disables atmosphere', () => {
+    controller.setSelection({
+      kind: 'remote',
+      url: 'https://openaccess-cdn.clevelandart.org/1_print.jpg',
+      delivery: 'direct',
+      thumbnail: 'https://openaccess-cdn.clevelandart.org/1_web.jpg',
+      provenance: { providerId: 'cleveland', title: 'Art' },
+    })
+    const html = renderPanel()
+    expect(html).toContain('class="wallpaper-hero__img"')
+    expect(html).toContain('src="https://openaccess-cdn.clevelandart.org/1_web.jpg"')
+    expect(html).toContain('referrerPolicy="no-referrer"')
+    expect(html).toMatch(/data-testid="wallpaper-atmosphere"[^>]*disabled/)
+  })
 
   it('renders licence-less results as readable but non-selectable', async () => {
     const studio = await activatedStudio({
@@ -396,7 +423,7 @@ describe('online request policy (panel)', () => {
     const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
     expect(html).toMatch(/data-testid="wallpaper-result"[^>]*data-selectable="false"/)
     expect(html).toMatch(/aria-disabled="true"[^>]*data-testid="wallpaper-result"/)
-    expect(html).toContain('No reusable licence, so this image cannot be applied.')
+    expect(html).toContain('No reusable licence; cannot be applied.')
     expect(html).not.toMatch(/data-testid="wallpaper-result"[^>]*disabled/)
   })
 
@@ -547,7 +574,7 @@ describe('wallpaper error accessibility', () => {
 })
 
 describe('wallpaper studio render', () => {
-  it('renders the preset cards, the default Built-in gallery, effects, upload and URL controls', () => {
+  it('renders the preset cards, the default Online tab, effects, upload and URL controls', () => {
     const html = renderPanel()
     expect(html).toContain('data-testid="preset-card"')
     expect(html).toContain('data-testid="wallpaper-panel"')
@@ -559,11 +586,11 @@ describe('wallpaper studio render', () => {
     expect(html).not.toMatch(/data-testid="wallpaper-preset-style"[^>]*disabled/)
     expect(html).toContain('Or choose an image')
     expect(html.indexOf('data-testid="wallpaper-presets"')).toBeLessThan(html.indexOf('data-testid="wallpaper-source-tabs"'))
-    // Default image tab is Built-in: 8 curated swatches + a collapsed 16-design group.
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="true"/)
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="false"/)
-    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden/)
-    expect(html).toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden=""/)
+    // Default image tab is Online; the offline built-in panel still renders below.
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*aria-selected="true"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*aria-selected="false"/)
+    expect(html).not.toMatch(/data-testid="wallpaper-source-panel-online"[^>]*hidden/)
+    expect(html).toMatch(/data-testid="wallpaper-source-panel-builtin"[^>]*hidden=""/)
     expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(8)
     for (const id of VISIBLE_BUILTIN_IDS) {
       expect(html).toContain(`data-wallpaper-id="${id}"`)
@@ -751,7 +778,7 @@ describe('built-in gallery visibility', () => {
     expect(html).toMatch(/data-testid="wallpaper-builtin-pinned-swatch"[^>]*data-wallpaper-id="mist"/)
     expect(html).toMatch(/data-testid="wallpaper-builtin-pinned-swatch"[^>]*aria-pressed="true"/)
     expect(html).toContain('Current (Classic)')
-    expect(html).toContain('Classic built-in designs (16 total; 1 pinned above)')
+    expect(html).toContain('Classic designs (16; 1 pinned above)')
     // The pinned id is not duplicated in the grid or the Classic group.
     expect(html.match(/data-wallpaper-id="mist"/g)).toHaveLength(1)
     expect(html.match(/data-testid="wallpaper-builtin"/g)).toHaveLength(8)
@@ -800,8 +827,8 @@ describe('source tabs — roving tabindex and keyboard mapping', () => {
 
   it('keeps exactly the active tab in the tab order', () => {
     const html = renderPanel()
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*tabindex="0"/)
-    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*tabindex="-1"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-online"[^>]*tabindex="0"/)
+    expect(html).toMatch(/data-testid="wallpaper-source-tab-builtin"[^>]*tabindex="-1"/)
     expect(html).toMatch(/data-testid="wallpaper-source-tab-recent"[^>]*tabindex="-1"/)
     expect(html).toMatch(/data-testid="wallpaper-source-tab-local"[^>]*tabindex="-1"/)
     expect(html.match(/role="tab"/g)?.length).toBeGreaterThanOrEqual(4)

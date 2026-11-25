@@ -22,6 +22,8 @@ export interface RecentWallpaperEntry {
   readonly creator?: string | undefined
   readonly license?: string | undefined
   readonly source?: string | undefined
+  /** Direct-provider entries live only in the v2 key; 0.2.2 never sees them. */
+  readonly delivery?: 'direct' | undefined
   /** Optional credit links (schema-compatible additive fields; old entries lack them). */
   readonly creatorUrl?: string | undefined
   readonly licenseUrl?: string | undefined
@@ -31,6 +33,8 @@ export interface RecentWallpaperEntry {
 
 /** localStorage key. */
 export const RECENT_WALLPAPER_KEY = 'dsh-livery.wallpaper.recent.v1'
+/** Direct-only history key; 0.2.2 reads only the v1 key. */
+export const DIRECT_RECENT_WALLPAPER_KEY = 'dsh-livery.wallpaper.recent.v2'
 /** Clear tombstone: survives the entries-key removal and wins over stale tabs. */
 export const RECENT_WALLPAPER_CLEAR_KEY = 'dsh-livery.wallpaper.recent.clear.v1'
 /** Maximum remembered entries. */
@@ -80,6 +84,7 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
   const creatorUrl = normalizeWallpaperProvenanceUrl(row.creatorUrl)
   const licenseUrl = normalizeWallpaperProvenanceUrl(row.licenseUrl)
   const sourceUrl = normalizeWallpaperProvenanceUrl(row.sourceUrl)
+  const delivery = row.delivery === 'direct' ? 'direct' as const : undefined
   return {
     url,
     ...(providerId === undefined ? {} : { providerId }),
@@ -91,6 +96,7 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
     ...(creatorUrl === undefined ? {} : { creatorUrl }),
     ...(licenseUrl === undefined ? {} : { licenseUrl }),
     ...(sourceUrl === undefined ? {} : { sourceUrl }),
+    ...(delivery === undefined ? {} : { delivery }),
     addedAt,
   }
 }
@@ -100,10 +106,13 @@ export function parseRecentEntry(raw: unknown): RecentWallpaperEntry | undefined
  * @param storage - localStorage subset (undefined returns []).
  * @returns valid entries.
  */
-export function readRecentWallpapers(storage: RecentWallpaperStorage | undefined): readonly RecentWallpaperEntry[] {
+export function readRecentWallpapers(
+  storage: RecentWallpaperStorage | undefined,
+  key = RECENT_WALLPAPER_KEY,
+): readonly RecentWallpaperEntry[] {
   if (storage === undefined) return []
   try {
-    const raw: unknown = JSON.parse(storage.getItem(RECENT_WALLPAPER_KEY) ?? 'null')
+    const raw: unknown = JSON.parse(storage.getItem(key) ?? 'null')
     if (!Array.isArray(raw)) return []
     return raw
       .map(parseRecentEntry)
@@ -141,6 +150,7 @@ export function addRecentEntry(
     ...(sanitized.creatorUrl ?? previous?.creatorUrl) === undefined ? {} : { creatorUrl: sanitized.creatorUrl ?? previous?.creatorUrl },
     ...(sanitized.licenseUrl ?? previous?.licenseUrl) === undefined ? {} : { licenseUrl: sanitized.licenseUrl ?? previous?.licenseUrl },
     ...(sanitized.sourceUrl ?? previous?.sourceUrl) === undefined ? {} : { sourceUrl: sanitized.sourceUrl ?? previous?.sourceUrl },
+    ...(sanitized.delivery ?? previous?.delivery) === undefined ? {} : { delivery: sanitized.delivery ?? previous?.delivery },
   }
   return [merged, ...entries.filter(candidate => candidate.url !== sanitized.url)]
     .slice(0, MAX_RECENT_WALLPAPERS)
@@ -182,6 +192,7 @@ export function mergeRecentEntries(
       ...(newer.creatorUrl ?? older.creatorUrl) === undefined ? {} : { creatorUrl: newer.creatorUrl ?? older.creatorUrl },
       ...(newer.licenseUrl ?? older.licenseUrl) === undefined ? {} : { licenseUrl: newer.licenseUrl ?? older.licenseUrl },
       ...(newer.sourceUrl ?? older.sourceUrl) === undefined ? {} : { sourceUrl: newer.sourceUrl ?? older.sourceUrl },
+      ...(newer.delivery ?? older.delivery) === undefined ? {} : { delivery: newer.delivery ?? older.delivery },
     }
     byUrl.set(parsed.url, parseRecentEntry(merged) as RecentWallpaperEntry)
   }
@@ -192,10 +203,11 @@ export function mergeRecentEntries(
 export function writeRecentWallpapers(
   storage: RecentWallpaperStorage | undefined,
   entries: readonly RecentWallpaperEntry[],
+  key = RECENT_WALLPAPER_KEY,
 ): void {
   if (storage === undefined) return
   try {
-    storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify(entries.slice(0, MAX_RECENT_WALLPAPERS)))
+    storage.setItem(key, JSON.stringify(entries.slice(0, MAX_RECENT_WALLPAPERS)))
   } catch {
     /* quota/disabled storage: keep the in-memory result */
   }
@@ -205,12 +217,13 @@ export function writeRecentWallpapers(
 export function rememberRecentWallpaper(
   storage: RecentWallpaperStorage | undefined,
   entry: RecentWallpaperEntry,
+  key = RECENT_WALLPAPER_KEY,
 ): readonly RecentWallpaperEntry[] {
-  const next = addRecentEntry(readRecentWallpapers(storage), entry)
+  const next = addRecentEntry(readRecentWallpapers(storage, key), entry)
   if (storage !== undefined) {
     try {
       storage.removeItem(RECENT_WALLPAPER_CLEAR_KEY)
-      storage.setItem(RECENT_WALLPAPER_KEY, JSON.stringify(next))
+      storage.setItem(key, JSON.stringify(next))
     } catch {
       /* quota/disabled storage: keep the in-memory result */
     }
@@ -227,6 +240,7 @@ export function clearRecentWallpapers(storage: RecentWallpaperStorage | undefine
     // stale tab from re-adding its old list.
     storage.setItem(RECENT_WALLPAPER_CLEAR_KEY, JSON.stringify({ schemaVersion: 2, revision: Date.now() }))
     storage.removeItem(RECENT_WALLPAPER_KEY)
+    storage.removeItem(DIRECT_RECENT_WALLPAPER_KEY)
   } catch {
     /* storage can be disabled */
   }

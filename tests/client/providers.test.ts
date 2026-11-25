@@ -20,11 +20,18 @@ import {
   fetchOnlinePage,
   isAllowedHost,
   isAllowedImageUrl,
+  loadProviderManifests,
+  manifestRequestUrl,
   matchesHostPattern,
+  offeredProviders,
+  parseProviderManifestDocument,
   providerById,
   providerImagePolicy,
   providersForCapability,
+  registeredProviders,
+  resetProviderManifests,
 } from '../../src/client/wallpaper/providers.js'
+import manifestSource from '../../src/provider-manifests.json'
 import type {
   ImageHostPolicy,
   ProviderId,
@@ -52,7 +59,7 @@ function stubFetch(handler: (call: FetchCall) => Response | Promise<Response>): 
   const calls: FetchCall[] = []
   const mock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const raw = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
-    const call: FetchCall = { url: new URL(raw), init }
+    const call: FetchCall = { url: new URL(raw, 'http://localhost'), init }
     calls.push(call)
     return handler(call)
   })
@@ -78,16 +85,6 @@ function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   })
 }
 
-function openversePage(overrides: Record<string, unknown> = {}): Response {
-  return jsonResponse({
-    page: 1,
-    page_count: 3,
-    page_size: 12,
-    result_count: 30,
-    results: [OPENVERSE_ROW],
-    ...overrides,
-  })
-}
 
 function wikimediaPage(overrides: Record<string, unknown> = {}): Response {
   return jsonResponse({
@@ -97,24 +94,6 @@ function wikimediaPage(overrides: Record<string, unknown> = {}): Response {
     ...overrides,
   })
 }
-
-const OPENVERSE_ID = '8f7a9e0d-1234-4abc-9def-0123456789ab'
-const OPENVERSE_ROW = {
-  id: OPENVERSE_ID,
-  title: 'Quiet sea',
-  creator: 'Ann Photographer',
-  creator_url: 'https://example.org/photographers/ann',
-  license: 'cc0',
-  license_version: '1.0',
-  license_url: 'https://creativecommons.org/publicdomain/zero/1.0/',
-  foreign_landing_url: 'https://example.org/photos/quiet-sea',
-  width: 1024,
-  height: 768,
-  // Origin hosts are unbounded third-party platforms; the client must ignore
-  // these and only ever use the Openverse proxy endpoints.
-  url: 'https://origin-platform.example/raw.jpg',
-  thumbnail: 'https://origin-platform.example/thumb.jpg',
-} as const
 
 const WIKIMEDIA_PAGE = {
   pageid: 12345,
@@ -164,6 +143,7 @@ function expectImageUrlsAllowlisted(results: readonly WallpaperProviderResult[])
 }
 
 afterEach(() => {
+  resetProviderManifests()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
 })
@@ -173,20 +153,21 @@ afterEach(() => {
 /* -------------------------------------------------------------------------- */
 
 describe('provider registry (gate order, no rejected providers)', () => {
-  it('lists exactly the two gate-accepted providers in gate order', () => {
-    expect(PROVIDERS.map(provider => provider.id)).toEqual(['openverse', 'wikimedia'])
+  it('keeps Openverse legacy-only and Wikimedia as the static offer', () => {
+    expect(registeredProviders().map(provider => provider.id)).toEqual(['openverse', 'wikimedia'])
+    expect(offeredProviders().map(provider => provider.id)).toEqual(['wikimedia'])
     expect(Object.isFrozen(PROVIDERS)).toBe(true)
     expect(autoProviders().map(provider => provider.id)).toEqual(['wikimedia'])
     expect(PROVIDERS.filter(provider => provider.id === ('picsum' as ProviderId))).toEqual([])
   })
 
   it('exposes keyless providers with labels, capabilities and hosts', () => {
-    for (const provider of PROVIDERS) {
+    for (const provider of registeredProviders()) {
       expect(provider.auth).toBe('keyless')
       expect(provider.label['zh-CN'].length).toBeGreaterThan(0)
       expect(provider.label['en-US'].length).toBeGreaterThan(0)
       expect(provider.imageHosts.length).toBeGreaterThan(0)
-      expect(provider.capabilities.search).toBe(true)
+      if (provider.id !== 'openverse') expect(provider.capabilities.search).toBe(true)
       expect(typeof provider.capabilities.random).toBe('boolean')
     }
     expect(openverse().capabilities.random).toBe(false)
@@ -287,175 +268,6 @@ describe('image-host matcher (exact or dot-boundary wildcard only)', () => {
 
 /* -------------------------------------------------------------------------- */
 /* Openverse                                                                  */
-/* -------------------------------------------------------------------------- */
-
-describe('Openverse provider', () => {
-  it('requests the anonymous CC0/PDM search and maps proxied image URLs + licence', async () => {
-    const calls = stubHosts({ 'api.openverse.org': () => openversePage() })
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'quiet sea' }))
-    expect('results' in outcome).toBe(true)
-    if (!('results' in outcome)) return
-    const [result] = outcome.results
-    expect(result).toMatchObject({
-      providerId: 'openverse',
-      id: OPENVERSE_ID,
-      title: 'Quiet sea',
-      creator: 'Ann Photographer',
-      creatorUrl: 'https://example.org/photographers/ann',
-      license: {
-        name: 'CC0 1.0',
-        url: 'https://creativecommons.org/publicdomain/zero/1.0/',
-      },
-      sourceUrl: 'https://example.org/photos/quiet-sea',
-      fullUrl: `https://api.openverse.org/v1/images/${OPENVERSE_ID}/thumb/?full_size=true`,
-      thumbUrl: `https://api.openverse.org/v1/images/${OPENVERSE_ID}/thumb/`,
-      width: 1024,
-      height: 768,
-    })
-    expectImageUrlsAllowlisted(outcome.results)
-    expect(JSON.stringify(outcome.results)).not.toContain('origin-platform.example')
-    expect('nextCursor' in outcome && typeof outcome.nextCursor === 'string').toBe(true)
-
-    expect(calls).toHaveLength(1)
-    const [call] = calls
-    expect(call?.url.origin).toBe('https://api.openverse.org')
-    expect(call?.url.pathname).toBe('/v1/images/')
-    expect(call?.url.searchParams.get('q')).toBe('quiet sea')
-    expect(call?.url.searchParams.get('license')).toBe('cc0,pdm')
-    expect(call?.url.searchParams.get('page')).toBe('1')
-    expect(call?.url.searchParams.get('page_size')).toBe('12')
-    expect(call?.init?.redirect).toBe('error')
-    expect(call?.init?.credentials).toBe('omit')
-  })
-
-  it('clamps the anonymous page size to the 20-result cap', async () => {
-    const calls = stubHosts({ 'api.openverse.org': () => openversePage() })
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'sea', pageSize: 50 }))
-    expect('results' in outcome).toBe(true)
-    expect(calls[0]?.url.searchParams.get('page_size')).toBe('20')
-  })
-
-  it('round-trips its opaque page cursor and stops at the last page', async () => {
-    let page = 1
-    const calls = stubHosts({
-      'api.openverse.org': () => openversePage({ page, page_count: 2, results: [OPENVERSE_ROW] }),
-    })
-    const first = await openverse().fetchPage(pageRequest({ query: 'sea' }))
-    expect('results' in first).toBe(true)
-    if (!('results' in first) || first.nextCursor === undefined) throw new Error('missing cursor')
-    page = 2
-    const second = await openverse().fetchPage(pageRequest({ query: 'sea', cursor: first.nextCursor }))
-    expect(calls[1]?.url.searchParams.get('page')).toBe('2')
-    expect('nextCursor' in second).toBe(false)
-  })
-
-  it('rejects a foreign/garbage cursor without a network call', async () => {
-    const { mock } = stubFetch(() => openversePage())
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'sea', cursor: 'wm1:garbage' }))
-    expect(outcome).toEqual({ failure: 'invalid-response' })
-    expect(mock).not.toHaveBeenCalled()
-  })
-
-  it('maps a missing/unknown licence to null (rendered, not selectable)', async () => {
-    const rows = [
-      { ...OPENVERSE_ROW, id: 'a', license: undefined },
-      { ...OPENVERSE_ROW, id: 'b', license: 'mystery-licence', license_url: undefined },
-      { ...OPENVERSE_ROW, id: 'c', license: 'by', license_url: undefined },
-    ]
-    stubHosts({ 'api.openverse.org': () => jsonResponse({ results: rows }) })
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'sea' }))
-    if (!('results' in outcome)) throw new Error('expected results')
-    expect(outcome.results.map(result => result.license)).toEqual([null, null, null])
-  })
-
-  it('requires a licence URL for attribution licences but not for public domain', async () => {
-    const rows = [
-      { ...OPENVERSE_ROW, id: 'a', license: 'by', license_version: '4.0', license_url: 'https://creativecommons.org/licenses/by/4.0/' },
-      { ...OPENVERSE_ROW, id: 'b', license: 'pdm', license_version: '1.0', license_url: undefined },
-    ]
-    stubHosts({ 'api.openverse.org': () => jsonResponse({ results: rows }) })
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'sea' }))
-    if (!('results' in outcome)) throw new Error('expected results')
-    expect(outcome.results[0]?.license).toEqual({
-      name: 'CC BY 4.0',
-      url: 'https://creativecommons.org/licenses/by/4.0/',
-    })
-    expect(outcome.results[1]?.license).toEqual({ name: 'Public Domain Mark 1.0' })
-  })
-
-  it('drops rows without a safe source page or a usable id', async () => {
-    const rows = [
-      { ...OPENVERSE_ROW, id: 'evil/id', foreign_landing_url: 'https://example.org/a' },
-      { ...OPENVERSE_ROW, id: 'x', foreign_landing_url: 'http://insecure.example/a' },
-      { ...OPENVERSE_ROW, id: 'y', foreign_landing_url: 'https://example.org/y' },
-    ]
-    stubHosts({ 'api.openverse.org': () => jsonResponse({ results: rows }) })
-    const outcome = await openverse().fetchPage(pageRequest({ query: 'sea' }))
-    if (!('results' in outcome)) throw new Error('expected results')
-    expect(outcome.results.map(result => result.id)).toEqual(['y'])
-  })
-
-  it('maps malformed/oversized responses to invalid-response', async () => {
-    stubHosts({
-      'api.openverse.org': () => jsonResponse({ results: 'not-an-array' }),
-    })
-    expect(await openverse().fetchPage(pageRequest({ query: 'sea' }))).toEqual({ failure: 'invalid-response' })
-    stubHosts({
-      'api.openverse.org': () => new Response('{broken json', { status: 200, headers: { 'content-type': 'application/json' } }),
-    })
-    expect(await openverse().fetchPage(pageRequest({ query: 'sea' }))).toEqual({ failure: 'invalid-response' })
-    stubHosts({
-      'api.openverse.org': () => new Response('<html>challenge</html>', { status: 200, headers: { 'content-type': 'text/html' } }),
-    })
-    expect(await openverse().fetchPage(pageRequest({ query: 'sea' }))).toEqual({ failure: 'invalid-response' })
-    stubHosts({
-      'api.openverse.org': () => new Response('{}', {
-        status: 200,
-        headers: { 'content-type': 'application/json', 'content-length': String(64 * 1024 * 1024) },
-      }),
-    })
-    expect(await openverse().fetchPage(pageRequest({ query: 'sea' }))).toEqual({ failure: 'invalid-response' })
-  })
-
-  it('parses a Retry-After delay on 429 and maps auth/5xx/network failures', async () => {
-    stubHosts({ 'api.openverse.org': () => new Response('slow down', { status: 429, headers: { 'retry-after': '2' } }) })
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'rate-limited', retryAfterMs: 2000 })
-    stubHosts({ 'api.openverse.org': () => new Response('', { status: 403 }) })
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'auth-required' })
-    stubHosts({ 'api.openverse.org': () => new Response('', { status: 401 }) })
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'auth-required' })
-    stubHosts({ 'api.openverse.org': () => new Response('', { status: 502 }) })
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'unavailable' })
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('network down') }))
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'unavailable' })
-  })
-
-  it('parses an HTTP-date Retry-After header', async () => {
-    const retryAt = new Date(Date.now() + 5000).toUTCString()
-    stubHosts({ 'api.openverse.org': () => new Response('', { status: 429, headers: { 'retry-after': retryAt } }) })
-    const outcome = await openverse().fetchPage(pageRequest())
-    if (!('failure' in outcome) || outcome.failure !== 'rate-limited') throw new Error('expected rate-limited')
-    expect(outcome.retryAfterMs).toBeGreaterThan(0)
-    expect(outcome.retryAfterMs).toBeLessThanOrEqual(5000)
-  })
-
-  it('reports unavailable when the platform has no fetch implementation', async () => {
-    vi.stubGlobal('fetch', undefined)
-    expect(await openverse().fetchPage(pageRequest())).toEqual({ failure: 'unavailable' })
-  })
-
-  it('maps an aborted request signal to timeout without calling fetch', async () => {
-    const { mock } = stubFetch(() => openversePage())
-    const controller = new AbortController()
-    controller.abort()
-    expect(await openverse().fetchPage(pageRequest({ signal: controller.signal })))
-      .toEqual({ failure: 'timeout' })
-    expect(mock).not.toHaveBeenCalled()
-  })
-})
-
-/* -------------------------------------------------------------------------- */
-/* Wikimedia Commons                                                          */
 /* -------------------------------------------------------------------------- */
 
 describe('Wikimedia Commons provider', () => {
@@ -696,6 +508,75 @@ describe('Wikimedia Commons provider', () => {
 /* fetchOnlinePage: Auto failover, pinned, deadline                          */
 /* -------------------------------------------------------------------------- */
 
+describe('Host manifest providers', () => {
+  it('loads reviewed manifests lazily and exposes the offered/Auto policy', async () => {
+    stubFetch(({ url }) => {
+      if (url.pathname === '/livery/api/providers') {
+        return jsonResponse({ ...manifestSource, manifestHash: `sha256:${'a'.repeat(64)}` })
+      }
+      return new Response('unexpected', { status: 500 })
+    })
+    // The minimal route document is envelope-valid; the full gate validates fields.
+    expect(parseProviderManifestDocument({ schemaVersion: 1, providers: [] })).toBeUndefined()
+    expect(await loadProviderManifests()).toBe(true)
+    expect(offeredProviders().map(provider => provider.id)).toEqual(['wikimedia', 'cleveland', 'met-open-access'])
+    expect(autoProviders().map(provider => provider.id)).toEqual(['wikimedia', 'cleveland'])
+    expect(providerById('met-open-access')?.capabilities.auto).toBe(false)
+  })
+
+  it('maps Met search -> object detail, filters non-public-domain rows and keeps direct delivery', async () => {
+    const met = manifestSource.providers.find(provider => provider.id === 'met-open-access')
+    if (met === undefined) throw new Error('missing Met manifest')
+    stubFetch(({ url }) => {
+      if (url.pathname === '/livery/api/providers') return jsonResponse({ schemaVersion: 1, providers: [met] })
+      if (url.pathname === '/public/collection/v1.1/search') return jsonResponse({ total: 2, objectIDs: [1, 2] })
+      if (url.pathname === '/public/collection/v1/objects/1') {
+        return jsonResponse({ objectID: 1, title: 'Open', isPublicDomain: true, primaryImage: 'https://images.metmuseum.org/open.jpg', primaryImageSmall: 'https://images.metmuseum.org/open-small.jpg', objectURL: 'https://www.metmuseum.org/art/1', artistDisplayName: 'Artist' })
+      }
+      if (url.pathname === '/public/collection/v1/objects/2') {
+        return jsonResponse({ objectID: 2, title: 'Closed', isPublicDomain: false, primaryImage: 'https://images.metmuseum.org/closed.jpg', primaryImageSmall: 'https://images.metmuseum.org/closed-small.jpg', objectURL: 'https://www.metmuseum.org/art/2' })
+      }
+      return new Response('unexpected', { status: 500 })
+    })
+    expect(await loadProviderManifests()).toBe(true)
+    const provider = providerById('met-open-access')
+    if (provider === undefined) throw new Error('missing provider')
+    const page = await provider.fetchPage({ query: 'cat', pageSize: 12, signal: signal() })
+    if (!('results' in page)) throw new Error('expected results')
+    expect(page.results).toHaveLength(1)
+    expect(page.results[0]).toMatchObject({
+      providerId: 'met-open-access',
+      title: 'Open',
+      delivery: 'direct',
+      license: { name: 'Public Domain' },
+    })
+  })
+
+  it('builds deterministic provider request URLs and maps a direct result', async () => {
+    resetProviderManifests()
+    const original = providerById('cleveland')
+    expect(original).toBeUndefined()
+    const cleveland = manifestSource.providers.find(provider => provider.id === 'cleveland')
+    if (cleveland === undefined) throw new Error('missing Cleveland manifest')
+    stubFetch(({ url }) => {
+      if (url.pathname === '/livery/api/providers') return jsonResponse({ schemaVersion: 1, providers: [cleveland] })
+      if (url.hostname === 'openaccess-api.clevelandart.org') return jsonResponse({ data: [{ id: '1', title: 'Art', share_license_status: 'CC0', url: 'https://clevelandart.org/art/1', creators: [{ description: 'Artist' }], images: { print: { url: 'https://openaccess-cdn.clevelandart.org/1_print.jpg' }, web: { url: 'https://openaccess-cdn.clevelandart.org/1_web.jpg' } } }] })
+      return new Response('unexpected', { status: 500 })
+    })
+    expect(await loadProviderManifests()).toBe(true)
+    const provider = providerById('cleveland')
+    expect(provider).toBeDefined()
+    if (provider === undefined) return
+    expect(manifestRequestUrl(cleveland as never, '', 12)).toContain('has_image=1')
+    const page = await provider.fetchPage({ query: '', pageSize: 12, signal: signal() })
+    expect('results' in page).toBe(true)
+    if (!('results' in page)) return
+    expect(page.results[0]?.delivery).toBe('direct')
+    expect(page.results[0]?.license?.name).toBe('CC0 1.0')
+    expect(page.results[0]?.thumbUrl).toContain('_web.jpg')
+  })
+})
+
 describe('fetchOnlinePage', () => {
   it('Auto uses the offered Wikimedia provider and names it', async () => {
     const calls = stubHosts({
@@ -724,12 +605,9 @@ describe('fetchOnlinePage', () => {
   })
 
   it('makes exactly one attempt for a pinned provider and never silently changes', async () => {
-    const { mock } = stubFetch(({ url }) => {
-      if (url.hostname === 'api.openverse.org') return new Response('down', { status: 500 })
-      return wikimediaPage()
-    })
-    const outcome = await fetchOnlinePage({ provider: 'openverse', query: 'sea', pageSize: 12 })
-    expect(outcome).toEqual({ ok: false, failure: 'unavailable', tried: ['openverse'] })
+    const { mock } = stubFetch(() => new Response('down', { status: 500 }))
+    const outcome = await fetchOnlinePage({ provider: 'wikimedia', query: 'sea', pageSize: 12 })
+    expect(outcome).toEqual({ ok: false, failure: 'unavailable', tried: ['wikimedia'] })
     expect(mock).toHaveBeenCalledTimes(1)
   })
 
@@ -770,7 +648,7 @@ describe('fetchOnlinePage', () => {
     })))
     const controller = new AbortController()
     const pending = fetchOnlinePage({
-      provider: 'openverse',
+      provider: 'wikimedia',
       query: 'sea',
       pageSize: 12,
       signal: controller.signal,
@@ -778,7 +656,7 @@ describe('fetchOnlinePage', () => {
     })
     setTimeout(() => controller.abort(), 5)
     const outcome = await pending
-    expect(outcome).toEqual({ ok: false, failure: 'timeout', tried: ['openverse'] })
+    expect(outcome).toEqual({ ok: false, failure: 'timeout', tried: ['wikimedia'] })
   })
 
   it('caps each attempt and the overall Auto budget at 6 s / 12 s', async () => {

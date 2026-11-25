@@ -11,6 +11,8 @@
 import {
   WALLPAPER_ATTRIBUTE,
   WALLPAPER_CSS_FILE,
+  WALLPAPER_DIRECT_CLASS,
+  WALLPAPER_DIRECT_ID,
   WALLPAPER_OVERLAY_CLASS,
   WALLPAPER_OVERLAY_ID,
 } from '../wallpaper.js'
@@ -24,6 +26,9 @@ export interface WallpaperStyleElement {
   id: string
   textContent: string | null
   setAttribute(name: string, value: string): void
+  removeAttribute?(name: string): void
+  appendChild?(child: WallpaperStyleElement): unknown
+  readonly children?: readonly WallpaperStyleElement[]
   remove(): void
 }
 
@@ -35,8 +40,16 @@ export interface WallpaperDocument {
     appendChild(element: WallpaperStyleElement): unknown
   }
   getElementById(id: string): WallpaperStyleElement | null
-  createElement(tag: 'style' | 'div'): WallpaperStyleElement
+  createElement(tag: 'style' | 'div' | 'img'): WallpaperStyleElement
   readonly head: { appendChild(element: WallpaperStyleElement): unknown }
+}
+
+/** Direct-provider image input for the owned `<img>` layer. */
+export interface WallpaperDirectImage {
+  /** Provider-controlled https image URL, already host-allowlisted. */
+  readonly url: string
+  /** Provider thumbnail tried once if the full image fails. */
+  readonly fallbackUrl?: string
 }
 
 /** Wallpaper DOM layer. */
@@ -45,8 +58,9 @@ export interface WallpaperLayer {
    * Create/update the owned stylesheet + overlay and mark the body.
    * @param css - stylesheet text ('' clears the layer).
    * @param overlay - whether the above-content atmosphere overlay should exist.
+   * @param direct - optional direct-provider image; absent removes the layer.
    */
-  apply(css: string, overlay: boolean): void
+  apply(css: string, overlay: boolean, direct?: WallpaperDirectImage | undefined): void
   /** Remove the stylesheet, overlay and body attribute. */
   clear(): void
   /** Remove everything this layer created (safe to call twice). */
@@ -129,14 +143,71 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerI
     target.body.appendChild(overlay)
   }
 
+  const findDirect = (): WallpaperStyleElement | null => {
+    const existing = target.getElementById(WALLPAPER_DIRECT_ID)
+    return existing !== null && existing.id === WALLPAPER_DIRECT_ID ? existing : null
+  }
+
+  const removeDirect = (): void => {
+    findDirect()?.remove()
+  }
+
+  let currentDirect: WallpaperDirectImage | undefined
+  let fallbackTried = false
+  const syncDirect = (direct: WallpaperDirectImage | undefined): void => {
+    if (direct === undefined) {
+      currentDirect = undefined
+      fallbackTried = false
+      removeDirect()
+      return
+    }
+    currentDirect = direct
+    fallbackTried = false
+    let wrapper = findDirect()
+    if (wrapper === null) {
+      wrapper = target.createElement('div')
+      wrapper.id = WALLPAPER_DIRECT_ID
+      wrapper.setAttribute('class', WALLPAPER_DIRECT_CLASS)
+      wrapper.setAttribute('data-plugin', PLUGIN_MARKER)
+      wrapper.setAttribute('aria-hidden', 'true')
+      const image = target.createElement('img')
+      image.setAttribute('class', `${WALLPAPER_DIRECT_CLASS}__img`)
+      image.setAttribute('alt', '')
+      image.setAttribute('referrerpolicy', 'no-referrer')
+      image.setAttribute('decoding', 'async')
+      const imageError = (): void => {
+        if (!fallbackTried && currentDirect?.fallbackUrl !== undefined) {
+          fallbackTried = true
+          image.setAttribute('src', currentDirect.fallbackUrl)
+          return
+        }
+        try {
+          wrapper?.setAttribute('data-failed', 'true')
+          const targetWindow = (globalThis as unknown as { dispatchEvent?: (event: unknown) => boolean }).dispatchEvent
+          const EventCtor = (globalThis as unknown as { CustomEvent?: new (type: string) => unknown }).CustomEvent
+          if (typeof targetWindow === 'function' && EventCtor !== undefined) targetWindow(new EventCtor('dsh-livery-wallpaper-error'))
+        } catch {
+          /* a disposed/fake DOM must not throw from the image handler */
+        }
+      }
+      ;(image as unknown as { onerror?: () => void }).onerror = imageError
+      wrapper.appendChild?.(image)
+      target.body.appendChild(wrapper)
+    }
+    const image = (wrapper as unknown as { children?: WallpaperStyleElement[] }).children?.[0]
+    image?.setAttribute('src', direct.url)
+    wrapper.removeAttribute?.('data-failed')
+  }
+
   const clear = (): void => {
     findStyle()?.remove()
     target.getElementById(WALLPAPER_OVERLAY_ID)?.remove()
+    removeDirect()
     target.body.removeAttribute(WALLPAPER_ATTRIBUTE)
   }
 
   return {
-    apply: (css: string, overlay: boolean) => {
+    apply: (css: string, overlay: boolean, direct?: WallpaperDirectImage | undefined) => {
       if (!isActive()) return
       if (css.trim().length === 0) {
         clear()
@@ -146,6 +217,7 @@ export function createWallpaperLayer(doc?: WallpaperDocument | undefined, ownerI
       if (style.textContent !== css) style.textContent = css
       target.body.setAttribute(WALLPAPER_ATTRIBUTE, '')
       syncOverlay(overlay)
+      syncDirect(direct)
     },
     clear: () => {
       if (isActive()) clear()

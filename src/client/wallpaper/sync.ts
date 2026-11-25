@@ -10,7 +10,7 @@
  */
 import { parseWallpaperState } from '../wallpaper.js'
 import type { HydratedWallpaperState } from '../wallpaper.js'
-import { RECENT_WALLPAPER_KEY, readRecentWallpapers } from './history.js'
+import { DIRECT_RECENT_WALLPAPER_KEY, RECENT_WALLPAPER_KEY, readRecentWallpapers } from './history.js'
 import type { RecentWallpaperEntry, RecentWallpaperStorage } from './history.js'
 
 /** The subset of the DOM StorageEvent the sync layer consumes. */
@@ -109,10 +109,15 @@ export function readRecentFromStorageEvent(
   event: StorageEventLike,
   storage: RecentWallpaperStorage | undefined,
 ): readonly RecentWallpaperEntry[] | undefined {
-  if (event.key !== RECENT_WALLPAPER_KEY) return undefined
+  if (event.key !== RECENT_WALLPAPER_KEY && event.key !== DIRECT_RECENT_WALLPAPER_KEY) return undefined
   if (event.newValue === null) return []
-  // Re-read through the shared parser so corrupt data is ignored consistently.
-  return readRecentWallpapers(storage)
+  // Merge both history keys newest-first; the direct key is invisible to 0.2.2.
+  const merged = new Map<string, RecentWallpaperEntry>()
+  for (const entry of [...readRecentWallpapers(storage), ...readRecentWallpapers(storage, DIRECT_RECENT_WALLPAPER_KEY)]) {
+    const previous = merged.get(entry.url)
+    if (previous === undefined || previous.addedAt <= entry.addedAt) merged.set(entry.url, entry)
+  }
+  return [...merged.values()].sort((a, b) => b.addedAt - a.addedAt).slice(0, 24)
 }
 
 /**

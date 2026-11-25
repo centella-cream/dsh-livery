@@ -309,15 +309,20 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   }
 
   const apply = (): void => {
+    const direct = selection !== undefined && selection.kind === 'remote' && selection.delivery === 'direct'
+      ? selection
+      : undefined
     layer.apply(
       buildWallpaperCss({
         selection,
         effects,
         position,
         tokens: tokenContext(),
-        imageOverride: localImageUrl,
+        imageOverride: direct === undefined ? localImageUrl : undefined,
+        imageLayer: direct === undefined ? 'body' : 'direct',
       }),
-      effects.atmosphere > 0,
+      !direct && effects.atmosphere > 0,
+      direct === undefined ? undefined : { url: direct.url, ...(direct.thumbnail === undefined ? {} : { fallbackUrl: direct.thumbnail }) },
     )
   }
 
@@ -476,7 +481,8 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (a.kind !== b.kind) return false
     if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
     if (a.kind === 'remote') {
-      return b.kind === 'remote' && a.url === b.url && sameWallpaperProvenance(a.provenance, b.provenance)
+      return b.kind === 'remote' && a.url === b.url && a.delivery === b.delivery
+        && a.thumbnail === b.thumbnail && sameWallpaperProvenance(a.provenance, b.provenance)
     }
     if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
     return b.kind === 'upload' && a.key === b.key
@@ -492,7 +498,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
     if (a === undefined || b === undefined) return a === b
     if (a.kind !== b.kind) return false
     if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
-    if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
+    if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url && a.delivery === b.delivery
     if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
     return b.kind === 'upload' && a.key === b.key
   }
@@ -530,7 +536,7 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
   // Online wallpapers may have a cached blob: restore it on hydrate so a
   // remembered remote background renders even when the network is down.
   const restoreRemote = async (): Promise<void> => {
-    if (disposed || selection === undefined || selection.kind !== 'remote') return
+    if (disposed || selection === undefined || selection.kind !== 'remote' || selection.delivery === 'direct') return
     // Guard the async commit on selection identity, not the revision: changing
     // effects/position (which bumps the revision) must not cancel a restore.
     const expectedSelectionVersion = selectionVersion
@@ -751,6 +757,9 @@ export function createWallpaperController(options: WallpaperControllerOptions = 
       if (selection !== undefined && selection.kind === 'style') {
         const map = mode === 'dark' ? tokens.dark : tokens.light
         return map === undefined ? undefined : styleWallpaperImage(map, selection.variant)
+      }
+      if (selection !== undefined && selection.kind === 'remote' && selection.delivery === 'direct') {
+        return selection.thumbnail ?? selection.url
       }
       return backgroundImageValue(selection, localImageUrl)
     },

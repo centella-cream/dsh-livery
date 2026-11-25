@@ -121,3 +121,34 @@ export function safeRemoteImageUrl(raw: unknown): string | undefined {
     return undefined
   }
 }
+
+/** Exact image hosts for the direct-only reviewed providers (0.2.3). */
+export const DIRECT_IMAGE_HOSTS: Readonly<Record<string, string>> = Object.freeze({
+  cleveland: 'openaccess-cdn.clevelandart.org',
+  'met-open-access': 'images.metmuseum.org',
+})
+
+/**
+ * Whether a direct selection is provider-controlled: a reviewed direct provider
+ * id plus optional URLs on that provider's exact image host. The map is
+ * cross-checked against `src/provider-manifests.json` by the client unit test
+ * `wallpaper.test.ts`; this is not duplicated by `verify-provider-gate`.
+ * @param providerId - untrusted provider id from state/preset provenance.
+ * @param urls - full-image and optional thumbnail URLs.
+ * @returns true only for the reviewed provider/host pair.
+ */
+export function isAllowedDirectImage(providerId: unknown, ...urls: readonly unknown[]): boolean {
+  if (typeof providerId !== 'string') return false
+  const host = DIRECT_IMAGE_HOSTS[providerId]
+  if (host === undefined) return false
+  for (const raw of urls) {
+    if (raw === undefined) continue
+    if (typeof raw !== 'string') return false
+    try {
+      if (new URL(raw).hostname.toLowerCase().replace(/\.$/u, '') !== host) return false
+    } catch {
+      return false
+    }
+  }
+  return true
+}

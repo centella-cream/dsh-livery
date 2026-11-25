@@ -21,7 +21,7 @@
  * through the small ports below.
  */
 import { STOCK_ID } from '../../core/types.js'
-import { isLocalOrPrivateHost } from './host-safety.js'
+import { isAllowedDirectImage, isLocalOrPrivateHost } from './host-safety.js'
 import { isStyleWallpaperVariant } from './style.js'
 import {
   DEFAULT_WALLPAPER_POSITION,
@@ -47,12 +47,17 @@ import type {
 } from '../wallpaper.js'
 import type { StyleApplyFailure, StyleApplyOutcome } from '../model.js'
 
-/** Schema version written by this build (export always writes the current one). */
+/** Schema version written for cached/builtin/upload/style presets. */
 export const PRESET_SCHEMA_VERSION = 2 as const
 /** Legacy schema version still accepted on import (builtin | remote | null only). */
 export const LEGACY_PRESET_SCHEMA_VERSION = 1 as const
+/** Direct-only preset schema version; 0.2.2 rejects it wholesale. */
+export const DIRECT_PRESET_SCHEMA_VERSION = 3 as const
 /** Schema versions accepted by the import path. */
-export type PresetSchemaVersion = typeof LEGACY_PRESET_SCHEMA_VERSION | typeof PRESET_SCHEMA_VERSION
+export type PresetSchemaVersion =
+  | typeof LEGACY_PRESET_SCHEMA_VERSION
+  | typeof PRESET_SCHEMA_VERSION
+  | typeof DIRECT_PRESET_SCHEMA_VERSION
 
 /** Hard cap for a preset file / JSON payload (64 KiB). */
 export const PRESET_FILE_MAX_BYTES = 64 * 1024
@@ -95,6 +100,10 @@ export interface PresetWallpaperBuiltin {
 export interface PresetWallpaperRemote {
   readonly kind: 'remote'
   readonly url: string
+  /** Present only in a direct preset v3. */
+  readonly delivery?: 'direct'
+  /** Provider thumbnail for the hero; direct only. */
+  readonly thumbnail?: string
 }
 
 /**
@@ -607,15 +616,29 @@ function parseWallpaper(
     return { wallpaper: { kind: 'builtin', id: record.id } }
   }
   if (kind === 'remote') {
-    const unknown = firstUnknownKey(record, ['kind', 'url'])
+    const direct = version === DIRECT_PRESET_SCHEMA_VERSION
+    const unknown = firstUnknownKey(record, direct ? ['kind', 'url', 'delivery', 'thumbnail'] : ['kind', 'url'])
     if (unknown !== undefined) return failed('unknown-field', `wallpaper.${unknown}`)
+    if (direct && record.delivery !== 'direct') return failed('wallpaper-kind', 'wallpaper.delivery')
+    if (!direct && record.delivery !== undefined) return failed('unknown-field', 'wallpaper.delivery')
     const portable = portableWallpaperUrl(record.url)
     if (!portable.ok) {
       return portable.detail === 'forbidden-content'
         ? failed('forbidden-content', 'wallpaper.url')
         : failed('wallpaper-url', `wallpaper.url.${portable.detail}`)
     }
-    return { wallpaper: { kind: 'remote', url: portable.url } }
+    const thumbnail = direct && typeof record.thumbnail === 'string'
+      ? portableWallpaperUrl(record.thumbnail)
+      : undefined
+    if (thumbnail !== undefined && !thumbnail.ok) return failed('wallpaper-url', 'wallpaper.thumbnail')
+    return {
+      wallpaper: {
+        kind: 'remote',
+        url: portable.url,
+        ...(direct ? { delivery: 'direct' as const } : {}),
+        ...(thumbnail?.ok === true ? { thumbnail: thumbnail.url } : {}),
+      },
+    }
   }
   if (kind === 'style' && version >= PRESET_SCHEMA_VERSION) {
     const unknown = firstUnknownKey(record, ['kind', 'variant'])
@@ -723,7 +746,9 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
   if (unknownRoot !== undefined) return failed('unknown-field', unknownRoot)
 
   const version = record.schemaVersion
-  if (version !== LEGACY_PRESET_SCHEMA_VERSION && version !== PRESET_SCHEMA_VERSION) {
+  if (version !== LEGACY_PRESET_SCHEMA_VERSION
+    && version !== PRESET_SCHEMA_VERSION
+    && version !== DIRECT_PRESET_SCHEMA_VERSION) {
     return failed('schema-version', 'schemaVersion')
   }
 
@@ -747,6 +772,13 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
   if (wallpaperValue?.kind === 'style' && styleId === STOCK_ID) {
     return failed('wallpaper-kind', 'wallpaper.style.stock')
   }
+  if (version === DIRECT_PRESET_SCHEMA_VERSION
+    && (wallpaperValue === null || wallpaperValue.kind !== 'remote' || wallpaperValue.delivery !== 'direct')) {
+    return failed('wallpaper-kind', 'wallpaper.direct')
+  }
+  if (version !== DIRECT_PRESET_SCHEMA_VERSION && wallpaperValue?.kind === 'remote' && wallpaperValue.delivery !== undefined) {
+    return failed('unknown-field', 'wallpaper.delivery')
+  }
   const effects = parseEffects(record.effects)
   if ('ok' in effects && effects.ok === false) return effects
   const position = parsePosition(record.position)
@@ -755,6 +787,10 @@ function validatePresetValue(value: unknown, options: PresetImportOptions): Pres
   if ('ok' in attribution && attribution.ok === false) return attribution
 
   const attributionValue = (attribution as { readonly attribution: PresetAttribution | undefined }).attribution
+  if (wallpaperValue?.kind === 'remote' && wallpaperValue.delivery === 'direct'
+    && !isAllowedDirectImage(attributionValue?.providerId, wallpaperValue.url, wallpaperValue.thumbnail)) {
+    return failed('wallpaper-url', 'wallpaper.direct-provider')
+  }
   const preset: LiveryPreset = {
     schemaVersion: version,
     createdWith,
@@ -939,13 +975,27 @@ export function exportPreset(source: PresetExportSource): PresetExportResult {
     } else {
       const portable = portableWallpaperUrl(selection.url)
       if (!portable.ok) return exportFailed('invalid-url')
-      wallpaper = { kind: 'remote', url: portable.url }
+      const direct = selection.delivery === 'direct'
+      const thumbnail = direct && typeof selection.thumbnail === 'string'
+        ? portableWallpaperUrl(selection.thumbnail)
+        : undefined
+      if (direct && !isAllowedDirectImage(selection.provenance?.providerId, portable.url, thumbnail?.ok === true ? thumbnail.url : undefined)) {
+        return exportFailed('invalid-url')
+      }
+      wallpaper = {
+        kind: 'remote',
+        url: portable.url,
+        ...(direct ? { delivery: 'direct' as const } : {}),
+        ...(thumbnail?.ok === true ? { thumbnail: thumbnail.url } : {}),
+      }
     }
   }
 
   const attribution = sanitizeAttribution(source.attribution ?? attributionFromProvenance(provenanceOfSelection(selection)))
   const preset: LiveryPreset = {
-    schemaVersion: PRESET_SCHEMA_VERSION,
+    schemaVersion: selection?.kind === 'remote' && selection.delivery === 'direct'
+      ? DIRECT_PRESET_SCHEMA_VERSION
+      : PRESET_SCHEMA_VERSION,
     createdWith,
     styleId,
     wallpaper,
@@ -961,7 +1011,7 @@ export function exportPreset(source: PresetExportSource): PresetExportResult {
 function currentWallpaperOf(selection: WallpaperSelection): PresetCurrentWallpaper {
   if (selection === undefined) return null
   if (selection.kind === 'builtin') return { kind: 'builtin', id: selection.id }
-  if (selection.kind === 'remote') return { kind: 'remote', url: selection.url }
+  if (selection.kind === 'remote') return { kind: 'remote', url: selection.url, ...(selection.delivery === 'direct' ? { delivery: 'direct' as const } : {}), ...(selection.thumbnail === undefined ? {} : { thumbnail: selection.thumbnail }) }
   if (selection.kind === 'style') return { kind: 'style', variant: selection.variant }
   return { kind: 'upload', key: selection.key }
 }
@@ -996,7 +1046,7 @@ export function sameWallpaperView(a: PresetCurrentWallpaper, b: PresetCurrentWal
   if (a === null || b === null) return a === b
   if (a.kind !== b.kind) return false
   if (a.kind === 'builtin') return b.kind === 'builtin' && a.id === b.id
-  if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url
+  if (a.kind === 'remote') return b.kind === 'remote' && a.url === b.url && a.delivery === b.delivery
   if (a.kind === 'style') return b.kind === 'style' && a.variant === b.variant
   return b.kind === 'upload' && a.key === b.key
 }

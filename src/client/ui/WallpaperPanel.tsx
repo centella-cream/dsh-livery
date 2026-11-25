@@ -33,9 +33,9 @@ function ResultThumbnail({ src }: { readonly src: string }): JSX.Element {
  *
  * Client-only: changes go through the wallpaper controller (localStorage +
  * IndexedDB uploads + one owned stylesheet); no host config or boot payload is
- * touched. Opening the page performs **no** network request: the default image
- * tab is Built-in, and only the first Online-tab activation starts one batch.
- * Search/Random/Refresh/Retry are the only other request triggers.
+ * touched. Opening the page defaults to Online and performs one automatic Random
+ * batch; later tab switches do not refetch. Search/Refresh/Retry are the only
+ * other request triggers.
  */
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
@@ -66,10 +66,11 @@ import type {
   WallpaperSelection,
   WallpaperUrlProblem,
 } from '../wallpaper.js'
-import { OFFERED_PROVIDERS, providerById, providerImagePolicy } from '../wallpaper/providers.js'
+import { providerById, providerImagePolicy } from '../wallpaper/providers.js'
 import type { ImageHostPolicy, ProviderFailure, ProviderId, WallpaperProviderResult } from '../wallpaper/providers.js'
 import { createIndexedDbImageStore, validateUploadFile } from '../wallpaper/storage.js'
 import {
+  DIRECT_RECENT_WALLPAPER_KEY,
   RECENT_WALLPAPER_CLEAR_KEY,
   clearRecentWallpapers,
   mergeRecentEntries,
@@ -214,6 +215,16 @@ function providerDisplayName(
   return provider.label[locale === 'zh' ? 'zh-CN' : 'en-US']
 }
 
+/** Legacy Openverse credit detection for stored 0.2.1 data. */
+function isOpenverseLegacyCredit(credit: { readonly providerId?: string | undefined; readonly source?: string | undefined; readonly sourceUrl?: string | undefined } | undefined): boolean {
+  if (credit === undefined) return false
+  if (credit.providerId === 'openverse') return true
+  if (typeof credit.sourceUrl === 'string') {
+    try { if (new URL(credit.sourceUrl).hostname === 'api.openverse.org') return true } catch { /* ignore */ }
+  }
+  return typeof credit.source === 'string' && credit.source.toLowerCase().includes('openverse')
+}
+
 /** Normalize a recent-history mirror entry into selection provenance. */
 function provenanceOfRecentEntry(entry: RecentWallpaperEntry): WallpaperProvenance | undefined {
   return normalizeWallpaperProvenance({
@@ -295,6 +306,15 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     if (injectedStudio !== undefined) return undefined
     return () => { studio.dispose() }
   }, [studio, injectedStudio])
+  useEffect(() => {
+    void studio.random()
+  }, [studio])
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined
+    const onDirectError = (): void => setRemoteFailed(true)
+    window.addEventListener('dsh-livery-wallpaper-error', onDirectError)
+    return () => window.removeEventListener('dsh-livery-wallpaper-error', onDirectError)
+  }, [])
   const [urlText, setUrlText] = useState('')
   const [problem, setProblem] = useState<WallpaperUrlProblem | undefined>(undefined)
   const [remoteFailed, setRemoteFailed] = useState(false)
@@ -302,11 +322,14 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   const [activeResult, setActiveResult] = useState(0)
   const [uploadSessionOnly, setUploadSessionOnly] = useState(false)
   const [dragOver, setDragOver] = useState(false)
-  // No request on mount: Built-in is the default image tab.
-  const [sourceTab, setSourceTab] = useState<SourceTab>('builtin')
+  // Online is the default image tab and opens with one automatic Random batch.
+  const [sourceTab, setSourceTab] = useState<SourceTab>('online')
   const [resultPage, setResultPage] = useState(0)
   const [manageOpen, setManageOpen] = useState(false)
-  const [recent, setRecent] = useState<readonly RecentWallpaperEntry[]>(() => readRecentWallpapers(recentStorage))
+  const [recent, setRecent] = useState<readonly RecentWallpaperEntry[]>(() => mergeRecentEntries(
+    readRecentWallpapers(recentStorage),
+    readRecentWallpapers(recentStorage, DIRECT_RECENT_WALLPAPER_KEY),
+  ))
   const recentRef = useRef(recent)
   recentRef.current = recent
   const [cachedUrls, setCachedUrls] = useState<Record<string, string>>({})
@@ -496,7 +519,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   }, [])
 
   const displayUrlFor = (entry: RecentWallpaperEntry): string | undefined =>
-    cachedUrls[entry.url]
+    entry.delivery === 'direct' ? (entry.thumbnail ?? entry.url) : cachedUrls[entry.url]
 
   const rememberBlob = (url: string, blob: Blob): void => {
     try {
@@ -509,12 +532,22 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
 
   const recordRemoteHistory = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
     const previous = recentRef.current
-    const next = rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() })
+    const cached = rememberRecentWallpaper(recentStorage, { ...entry, addedAt: Date.now() })
+    const next = mergeRecentEntries(cached, readRecentWallpapers(recentStorage, DIRECT_RECENT_WALLPAPER_KEY))
     setRecent(next)
     const protectedUrls = new Set(protectedRemoteUrls())
     for (const evicted of evictedRecentUrls(previous, next, undefined)) {
       if (!protectedUrls.has(evicted)) void deleteCachedRemote(evicted, imageStore, recentStorage)
     }
+  }
+
+  const recordDirectHistory = (entry: Omit<RecentWallpaperEntry, 'addedAt'>): void => {
+    const direct = rememberRecentWallpaper(
+      recentStorage,
+      { ...entry, delivery: 'direct', addedAt: Date.now() },
+      DIRECT_RECENT_WALLPAPER_KEY,
+    )
+    setRecent(mergeRecentEntries(readRecentWallpapers(recentStorage), direct))
   }
 
   /**
@@ -564,6 +597,18 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
 
   const reapplyRecent = (entry: RecentWallpaperEntry): void => {
     setRemoteFailed(false)
+    if (entry.delivery === 'direct') {
+      const provenance = provenanceOfRecentEntry(entry)
+      selectWallpaper({
+        kind: 'remote',
+        url: entry.url,
+        ...(provenance === undefined ? {} : { provenance }),
+        delivery: 'direct',
+        ...(entry.thumbnail === undefined ? {} : { thumbnail: entry.thumbnail }),
+      })
+      recordDirectHistory(entry)
+      return
+    }
     void (async () => {
       const ticket = ++remoteCommitTicket.current
       const selectionVersion = controller?.getSelectionVersion()
@@ -577,6 +622,12 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
         selectWallpaper(provenance === undefined
           ? { kind: 'remote', url: entry.url }
           : { kind: 'remote', url: entry.url, provenance }, record.blob)
+        return
+      }
+      if ((entry.providerId === 'openverse' || isOpenverseLegacyCredit(entry)) && mounted.current) {
+        // 0.2.3 never fetches a removed provider. The notice remains visible;
+        // the generic failure copy asks for another source.
+        setRemoteFailed(true)
         return
       }
       if (!(await commitRemote(entry, provenance)) && mounted.current) setRemoteFailed(true)
@@ -614,7 +665,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
         if (event.newValue !== null) applyExternalClear()
         return
       }
-      if (event.key !== 'dsh-livery.wallpaper.recent.v1') return
+      if (event.key !== 'dsh-livery.wallpaper.recent.v1' && event.key !== DIRECT_RECENT_WALLPAPER_KEY) return
       if (event.newValue === null) {
         // An explicit clear is authoritative; never merge the old local list
         // back into an empty cross-tab history.
@@ -629,7 +680,8 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
       if (JSON.stringify(merged) !== JSON.stringify(next)) {
         // Preserve a concurrently added local entry instead of losing it to the
         // other tab's last write; both tabs eventually converge on the union.
-        writeRecentWallpapers(recentStorage, merged)
+        writeRecentWallpapers(recentStorage, merged.filter(entry => entry.delivery !== 'direct'))
+        writeRecentWallpapers(recentStorage, merged.filter(entry => entry.delivery === 'direct'), DIRECT_RECENT_WALLPAPER_KEY)
       }
       for (const url of [...objectUrlsRef.current.keys()]) {
         if (!keep.has(url)) releaseObjectUrl(url)
@@ -647,6 +699,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     let cancelled = false
     void (async () => {
       for (const entry of recent) {
+        if (entry.delivery === 'direct') continue
         if (objectUrlsRef.current.has(entry.url)) continue
         const record = await loadCachedRemote(entry.url, imageStore)
         if (cancelled || record === undefined) continue
@@ -680,6 +733,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   // ever handed to the browser's image loader.
   useEffect(() => {
     if (state.selection?.kind !== 'remote') return
+    if (state.selection.delivery === 'direct' || isOpenverseLegacyCredit(state.selection.provenance)) return
     if (controller?.getRenderImage(snapshot.themeMode) !== undefined) return
     const url = state.selection.url
     const policy = policyOfSelection(state.selection)
@@ -731,7 +785,8 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     if (result.license === null) return
     setProblem(undefined)
     setRemoteFailed(false)
-    void commitRemote({
+    const provenance = provenanceOfProviderResult(result)
+    const history: Omit<RecentWallpaperEntry, 'addedAt'> = {
       url: result.fullUrl,
       thumbnail: result.thumbUrl,
       providerId: result.providerId,
@@ -742,7 +797,19 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
       creatorUrl: result.creatorUrl,
       licenseUrl: result.license.url,
       sourceUrl: result.sourceUrl,
-    }, provenanceOfProviderResult(result), providerImagePolicy(result.providerId))
+    }
+    if (result.delivery === 'direct') {
+      selectWallpaper({
+        kind: 'remote',
+        url: result.fullUrl,
+        ...(provenance === undefined ? {} : { provenance }),
+        delivery: 'direct',
+        thumbnail: result.thumbUrl,
+      })
+      recordDirectHistory(history)
+      return
+    }
+    void commitRemote(history, provenance, providerImagePolicy(result.providerId))
       .then(ok => { if (!ok && mounted.current) setRemoteFailed(true) })
   }
   const applyUrl = (): void => {
@@ -817,6 +884,9 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   // remote/upload images ignore the mode; a style selection resolves the recipe
   // against the active livery's light/dark token map.
   const renderImage = controller?.getRenderImage(snapshot.themeMode)
+  const directSelection = selection !== undefined && selection.kind === 'remote' && selection.delivery === 'direct'
+    ? selection
+    : undefined
   const styleSelected = selection?.kind === 'style'
   const activeLivery = snapshot.effectiveId === undefined || snapshot.effectiveId === STOCK_ID
     ? undefined
@@ -833,6 +903,11 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   const creditLinks = wallpaperCreditLinks(credit)
   const creditProviderName = providerDisplayName(credit?.providerId, snapshot.locale)
   const creditSource = creditProviderName ?? credit?.source
+  const openverseNoticeVisible = isOpenverseLegacyCredit(credit)
+    || selection?.kind === 'remote' && (selection.provenance?.providerId === 'openverse'
+      || selection.provenance?.sourceUrl?.includes('api.openverse.org') === true
+      || selection.provenance?.source?.toLowerCase().includes('openverse') === true)
+    || recent.some(entry => isOpenverseLegacyCredit(entry))
   const creditText = credit === undefined
     ? undefined
     : t('wallpaper.attribution', {
@@ -897,8 +972,8 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
           : t('wallpaper.status.failed')
   const providerOptions: readonly { id: ProviderChoice; label: string }[] = [
     { id: 'auto', label: t('wallpaper.providerAuto') },
-    ...OFFERED_PROVIDERS.map(provider => ({
-      id: provider.id as ProviderChoice,
+    ...online.providers.map(provider => ({
+      id: provider.id,
       label: provider.label[snapshot.locale === 'zh' ? 'zh-CN' : 'en-US'],
     })),
   ]
@@ -912,22 +987,36 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     const selectionVersion = active.getSelectionVersion()
     const startRevision = active.getSnapshot().revision
     let blob: Blob | undefined
-    if (target.selection?.kind === 'remote') {
-      const policy = policyOfSelection(target.selection)
-      const result = await cacheRemoteImage(target.selection.url, {
-        images: imageStore,
-        storage: recentStorage,
-        protectedUrl: target.selection.url,
-        protectedUrls: protectedRemoteUrls(),
-        signal: cacheCancellation.current.reset(),
-        deferPrune: true,
-        ...(policy === undefined ? {} : { policy }),
-      })
-      if (!mounted.current || !result.ok
-        || active.getSelectionVersion() !== selectionVersion
-        || active.getSnapshot().revision !== startRevision) return false
-      blob = result.record.blob
-      rememberBlob(target.selection.url, blob)
+    if (target.selection?.kind === 'remote' && target.selection.delivery !== 'direct') {
+      if (target.selection.provenance?.providerId === 'openverse'
+        || target.selection.provenance?.source?.toLowerCase().includes('openverse') === true
+        || target.selection.provenance?.sourceUrl?.includes('api.openverse.org') === true) {
+        // A removed provider must never be fetched again. Apply only an existing
+        // verified cache entry; a cold preset reports the generic load failure.
+        const cached = await loadCachedRemote(target.selection.url, imageStore)
+        if (cached === undefined) {
+          if (mounted.current) setRemoteFailed(true)
+          return false
+        }
+        blob = cached.blob
+        rememberBlob(target.selection.url, blob)
+      } else {
+        const policy = policyOfSelection(target.selection)
+        const result = await cacheRemoteImage(target.selection.url, {
+          images: imageStore,
+          storage: recentStorage,
+          protectedUrl: target.selection.url,
+          protectedUrls: protectedRemoteUrls(),
+          signal: cacheCancellation.current.reset(),
+          deferPrune: true,
+          ...(policy === undefined ? {} : { policy }),
+        })
+        if (!mounted.current || !result.ok
+          || active.getSelectionVersion() !== selectionVersion
+          || active.getSnapshot().revision !== startRevision) return false
+        blob = result.record.blob
+        rememberBlob(target.selection.url, blob)
+      }
     }
     const previous = active.getSnapshot().selection
     const next = active.setState(
@@ -939,7 +1028,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
     if (ok) {
       const obsolete = obsoleteUploadKey(previous, target.selection)
       scheduleUploadDelete(obsolete, 'preset')
-      if (target.selection?.kind === 'remote') {
+      if (target.selection?.kind === 'remote' && target.selection.delivery !== 'direct') {
         void pruneRemoteCache({ images: imageStore, storage: recentStorage, protectedUrl: target.selection.url })
       }
     }
@@ -1014,19 +1103,40 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                   className="wallpaper-hero__preview"
                   data-testid="wallpaper-hero-preview"
                   data-kind={selection.kind}
-                  style={{ backgroundImage: renderImage, backgroundPosition: heroPosition }}
+                  style={directSelection === undefined
+                    ? { backgroundImage: renderImage, backgroundPosition: heroPosition }
+                    : undefined}
                   aria-hidden="true"
                 >
-                  <div className="wallpaper-hero__dim" style={{ opacity: state.effects.dim / 100 }} />
-                  <div
-                    className="wallpaper-hero__atmo"
-                    style={{ backgroundImage: renderImage, backgroundPosition: heroPosition, opacity: state.effects.atmosphere / 100 }}
-                  />
+                  {directSelection === undefined ? (
+                    <div className="wallpaper-hero__dim" style={{ opacity: state.effects.dim / 100 }} />
+                  ) : (
+                    <>
+                      <img
+                        className="wallpaper-hero__img"
+                        src={renderImage}
+                        alt=""
+                        style={{ objectPosition: heroPosition, filter: `blur(${state.effects.blur}px)` }}
+                        referrerPolicy="no-referrer"
+                        decoding="async"
+                      />
+                      <div className="wallpaper-hero__dim" style={{ opacity: state.effects.dim / 100 }} />
+                    </>
+                  )}
+                  {directSelection === undefined && state.effects.atmosphere > 0 && (
+                    <div
+                      className="wallpaper-hero__atmo"
+                      style={{ backgroundImage: renderImage, backgroundPosition: heroPosition, opacity: state.effects.atmosphere / 100 }}
+                    />
+                  )}
                 </div>
                 <div className="wallpaper-hero__meta">
                   <span className="wallpaper-hero__name">{heroName}</span>
                   <span className="livery-ui-card__hint">{heroKind}</span>
                 </div>
+                {directSelection !== undefined && (
+                  <p className="livery-ui-card__hint" data-testid="wallpaper-direct-hint">{t('wallpaper.directHint')}</p>
+                )}
               </>
             )}
           {creditText !== undefined && (
@@ -1084,6 +1194,7 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                       max={bounds.max}
                       step={bounds.step}
                       value={value}
+                      disabled={directSelection !== undefined && row.id === 'atmosphere'}
                       onChange={event => controller?.setEffects({ [row.id]: Number(event.target.value) })}
                     />
                     <output>{t(row.format, { value })}</output>
@@ -1213,6 +1324,11 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                 </select>
               </div>
               <p className="livery-ui-card__hint">{t('wallpaper.providerHint')}</p>
+              {openverseNoticeVisible && (
+                <p className="livery-ui-card__hint" data-testid="wallpaper-openverse-notice">
+                  {t('wallpaper.online.openverseNotice')}
+                </p>
+              )}
 
               <div className={SEARCH}>
                 <Input

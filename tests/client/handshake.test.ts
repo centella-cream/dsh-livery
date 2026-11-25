@@ -123,7 +123,7 @@ describe('checkBoot — certified adapter whitelist', () => {
 
   it('freezes the stale allowlist to an exact previous-build list', () => {
     expect(Object.isFrozen(STALE_BOOT_VERSIONS)).toBe(true)
-    expect([...STALE_BOOT_VERSIONS]).toEqual(['0.2.1'])
+    expect([...STALE_BOOT_VERSIONS]).toEqual(['0.2.1', '0.2.2'])
     expect(STALE_BOOT_VERSIONS).not.toContain(LIVERY_VERSION)
     expect(() => (STALE_BOOT_VERSIONS as string[]).push('0.2.2')).toThrow(TypeError)
   })

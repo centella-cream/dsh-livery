@@ -15,6 +15,8 @@ import {
   WALLPAPER_POSITION_OPTIONS,
   WALLPAPER_POSITION_VALUES,
   WALLPAPER_SIDEBAR_TINT_TOKEN,
+  DIRECT_WALLPAPER_STATE_SCHEMA_VERSION,
+  WALLPAPER_DIRECT_ID,
   WALLPAPER_STATE_SCHEMA_VERSION,
   WALLPAPER_STORAGE_KEY,
   WALLPAPER_SURFACE_TOKENS,
@@ -48,6 +50,8 @@ import { createWallpaperLayer, WALLPAPER_STYLE_ID } from '../../src/client/wallp
 import { createWallpaperController, getWallpaperController, setWallpaperController } from '../../src/client/wallpaper/controller.js'
 import type { WallpaperStorage } from '../../src/client/wallpaper/controller.js'
 import { FakeDocument } from './fixtures.js'
+import { DIRECT_IMAGE_HOSTS } from '../../src/client/wallpaper/host-safety.js'
+import providerManifests from '../../src/provider-manifests.json'
 
 /** In-memory localStorage subset. */
 class MemoryStorage implements WallpaperStorage {
@@ -399,6 +403,76 @@ describe('wallpaper state schema v2', () => {
     expect(serializeWallpaperState(undefined, DEFAULT_WALLPAPER_EFFECTS)).toMatchObject({ schemaVersion: 2, selection: { kind: 'none' } })
   })
 
+
+  it('writes direct selections to schema v3 only and keeps cached selections on v2', () => {
+    const direct = {
+      kind: 'remote' as const,
+      url: 'https://openaccess-cdn.clevelandart.org/print.jpg',
+      delivery: 'direct' as const,
+      thumbnail: 'https://openaccess-cdn.clevelandart.org/web.jpg',
+      provenance: { providerId: 'cleveland', title: 'Art' },
+    }
+    const record = serializeWallpaperState(direct, DEFAULT_WALLPAPER_EFFECTS, DEFAULT_WALLPAPER_POSITION, 7)
+    expect(record.schemaVersion).toBe(DIRECT_WALLPAPER_STATE_SCHEMA_VERSION)
+    expect(record.schemaVersion).toBe(3)
+    expect(record.selection).toMatchObject({ kind: 'remote', delivery: 'direct' })
+    expect(parseWallpaperState(record)).toMatchObject({ revision: 7, selection: direct })
+    expect(serializeWallpaperState({ kind: 'remote', url: 'https://cdn.example/cached.jpg' }, DEFAULT_WALLPAPER_EFFECTS).schemaVersion).toBe(2)
+    // A direct record without the explicit delivery discriminator is not v3.
+    expect(parseWallpaperState({
+      schemaVersion: 3,
+      revision: 1,
+      selection: { kind: 'remote', url: 'https://example.com/x.jpg' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      position: DEFAULT_WALLPAPER_POSITION,
+    })).toBeUndefined()
+    // Direct records are provider-controlled: unknown hosts / missing providerId fail closed.
+    for (const selection of [
+      { kind: 'remote', url: 'https://evil.example/print.jpg', delivery: 'direct', provenance: { providerId: 'cleveland' } },
+      { kind: 'remote', url: 'https://openaccess-cdn.clevelandart.org/print.jpg', delivery: 'direct' },
+      { kind: 'remote', url: 'https://openaccess-cdn.clevelandart.org/print.jpg', delivery: 'direct', thumbnail: 'https://evil.example/web.jpg', provenance: { providerId: 'cleveland' } },
+    ]) {
+      expect(parseWallpaperState({
+        schemaVersion: 3,
+        revision: 1,
+        selection,
+        effects: DEFAULT_WALLPAPER_EFFECTS,
+        position: DEFAULT_WALLPAPER_POSITION,
+      })).toBeUndefined()
+    }
+  })
+
+  it('keeps the direct client host allowlist exactly equal to the reviewed manifests', () => {
+    const directProviders = providerManifests.providers.filter(provider => provider.delivery === 'direct')
+    // Bidirectional: every reviewed direct provider is present, and the client
+    // has no extra direct-provider entry.
+    expect(new Set(Object.keys(DIRECT_IMAGE_HOSTS)))
+      .toEqual(new Set(directProviders.map(provider => provider.id)))
+    for (const provider of directProviders) {
+      // The client uses one exact host; fail loudly if a future manifest has more
+      // or different hosts instead of silently allowing only the first.
+      expect(provider.imageHosts).toEqual([DIRECT_IMAGE_HOSTS[provider.id]])
+    }
+  })
+
+  it('emits direct image CSS without a body pseudo-element and keeps cached remote CSS unchanged', () => {
+    const direct = buildWallpaperCss({
+      selection: { kind: 'remote', url: 'https://oa.example/full.jpg', delivery: 'direct', thumbnail: 'https://oa.example/web.jpg' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      imageLayer: 'direct',
+      position: { x: 50, y: 0 },
+    })
+    expect(direct).toContain(`#${WALLPAPER_DIRECT_ID}`)
+    expect(direct).not.toContain('::before')
+    expect(direct).toContain('object-position:50% 0%')
+    const cached = buildWallpaperCss({
+      selection: { kind: 'remote', url: 'https://cdn.example/cached.jpg' },
+      effects: DEFAULT_WALLPAPER_EFFECTS,
+      imageOverride: 'blob:https://app/1',
+    })
+    expect(cached).toContain('::before')
+    expect(cached).toContain("url('blob:https://app/1')")
+  })
   it('roundtrips every selection kind including a recoverable upload key', () => {
     for (const selection of [
       { kind: 'builtin' as const, id: 'aurora' as const },
@@ -765,6 +839,45 @@ describe('wallpaper DOM layer', () => {
     expect(doc.body.getAttribute('data-dsh-wallpaper')).toBe('')
     layer.clear()
     expect(doc.getElementById('dsh-livery-wallpaper-overlay')).toBeNull()
+  })
+
+
+  it('renders and clears one direct image layer with a no-referrer image', () => {
+    const doc = fakeDoc()
+    const layer = createWallpaperLayer(doc as never)
+    layer.apply('body[data-dsh-wallpaper]{color:red}', false, {
+      url: 'https://oa.example/full.jpg',
+      fallbackUrl: 'https://oa.example/web.jpg',
+    })
+    const wrapper = doc.getElementById(WALLPAPER_DIRECT_ID)
+    expect(wrapper).not.toBeNull()
+    expect(wrapper?.getAttribute('class')).toBe('dsh-livery-wallpaper-direct')
+    const image = wrapper?.children[0]
+    expect(image?.getAttribute('src')).toBe('https://oa.example/full.jpg')
+    expect(image?.getAttribute('referrerpolicy')).toBe('no-referrer')
+    // A failed full image falls back once; a second failure marks the layer.
+    ;(image as unknown as { onerror?: () => void }).onerror?.()
+    expect(image?.getAttribute('src')).toBe('https://oa.example/web.jpg')
+    ;(image as unknown as { onerror?: () => void }).onerror?.()
+    expect(wrapper?.getAttribute('data-failed')).toBe('true')
+    // A new direct selection resets the fallback and uses its own thumbnail.
+    layer.apply('body[data-dsh-wallpaper]{color:red}', false, {
+      url: 'https://openaccess-cdn.clevelandart.org/A.jpg',
+      fallbackUrl: 'https://openaccess-cdn.clevelandart.org/A-thumb.jpg',
+    })
+    expect(wrapper?.getAttribute('data-failed')).toBeNull()
+    expect(image?.getAttribute('src')).toBe('https://openaccess-cdn.clevelandart.org/A.jpg')
+    ;(image as unknown as { onerror?: () => void }).onerror?.()
+    expect(image?.getAttribute('src')).toBe('https://openaccess-cdn.clevelandart.org/A-thumb.jpg')
+    layer.apply('body[data-dsh-wallpaper]{color:red}', false, {
+      url: 'https://images.metmuseum.org/B.jpg',
+      fallbackUrl: 'https://images.metmuseum.org/B-thumb.jpg',
+    })
+    ;(image as unknown as { onerror?: () => void }).onerror?.()
+    expect(image?.getAttribute('src')).toBe('https://images.metmuseum.org/B-thumb.jpg')
+    // Switching back to a cached/full body selection removes the direct layer.
+    layer.apply('body[data-dsh-wallpaper]::before{color:blue}', false)
+    expect(doc.getElementById(WALLPAPER_DIRECT_ID)).toBeNull()
   })
 
   it('applies nothing without a document', () => {

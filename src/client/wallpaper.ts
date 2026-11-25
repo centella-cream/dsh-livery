@@ -12,7 +12,7 @@
  * `wallpaper/apply.ts`; orchestration lives in `wallpaper/controller.ts`.
  */
 import type { CompiledLivery, TokenMap } from '../core/types.js'
-import { isLocalOrPrivateHost } from './wallpaper/host-safety.js'
+import { isAllowedDirectImage, isLocalOrPrivateHost } from './wallpaper/host-safety.js'
 import { isStyleWallpaperVariant, styleWallpaperImage } from './wallpaper/style.js'
 import type { StyleWallpaperVariant } from './wallpaper/style.js'
 
@@ -55,6 +55,9 @@ export const WALLPAPER_ATTRIBUTE = 'data-dsh-wallpaper'
 /** Id + class of the plugin-owned atmosphere overlay element above app content. */
 export const WALLPAPER_OVERLAY_ID = 'dsh-livery-wallpaper-overlay'
 export const WALLPAPER_OVERLAY_CLASS = 'dsh-livery-wallpaper-overlay'
+/** Id + class of the direct-provider image layer (0.2.3). */
+export const WALLPAPER_DIRECT_ID = 'dsh-livery-wallpaper-direct'
+export const WALLPAPER_DIRECT_CLASS = 'dsh-livery-wallpaper-direct'
 
 /** Hard cap for user-provided wallpaper URLs. */
 export const MAX_WALLPAPER_URL_LENGTH = 2048
@@ -286,15 +289,31 @@ export function normalizeWallpaperSelection(selection: WallpaperSelection): Wall
   }
   if (selection.kind !== 'remote') return selection
   const provenance = normalizeWallpaperProvenance(selection.provenance)
-  return provenance === undefined
-    ? { kind: 'remote', url: selection.url }
-    : { kind: 'remote', url: selection.url, provenance }
+  const thumbnail = typeof selection.thumbnail === 'string'
+    ? validateWallpaperUrl(selection.thumbnail)
+    : undefined
+  const normalizedThumb = thumbnail?.ok === true ? thumbnail.url : undefined
+  return {
+    kind: 'remote',
+    url: selection.url,
+    ...(provenance === undefined ? {} : { provenance }),
+    ...(selection.delivery === 'direct' ? { delivery: 'direct' as const } : {}),
+    ...(normalizedThumb === undefined ? {} : { thumbnail: normalizedThumb }),
+  }
 }
 
 /** The selected wallpaper, or `undefined` for "no wallpaper". */
 export type WallpaperSelection =
   | { readonly kind: 'builtin'; readonly id: BuiltinWallpaperId }
-  | { readonly kind: 'remote'; readonly url: string; readonly provenance?: WallpaperProvenance }
+  | {
+    readonly kind: 'remote'
+    readonly url: string
+    readonly provenance?: WallpaperProvenance
+    /** Direct providers are browser-loaded and never enter the Blob cache. */
+    readonly delivery?: 'direct'
+    /** Provider thumbnail used by the hero; never the full direct image. */
+    readonly thumbnail?: string
+  }
   | { readonly kind: 'upload'; readonly key: string }
   /** Generated "follow style" layer; persisted only in the style sidecar. */
   | { readonly kind: 'style'; readonly variant: StyleWallpaperVariant }
@@ -302,6 +321,8 @@ export type WallpaperSelection =
 
 /** Persisted schema version written by this client (v1 flat records migrate on read). */
 export const WALLPAPER_STATE_SCHEMA_VERSION = 2
+/** Direct-only schema version: cached/builtin/upload selections stay on v2. */
+export const DIRECT_WALLPAPER_STATE_SCHEMA_VERSION = 3
 
 /** Focal-position coordinate in percent: only the nine-grid stops are persisted. */
 export type WallpaperPositionValue = 0 | 50 | 100
@@ -631,6 +652,12 @@ export interface WallpaperCssInput {
   readonly uploadUrl?: string | undefined
   /** Local cached object URL for a remote selection (best-effort disk cache). */
   readonly imageOverride?: string | undefined
+  /**
+   * Renderer for the image pixels. `body` keeps the 0.2.2 body pseudo-element;
+   * `direct` emits frost/dim/accessibility only and leaves the image to the
+   * plugin-owned `<img>` layer. Raw remote URLs never enter body CSS.
+   */
+  readonly imageLayer?: 'body' | 'direct' | undefined
 }
 
 /**
@@ -738,17 +765,25 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
     ? undefined
     : styleWallpaperImage(input.tokens.dark, styleSelection.variant)
   if (styleSelection !== undefined && (styleLight === undefined || styleDark === undefined)) return ''
-  const image = styleSelection === undefined
-    ? backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
-    : styleLight
-  if (image === undefined) return ''
+  const direct = input.imageLayer === 'direct'
+  const image = direct
+    ? undefined
+    : styleSelection === undefined
+      ? backgroundImageValue(input.selection, input.imageOverride ?? input.uploadUrl)
+      : styleLight
+  if (!direct && image === undefined) return ''
   const darkImage = styleDark !== undefined && styleDark !== image ? styleDark : undefined
   const { blur, dim, atmosphere } = input.effects
   const position = backgroundPositionValue(input.selection, input.position)
-  const rules: string[] = [
-    `body[${WALLPAPER_ATTRIBUTE}]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;`
-    + `background-image:${image};background-position:${position};background-size:cover;filter:blur(${blur}px)}`,
-  ]
+  const rules: string[] = direct
+    ? [
+      `body[${WALLPAPER_ATTRIBUTE}] #${WALLPAPER_DIRECT_ID}{position:fixed;inset:-24px;z-index:-1;pointer-events:none;overflow:hidden}`,
+      `body[${WALLPAPER_ATTRIBUTE}] #${WALLPAPER_DIRECT_ID} img{display:block;width:100%;height:100%;object-fit:cover;object-position:${position};filter:blur(${blur}px)}`,
+    ]
+    : [
+      `body[${WALLPAPER_ATTRIBUTE}]::before{content:'';position:fixed;inset:-24px;z-index:-1;pointer-events:none;`
+      + `background-image:${image};background-position:${position};background-size:cover;filter:blur(${blur}px)}`,
+    ]
   // Generated style image for dark mode: same layer recipe, dark token map.
   if (darkImage !== undefined) {
     rules.push(`body[${WALLPAPER_ATTRIBUTE}][data-ds-dark-theme]::before{background-image:${darkImage}}`)
@@ -775,7 +810,7 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   // Optional page tint for surfaces whose background can show it: a
   // non-interactive atmospheric copy above normal page content but below every
   // host floating layer. It is not a visual-coverage guarantee on opaque pages.
-  if (atmosphere > 0) {
+  if (!direct && atmosphere > 0) {
     // Keep the atmosphere below host-owned floating layers: plain Menu,
     // Tooltip and HoverCard use 100/101, Modal uses 1000 and Toast 1100. This
     // keeps floating surfaces readable and un-tinted by the wallpaper.
@@ -788,8 +823,10 @@ export function buildWallpaperCss(input: WallpaperCssInput): string {
   }
   // OS accessibility modes: never paint the wallpaper over the app. The glass
   // effects are decorative and can hide or tint content in forced-colors mode.
-  const decorativeSelectors = `body[${WALLPAPER_ATTRIBUTE}]::before,body[${WALLPAPER_ATTRIBUTE}]::after`
-    + (atmosphere > 0 ? `,.${WALLPAPER_OVERLAY_CLASS}` : '')
+  const decorativeSelectors = direct
+    ? `body[${WALLPAPER_ATTRIBUTE}]::after,#${WALLPAPER_DIRECT_ID}`
+    : `body[${WALLPAPER_ATTRIBUTE}]::before,body[${WALLPAPER_ATTRIBUTE}]::after`
+      + (atmosphere > 0 ? `,.${WALLPAPER_OVERLAY_CLASS}` : '')
   rules.push(
     `@media (forced-colors: active){${decorativeSelectors}{display:none}`
     + `body[${WALLPAPER_ATTRIBUTE}]{background-color:revert}}`,
@@ -858,6 +895,24 @@ export interface StoredWallpaperState {
   readonly position: WallpaperPosition
 }
 
+/** One direct remote selection in the schema-v3-only record. */
+export interface StoredDirectSelection {
+  readonly kind: 'remote'
+  readonly url: string
+  readonly delivery: 'direct'
+  readonly thumbnail?: string
+  readonly provenance?: WallpaperProvenance
+}
+
+/** Persisted shape (schema v3, direct-only): no Blob/object URL is involved. */
+export interface StoredDirectWallpaperState {
+  readonly schemaVersion: 3
+  readonly revision: number
+  readonly selection: StoredDirectSelection
+  readonly effects: WallpaperEffects
+  readonly position: WallpaperPosition
+}
+
 /** Hydrated controller state from storage (schema v2 or a migrated v1 record). */
 export interface HydratedWallpaperState {
   readonly revision: number
@@ -873,7 +928,7 @@ export interface HydratedWallpaperState {
  * @param raw - unknown `selection`/flat v1 record fields.
  * @returns the validated selection, or undefined.
  */
-function parseStoredSelection(raw: unknown): WallpaperSelection {
+function parseStoredSelection(raw: unknown, allowDirect = false): WallpaperSelection {
   if (typeof raw !== 'object' || raw === null) return undefined
   const record = raw as Record<string, unknown>
   if (record.kind === 'builtin') {
@@ -884,10 +939,21 @@ function parseStoredSelection(raw: unknown): WallpaperSelection {
     if (typeof record.url !== 'string') return undefined
     const check = validateWallpaperUrl(record.url)
     if (!check.ok) return undefined
+    const delivery = allowDirect && record.delivery === 'direct' ? 'direct' as const : undefined
+    if (record.delivery !== undefined && record.delivery !== 'direct') return undefined
+    const thumbnail = delivery === undefined || typeof record.thumbnail !== 'string'
+      ? undefined
+      : validateWallpaperUrl(record.thumbnail)
+    const normalizedThumb = thumbnail?.ok === true ? thumbnail.url : undefined
     const provenance = normalizeWallpaperProvenance(record.provenance)
-    return provenance === undefined
-      ? { kind: 'remote', url: check.url }
-      : { kind: 'remote', url: check.url, provenance }
+    if (delivery === 'direct' && !isAllowedDirectImage(provenance?.providerId, check.url, normalizedThumb)) return undefined
+    return {
+      kind: 'remote',
+      url: check.url,
+      ...(provenance === undefined ? {} : { provenance }),
+      ...(delivery === undefined ? {} : { delivery }),
+      ...(normalizedThumb === undefined ? {} : { thumbnail: normalizedThumb }),
+    }
   }
   if (record.kind === 'upload') {
     if (typeof record.key !== 'string' || !/^upload-[A-Za-z0-9-]{1,64}$/.test(record.key)) return undefined
@@ -902,9 +968,11 @@ function toStoredSelection(selection: WallpaperSelection): StoredWallpaperSelect
   if (selection.kind === 'builtin') return { kind: 'builtin', id: selection.id }
   if (selection.kind === 'upload') return { kind: 'upload', key: selection.key }
   const provenance = normalizeWallpaperProvenance(selection.provenance)
-  return provenance === undefined
-    ? { kind: 'remote', url: selection.url }
-    : { kind: 'remote', url: selection.url, provenance }
+  return {
+    kind: 'remote',
+    url: selection.url,
+    ...(provenance === undefined ? {} : { provenance }),
+  }
 }
 
 /**
@@ -973,6 +1041,20 @@ export function parseWallpaperState(raw: unknown): HydratedWallpaperState | unde
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined
   const record = raw as Record<string, unknown>
   const version = record.schemaVersion
+  if (version === DIRECT_WALLPAPER_STATE_SCHEMA_VERSION) {
+    const storedSelection = record.selection
+    if (typeof storedSelection !== 'object' || storedSelection === null
+      || (storedSelection as Record<string, unknown>).kind !== 'remote'
+      || (storedSelection as Record<string, unknown>).delivery !== 'direct') return undefined
+    const selection = parseStoredSelection(storedSelection, true)
+    if (selection === undefined || selection.kind !== 'remote' || selection.delivery !== 'direct') return undefined
+    return {
+      revision: normalizeWallpaperRevision(record.revision),
+      selection,
+      effects: clampEffects(record.effects),
+      position: normalizeWallpaperPosition(record.position),
+    }
+  }
   if (version === WALLPAPER_STATE_SCHEMA_VERSION) {
     const storedSelection = record.selection
     const isClear = storedSelection === null
@@ -1019,7 +1101,24 @@ export function serializeWallpaperState(
   effects: WallpaperEffects,
   position: WallpaperPosition | undefined = DEFAULT_WALLPAPER_POSITION,
   revision = 0,
-): StoredWallpaperState {
+): StoredWallpaperState | StoredDirectWallpaperState {
+  if (selection?.kind === 'remote' && selection.delivery === 'direct') {
+    const provenance = normalizeWallpaperProvenance(selection.provenance)
+    const thumbnail = typeof selection.thumbnail === 'string' ? validateWallpaperUrl(selection.thumbnail) : undefined
+    return {
+      schemaVersion: DIRECT_WALLPAPER_STATE_SCHEMA_VERSION,
+      revision: normalizeWallpaperRevision(revision),
+      selection: {
+        kind: 'remote',
+        url: selection.url,
+        delivery: 'direct',
+        ...(thumbnail?.ok === true ? { thumbnail: thumbnail.url } : {}),
+        ...(provenance === undefined ? {} : { provenance }),
+      },
+      effects: clampEffects(effects),
+      position: normalizeWallpaperPosition(position),
+    }
+  }
   const stored = toStoredSelection(selection)
   return {
     schemaVersion: WALLPAPER_STATE_SCHEMA_VERSION,

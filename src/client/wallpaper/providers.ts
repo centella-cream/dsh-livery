@@ -1,11 +1,10 @@
 /**
- * Keyless online wallpaper provider registry (0.2.2).
+ * Keyless online wallpaper provider registry (0.2.3).
  *
- * Only providers that passed the committed access gate
- * (`docs/research/provider-access-gate.json`) are registered here: Openverse and
- * Wikimedia Commons. Rejected/deferred targets (NASA Image Library, The Met,
- * AIC, Picsum) are deliberately absent — they must never be listed, imported by
- * the UI, selected by Auto, or used as a source of new licence strings.
+ * Wikimedia Commons is compiled in; Openverse is a metadata-only legacy id so
+ * stored 0.2.x selections still resolve for attribution/notice without any
+ * request path. Cleveland and The Met arrive as reviewed data over the Host
+ * provider-manifest route and are executed by one generic engine.
  *
  * Everything in this module is network-policy and response-mapping code:
  *
@@ -20,6 +19,8 @@
  * The module is DOM-free and testable; tests stub `globalThis.fetch` (no test
  * hits the network) and the UI imports this file directly.
  */
+import { PROVIDERS_ROUTE } from '../../core/types.js'
+import type { ProviderDelivery, ProviderManifest } from '../../providers/types.js'
 import { WALLPAPER_JSON_MAX_BYTES, MAX_WALLPAPER_URL_LENGTH } from '../wallpaper.js'
 import { isLocalOrPrivateHost } from './host-safety.js'
 
@@ -27,13 +28,15 @@ import { isLocalOrPrivateHost } from './host-safety.js'
 export type ProviderFailure =
   | 'timeout' | 'rate-limited' | 'auth-required' | 'unavailable' | 'invalid-response'
 
-/** Gate-accepted provider ids in registry (gate) order. */
-export type ProviderId = 'openverse' | 'wikimedia'
+/** Registered provider id; manifest providers are runtime data, not a type union. */
+export type ProviderId = string
 
 /** Provider capabilities used to gate Search/Random actions. */
 export interface ProviderCapabilities {
   readonly search: boolean
   readonly random: boolean
+  /** Whether Auto may try this provider; omitted means yes for offered providers. */
+  readonly auto?: boolean
 }
 
 /** One selectable online wallpaper result with real attribution metadata. */
@@ -52,6 +55,8 @@ export interface WallpaperProviderResult {
   readonly thumbUrl: string
   readonly width?: number
   readonly height?: number
+  /** Image delivery mode of the serving provider. */
+  readonly delivery?: ProviderDelivery
 }
 
 /** Host allowlist for provider image URLs. */
@@ -82,6 +87,8 @@ export interface WallpaperProvider {
   readonly label: { readonly 'zh-CN': string; readonly 'en-US': string }
   readonly auth: 'keyless'
   readonly capabilities: ProviderCapabilities
+  /** Image delivery mode; omitted means cached. */
+  readonly delivery?: ProviderDelivery
   readonly imageHosts: readonly string[]
   readonly redirectHosts?: readonly string[]
   fetchPage(request: ProviderPageRequest): Promise<
@@ -124,14 +131,10 @@ export const ONLINE_ATTEMPT_TIMEOUT_MS = 6_000
 /** Auto may try at most this many providers per page. */
 export const AUTO_MAX_ATTEMPTS = 2
 
-/** Openverse API base (proxied image endpoints hang off the same host). */
-export const OPENVERSE_API_BASE = 'https://api.openverse.org/v1/images/'
 /** Wikimedia Commons MediaWiki API endpoint (CORS requires `origin=*`). */
 export const WIKIMEDIA_API_BASE = 'https://commons.wikimedia.org/w/api.php'
 /** Thumbnail width requested from `iiurlwidth` (server-side scaled render). */
 export const WIKIMEDIA_THUMB_WIDTH = 1280
-/** Anonymous Openverse requests reject `page_size > 20` with HTTP 401. */
-export const OPENVERSE_MAX_PAGE_SIZE = 20
 /** Commons silently clamps `gsrlimit`/`grnlimit` above 500. */
 export const WIKIMEDIA_MAX_PAGE_SIZE = 500
 
@@ -442,173 +445,15 @@ async function fetchJsonPage(url: string, signal: AbortSignal | undefined): Prom
   return { ok: true, json }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Openverse                                                                  */
-/* -------------------------------------------------------------------------- */
-
-/** Openverse image host policy: proxied endpoints on the API host only. */
-const OPENVERSE_IMAGE_POLICY: ImageHostPolicy = Object.freeze({
-  imageHosts: Object.freeze(['api.openverse.org']),
-})
-
-/** Display names for the Openverse licence slugs the client can honour. */
-const OPENVERSE_LICENSE_NAMES: Readonly<Record<string, string>> = Object.freeze({
-  cc0: 'CC0',
-  pdm: 'Public Domain Mark',
-  by: 'CC BY',
-  'by-sa': 'CC BY-SA',
-})
-/** Openverse licences whose reuse terms require an attribution link. */
-const OPENVERSE_ATTRIBUTION_LICENSES: ReadonlySet<string> = new Set(['by', 'by-sa'])
-/** Anonymous pagination cursor prefix (page number encoded per provider). */
-const OPENVERSE_CURSOR_PREFIX = 'ov1:'
-
-/** Build one proxied Openverse image URL (never an origin host). */
-function openverseProxyUrl(id: string, fullSize: boolean): string {
-  const base = `${OPENVERSE_API_BASE}${encodeURIComponent(id)}/thumb/`
-  return fullSize ? `${base}?full_size=true` : base
-}
-
-/** Encode an Openverse page number as an opaque cursor. */
-function encodeOpenverseCursor(page: number): string {
-  return `${OPENVERSE_CURSOR_PREFIX}${page}`
-}
-
-/** Decode an Openverse cursor; undefined means "not an Openverse cursor". */
-function decodeOpenverseCursor(cursor: string): number | undefined {
-  if (!cursor.startsWith(OPENVERSE_CURSOR_PREFIX)) return undefined
-  const raw = cursor.slice(OPENVERSE_CURSOR_PREFIX.length)
-  if (!/^[1-9][0-9]*$/u.test(raw)) return undefined
-  const page = Number(raw)
-  return Number.isSafeInteger(page) ? page : undefined
-}
-
-/** Clamp page size to the anonymous Openverse limit (above it the API 401s). */
-function clampOpenversePageSize(pageSize: number): number {
-  if (!Number.isFinite(pageSize)) return 12
-  return Math.min(OPENVERSE_MAX_PAGE_SIZE, Math.max(1, Math.trunc(pageSize)))
-}
-
-/**
- * Build the anonymous Openverse search URL. Only CC0/PDM works are requested
- * (0.2.2 keeps the conservative public-domain filter the 0.2.1 client used).
- */
-function openverseSearchUrl(query: string | undefined, page: number, pageSize: number): string {
-  const params = new URLSearchParams()
-  const trimmed = query?.trim() ?? ''
-  if (trimmed.length > 0) params.set('q', trimmed)
-  params.set('license', 'cc0,pdm')
-  params.set('page', String(page))
-  params.set('page_size', String(pageSize))
-  return `${OPENVERSE_API_BASE}?${params.toString()}`
-}
-
-/** Map one Openverse licence record to the display licence (null = unusable). */
-function mapOpenverseLicense(row: Record<string, unknown>): WallpaperProviderResult['license'] {
-  const slugValue = row.license
-  if (typeof slugValue !== 'string') return null
-  const slug = slugValue.trim().toLowerCase()
-  const baseName = OPENVERSE_LICENSE_NAMES[slug]
-  if (baseName === undefined) return null
-  const versionValue = row.license_version
-  const version = typeof versionValue === 'string' && versionValue.trim().length > 0
-    ? displayText(versionValue, 16)
-    : undefined
-  const name = version === undefined ? baseName : `${baseName} ${version}`
-  const licenseUrl = safeHttpsUrl(row.license_url)
-  if (OPENVERSE_ATTRIBUTION_LICENSES.has(slug) && licenseUrl === undefined) return null
-  return licenseUrl === undefined ? { name } : { name, url: licenseUrl }
-}
-
-/** Map one Openverse result row; malformed rows are dropped. */
-function mapOpenverseResult(raw: unknown): WallpaperProviderResult | undefined {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined
-  const row = raw as Record<string, unknown>
-  const idValue = row.id
-  const id = typeof idValue === 'string'
-    ? idValue.trim()
-    : typeof idValue === 'number' && Number.isFinite(idValue) ? String(idValue) : undefined
-  // Ids are opaque UUID-like tokens; reject path/query syntax before building
-  // the proxied URL from them.
-  if (id === undefined || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u.test(id)) return undefined
-  const sourceUrl = safeHttpsUrl(row.foreign_landing_url)
-  if (sourceUrl === undefined) return undefined
-  const fullUrl = openverseProxyUrl(id, true)
-  const thumbUrl = openverseProxyUrl(id, false)
-  // Defense in depth: the constructed proxy URLs must satisfy the declared
-  // image-host policy (a base-URL edit cannot silently widen the allowlist).
-  if (!isAllowedImageUrl(fullUrl, OPENVERSE_IMAGE_POLICY)
-    || !isAllowedImageUrl(thumbUrl, OPENVERSE_IMAGE_POLICY)) return undefined
-  const title = displayText(row.title, MAX_TITLE_CHARS) ?? 'Untitled'
-  const creator = displayText(row.creator, MAX_CREATOR_CHARS)
-  const creatorUrl = safeHttpsUrl(row.creator_url)
-  const width = positiveInteger(row.width, MAX_DIMENSION)
-  const height = positiveInteger(row.height, MAX_DIMENSION)
-  return {
-    providerId: 'openverse',
-    id,
-    title,
-    ...(creator === undefined ? {} : { creator }),
-    ...(creatorUrl === undefined ? {} : { creatorUrl }),
-    license: mapOpenverseLicense(row),
-    sourceUrl,
-    fullUrl,
-    thumbUrl,
-    ...(width === undefined ? {} : { width }),
-    ...(height === undefined ? {} : { height }),
-  }
-}
-
-/** One Openverse page outcome. */
+/** One provider page outcome (successful results or one typed failure). */
 type ProviderPage =
   | { readonly results: readonly WallpaperProviderResult[]; readonly nextCursor?: string }
   | { readonly failure: ProviderFailure; readonly retryAfterMs?: number }
 
 /** Build one provider page failure without leaking `undefined` optional fields. */
 function pageFailure(failure: ProviderFailure, retryAfterMs?: number): ProviderPage {
-  return retryAfterMs === undefined
-    ? { failure }
-    : { failure, retryAfterMs }
+  return retryAfterMs === undefined ? { failure } : { failure, retryAfterMs }
 }
-
-/** Map one Openverse response body (invalid schema is a typed failure). */
-function parseOpenversePage(json: unknown, requestedPage: number): ProviderPage {
-  if (typeof json !== 'object' || json === null || Array.isArray(json)) return pageFailure('invalid-response')
-  const record = json as Record<string, unknown>
-  const rows = record.results
-  if (!Array.isArray(rows)) return pageFailure('invalid-response')
-  const results: WallpaperProviderResult[] = []
-  for (const row of rows) {
-    const mapped = mapOpenverseResult(row)
-    if (mapped !== undefined) results.push(mapped)
-  }
-  const page = positiveInteger(record.page, Number.MAX_SAFE_INTEGER) ?? requestedPage
-  const pageCount = positiveInteger(record.page_count, Number.MAX_SAFE_INTEGER)
-  if (pageCount === undefined || page >= pageCount) return { results }
-  return { results, nextCursor: encodeOpenverseCursor(page + 1) }
-}
-
-const openverseProvider: WallpaperProvider = Object.freeze({
-  id: 'openverse' as const,
-  label: Object.freeze({ 'zh-CN': 'Openverse', 'en-US': 'Openverse' }),
-  auth: 'keyless' as const,
-  capabilities: Object.freeze({ search: true, random: false }),
-  imageHosts: OPENVERSE_IMAGE_POLICY.imageHosts,
-  async fetchPage(request: ProviderPageRequest): Promise<ProviderPage> {
-    const signal = request.signal
-    if (signal?.aborted === true) return pageFailure('timeout')
-    let page = 1
-    if (request.cursor !== undefined) {
-      const decoded = decodeOpenverseCursor(request.cursor)
-      if (decoded === undefined) return pageFailure('invalid-response')
-      page = decoded
-    }
-    const pageSize = clampOpenversePageSize(request.pageSize)
-    const fetched = await fetchJsonPage(openverseSearchUrl(request.query, page, pageSize), signal)
-    if (!fetched.ok) return pageFailure(fetched.failure, fetched.retryAfterMs)
-    return parseOpenversePage(fetched.json, page)
-  },
-})
 
 /* -------------------------------------------------------------------------- */
 /* Wikimedia Commons                                                          */
@@ -875,7 +720,7 @@ const wikimediaProvider: WallpaperProvider = Object.freeze({
   id: 'wikimedia' as const,
   label: Object.freeze({ 'zh-CN': '维基共享资源', 'en-US': 'Wikimedia Commons' }),
   auth: 'keyless' as const,
-  capabilities: Object.freeze({ search: true, random: true }),
+  capabilities: Object.freeze({ search: true, random: true, auto: true }),
   imageHosts: WIKIMEDIA_IMAGE_HOSTS,
   async fetchPage(request: ProviderPageRequest): Promise<ProviderPage> {
     const signal = request.signal
@@ -909,52 +754,272 @@ const wikimediaProvider: WallpaperProvider = Object.freeze({
 /** Empty policy used for foreign ids (fail closed: no images allowed). */
 const EMPTY_IMAGE_POLICY: ImageHostPolicy = Object.freeze({ imageHosts: Object.freeze([]) })
 
-/** All registered providers, including legacy ids kept for old selections. */
-export const PROVIDERS: readonly WallpaperProvider[] = Object.freeze([
+/** Legacy Openverse metadata, retained only for stored attribution/notice. */
+const openverseProvider: WallpaperProvider = Object.freeze({
+  id: 'openverse',
+  label: Object.freeze({ 'zh-CN': 'Openverse', 'en-US': 'Openverse' }),
+  auth: 'keyless' as const,
+  capabilities: Object.freeze({ search: false, random: false, auto: false }),
+  delivery: 'cached' as const,
+  imageHosts: Object.freeze(['api.openverse.org']),
+  async fetchPage(): Promise<ProviderPage> {
+    // 0.2.3 never makes a new Openverse request; legacy state resolves metadata
+    // only. Keeping the provider registered preserves attribution and notice.
+    return pageFailure('unavailable')
+  },
+})
+
+/** Built-in non-manifest providers, in gate/display order. */
+const LEGACY_PROVIDERS: readonly WallpaperProvider[] = Object.freeze([
   openverseProvider,
   wikimediaProvider,
 ])
 
-/**
- * Providers offered in the 0.2.2 UI and tried by Auto. Openverse remains
- * resolvable for already-stored selections/presets, but anonymous rate limits
- * (200 requests/day; no usable random mode; no fully open keyless policy) made
- * it unusable as a built-in source, so it is deliberately not offered.
- */
-export const OFFERED_PROVIDERS: readonly WallpaperProvider[] = Object.freeze([
-  wikimediaProvider,
-])
+/** Manifest providers loaded lazily from the Host; empty until then. */
+let manifestProviders: readonly WallpaperProvider[] = Object.freeze([])
+let manifestLoaded = false
+let manifestLoad: Promise<boolean> | undefined
 
-/** Capability-filtered offered-provider lists (precomputed; registry order preserved). */
-const CAPABILITY_PROVIDERS: Readonly<Record<'search' | 'random', readonly WallpaperProvider[]>> = Object.freeze({
-  search: Object.freeze(OFFERED_PROVIDERS.filter(provider => provider.capabilities.search)),
-  random: Object.freeze(OFFERED_PROVIDERS.filter(provider => provider.capabilities.random)),
-})
+/** All registered providers, including legacy ids kept for old selections. */
+export function registeredProviders(): readonly WallpaperProvider[] {
+  return manifestProviders.length === 0
+    ? LEGACY_PROVIDERS
+    : [...LEGACY_PROVIDERS, ...manifestProviders]
+}
+
+/**
+ * Providers offered in the Online UI. Openverse is legacy-only; new manifest
+ * providers are appended after Wikimedia in registry order.
+ * @returns offered providers.
+ */
+export function offeredProviders(): readonly WallpaperProvider[] {
+  return manifestProviders.length === 0
+    ? [wikimediaProvider]
+    : [wikimediaProvider, ...manifestProviders]
+}
+
+/**
+ * Providers Auto may try. Met is pinned-only (`capabilities.auto === false`).
+ * @returns auto-eligible offered providers.
+ */
+export function autoProviders(): readonly WallpaperProvider[] {
+  return offeredProviders().filter(provider => provider.capabilities.auto !== false)
+}
+
+/** Static seed kept for compatibility with older imports/tests. */
+export const OFFERED_PROVIDERS: readonly WallpaperProvider[] = Object.freeze([wikimediaProvider])
+/** Static legacy registry kept for compatibility with older imports/tests. */
+export const PROVIDERS: readonly WallpaperProvider[] = LEGACY_PROVIDERS
 
 /**
  * Look up one registered provider by its stable id.
  * @param id - provider id (any untrusted string).
  * @returns the provider, or undefined for unknown/rejected ids.
  */
-export function providerById(id: string): WallpaperProvider | undefined {
-  return PROVIDERS.find(provider => provider.id === id)
-}
-
-/**
- * Providers Auto may use, in registry/gate order (Picsum is never present).
- * @returns every gate-accepted provider.
- */
-export function autoProviders(): readonly WallpaperProvider[] {
-  return OFFERED_PROVIDERS
+export function providerById(id: ProviderId): WallpaperProvider | undefined {
+  return registeredProviders().find(provider => provider.id === id)
 }
 
 /**
  * Providers that truthfully declare one capability, in registry order.
  * @param capability - capability to filter on.
- * @returns the matching providers (empty when none can truthfully serve it).
+ * @returns the matching offered providers.
  */
 export function providersForCapability(capability: 'search' | 'random'): readonly WallpaperProvider[] {
-  return CAPABILITY_PROVIDERS[capability]
+  return offeredProviders().filter(provider => provider.capabilities[capability])
+}
+
+/* -------------------------------------------------------------------------- */
+/* Manifest providers                                                         */
+/* -------------------------------------------------------------------------- */
+
+type UnknownRecord = Record<string, unknown>
+const isRecord = (value: unknown): value is UnknownRecord =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/** Read one dotted path from a manifest record (numeric segments index arrays). */
+export function valueAtPath(root: unknown, path: string): unknown {
+  if (path === '.') return root
+  let current: unknown = root
+  for (const segment of path.split('.')) {
+    if (current === null || typeof current !== 'object') return undefined
+    if (Array.isArray(current)) {
+      const index = Number(segment)
+      if (!Number.isInteger(index) || index < 0) return undefined
+      current = current[index]
+    } else {
+      current = (current as UnknownRecord)[segment]
+    }
+  }
+  return current
+}
+
+/** Read one path as a bounded display string. */
+function valueString(root: unknown, path: string | undefined, max = 300): string | undefined {
+  if (path === undefined) return undefined
+  const value = valueAtPath(root, path)
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed.length === 0 ? undefined : trimmed.slice(0, max)
+}
+
+/**
+ * Accept the Host route document.
+ *
+ * The manifest is reviewed, bundled into the Host and same-origin; the release
+ * gate (`verify-provider-gate`) validates its full schema against the legal
+ * source record. The client only checks the envelope and trusts the fields it
+ * consumes, keeping the generic engine inside the strict 72 KiB budget.
+ * @param raw - parsed route JSON.
+ * @returns validated-enough provider manifests, or undefined.
+ */
+export function parseProviderManifestDocument(raw: unknown): readonly ProviderManifest[] | undefined {
+  if (!isRecord(raw) || raw.schemaVersion !== 1 || !Array.isArray(raw.providers)) return undefined
+  if (raw.providers.length === 0 || raw.providers.length > 8) return undefined
+  return raw.providers as unknown as readonly ProviderManifest[]
+}
+
+/** Build one request URL from a manifest template. */
+export function manifestRequestUrl(manifest: ProviderManifest, query: string | undefined, pageSize: number): string {
+  const url = new URL(manifest.api.path, manifest.api.origin)
+  const q = (query ?? '').trim() || manifest.api.defaultQuery || ''
+  if (manifest.api.queryParam !== undefined && q.length > 0) url.searchParams.set(manifest.api.queryParam, q)
+  if (manifest.api.pageSizeParam !== undefined) url.searchParams.set(manifest.api.pageSizeParam, String(manifest.fetchLimit ?? pageSize))
+  for (const [key, value] of Object.entries(manifest.api.extraParams ?? {})) url.searchParams.set(key, value)
+  return url.toString()
+}
+
+/** Run a bounded number of async tasks and preserve input order. */
+async function mapConcurrent<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<(R | undefined)[]> {
+  const output: (R | undefined)[] = new Array(items.length)
+  let next = 0
+  const worker = async (): Promise<void> => {
+    for (;;) {
+      const index = next++
+      if (index >= items.length) return
+      try { output[index] = await fn(items[index] as T) } catch { output[index] = undefined }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return output
+}
+
+/** Map one manifest record to a selectable wallpaper result. */
+function resultOf(manifest: ProviderManifest, record: unknown): WallpaperProviderResult | undefined {
+  const select = manifest.select
+  if (select.filter !== undefined && valueAtPath(record, select.filter.path) !== select.filter.equals) return undefined
+  const idValue = valueAtPath(record, select.id)
+  const id = typeof idValue === 'string' || typeof idValue === 'number' ? String(idValue).slice(0, 300) : undefined
+  const title = valueString(record, select.title)
+  const sourceUrl = safeHttpsUrl(valueAtPath(record, select.sourceUrl))
+  const fullUrl = safeHttpsUrl(valueAtPath(record, select.fullImage))
+  const thumbValue = safeHttpsUrl(valueAtPath(record, select.thumbImage)) ?? fullUrl
+  if (id === undefined || title === undefined || sourceUrl === undefined || fullUrl === undefined || thumbValue === undefined) return undefined
+  const policy: ImageHostPolicy = { imageHosts: manifest.imageHosts }
+  if (!isAllowedImageUrl(fullUrl, policy) || !isAllowedImageUrl(thumbValue, policy)) return undefined
+  const creator = valueString(record, select.creator, 120)
+  return {
+    providerId: manifest.id,
+    id,
+    title,
+    ...(creator === undefined ? {} : { creator }),
+    license: select.license === undefined ? null : { ...select.license },
+    sourceUrl,
+    fullUrl,
+    thumbUrl: thumbValue,
+    delivery: manifest.delivery,
+  }
+}
+
+/** Fetch and map one manifest page. */
+async function fetchManifestPage(manifest: ProviderManifest, request: ProviderPageRequest): Promise<ProviderPage> {
+  const fetched = await fetchJsonPage(manifestRequestUrl(manifest, request.query, request.pageSize), request.signal)
+  if (!fetched.ok) return pageFailure(fetched.failure, fetched.retryAfterMs)
+  const listValue = valueAtPath(fetched.json, manifest.list)
+  if (!Array.isArray(listValue)) return pageFailure('invalid-response')
+  const rows = listValue.slice(0, manifest.fetchLimit ?? 12)
+  if (manifest.detail === undefined) {
+    const results: WallpaperProviderResult[] = []
+    for (const row of rows) {
+      const result = resultOf(manifest, row)
+      if (result !== undefined) results.push(result)
+      if (results.length >= (manifest.resultLimit ?? 12)) break
+    }
+    return { results }
+  }
+  let detailFailures = 0
+  let detailSuccesses = 0
+  const detail = manifest.detail
+  const mapped = await mapConcurrent(rows, 4, async (row) => {
+    const idValue = valueAtPath(row, detail.id)
+    if (typeof idValue !== 'string' && typeof idValue !== 'number') return undefined
+    const url = new URL(detail.path.replace('{id}', encodeURIComponent(String(idValue))), manifest.api.origin).toString()
+    const result = await fetchJsonPage(url, request.signal)
+    if (!result.ok) { detailFailures += 1; return undefined }
+    detailSuccesses += 1
+    return resultOf(manifest, result.json)
+  })
+  if (detailSuccesses === 0 && detailFailures > 0) return pageFailure('unavailable')
+  const results = mapped.filter((result): result is WallpaperProviderResult => result !== undefined).slice(0, manifest.resultLimit ?? 12)
+  return { results }
+}
+
+/** Build one runtime provider from validated manifest data. */
+function manifestProvider(manifest: ProviderManifest): WallpaperProvider {
+  return {
+    id: manifest.id,
+    label: manifest.labels,
+    auth: 'keyless',
+    capabilities: manifest.capabilities,
+    delivery: manifest.delivery,
+    imageHosts: manifest.imageHosts,
+    fetchPage: request => fetchManifestPage(manifest, request),
+  }
+}
+
+/**
+ * Fetch and register the Host's reviewed provider manifests once.
+ *
+ * This is called lazily by the Online studio on first activation, never at
+ * boot/panel mount. A failed load caches no providers and can be retried.
+ * @returns whether the manifests loaded.
+ */
+export function loadProviderManifests(): Promise<boolean> {
+  if (manifestLoaded) return Promise.resolve(true)
+  if (manifestLoad !== undefined) return manifestLoad
+  manifestLoad = (async () => {
+    const fetchImpl = resolveFetch()
+    if (fetchImpl === undefined) return false
+    let response: Response
+    try {
+      response = await fetchImpl(PROVIDERS_ROUTE, {
+        method: 'GET',
+        cache: 'no-store',
+        credentials: 'same-origin',
+        headers: { accept: 'application/json' },
+      })
+    } catch {
+      return false
+    }
+    if (!response.ok) return false
+    const contentType = (response.headers.get('content-type') ?? '').toLowerCase()
+    if (contentType.length > 0 && !contentType.includes('json')) return false
+    const raw = await readCappedJson(response)
+    const manifests = parseProviderManifestDocument(raw)
+    if (manifests === undefined) return false
+    manifestProviders = Object.freeze(manifests.map(manifestProvider))
+    manifestLoaded = true
+    return true
+  })()
+  void manifestLoad.then(ok => { if (!ok) manifestLoad = undefined })
+  return manifestLoad
+}
+
+/** Test-only reset of the lazy manifest registry. */
+export function resetProviderManifests(): void {
+  manifestProviders = Object.freeze([])
+  manifestLoaded = false
+  manifestLoad = undefined
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1055,8 +1120,8 @@ function attemptProvider(
       return
     }
     pending.then(
-      outcome => finish(outcome),
-      () => finish(pageFailure('unavailable')),
+      outcome => finish(externalSignal?.aborted === true ? pageFailure('timeout') : outcome),
+      () => finish(pageFailure(externalSignal?.aborted === true ? 'timeout' : 'unavailable')),
     )
   })
 }

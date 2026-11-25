@@ -71,7 +71,7 @@ describe('formatDiagnostics', () => {
   it('reports contrast failures and coverage counts of the presented livery', () => {
     const text = formatDiagnostics(makeT(enUS), READY, 'en')
     expect(text).toContain('secondary')
-    expect(text).toMatch(/1 of 2 checks fail|2 of 2 checks fail/)
+    expect(text).toMatch(/1\/2 fail|2\/2 fail/)
     expect(text).toMatch(/cov|inh|miss/)
   })
 

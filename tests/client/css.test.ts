@@ -134,4 +134,9 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(source).toContain('export const CLIENT_CSS')
     expect(source).not.toMatch(/import\s+['"].*\.css['"]/)
   })
+
+  it('styles the direct hero image with cover and the existing dim layer', () => {
+    expect(CLIENT_CSS).toMatch(/\.wallpaper-hero__img\{[^}]*object-fit:cover/)
+    expect(CLIENT_CSS).toContain('.wallpaper-hero__dim')
+  })
 })

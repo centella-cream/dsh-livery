@@ -247,6 +247,7 @@ describe('online studio — request policy', () => {
       createAbortController: () => controller,
     })
     const activation = studio.activate()
+    await new Promise(resolve => setTimeout(resolve, 0))
     expect(studio.getSnapshot().status).toBe('loading')
     studio.setProvider('wikimedia')
     expect(studio.getSnapshot().status).toBe('idle')
@@ -288,11 +289,11 @@ describe('online studio — provider selection', () => {
 })
 
 describe('online studio — capability-gated actions', () => {
-  it('resolves Search/Random targets from the frozen registry', () => {
+  it('resolves Search/Random targets from the offered registry', () => {
     expect(searchRequestProvider('auto')).toBe('auto')
-    expect(searchRequestProvider('openverse')).toBe('openverse')
+    expect(searchRequestProvider('openverse')).toBeUndefined()
     expect(searchRequestProvider('wikimedia')).toBe('wikimedia')
-    // Wikimedia is the only provider declaring `random`.
+    // Wikimedia is the only currently offered provider declaring `random`.
     expect(randomRequestProvider('auto')).toBe('wikimedia')
     expect(randomRequestProvider('openverse')).toBeUndefined()
     expect(randomRequestProvider('wikimedia')).toBe('wikimedia')
@@ -301,7 +302,7 @@ describe('online studio — capability-gated actions', () => {
   it('disables Search and Random with a reason when the pinned source lacks them', () => {
     expect(onlineCapability('auto', 'search')).toEqual({ enabled: true, reason: undefined })
     expect(onlineCapability('auto', 'random')).toEqual({ enabled: true, reason: undefined })
-    expect(onlineCapability('openverse', 'search')).toEqual({ enabled: true, reason: undefined })
+    expect(onlineCapability('openverse', 'search')).toEqual({ enabled: false, reason: 'pinned-missing' })
     expect(onlineCapability('openverse', 'random')).toEqual({ enabled: false, reason: 'pinned-missing' })
     expect(onlineCapability('wikimedia', 'search')).toEqual({ enabled: true, reason: undefined })
     expect(onlineCapability('wikimedia', 'random')).toEqual({ enabled: true, reason: undefined })
@@ -311,12 +312,10 @@ describe('online studio — capability-gated actions', () => {
     const { fetchPage, requests } = recorder([])
     const studio = createOnlineStudio({ fetchPage })
     studio.setProvider('openverse')
-    await studio.search() // search is supported by Openverse
-    expect(requests).toHaveLength(1)
-    expect(requests[0]?.provider).toBe('openverse')
-    // Random is unavailable on the pinned Openverse source.
+    // Openverse is legacy-only and declares no usable capability.
+    await studio.search()
     await studio.random()
-    expect(requests).toHaveLength(1)
+    expect(requests).toHaveLength(0)
   })
 
   it('pins Wikimedia for Auto Random and keeps the query empty', async () => {
@@ -349,7 +348,7 @@ describe('online studio — real provider transport (no network)', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
     try {
-      const studio = createOnlineStudio()
+      const studio = createOnlineStudio({ loadManifests: async () => false })
       expect(fetchMock).not.toHaveBeenCalled()
       await studio.activate()
       const snapshot = studio.getSnapshot()

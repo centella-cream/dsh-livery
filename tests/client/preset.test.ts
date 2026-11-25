@@ -11,6 +11,7 @@ import { DEFAULT_WALLPAPER_EFFECTS } from '../../src/client/wallpaper.js'
 import type { WallpaperEffects } from '../../src/client/wallpaper.js'
 import {
   DEFAULT_PRESET_POSITION,
+  DIRECT_PRESET_SCHEMA_VERSION,
   LEGACY_PRESET_SCHEMA_VERSION,
   PRESET_FILE_MAX_BYTES,
   PRESET_POSITION_VALUES,
@@ -147,7 +148,8 @@ describe('preset schema v1 — strict rejection', () => {
   })
 
   it('rejects wrong schema versions and foreign producers', () => {
-    expectProblem(parse({ ...makePreset(), schemaVersion: 3 }), 'schema-version')
+    expectProblem(parse({ ...makePreset(), schemaVersion: 3 }), 'wallpaper-kind')
+    expectProblem(parse({ ...makePreset(), schemaVersion: 4 }), 'schema-version')
     expectProblem(parse({ ...makePreset(), schemaVersion: '2' }), 'schema-version')
     expectProblem(parse({ ...makePreset(), createdWith: 'other-app/1.0.0' }), 'created-with')
     expectProblem(parse({ ...makePreset(), createdWith: 'dsh-livery/../../etc/passwd' }), 'created-with')
@@ -182,6 +184,65 @@ describe('preset schema v1 — strict rejection', () => {
       'unknown-field',
     )
     expectProblem(parse({ ...makePreset(), wallpaper: [] }), 'wallpaper-kind')
+  })
+
+
+  it('exports and imports direct wallpaper presets as schema v3 only', () => {
+    const result = exportPreset({
+      styleId: 'fjord',
+      pluginVersion: VERSION,
+      selection: {
+        kind: 'remote',
+        url: 'https://openaccess-cdn.clevelandart.org/1_print.jpg',
+        delivery: 'direct',
+        thumbnail: 'https://openaccess-cdn.clevelandart.org/1_web.jpg',
+        provenance: { providerId: 'cleveland', title: 'Art' },
+      },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.preset.schemaVersion).toBe(DIRECT_PRESET_SCHEMA_VERSION)
+    expect(result.preset.wallpaper).toMatchObject({ kind: 'remote', delivery: 'direct' })
+    const parsed = validatePreset(result.preset, { catalogIds: CATALOG_IDS })
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    expect(parsed.preset.wallpaper).toMatchObject({
+      kind: 'remote',
+      delivery: 'direct',
+      thumbnail: 'https://openaccess-cdn.clevelandart.org/1_web.jpg',
+    })
+    // v2 cannot smuggle a direct delivery field.
+    expectProblem(parse({ ...makePreset(), wallpaper: { kind: 'remote', url: 'https://example.com/x.jpg', delivery: 'direct' } }), 'unknown-field')
+    // v3 without a direct wallpaper is rejected, never half-applied.
+    expectProblem(parse({ ...makePreset(), schemaVersion: 3 }), 'wallpaper-kind')
+    expectProblem(parse({ ...makePreset(), schemaVersion: 3, wallpaper: { kind: 'remote', url: 'https://example.com/x.jpg' } }), 'wallpaper-kind')
+    // Direct URLs are provider-controlled at the import boundary too.
+    const directPreset = (url: string, providerId?: string, thumbnail?: string) => ({
+      ...makePreset(),
+      schemaVersion: 3 as const,
+      wallpaper: { kind: 'remote' as const, url, delivery: 'direct' as const, ...(thumbnail === undefined ? {} : { thumbnail }) },
+      ...(providerId === undefined ? {} : { attribution: { providerId } }),
+    })
+    expectProblem(parse(directPreset('https://evil.example/beacon.gif', 'cleveland')), 'wallpaper-url')
+    expectProblem(parse(directPreset('https://openaccess-cdn.clevelandart.org/1_print.jpg')), 'wallpaper-url')
+    expectProblem(parse(directPreset('https://openaccess-cdn.clevelandart.org/1_print.jpg', 'cleveland', 'https://evil.example/thumb.jpg')), 'wallpaper-url')
+    expect(parse(directPreset('https://images.metmuseum.org/1_full.jpg', 'met-open-access')).ok).toBe(true)
+    const badExport = exportPreset({
+      styleId: 'fjord',
+      pluginVersion: VERSION,
+      selection: {
+        kind: 'remote',
+        url: 'https://evil.example/beacon.gif',
+        delivery: 'direct',
+        provenance: { providerId: 'cleveland' },
+      },
+      effects: effects(),
+      position: { x: 50, y: 50 },
+    })
+    expect(badExport.ok).toBe(false)
+    if (!badExport.ok) expect(badExport.problem).toBe('invalid-url')
   })
 
   it('rejects CSS/scheme smuggling in URLs but treats attribution as plain text', () => {

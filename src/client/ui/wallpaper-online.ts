@@ -1,9 +1,8 @@
 /**
- * Online wallpaper studio state machine (0.2.2).
+ * Online wallpaper studio state machine (0.2.3).
  *
- * The wallpaper page must not touch the network just because it was opened: the
- * default image tab is Built-in and the first Online activation performs exactly
- * one batch for the current provider/query. Everything else (Search, Random,
+ * The wallpaper page defaults to Online and performs one automatic Random batch
+ * on mount; later tab switches do not refetch. Everything else (Search, Random,
  * Refresh, Retry) is user-originated. This module owns that request policy and
  * the settled `idle | loading | ready | empty | <provider failure>` states, so
  * the React panel only renders a snapshot and calls explicit actions.
@@ -19,6 +18,8 @@
  */
 import {
   fetchOnlinePage,
+  loadProviderManifests,
+  offeredProviders,
   providerById,
   providersForCapability,
 } from '../wallpaper/providers.js'
@@ -62,10 +63,18 @@ export const ONLINE_FAILURE_STATUSES: readonly ProviderFailure[] = [
 /** Results requested per online page. */
 export const ONLINE_PAGE_SIZE = 12
 
+/** One provider entry the panel renders in its source selector. */
+export interface OnlineProviderOption {
+  readonly id: ProviderId
+  readonly label: { readonly 'zh-CN': string; readonly 'en-US': string }
+}
+
 /** One immutable Online studio snapshot consumed by the panel. */
 export interface OnlineStudioSnapshot {
   readonly status: OnlineStatus
   readonly provider: ProviderChoice
+  /** Offered providers currently known; grows after the lazy manifest load. */
+  readonly providers: readonly OnlineProviderOption[]
   readonly query: string
   readonly results: readonly WallpaperProviderResult[]
   /** Provider that served the current results (`auto` failover names it). */
@@ -97,6 +106,8 @@ export interface OnlineStudioOptions {
   readonly fetchPage?: OnlinePageFetcher | undefined
   /** AbortController factory override (tests may return `undefined`). */
   readonly createAbortController?: (() => AbortController | undefined) | undefined
+  /** Manifest loader override; defaults to the Host route unless a test loader is injected. */
+  readonly loadManifests?: (() => Promise<boolean>) | undefined
 }
 
 /** Actions/state of one mounted Online studio. */
@@ -140,6 +151,7 @@ function idleSnapshot(provider: ProviderChoice = 'auto', query = ''): OnlineStud
   return {
     status: 'idle',
     provider,
+    providers: offeredProviders().map(provider => ({ id: provider.id, label: provider.label })),
     query,
     results: [],
     servedBy: undefined,
@@ -228,6 +240,18 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
   let sequence = 0
   let active: AbortController | undefined
   let disposed = false
+  let manifestsAttempted = false
+  const loadManifests = options.loadManifests
+    ?? (options.fetchPage === undefined ? loadProviderManifests : async () => false)
+
+  const ensureManifests = async (): Promise<void> => {
+    if (manifestsAttempted) return
+    manifestsAttempted = true
+    // A failed manifest fetch must not take Wikimedia offline: the static
+    // provider remains usable and the selector simply shows what loaded.
+    if (!(await loadManifests())) return
+    publish({ providers: offeredProviders().map(provider => ({ id: provider.id, label: provider.label })) })
+  }
 
   const publish = (patch: Partial<OnlineStudioSnapshot>): void => {
     snapshot = { ...snapshot, ...patch }
@@ -343,6 +367,7 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
     },
     activate: async () => {
       if (disposed || snapshot.status !== 'idle') return
+      await ensureManifests()
       await run({ action: 'browse', provider: snapshot.provider, query: snapshot.query.trim() })
     },
     setProvider: (provider: string) => {
@@ -369,12 +394,14 @@ export function createOnlineStudio(options: OnlineStudioOptions = {}): OnlineStu
     },
     search: async () => {
       if (disposed) return
+      await ensureManifests()
       const provider = searchRequestProvider(snapshot.provider)
       if (provider === undefined) return
       await run({ action: 'search', provider, query: snapshot.query.trim() })
     },
     random: async () => {
       if (disposed) return
+      await ensureManifests()
       const provider = randomRequestProvider(snapshot.provider)
       if (provider === undefined) return
       await run({ action: 'random', provider, query: '' })

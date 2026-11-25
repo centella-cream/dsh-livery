@@ -1,6 +1,7 @@
 /** Recent online wallpapers: local history store and best-effort disk cache. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  DIRECT_RECENT_WALLPAPER_KEY,
   MAX_RECENT_WALLPAPERS,
   RECENT_WALLPAPER_KEY,
   addRecentEntry,
@@ -191,6 +192,24 @@ describe('recent wallpaper history', () => {
     clearRecentWallpapers(storage)
     expect(storage.getItem(RECENT_WALLPAPER_KEY)).toBeNull()
     expect(readRecentWallpapers(undefined)).toEqual([])
+  })
+
+  it('keeps direct entries in the v2 key and clears both keys', () => {
+    const storage = new MemoryStorage()
+    const direct = rememberRecentWallpaper(
+      storage,
+      entry('https://oa.example/print.jpg', { delivery: 'direct', thumbnail: 'https://oa.example/web.jpg' }),
+      DIRECT_RECENT_WALLPAPER_KEY,
+    )
+    expect(direct[0]?.delivery).toBe('direct')
+    expect(readRecentWallpapers(storage)).toEqual([])
+    expect(readRecentWallpapers(storage, DIRECT_RECENT_WALLPAPER_KEY)[0]).toMatchObject({
+      url: 'https://oa.example/print.jpg',
+      delivery: 'direct',
+      thumbnail: 'https://oa.example/web.jpg',
+    })
+    clearRecentWallpapers(storage)
+    expect(readRecentWallpapers(storage, DIRECT_RECENT_WALLPAPER_KEY)).toEqual([])
   })
 })
 
