@@ -1316,7 +1316,13 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                   className="wallpaper-provider__select"
                   data-testid="wallpaper-provider"
                   value={online.provider}
-                  onChange={event => studio.setProvider(event.target.value)}
+                  onChange={event => {
+                    const value = event.target.value
+                    studio.setProvider(value)
+                    // Direct sources are search-only and have no Random action; load
+                    // their default page immediately so selecting them never looks empty.
+                    if (providerById(value)?.delivery === 'direct') void studio.activate()
+                  }}
                 >
                   {providerOptions.map(option => (
                     <option key={option.id} value={option.id}>{option.label}</option>

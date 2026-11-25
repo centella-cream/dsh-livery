@@ -5126,9 +5126,8 @@ export async function checkWallpaperStudio(ctx) {
 
     // ---- direct sources: manifest provider, full <img> layer, thumbnail hero ----
     await selectWallpaperSource(page, 'online')
-    await selectProvider('cleveland')
     const beforeCleveland = providers.clevelandRequests.length
-    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await selectProvider('cleveland')
     await waitForOnlineStatus('ready', 25_000)
     await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length === 1, undefined, { timeout: 20_000 }).catch(() => {})
     const clevelandBatch = await readState()
@@ -5214,9 +5213,8 @@ export async function checkWallpaperStudio(ctx) {
       `schema=${direct.storedSchema}; delivery=${direct.storedDelivery}; remoteInCss=${direct.styleHasRemote}`,
     )
 
-    await selectProvider('met-open-access')
     const beforeMet = providers.metRequests.length
-    await page.locator('[data-testid="wallpaper-search-go"]').click({ timeout: 8_000 })
+    await selectProvider('met-open-access')
     await waitForOnlineStatus('ready', 25_000)
     await page.waitForFunction(() => document.querySelectorAll('[data-testid="wallpaper-result"]').length === 1, undefined, { timeout: 20_000 }).catch(() => {})
     const metBatch = await readState()
