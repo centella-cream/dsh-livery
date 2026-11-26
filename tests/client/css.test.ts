@@ -103,7 +103,7 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     // The native radio covers the whole cell but stays visually hidden; the
     // adjacent span is the visible target and shows the selected/focus state.
     expect(CLIENT_CSS).toContain('.wallpaper-position__option input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}')
-    expect(CLIENT_CSS).toContain('.wallpaper-position__option input:checked+span{border-color:var(--lw-brand);color:var(--lw-brand)')
+    expect(CLIENT_CSS).toContain('.wallpaper-position__option input:checked+span{border-color:var(--lw-brand);color:var(--lw-fg)')
     expect(CLIENT_CSS).toContain('.wallpaper-position__option input:focus-visible+span{outline:2px solid var(--lw-brand);outline-offset:2px}')
     expect(CLIENT_CSS).toMatch(/\.wallpaper-position__option span\{[^}]*font-size:var\(--lw-fs-caption\)/)
   })

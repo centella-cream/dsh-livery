@@ -58,6 +58,7 @@ export const CONTRAST_SURFACES = {
   toast: '--dsw-alias-toast-bg',
   tooltip: '--dsw-alias-tooltip-bg',
   code: '--dsw-alias-markdown-code-block',
+  warnTertiary: '--dsw-alias-state-warn-tertiary',
   input: '--dsw-specific-input-major',
   selection: '--dsw-specific-sidebar-nav-item-active',
 } as const
@@ -77,9 +78,15 @@ export const CONTRAST_FOREGROUNDS = {
   onAccent: '--dsw-alias-label-primary-foreground',
   toastLabel: '--dsw-alias-toast-label',
   business: '--dsw-alias-state-business-primary',
+  businessText: '--dsw-alias-state-business-primary',
+  warnPrimary: '--dsw-alias-state-warn-primary',
+  onColor: '--dsw-alias-label-on-color',
+  inverted: '--dsw-alias-label-primary-inverted',
+  primaryBlish: '--dsw-alias-label-primary-bluish',
   brandFill: '--dsw-alias-brand-primary',
   buttonPrimaryFill: '--dsw-alias-button-primary-fill',
   buttonInfoFill: '--dsw-alias-button-info-fill',
+  buttonContrastFill: '--dsw-alias-button-contrast-fill',
 } as const
 
 const TEXT = 'text' as const
@@ -201,6 +208,22 @@ export const CONTRAST_CHECKS: readonly ContrastCheck[] = [
   // sidebar active-accent chip. Both derive from the accent seed in some
   // styles (e.g. bauhaus), so a missing pair makes the chip label invisible.
   check('badge-label', 'selection-accent', 'default', F.buttonInfoFill, '--dsw-specific-sidebar-nav-item-active-accent', 4.5, TEXT),
+  // Host component token pairs that regress under a livery compared with the
+  // stock host. These are the pairs where the host paints text or an icon on a
+  // fill; the foreground token is repaired by the bounded pass below. Pairs
+  // that already fail in the stock host are intentionally not asserted here:
+  // a livery must not pretend to fix a host-level contrast defect by changing
+  // unrelated semantic roles.
+  check('host-info-fill', 'on-color', 'default', F.buttonInfoFill, F.onColor, 3, NON_TEXT),
+  check('host-on-error-fill', 'error-fill', 'default', F.onColor, F.error, 3, NON_TEXT),
+  check('host-contrast-fill', 'button-contrast-fill', 'default', F.buttonContrastFill, F.inverted, 4.5, TEXT),
+  check('host-option-number', 'overlay', 'default', F.secondary, '--dsw-alias-bg-overlay', 4.5, TEXT),
+  check('host-business-tag', 'business-tertiary', 'default', F.business, '--dsw-alias-state-business-tertiary', 4.5, TEXT),
+  check('host-attempt-badge', 'layer-3', 'default', F.secondary, '--dsw-alias-bg-layer-3', 4.5, TEXT),
+  check('host-preview-badge', 'business-tertiary', 'default', F.primaryBlish, '--dsw-alias-state-business-tertiary', 4.5, TEXT),
+  check('host-viewer-code', 'layer-2', 'default', F.secondary, '--dsw-alias-bg-layer-2', 4.5, TEXT),
+  check('host-tertiary-sidebar', 'sidebar', 'default', F.tertiary, S.sidebar, 4.5, TEXT),
+  check('host-broken-badge', 'layer-3', 'default', F.error, '--dsw-alias-bg-layer-3', 3, NON_TEXT),
   // on-accent: label on a brand-primary fill (§18.2 `brand` + `on-accent`).
   check('on-accent', 'brand-fill', 'default', F.onAccent, F.brandFill, 4.5, TEXT),
   check('on-accent', 'button-fill', 'default', F.onAccent, F.buttonPrimaryFill, 4.5, TEXT),

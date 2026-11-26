@@ -106,6 +106,20 @@ describe('contrast matrix', () => {
     }
   })
 
+  it('keeps the host component regression pairs in the matrix', () => {
+    for (const role of [
+      'badge-label/selection-accent/default',
+      'host-info-fill/on-color/default',
+      'host-option-number/overlay/default',
+      'host-business-tag/business-tertiary/default',
+      'host-viewer-code/layer-2/default',
+      'host-tertiary-sidebar/sidebar/default',
+      'host-broken-badge/layer-3/default',
+    ]) {
+      expect(CONTRAST_CHECKS.some((spec) => `${spec.role}/${spec.surface}/${spec.state}` === role)).toBe(true)
+    }
+  })
+
   it('measures the opaque Livery menu surface directly', () => {
     const build = buildFixture(FIXTURE_MANIFESTS[0]!)
     const entries = auditContrast(build.light, 'light', build.stock)
