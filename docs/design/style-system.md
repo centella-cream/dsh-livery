@@ -168,6 +168,10 @@ licences).
   detail surface. The accepted `0.2.2` build measured 73,094 B; the 0.2.3
   candidate measures **73,655 B (73 B headroom)**. The exact measured bytes and
   headroom are recorded by `lib/build-report.json` and the acceptance probe.
+- The contrast matrix includes the host question-card recommended badge pair
+  (`--dsw-alias-button-info-fill` on
+  `--dsw-specific-sidebar-nav-item-active-accent`); the deriver repairs the
+  foreground when both would resolve to the same accent colour.
 - **Pre-release review item:** when client gzip headroom is **< 100 B**, the
   candidate must record the exact headroom in the build report and re-measure it
   after all packaged docs/code are frozen. This is a warning in `build`, not a

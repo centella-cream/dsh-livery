@@ -79,6 +79,7 @@ export const CONTRAST_FOREGROUNDS = {
   business: '--dsw-alias-state-business-primary',
   brandFill: '--dsw-alias-brand-primary',
   buttonPrimaryFill: '--dsw-alias-button-primary-fill',
+  buttonInfoFill: '--dsw-alias-button-info-fill',
 } as const
 
 const TEXT = 'text' as const
@@ -196,6 +197,10 @@ export const CONTRAST_CHECKS: readonly ContrastCheck[] = [
   // Toast and tooltip surfaces carry their own inverse label pair.
   ...textOn('toast-label', F.toastLabel, [['toast', S.toast]], 4.5, 'default', false),
   ...textOn('tooltip-label', F.toastLabel, [['tooltip', S.tooltip]], 4.5, 'default', false),
+  // Recommended-question badge: host paints button-info-fill text on the
+  // sidebar active-accent chip. Both derive from the accent seed in some
+  // styles (e.g. bauhaus), so a missing pair makes the chip label invisible.
+  check('badge-label', 'selection-accent', 'default', F.buttonInfoFill, '--dsw-specific-sidebar-nav-item-active-accent', 4.5, TEXT),
   // on-accent: label on a brand-primary fill (§18.2 `brand` + `on-accent`).
   check('on-accent', 'brand-fill', 'default', F.onAccent, F.brandFill, 4.5, TEXT),
   check('on-accent', 'button-fill', 'default', F.onAccent, F.buttonPrimaryFill, 4.5, TEXT),

@@ -64,6 +64,13 @@ rebuilt tarball are still missing; this is not a release claim.
 
 ### Fixed
 
+- **Recommended-question badge contrast:** the host user-question UI paints the
+  “推荐” badge with `--dsw-alias-button-info-fill` text on
+  `--dsw-specific-sidebar-nav-item-active-accent`. In several liveries (notably
+  bauhaus) both tokens resolved to the same accent, making the badge a solid
+  gold block that covered its label. Added the
+  `badge-label/selection-accent` contrast pair and a bounded foreground repair;
+  all 28 styles now pass 3360 contrast assertions.
 - **Review hardening:** direct full/thumbnail URLs are now validated against a
   reviewed provider-host allowlist at both the v3 preset-import and v3
   persisted-state boundaries (providerId required), closing the arbitrary-https
