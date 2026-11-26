@@ -93,7 +93,7 @@ functions of the variant seeds and mode (`src/core/chrome.ts`):
 
 | id | relationship |
 |---|---|
-| `plain` | no override (default; omitted manifests behave as plain) |
+| `plain` | faint text-tinted rail (`textMix(seeds, 0.03)`) so the rail keeps a visible step from the page; no other chrome overrides |
 | `tinted` | low accent tint on rail, composer and bubbles |
 | `outline` | page-coloured fills; active rail carried by its accent mark |
 | `terminal` | darker rail, page composer, faint accent active row |
@@ -101,7 +101,10 @@ functions of the variant seeds and mode (`src/core/chrome.ts`):
 | `poster` | strong accent blocks on rail, bubble and selected controls |
 
 Chrome never changes shape, elevation, text colours or selectors. The contrast
-matrix audits every recipe against its palette before it can ship.
+matrix audits every recipe against its palette before it can ship. `outline` and
+`editorial` intentionally keep paper-coloured fills (their rail separation comes
+from their rules/host chrome); `plain` now keeps a faint text-tinted rail instead
+of becoming byte-identical to the page base.
 
 ## 2. Derivation merge order (src/core/derive.ts)
 

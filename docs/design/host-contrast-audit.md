@@ -73,6 +73,13 @@ Livery's own selected chips, version chip and focal-position selection use
 foreground roles; attribution links use the already-audited
 `--dsw-alias-link`.
 
+The `plain` chrome deliberately authors a faint text-tinted rail
+(`textMix(seeds, 0.03)`) so its fill is not byte-identical to the page base and
+the selected accent has a real baseline. `outline` and `editorial` remain
+paper-flat by design; their separation comes from their rules/host chrome. This
+is an explicit design decision, not an unrecorded consequence of the accent
+repair.
+
 ## Result
 
 `livery:compile` reports **4536–4648 contrast assertions / 0 failures** across eight
