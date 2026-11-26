@@ -1,0 +1,1415 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-11-26T15-37-57-925Z-isolated",
+  "mode": "isolated",
+  "ok": true,
+  "startedAt": "2026-11-26T15:37:57.925Z",
+  "finishedAt": "2026-11-26T15:38:06.014Z",
+  "summary": {
+    "pass": 35,
+    "fail": 0,
+    "skip": 2,
+    "warn": 1,
+    "total": 38
+  },
+  "environment": {
+    "date": "2026-11-26T15:38:06.006Z",
+    "commit": "71d62827b65cbec870791efc93c6359214622888",
+    "dshVersion": "0.2.2-rc.5",
+    "dshBin": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance/hosts/0.2.2-rc.5.sh",
+    "hostRuntime": "installed-package",
+    "nodeVersion": "v22.23.1",
+    "platform": "darwin",
+    "osRelease": "27.2.0",
+    "arch": "arm64",
+    "chromeVersion": "156.0.8078.48",
+    "playwrightVersion": "1.63.0"
+  },
+  "target": {
+    "packageName": "dsh-livery",
+    "pluginId": "dsh-livery",
+    "packageVersion": "0.2.3",
+    "tarball": "<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz",
+    "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+    "tarballBytes": 3634089,
+    "hostVersion": "0.2.2-rc.5",
+    "adapterId": "dsh-0.2.2-rc.5-r1",
+    "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+    "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+    "sourceKind": "installed-package",
+    "scope": {
+      "hostVersion": "0.2.2-rc.5",
+      "profile": "web",
+      "browser": "chrome",
+      "browserVersion": "156.0.8078.48"
+    },
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "22.23.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.5",
+        "npmVersion": "0.2.2-rc.5"
+      }
+    }
+  },
+  "matrix": {
+    "certifiedVersions": [
+      "0.2.1-rc.2",
+      "0.2.1-rc.3",
+      "0.2.1-rc.4",
+      "0.2.2-rc.2",
+      "0.2.2-rc.5",
+      "0.2.2-rc.3",
+      "0.2.2-rc.1",
+      "0.2.1-rc.5"
+    ],
+    "certification": {
+      "claimTier": "preview",
+      "distributionChannel": "latest",
+      "certifiedBrowserVersions": [
+        "156.0.8078.48",
+        "152.0.7977.130"
+      ],
+      "certifiedRuntimeVersions": [
+        "22.23.1",
+        "24.21.0"
+      ],
+      "upstream": {
+        "githubTag": "dsh-v0.2.2-rc.5",
+        "npmVersion": "0.2.2-rc.5"
+      }
+    },
+    "expected": {
+      "hostVersion": "0.2.2-rc.5",
+      "adapterId": "dsh-0.2.2-rc.5-r1",
+      "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+      "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+      "platformModules": 11,
+      "sourceKind": "installed-package",
+      "capabilities": {
+        "theme-css": true,
+        "host-font-family": true,
+        "surface-material": true,
+        "host-density-tokens": false,
+        "host-transcript-width": false,
+        "host-message-flow": false,
+        "reduced-transparency": true,
+        "forced-colors": true,
+        "reduced-motion": true,
+        "host-font-role-hooks": true
+      }
+    },
+    "observed": {
+      "hostVersion": "0.2.2-rc.5",
+      "adapterId": "dsh-0.2.2-rc.5-r1",
+      "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+      "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+      "profileKind": "web",
+      "previewsBase": null,
+      "certified": true
+    },
+    "profileKindExpected": "web",
+    "cloneFrom": null
+  },
+  "config": {
+    "profileName": "0.2.2-rc.5-web-chrome",
+    "dshHome": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477",
+    "reuseUrl": null,
+    "locale": "zh",
+    "expectedVersion": "0.2.2-rc.5",
+    "expectedProfileKind": "web",
+    "cloneFrom": null,
+    "updateFrom": "<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz",
+    "updateMode": true,
+    "bootTimeoutMs": 120000,
+    "artifactsDir": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5",
+    "reportPath": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/report.md",
+    "readOnly": false
+  },
+  "dshWebLine": "dsh web: http://127.0.0.1:62410/?token=<redacted>",
+  "boot": {
+    "readyMs": 1313,
+    "installMs": 204,
+    "port": 62410
+  },
+  "phases": [
+    {
+      "name": "prepare",
+      "startedAt": "2026-11-26T15:37:57.926Z",
+      "durationMs": 546,
+      "ok": true,
+      "detail": "dsh 0.2.2-rc.5; <home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance/hosts/0.2.2-rc.5.sh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz → exit 0 in 204ms"
+    },
+    {
+      "name": "boot",
+      "startedAt": "2026-11-26T15:37:58.472Z",
+      "durationMs": 1313,
+      "ok": true,
+      "detail": "ready in 1313ms port 62410"
+    },
+    {
+      "name": "browser",
+      "startedAt": "2026-11-26T15:37:59.785Z",
+      "durationMs": 404,
+      "ok": true,
+      "detail": "Chrome 156.0.8078.48"
+    },
+    {
+      "name": "boot-graph",
+      "startedAt": "2026-11-26T15:38:00.433Z",
+      "durationMs": 353,
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "boot-handshake",
+      "startedAt": "2026-11-26T15:38:00.328Z",
+      "durationMs": 458,
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "update",
+      "startedAt": "2026-11-26T15:38:00.786Z",
+      "durationMs": 5003,
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "checks": [
+    {
+      "id": "env.certified-host",
+      "title": "dsh CLI host version maps to a certified adapter record",
+      "status": "pass",
+      "detail": "0.2.2-rc.5 / dsh-0.2.2-rc.5-r1 / sha256:65ed78f3838c… / 11-module table / installed-package",
+      "evidence": {
+        "adapter": {
+          "hostVersion": "0.2.2-rc.5",
+          "adapterId": "dsh-0.2.2-rc.5-r1",
+          "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+          "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+          "nodeRange": ">=24.9.0",
+          "platformModules": 11,
+          "sourceKind": "installed-package",
+          "capabilities": {
+            "theme-css": true,
+            "host-font-family": true,
+            "surface-material": true,
+            "host-density-tokens": false,
+            "host-transcript-width": false,
+            "host-message-flow": false,
+            "reduced-transparency": true,
+            "forced-colors": true,
+            "reduced-motion": true,
+            "host-font-role-hooks": true
+          }
+        }
+      },
+      "at": "2026-11-26T15:37:57.975Z"
+    },
+    {
+      "id": "lifecycle.update-source",
+      "title": "--update-from is the exact artifact bound by committed acceptance evidence, and --tgz is a different exact candidate",
+      "status": "pass",
+      "detail": "from=dsh-livery@0.2.2 sha256=46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff bytes=3417842 evidence=[contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json]; to=dsh-livery@0.2.3 sha256=c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad bytes=3634089",
+      "evidence": {
+        "from": {
+          "path": "<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz",
+          "name": "dsh-livery",
+          "version": "0.2.2",
+          "sha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+          "bytes": 3417842
+        },
+        "evidence": [
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json"
+        ],
+        "candidate": {
+          "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz",
+          "name": "dsh-livery",
+          "version": "0.2.3",
+          "sha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+          "bytes": 3634089
+        }
+      },
+      "at": "2026-11-26T15:37:58.262Z"
+    },
+    {
+      "id": "lifecycle.update-from-install",
+      "title": "official `dsh plugin --profile web add file:<from.tgz>` installs and selects the previous bundle before the Host-manager update",
+      "status": "pass",
+      "detail": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance/hosts/0.2.2-rc.5.sh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz → exit 0 in 204ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-livery\"]",
+      "evidence": {
+        "command": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance/hosts/0.2.2-rc.5.sh plugin --profile web add file:<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz",
+        "stdout": "Progress: resolved 1, reused 0, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery file:<home>/Personal/openprojects/dsh-livery/.tmp/ci-artifact/dsh-livery-0.2.2.tgz\n\nDone in 126ms using pnpm v12.3.4\n",
+        "stderr": "dsh: initialized profile web at <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477/profiles/web\n"
+      },
+      "at": "2026-11-26T15:37:58.471Z"
+    },
+    {
+      "id": "update.baseline-config",
+      "title": "the isolated pre-update profile already runs the previous build with an active style (realistic saved config)",
+      "status": "pass",
+      "detail": "profile patch <home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477/profiles/web/cordis.patch.yml; row added=true; skinId=fjord",
+      "evidence": {
+        "patchFile": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477/profiles/web/cordis.patch.yml",
+        "added": true,
+        "liveryId": "fjord"
+      },
+      "at": "2026-11-26T15:37:58.472Z"
+    },
+    {
+      "id": "lifecycle.profile-initialized",
+      "title": "isolated profile initialized from the shipped web template",
+      "status": "pass",
+      "detail": "home=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477; profile=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477/profiles/web; initialized=true; sha256=46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+      "at": "2026-11-26T15:37:58.472Z"
+    },
+    {
+      "id": "lifecycle.boot",
+      "title": "`dsh --profile web --no-open --port 0` boots and prints its authenticated URL",
+      "status": "pass",
+      "detail": "ready in 1313ms on port 62410; log=<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/logs/web.log",
+      "evidence": {
+        "url": "http://127.0.0.1:62410/?token=<redacted>",
+        "readyMs": 1313,
+        "pid": 17199
+      },
+      "at": "2026-11-26T15:37:59.785Z"
+    },
+    {
+      "id": "lifecycle.boot-warnings",
+      "title": "boot log has no skipped-bundle or compatibility warnings",
+      "status": "pass",
+      "detail": "no skipped/incompatible/warning lines in the boot log",
+      "at": "2026-11-26T15:37:59.785Z"
+    },
+    {
+      "id": "env.browser",
+      "title": "Chrome launches through playwright-core (no automatic browser download)",
+      "status": "pass",
+      "detail": "Chrome 156.0.8078.48 (explicit Chrome-for-Testing executable); playwright-core 1.63.0 at <home>/Personal/openprojects/dsh-livery/node_modules/playwright-core/index.mjs",
+      "at": "2026-11-26T15:38:00.189Z"
+    },
+    {
+      "id": "env.browser-version",
+      "title": "actual full Chrome version matches the exact certified browser version requirement",
+      "status": "pass",
+      "detail": "156.0.8078.48 (--expect-browser-version 156.0.8078.48); matrix certifiedBrowserVersions=[156.0.8078.48, 152.0.7977.130]; claimTier=preview · channel=latest · browsers=[156.0.8078.48, 152.0.7977.130] · runtimes=[22.23.1, 24.21.0] · upstream=dsh-v0.2.2-rc.5 / npm-0.2.2-rc.5",
+      "evidence": {
+        "actual": "156.0.8078.48",
+        "expected": "156.0.8078.48",
+        "certified": [
+          "156.0.8078.48",
+          "152.0.7977.130"
+        ]
+      },
+      "at": "2026-11-26T15:38:00.189Z"
+    },
+    {
+      "id": "boot.token-exchange",
+      "title": "launch token is exchanged for the signed cookie and dropped from the URL",
+      "status": "pass",
+      "detail": "final url http://127.0.0.1:62410/; navigation 105ms",
+      "evidence": {
+        "requestedUrl": "http://127.0.0.1:62410/?token=<redacted>",
+        "finalUrl": "http://127.0.0.1:62410/",
+        "tokenDropped": true,
+        "navigationMs": 105
+      },
+      "at": "2026-11-26T15:38:00.433Z"
+    },
+    {
+      "id": "boot.graph-entry",
+      "title": "__DSH_BOOT__ lists client entry \"dsh-livery\"",
+      "status": "pass",
+      "detail": "url plugins/??dsh-livery/client.js&rev=2bec6a96937d",
+      "evidence": {
+        "entry": {
+          "id": "dsh-livery",
+          "url": "plugins/??dsh-livery/client.js&rev=2bec6a96937d"
+        }
+      },
+      "at": "2026-11-26T15:38:00.752Z"
+    },
+    {
+      "id": "bundle.serves-client-js",
+      "title": "plugin client bundle (boot-graph URL) is served as JavaScript",
+      "status": "pass",
+      "detail": "GET /plugins/??dsh-livery/client.js&rev=2bec6a96937d → 200 text/javascript; charset=utf-8 (278869 bytes)",
+      "evidence": {
+        "url": "http://127.0.0.1:62410/plugins/??dsh-livery/client.js&rev=2bec6a96937d",
+        "status": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 278869
+      },
+      "at": "2026-11-26T15:38:00.769Z"
+    },
+    {
+      "id": "bundle.requires-rev",
+      "title": "plugin client bundle requires its graph rev",
+      "status": "pass",
+      "detail": "GET graph URL without rev → 404",
+      "evidence": {
+        "url": "http://127.0.0.1:62410/plugins/??dsh-livery/client.js",
+        "status": 404
+      },
+      "at": "2026-11-26T15:38:00.769Z"
+    },
+    {
+      "id": "bundle.canonical-route",
+      "title": "bare /plugins/<pkg>/client.js?rev= route (doc-comment form)",
+      "status": "warn",
+      "detail": "GET /plugins/dsh-livery/client.js?rev=<graph rev> → 404; this DSH build serves only the graph-encoded URL (verified deviation from the doc comment)",
+      "evidence": {
+        "canonicalStatus": 404,
+        "canonicalNoRevStatus": 404,
+        "rev": "2bec6a96937d",
+        "entryUrl": "http://127.0.0.1:62410/plugins/??dsh-livery/client.js&rev=2bec6a96937d"
+      },
+      "at": "2026-11-26T15:38:00.769Z"
+    },
+    {
+      "id": "bundle.gzip-budget",
+      "title": "client bundle gzip stays within the final 72 KiB performance budget (host peers excluded)",
+      "status": "pass",
+      "detail": "73141 bytes gzip / 278869 bytes raw (budget 73728 B / 72 KiB)",
+      "evidence": {
+        "gzipBytes": 73141,
+        "rawBytes": 278869,
+        "budgetBytes": 73728
+      },
+      "at": "2026-11-26T15:38:00.775Z"
+    },
+    {
+      "id": "handshake.boot-global",
+      "title": "first-frame handshake global __DSH_LIVERY_BOOT__ is present and accepted",
+      "status": "pass",
+      "detail": "accepted=true profileKind=web skinId=fjord cssHash=sha256:ac9f7eb5812c7388c… entryId=livery adapter=dsh-0.2.2-rc.5-r1",
+      "evidence": {
+        "pluginVersion": "0.2.2",
+        "adapterId": "dsh-0.2.2-rc.5-r1",
+        "hostVersion": "0.2.2-rc.5",
+        "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+        "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+        "grammarHash": "sha256:94a45a8a022d136ab791983b924b8438de75355e0c349cea22cc454288ad50b2",
+        "catalogHash": "sha256:514358b264496eb93c6990c3381bc96b6d9406e8a843f15cf980c943d4097be2",
+        "profileKind": "web",
+        "accepted": true,
+        "skinId": "fjord",
+        "cssHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+        "bootStyleId": "dsh-livery-boot",
+        "catalogUrl": "/livery/api/catalog",
+        "entryId": "livery",
+        "diagnostics": []
+      },
+      "at": "2026-11-26T15:38:00.785Z"
+    },
+    {
+      "id": "handshake.echo",
+      "title": "first-frame handshake echoes a certified version/adapter/contract/catalog-profile identity",
+      "status": "pass",
+      "detail": "pre-apply boot: accepted=true hostVersion=0.2.2-rc.5 adapterId=dsh-0.2.2-rc.5-r1 contractHash=sha256:65ed78f3838c0… catalogProfile=sha256:0a58dee4f5c8d… profileKind=web skinId=fjord cssHash=sha256:ac9f7eb5812c7388c…",
+      "evidence": {
+        "pluginVersion": "0.2.2",
+        "adapterId": "dsh-0.2.2-rc.5-r1",
+        "hostVersion": "0.2.2-rc.5",
+        "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+        "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+        "grammarHash": "sha256:94a45a8a022d136ab791983b924b8438de75355e0c349cea22cc454288ad50b2",
+        "catalogHash": "sha256:514358b264496eb93c6990c3381bc96b6d9406e8a843f15cf980c943d4097be2",
+        "profileKind": "web",
+        "accepted": true,
+        "skinId": "fjord",
+        "cssHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+        "bootStyleId": "dsh-livery-boot",
+        "catalogUrl": "/livery/api/catalog",
+        "entryId": "livery",
+        "diagnostics": []
+      },
+      "at": "2026-11-26T15:38:00.785Z"
+    },
+    {
+      "id": "handshake.certified-adapter",
+      "title": "live host matches a certified adapter record (exact version + adapter + contract + catalog profile)",
+      "status": "pass",
+      "detail": "0.2.2-rc.5 / dsh-0.2.2-rc.5-r1 / sha256:65ed78f3838c… / 11-module table / installed-package",
+      "evidence": {
+        "adapter": {
+          "hostVersion": "0.2.2-rc.5",
+          "adapterId": "dsh-0.2.2-rc.5-r1",
+          "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+          "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+          "nodeRange": ">=24.9.0",
+          "platformModules": 11,
+          "sourceKind": "installed-package",
+          "capabilities": {
+            "theme-css": true,
+            "host-font-family": true,
+            "surface-material": true,
+            "host-density-tokens": false,
+            "host-transcript-width": false,
+            "host-message-flow": false,
+            "reduced-transparency": true,
+            "forced-colors": true,
+            "reduced-motion": true,
+            "host-font-role-hooks": true
+          }
+        }
+      },
+      "at": "2026-11-26T15:38:00.785Z"
+    },
+    {
+      "id": "handshake.catalog-url",
+      "title": "handshake advertises the catalog route",
+      "status": "pass",
+      "detail": "catalogUrl=/livery/api/catalog",
+      "at": "2026-11-26T15:38:00.785Z"
+    },
+    {
+      "id": "update.from-artifact-verified",
+      "title": "the --update-from tarball is the exact artifact bound by committed acceptance evidence",
+      "status": "pass",
+      "detail": "dsh-livery@0.2.2, 3417842 B, sha256 46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff; committed evidence: contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json, contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json",
+      "evidence": {
+        "from": {
+          "version": "0.2.2",
+          "sha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+          "bytes": 3417842,
+          "evidence": [
+            "contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json",
+            "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json"
+          ]
+        },
+        "evidence": [
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json",
+          "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json"
+        ]
+      },
+      "at": "2026-11-26T15:38:00.786Z"
+    },
+    {
+      "id": "update.from-installed",
+      "title": "the isolated profile runs the exact previous artifact: boot payload, live client build and installed package are the from version",
+      "status": "pass",
+      "detail": "boot pluginVersion=0.2.2 panel=v0.2.2 installed package=0.2.2 (expected 0.2.2)",
+      "evidence": {
+        "boot": {
+          "pluginVersion": "0.2.2",
+          "hostVersion": "0.2.2-rc.5",
+          "adapterId": "dsh-0.2.2-rc.5-r1",
+          "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+          "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+          "accepted": true
+        },
+        "panelVersion": "v0.2.2",
+        "installedVersion": "0.2.2"
+      },
+      "at": "2026-11-26T15:38:01.231Z"
+    },
+    {
+      "id": "update.baseline-style-applied",
+      "title": "the isolated profile boots with an active style, so the 0.2.1 first-frame payload exists and there is a saved config to re-apply",
+      "status": "pass",
+      "detail": "body data-dsh-livery=fjord hash=sha256:ac9f7eb5812c7388c (expected fjord)",
+      "evidence": {
+        "liveryId": "fjord",
+        "bodyAttribute": "fjord",
+        "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+        "panelVersion": "v0.2.2"
+      },
+      "at": "2026-11-26T15:38:01.231Z"
+    },
+    {
+      "id": "update.dialog-available",
+      "title": "the running Host plugin-manager page exposes the Add plugin install dialog for a local tarball path",
+      "status": "pass",
+      "detail": "dialog phases=[\"running\",\"done\"]; spec=file:<candidate:dsh-livery-0.2.3.tgz>",
+      "evidence": {
+        "trigger": "host-install-dialog",
+        "phases": [
+          "running",
+          "done"
+        ],
+        "spec": "file:<candidate:dsh-livery-0.2.3.tgz>"
+      },
+      "at": "2026-11-26T15:38:03.106Z"
+    },
+    {
+      "id": "update.dialog-install-completed",
+      "title": "the Host install dialog settles with an applied installation",
+      "status": "pass",
+      "detail": "manager phase=done outcome=applied heading=\"已安装\" restart=false",
+      "evidence": {
+        "phases": [
+          "running",
+          "done"
+        ],
+        "heading": "已安装",
+        "failureText": null
+      },
+      "at": "2026-11-26T15:38:03.106Z"
+    },
+    {
+      "id": "update.manager-outcome",
+      "title": "the Host plugin manager reports the update as applied (not restart-required)",
+      "status": "pass",
+      "detail": "managerOutcome=applied; restart copy=false; tail=\"已安装 file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz 压缩包 版本 0.2.3 查看安装详情 立即启用\"",
+      "evidence": {
+        "managerOutcome": "applied",
+        "restartRequired": false,
+        "phases": [
+          "running",
+          "done"
+        ]
+      },
+      "at": "2026-11-26T15:38:03.106Z"
+    },
+    {
+      "id": "update.new-client-bundle-loaded",
+      "title": "the running Host delivers the new client bundle through its in-page module reloader",
+      "status": "pass",
+      "detail": "client-bundle resource entries 1 → 2; updated-client catalog fetches=1",
+      "evidence": {
+        "baseline": 1,
+        "after": 2,
+        "catalogs": [
+          {
+            "at": 1795707482678,
+            "status": 200,
+            "bytes": 1459915,
+            "compilerVersion": "0.2.3",
+            "catalogHash": "sha256:179f245fb5d80ac49b54671485af6828f2659e8f904a1e985900e00881e6be14",
+            "hostVersion": "0.2.2-rc.5",
+            "adapterId": "dsh-0.2.2-rc.5-r1",
+            "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+            "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+            "liveryCount": 28,
+            "liveryCssHashes": {
+              "fjord": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8",
+              "plum": "sha256:b2a8472f2c4d0c20d94ae75630728b7209c175d505bf009e4e33eee759c1975c",
+              "amber-dusk": "sha256:0f309b5ff0291d624565b427e0f6c2227a0ccfa46c9cda242431dba140a9f68e",
+              "moss": "sha256:026501ea8cfe3125c108513b350aaddccba223eea0792d8583b47b3629efb336",
+              "graphite": "sha256:518530794da5969fb0aca1491099b3fc49e21b4c22d76efe130fed581ea9a403",
+              "rice-paper": "sha256:194b86bf64889420dd18e2ee0f90994358eb179d4947122152c0a87921372ef8",
+              "deep-sea": "sha256:fd1923002a1f7715df170fd6205ebcf4b49efd66663d07f5a14fc1fd3052e865",
+              "sakura": "sha256:4abc068d1607ebbd94ee0308456dedcf8055b723d6fe611c4ae255b2cf397994",
+              "midnight": "sha256:b2d5dc506aeb2059abb1dce62987d396beedb811e60ad5b0f36c22ac21de008c",
+              "linen": "sha256:b9e1f5cacdda1d5461b33bf8142ebd25fcaedc2a3e43cc56100576412cf44e8e",
+              "nord": "sha256:53ee1d2533bf4383c2d4aee1394a4b1905ab8c430b0b171f418b16ca96cd0ef6",
+              "dracula": "sha256:efba9bdc69db68a3a981005106da7f6210e51877cbc3f60617c4abf7975a3200",
+              "gruvbox": "sha256:e67364d7f386e009fbe931c71ad198a0822ee69e02f9864f7c41063bd0b95e7d",
+              "solarized": "sha256:dca5440829e64575e06027f6273061274286968f96ca693c3260d960c51aab69",
+              "catppuccin": "sha256:2a4a02e1226f059d2723b5b99b2c94b5bc56c43d6eb7887f0743ee5fb761cb2f",
+              "tokyo-night": "sha256:d2f427eb4a1e0eb3e67db69755fd55f06762ffafd282fa15e6eefadd3b3f0242",
+              "rose-pine": "sha256:62e158ad337f90b6f9bf28e7ea11b718b89967fc1e97ed1f415bdbdab6391b63",
+              "everforest": "sha256:9f8c17dd7c5b4494d843fc4a767f3cf68dd73b6fa399c4ee4211d2d7ae30b03d",
+              "kanagawa": "sha256:bea43ff1f7f51f443a05a87a844141e51c981e0487388c79aa30f44cfb43e941",
+              "one-dark": "sha256:b7530c75cfd5359493b42b25d4610e6d622e76dcef9429d2f24cb567be78f099",
+              "ayu": "sha256:912b09b796a482bf748f8df4d5321814d8f8b2dbde648f27eb1668abb847fe30",
+              "flexoki": "sha256:686a5190854f148a0350f85550a76444ae91a1e9bcc04b2ff29990fc0601edc3",
+              "celadon": "sha256:b1fc93a84c0260b92f0dacc5cf395dc8fa7ba1b8cfc736052baffb574c3857dd",
+              "cinnabar": "sha256:48fa35a30216f6965e28c0e51173146d552569e983ecbdbb2437344d4a9e9bd2",
+              "blueprint": "sha256:4f891688ed90d81ed7d025e962d2c6b897429b0132849b8f74668ed77ada9b4d",
+              "bauhaus": "sha256:4e3db8d32c536e8c9f5829f379a452c2c8427fcedfd016a4316c5bd60530c842",
+              "clay": "sha256:ec805f032a7a65ac92d8d76bca27d0b28192d2034d8a68a7e465cc79d62c791b",
+              "phosphor": "sha256:614f94c79858f6abbfcd6e99520e099b91aed706e0cdfe2426d943fdd7f7fc4d"
+            }
+          }
+        ]
+      },
+      "at": "2026-11-26T15:38:03.112Z"
+    },
+    {
+      "id": "update.no-page-navigation",
+      "title": "the update happens without any page navigation or reload (window sentinel, timeOrigin, navigation count, load events)",
+      "status": "pass",
+      "detail": "sentinel=intact; timeOrigin=unchanged; navigation entries 1→1; history 2→2; load events=0",
+      "evidence": {
+        "baseline": {
+          "id": "75956a3f-20f4-4ffb-9e08-214965834607",
+          "installedAt": 1795707481231,
+          "timeOrigin": 1795707480332.1,
+          "navigationEntries": 1,
+          "historyLength": 2,
+          "clientBundleResources": 1,
+          "catalogResources": 1,
+          "bootPluginVersion": "0.2.2",
+          "bodyAttribute": "fjord",
+          "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+          "panelVersion": "v0.2.2"
+        },
+        "post": {
+          "sentinel": {
+            "id": "75956a3f-20f4-4ffb-9e08-214965834607",
+            "installedAt": 1795707481231,
+            "timeOrigin": 1795707480332.1,
+            "navigationEntries": 1,
+            "historyLength": 2,
+            "clientBundleResources": 1,
+            "catalogResources": 1,
+            "bootPluginVersion": "0.2.2",
+            "bodyAttribute": "fjord",
+            "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+            "panelVersion": "v0.2.2"
+          },
+          "navigationEntries": 1,
+          "timeOrigin": 1795707480332.1,
+          "historyLength": 2,
+          "clientBundleResources": 2,
+          "catalogResources": 2,
+          "boot": {
+            "pluginVersion": "0.2.2",
+            "hostVersion": "0.2.2-rc.5",
+            "adapterId": "dsh-0.2.2-rc.5-r1",
+            "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+            "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+            "accepted": true
+          },
+          "panelVersion": null,
+          "bodyAttribute": "fjord",
+          "bodyHash": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8"
+        },
+        "navigationEvents": {
+          "mainFrameNavigations": 0,
+          "loads": 0
+        }
+      },
+      "at": "2026-11-26T15:38:03.112Z"
+    },
+    {
+      "id": "update.boot-payload-previous",
+      "title": "the first-frame boot payload is still the previous build (no page reload injected a new one)",
+      "status": "pass",
+      "detail": "boot pluginVersion=0.2.2 (expected 0.2.2); accepted=true",
+      "evidence": {
+        "pluginVersion": "0.2.2",
+        "hostVersion": "0.2.2-rc.5",
+        "adapterId": "dsh-0.2.2-rc.5-r1",
+        "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+        "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+        "accepted": true
+      },
+      "at": "2026-11-26T15:38:03.112Z"
+    },
+    {
+      "id": "update.live-client-build-candidate",
+      "title": "the live client build is the candidate version while the boot payload stays the previous version",
+      "status": "pass",
+      "detail": "panel version=v0.2.3 (expected v0.2.3)",
+      "evidence": {
+        "panelVersion": "v0.2.3",
+        "expected": "v0.2.3",
+        "error": null
+      },
+      "at": "2026-11-26T15:38:03.192Z"
+    },
+    {
+      "id": "update.catalog-refetched",
+      "title": "the updated client re-fetches a catalog compiled by the candidate version after the in-process update",
+      "status": "pass",
+      "detail": "1 catalog fetch(es) by the updated client; last=status=200 compilerVersion=0.2.3 bytes=1459915 catalogHash=sha256:179f245fb5d80ac49 liveries=28",
+      "evidence": {
+        "catalogs": [
+          {
+            "at": 1795707482678,
+            "status": 200,
+            "bytes": 1459915,
+            "compilerVersion": "0.2.3",
+            "catalogHash": "sha256:179f245fb5d80ac49b54671485af6828f2659e8f904a1e985900e00881e6be14",
+            "hostVersion": "0.2.2-rc.5",
+            "adapterId": "dsh-0.2.2-rc.5-r1",
+            "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+            "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+            "liveryCount": 28,
+            "liveryCssHashes": {
+              "fjord": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8",
+              "plum": "sha256:b2a8472f2c4d0c20d94ae75630728b7209c175d505bf009e4e33eee759c1975c",
+              "amber-dusk": "sha256:0f309b5ff0291d624565b427e0f6c2227a0ccfa46c9cda242431dba140a9f68e",
+              "moss": "sha256:026501ea8cfe3125c108513b350aaddccba223eea0792d8583b47b3629efb336",
+              "graphite": "sha256:518530794da5969fb0aca1491099b3fc49e21b4c22d76efe130fed581ea9a403",
+              "rice-paper": "sha256:194b86bf64889420dd18e2ee0f90994358eb179d4947122152c0a87921372ef8",
+              "deep-sea": "sha256:fd1923002a1f7715df170fd6205ebcf4b49efd66663d07f5a14fc1fd3052e865",
+              "sakura": "sha256:4abc068d1607ebbd94ee0308456dedcf8055b723d6fe611c4ae255b2cf397994",
+              "midnight": "sha256:b2d5dc506aeb2059abb1dce62987d396beedb811e60ad5b0f36c22ac21de008c",
+              "linen": "sha256:b9e1f5cacdda1d5461b33bf8142ebd25fcaedc2a3e43cc56100576412cf44e8e",
+              "nord": "sha256:53ee1d2533bf4383c2d4aee1394a4b1905ab8c430b0b171f418b16ca96cd0ef6",
+              "dracula": "sha256:efba9bdc69db68a3a981005106da7f6210e51877cbc3f60617c4abf7975a3200",
+              "gruvbox": "sha256:e67364d7f386e009fbe931c71ad198a0822ee69e02f9864f7c41063bd0b95e7d",
+              "solarized": "sha256:dca5440829e64575e06027f6273061274286968f96ca693c3260d960c51aab69",
+              "catppuccin": "sha256:2a4a02e1226f059d2723b5b99b2c94b5bc56c43d6eb7887f0743ee5fb761cb2f",
+              "tokyo-night": "sha256:d2f427eb4a1e0eb3e67db69755fd55f06762ffafd282fa15e6eefadd3b3f0242",
+              "rose-pine": "sha256:62e158ad337f90b6f9bf28e7ea11b718b89967fc1e97ed1f415bdbdab6391b63",
+              "everforest": "sha256:9f8c17dd7c5b4494d843fc4a767f3cf68dd73b6fa399c4ee4211d2d7ae30b03d",
+              "kanagawa": "sha256:bea43ff1f7f51f443a05a87a844141e51c981e0487388c79aa30f44cfb43e941",
+              "one-dark": "sha256:b7530c75cfd5359493b42b25d4610e6d622e76dcef9429d2f24cb567be78f099",
+              "ayu": "sha256:912b09b796a482bf748f8df4d5321814d8f8b2dbde648f27eb1668abb847fe30",
+              "flexoki": "sha256:686a5190854f148a0350f85550a76444ae91a1e9bcc04b2ff29990fc0601edc3",
+              "celadon": "sha256:b1fc93a84c0260b92f0dacc5cf395dc8fa7ba1b8cfc736052baffb574c3857dd",
+              "cinnabar": "sha256:48fa35a30216f6965e28c0e51173146d552569e983ecbdbb2437344d4a9e9bd2",
+              "blueprint": "sha256:4f891688ed90d81ed7d025e962d2c6b897429b0132849b8f74668ed77ada9b4d",
+              "bauhaus": "sha256:4e3db8d32c536e8c9f5829f379a452c2c8427fcedfd016a4316c5bd60530c842",
+              "clay": "sha256:ec805f032a7a65ac92d8d76bca27d0b28192d2034d8a68a7e465cc79d62c791b",
+              "phosphor": "sha256:614f94c79858f6abbfcd6e99520e099b91aed706e0cdfe2426d943fdd7f7fc4d"
+            }
+          }
+        ],
+        "expectedCompilerVersion": "0.2.3"
+      },
+      "at": "2026-11-26T15:38:03.192Z"
+    },
+    {
+      "id": "update.catalog-applied",
+      "title": "the updated client re-applies the saved style from the re-fetched catalog",
+      "status": "pass",
+      "detail": "body data-dsh-livery=fjord body hash=sha256:3590c08b2267f669b; updated-client catalog fjord cssHash=sha256:3590c08b2267f669b; baseline=fjord/sha256:ac9f7eb5812c7388c; hash match=true",
+      "evidence": {
+        "bodyAttribute": "fjord",
+        "bodyHash": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8",
+        "catalog": {
+          "at": 1795707482678,
+          "status": 200,
+          "bytes": 1459915,
+          "compilerVersion": "0.2.3",
+          "catalogHash": "sha256:179f245fb5d80ac49b54671485af6828f2659e8f904a1e985900e00881e6be14",
+          "hostVersion": "0.2.2-rc.5",
+          "adapterId": "dsh-0.2.2-rc.5-r1",
+          "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+          "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+          "liveryCount": 28,
+          "liveryCssHashes": {
+            "fjord": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8",
+            "plum": "sha256:b2a8472f2c4d0c20d94ae75630728b7209c175d505bf009e4e33eee759c1975c",
+            "amber-dusk": "sha256:0f309b5ff0291d624565b427e0f6c2227a0ccfa46c9cda242431dba140a9f68e",
+            "moss": "sha256:026501ea8cfe3125c108513b350aaddccba223eea0792d8583b47b3629efb336",
+            "graphite": "sha256:518530794da5969fb0aca1491099b3fc49e21b4c22d76efe130fed581ea9a403",
+            "rice-paper": "sha256:194b86bf64889420dd18e2ee0f90994358eb179d4947122152c0a87921372ef8",
+            "deep-sea": "sha256:fd1923002a1f7715df170fd6205ebcf4b49efd66663d07f5a14fc1fd3052e865",
+            "sakura": "sha256:4abc068d1607ebbd94ee0308456dedcf8055b723d6fe611c4ae255b2cf397994",
+            "midnight": "sha256:b2d5dc506aeb2059abb1dce62987d396beedb811e60ad5b0f36c22ac21de008c",
+            "linen": "sha256:b9e1f5cacdda1d5461b33bf8142ebd25fcaedc2a3e43cc56100576412cf44e8e",
+            "nord": "sha256:53ee1d2533bf4383c2d4aee1394a4b1905ab8c430b0b171f418b16ca96cd0ef6",
+            "dracula": "sha256:efba9bdc69db68a3a981005106da7f6210e51877cbc3f60617c4abf7975a3200",
+            "gruvbox": "sha256:e67364d7f386e009fbe931c71ad198a0822ee69e02f9864f7c41063bd0b95e7d",
+            "solarized": "sha256:dca5440829e64575e06027f6273061274286968f96ca693c3260d960c51aab69",
+            "catppuccin": "sha256:2a4a02e1226f059d2723b5b99b2c94b5bc56c43d6eb7887f0743ee5fb761cb2f",
+            "tokyo-night": "sha256:d2f427eb4a1e0eb3e67db69755fd55f06762ffafd282fa15e6eefadd3b3f0242",
+            "rose-pine": "sha256:62e158ad337f90b6f9bf28e7ea11b718b89967fc1e97ed1f415bdbdab6391b63",
+            "everforest": "sha256:9f8c17dd7c5b4494d843fc4a767f3cf68dd73b6fa399c4ee4211d2d7ae30b03d",
+            "kanagawa": "sha256:bea43ff1f7f51f443a05a87a844141e51c981e0487388c79aa30f44cfb43e941",
+            "one-dark": "sha256:b7530c75cfd5359493b42b25d4610e6d622e76dcef9429d2f24cb567be78f099",
+            "ayu": "sha256:912b09b796a482bf748f8df4d5321814d8f8b2dbde648f27eb1668abb847fe30",
+            "flexoki": "sha256:686a5190854f148a0350f85550a76444ae91a1e9bcc04b2ff29990fc0601edc3",
+            "celadon": "sha256:b1fc93a84c0260b92f0dacc5cf395dc8fa7ba1b8cfc736052baffb574c3857dd",
+            "cinnabar": "sha256:48fa35a30216f6965e28c0e51173146d552569e983ecbdbb2437344d4a9e9bd2",
+            "blueprint": "sha256:4f891688ed90d81ed7d025e962d2c6b897429b0132849b8f74668ed77ada9b4d",
+            "bauhaus": "sha256:4e3db8d32c536e8c9f5829f379a452c2c8427fcedfd016a4316c5bd60530c842",
+            "clay": "sha256:ec805f032a7a65ac92d8d76bca27d0b28192d2034d8a68a7e465cc79d62c791b",
+            "phosphor": "sha256:614f94c79858f6abbfcd6e99520e099b91aed706e0cdfe2426d943fdd7f7fc4d"
+          }
+        },
+        "baselineStyle": {
+          "liveryId": "fjord",
+          "bodyAttribute": "fjord",
+          "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+          "panelVersion": "v0.2.2"
+        }
+      },
+      "at": "2026-11-26T15:38:04.708Z"
+    },
+    {
+      "id": "update.stale-boot-observed",
+      "title": "the updated client classifies the surviving startup frame as stale (handshake reason + truthful boundary copy)",
+      "status": "pass",
+      "detail": "handshake=\"已热更新\" (expected \"已热更新\"); reason=\"stale boot payload: boot=0.2.2 build=0.2.3; catalog will be re-fetched\"; boundary=\"已热更新；旧启动画面。\"",
+      "evidence": {
+        "bundle": "dsh-livery",
+        "badge": {
+          "present": true,
+          "text": "Livery 版本 0.2.3"
+        },
+        "facts": [
+          {
+            "id": "client-build",
+            "label": "客户端构建",
+            "value": "0.2.3"
+          },
+          {
+            "id": "handshake",
+            "label": "启动校验",
+            "value": "已热更新"
+          },
+          {
+            "id": "handshake-reason",
+            "label": "启动原因",
+            "value": "stale boot payload: boot=0.2.2 build=0.2.3; catalog will be re-fetched"
+          },
+          {
+            "id": "installed",
+            "label": "已安装包",
+            "value": "0.2.3"
+          },
+          {
+            "id": "host",
+            "label": "Host 版本",
+            "value": "0.2.2-rc.5"
+          },
+          {
+            "id": "adapter",
+            "label": "适配器",
+            "value": "dsh-0.2.2-rc.5-r1"
+          },
+          {
+            "id": "contract",
+            "label": "契约哈希",
+            "value": "65ed78f3838c"
+          },
+          {
+            "id": "profile",
+            "label": "目录配置",
+            "value": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94"
+          },
+          {
+            "id": "catalog",
+            "label": "样式目录",
+            "value": "已加载"
+          },
+          {
+            "id": "css-hash",
+            "label": "CSS 哈希",
+            "value": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8"
+          },
+          {
+            "id": "confirmed",
+            "label": "已配置风格",
+            "value": "fjord"
+          },
+          {
+            "id": "effective",
+            "label": "已应用风格",
+            "value": "fjord"
+          },
+          {
+            "id": "wallpaper",
+            "label": "壁纸（快照）",
+            "value": "无壁纸"
+          }
+        ],
+        "boundary": "已热更新；旧启动画面。",
+        "actions": {
+          "present": true,
+          "beforeTitle": true,
+          "open": true
+        }
+      },
+      "at": "2026-11-26T15:38:04.787Z"
+    },
+    {
+      "id": "update.detail-section-renders",
+      "title": "the plugin-detail badge and facts section render the candidate build and stale handshake after the update",
+      "status": "pass",
+      "detail": "bundle=dsh-livery; badge=\"Livery 版本 0.2.3\"; client-build=0.2.3; installed=0.2.3; catalog=已加载; handshake=已热更新; confirmed=fjord; boundary=\"已热更新；旧启动画面。\"",
+      "evidence": {
+        "bundle": "dsh-livery",
+        "badge": {
+          "present": true,
+          "text": "Livery 版本 0.2.3"
+        },
+        "facts": [
+          {
+            "id": "client-build",
+            "label": "客户端构建",
+            "value": "0.2.3"
+          },
+          {
+            "id": "handshake",
+            "label": "启动校验",
+            "value": "已热更新"
+          },
+          {
+            "id": "handshake-reason",
+            "label": "启动原因",
+            "value": "stale boot payload: boot=0.2.2 build=0.2.3; catalog will be re-fetched"
+          },
+          {
+            "id": "installed",
+            "label": "已安装包",
+            "value": "0.2.3"
+          },
+          {
+            "id": "host",
+            "label": "Host 版本",
+            "value": "0.2.2-rc.5"
+          },
+          {
+            "id": "adapter",
+            "label": "适配器",
+            "value": "dsh-0.2.2-rc.5-r1"
+          },
+          {
+            "id": "contract",
+            "label": "契约哈希",
+            "value": "65ed78f3838c"
+          },
+          {
+            "id": "profile",
+            "label": "目录配置",
+            "value": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94"
+          },
+          {
+            "id": "catalog",
+            "label": "样式目录",
+            "value": "已加载"
+          },
+          {
+            "id": "css-hash",
+            "label": "CSS 哈希",
+            "value": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8"
+          },
+          {
+            "id": "confirmed",
+            "label": "已配置风格",
+            "value": "fjord"
+          },
+          {
+            "id": "effective",
+            "label": "已应用风格",
+            "value": "fjord"
+          },
+          {
+            "id": "wallpaper",
+            "label": "壁纸（快照）",
+            "value": "无壁纸"
+          }
+        ],
+        "boundary": "已热更新；旧启动画面。",
+        "actions": {
+          "present": true,
+          "beforeTitle": true,
+          "open": true
+        }
+      },
+      "at": "2026-11-26T15:38:04.787Z"
+    },
+    {
+      "id": "update.transition-recorded",
+      "title": "the schema-v3 update transition records both exact artifacts, the Host-dialog trigger and the observed in-process outcome",
+      "status": "pass",
+      "detail": "from=0.2.2/46888903aa16… (3417842 B); to=0.2.3/c2dba48ec96e…; trigger=host-install-dialog; pageReloaded=false; stale=true; catalogReadopted=true; managerOutcome=applied",
+      "evidence": {
+        "fromVersion": "0.2.2",
+        "fromSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+        "fromBytes": 3417842,
+        "toVersion": "0.2.3",
+        "toSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+        "trigger": "host-install-dialog",
+        "pageReloaded": false,
+        "staleBootObserved": true,
+        "catalogReadopted": true,
+        "managerOutcome": "applied"
+      },
+      "at": "2026-11-26T15:38:05.789Z"
+    },
+    {
+      "id": "console.no-livery-errors",
+      "title": "no console errors, page errors, failed requests or 4xx/5xx responses for Livery-owned URLs",
+      "status": "pass",
+      "detail": "0 console error(s), 0 page error(s), 0 failed request(s), 0 HTTP error response(s)",
+      "evidence": {
+        "pluginErrors": [],
+        "ownedPageErrors": [],
+        "ownedFailed": [],
+        "ownedHttpErrors": []
+      },
+      "at": "2026-11-26T15:38:05.789Z"
+    },
+    {
+      "id": "previews.no-404",
+      "title": "no 404 responses for /livery/assets/previews/*",
+      "status": "pass",
+      "detail": "0 404 preview response(s)",
+      "at": "2026-11-26T15:38:05.789Z"
+    },
+    {
+      "id": "lifecycle.install-uninstall",
+      "title": "official install → boot → uninstall → restart residue",
+      "status": "skip",
+      "detail": "update-probe run: the transition is the subject; fresh-install lifecycle evidence is a separate schema-v2 run on the final candidate",
+      "at": "2026-11-26T15:38:05.789Z"
+    },
+    {
+      "id": "lifecycle.sigterm",
+      "title": "SIGTERM stops the service and closes the port",
+      "status": "skip",
+      "detail": "update-probe run: the isolated Host is stopped by the harness after the probe",
+      "at": "2026-11-26T15:38:05.789Z"
+    }
+  ],
+  "artifacts": {
+    "screenshots": [],
+    "filmstrip": {
+      "dir": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/filmstrip",
+      "frames": [],
+      "manifest": null
+    },
+    "consoleJson": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/console.json",
+    "timingsJson": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/timings.json",
+    "htmlDir": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/html",
+    "probeJson": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/probe.json",
+    "reportMarkdown": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final/web/update-0.2.2-rc.5/report.md"
+  },
+  "update": {
+    "from": {
+      "version": "0.2.2",
+      "sha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+      "bytes": 3417842,
+      "evidence": [
+        "contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.1-rc.3-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.1-rc.4-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.1-rc.5-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.1-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.2-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.3-web-chrome.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-desktop-macos.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome-update.json",
+        "contracts/dsh/evidence/0.2.2/0.2.2-rc.5-web-chrome.json"
+      ]
+    },
+    "to": {
+      "version": "0.2.3",
+      "sha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+      "bytes": 3634089
+    },
+    "startedAt": "2026-11-26T15:38:00.786Z",
+    "trigger": "host-install-dialog",
+    "requiredChecks": [
+      "env.certified-host",
+      "env.browser-version",
+      "update.from-artifact-verified",
+      "update.from-installed",
+      "update.dialog-available",
+      "update.dialog-install-completed",
+      "update.manager-outcome",
+      "update.new-client-bundle-loaded",
+      "update.no-page-navigation",
+      "update.boot-payload-previous",
+      "update.live-client-build-candidate",
+      "update.catalog-refetched",
+      "update.catalog-applied",
+      "update.stale-boot-observed",
+      "update.detail-section-renders",
+      "update.transition-recorded"
+    ],
+    "responses": [],
+    "phases": [
+      "running",
+      "done"
+    ],
+    "observations": {
+      "pre": {
+        "sentinel": {
+          "id": "75956a3f-20f4-4ffb-9e08-214965834607",
+          "installedAt": 1795707481231,
+          "timeOrigin": 1795707480332.1,
+          "navigationEntries": 1,
+          "historyLength": 2,
+          "clientBundleResources": 1,
+          "catalogResources": 1,
+          "bootPluginVersion": "0.2.2",
+          "bodyAttribute": "fjord",
+          "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+          "panelVersion": "v0.2.2"
+        },
+        "navigationEntries": 1,
+        "timeOrigin": 1795707480332.1,
+        "historyLength": 2,
+        "clientBundleResources": 2,
+        "catalogResources": 2,
+        "boot": {
+          "pluginVersion": "0.2.2",
+          "hostVersion": "0.2.2-rc.5",
+          "adapterId": "dsh-0.2.2-rc.5-r1",
+          "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+          "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+          "accepted": true
+        },
+        "panelVersion": null,
+        "bodyAttribute": "fjord",
+        "bodyHash": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8"
+      },
+      "clientReloaded": true,
+      "detail": {
+        "bundle": "dsh-livery",
+        "badge": {
+          "present": true,
+          "text": "Livery 版本 0.2.3"
+        },
+        "facts": [
+          {
+            "id": "client-build",
+            "label": "客户端构建",
+            "value": "0.2.3"
+          },
+          {
+            "id": "handshake",
+            "label": "启动校验",
+            "value": "已热更新"
+          },
+          {
+            "id": "handshake-reason",
+            "label": "启动原因",
+            "value": "stale boot payload: boot=0.2.2 build=0.2.3; catalog will be re-fetched"
+          },
+          {
+            "id": "installed",
+            "label": "已安装包",
+            "value": "0.2.3"
+          },
+          {
+            "id": "host",
+            "label": "Host 版本",
+            "value": "0.2.2-rc.5"
+          },
+          {
+            "id": "adapter",
+            "label": "适配器",
+            "value": "dsh-0.2.2-rc.5-r1"
+          },
+          {
+            "id": "contract",
+            "label": "契约哈希",
+            "value": "65ed78f3838c"
+          },
+          {
+            "id": "profile",
+            "label": "目录配置",
+            "value": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94"
+          },
+          {
+            "id": "catalog",
+            "label": "样式目录",
+            "value": "已加载"
+          },
+          {
+            "id": "css-hash",
+            "label": "CSS 哈希",
+            "value": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8"
+          },
+          {
+            "id": "confirmed",
+            "label": "已配置风格",
+            "value": "fjord"
+          },
+          {
+            "id": "effective",
+            "label": "已应用风格",
+            "value": "fjord"
+          },
+          {
+            "id": "wallpaper",
+            "label": "壁纸（快照）",
+            "value": "无壁纸"
+          }
+        ],
+        "boundary": "已热更新；旧启动画面。",
+        "actions": {
+          "present": true,
+          "beforeTitle": true,
+          "open": true
+        }
+      }
+    },
+    "transition": {
+      "fromVersion": "0.2.2",
+      "fromSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
+      "fromBytes": 3417842,
+      "toVersion": "0.2.3",
+      "toSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+      "trigger": "host-install-dialog",
+      "pageReloaded": false,
+      "staleBootObserved": true,
+      "catalogReadopted": true,
+      "managerOutcome": "applied"
+    },
+    "baseline": {
+      "id": "75956a3f-20f4-4ffb-9e08-214965834607",
+      "installedAt": 1795707481231,
+      "timeOrigin": 1795707480332.1,
+      "navigationEntries": 1,
+      "historyLength": 2,
+      "clientBundleResources": 1,
+      "catalogResources": 1,
+      "bootPluginVersion": "0.2.2",
+      "bodyAttribute": "fjord",
+      "bodyHash": "sha256:ac9f7eb5812c7388c5778fd593a78ea4093e1dbaadfd5c1d67bf135a183c316a",
+      "panelVersion": "v0.2.2"
+    },
+    "manager": {
+      "trigger": "host-install-dialog",
+      "spec": "file:<candidate:dsh-livery-0.2.3.tgz>",
+      "phases": [
+        "running",
+        "done"
+      ],
+      "phase": "done",
+      "managerOutcome": "applied",
+      "restartRequired": false,
+      "heading": "已安装",
+      "failureText": null,
+      "dialogTail": "已安装 file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz 压缩包 版本 0.2.3 查看安装详情 立即启用",
+      "durationMs": 1283,
+      "expectedOutcomes": [
+        "applied",
+        "restart-required",
+        "failed",
+        "unconfirmed",
+        "cancelled"
+      ]
+    },
+    "catalogCaptures": [
+      {
+        "at": 1795707482678,
+        "status": 200,
+        "bytes": 1459915,
+        "compilerVersion": "0.2.3",
+        "catalogHash": "sha256:179f245fb5d80ac49b54671485af6828f2659e8f904a1e985900e00881e6be14",
+        "hostVersion": "0.2.2-rc.5",
+        "adapterId": "dsh-0.2.2-rc.5-r1",
+        "contractHash": "sha256:65ed78f3838c020ef3d4fdfab4786d54acc456623625d11dae79a1c92e16c4b3",
+        "catalogProfile": "sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94",
+        "liveryCount": 28,
+        "liveryCssHashes": {
+          "fjord": "sha256:3590c08b2267f669b2615b8c88dac958c5387b72d4333698cde829aeb75e52e8",
+          "plum": "sha256:b2a8472f2c4d0c20d94ae75630728b7209c175d505bf009e4e33eee759c1975c",
+          "amber-dusk": "sha256:0f309b5ff0291d624565b427e0f6c2227a0ccfa46c9cda242431dba140a9f68e",
+          "moss": "sha256:026501ea8cfe3125c108513b350aaddccba223eea0792d8583b47b3629efb336",
+          "graphite": "sha256:518530794da5969fb0aca1491099b3fc49e21b4c22d76efe130fed581ea9a403",
+          "rice-paper": "sha256:194b86bf64889420dd18e2ee0f90994358eb179d4947122152c0a87921372ef8",
+          "deep-sea": "sha256:fd1923002a1f7715df170fd6205ebcf4b49efd66663d07f5a14fc1fd3052e865",
+          "sakura": "sha256:4abc068d1607ebbd94ee0308456dedcf8055b723d6fe611c4ae255b2cf397994",
+          "midnight": "sha256:b2d5dc506aeb2059abb1dce62987d396beedb811e60ad5b0f36c22ac21de008c",
+          "linen": "sha256:b9e1f5cacdda1d5461b33bf8142ebd25fcaedc2a3e43cc56100576412cf44e8e",
+          "nord": "sha256:53ee1d2533bf4383c2d4aee1394a4b1905ab8c430b0b171f418b16ca96cd0ef6",
+          "dracula": "sha256:efba9bdc69db68a3a981005106da7f6210e51877cbc3f60617c4abf7975a3200",
+          "gruvbox": "sha256:e67364d7f386e009fbe931c71ad198a0822ee69e02f9864f7c41063bd0b95e7d",
+          "solarized": "sha256:dca5440829e64575e06027f6273061274286968f96ca693c3260d960c51aab69",
+          "catppuccin": "sha256:2a4a02e1226f059d2723b5b99b2c94b5bc56c43d6eb7887f0743ee5fb761cb2f",
+          "tokyo-night": "sha256:d2f427eb4a1e0eb3e67db69755fd55f06762ffafd282fa15e6eefadd3b3f0242",
+          "rose-pine": "sha256:62e158ad337f90b6f9bf28e7ea11b718b89967fc1e97ed1f415bdbdab6391b63",
+          "everforest": "sha256:9f8c17dd7c5b4494d843fc4a767f3cf68dd73b6fa399c4ee4211d2d7ae30b03d",
+          "kanagawa": "sha256:bea43ff1f7f51f443a05a87a844141e51c981e0487388c79aa30f44cfb43e941",
+          "one-dark": "sha256:b7530c75cfd5359493b42b25d4610e6d622e76dcef9429d2f24cb567be78f099",
+          "ayu": "sha256:912b09b796a482bf748f8df4d5321814d8f8b2dbde648f27eb1668abb847fe30",
+          "flexoki": "sha256:686a5190854f148a0350f85550a76444ae91a1e9bcc04b2ff29990fc0601edc3",
+          "celadon": "sha256:b1fc93a84c0260b92f0dacc5cf395dc8fa7ba1b8cfc736052baffb574c3857dd",
+          "cinnabar": "sha256:48fa35a30216f6965e28c0e51173146d552569e983ecbdbb2437344d4a9e9bd2",
+          "blueprint": "sha256:4f891688ed90d81ed7d025e962d2c6b897429b0132849b8f74668ed77ada9b4d",
+          "bauhaus": "sha256:4e3db8d32c536e8c9f5829f379a452c2c8427fcedfd016a4316c5bd60530c842",
+          "clay": "sha256:ec805f032a7a65ac92d8d76bca27d0b28192d2034d8a68a7e465cc79d62c791b",
+          "phosphor": "sha256:614f94c79858f6abbfcd6e99520e099b91aed706e0cdfe2426d943fdd7f7fc4d"
+        }
+      }
+    ],
+    "pageReloaded": false,
+    "finishedAt": "2026-11-26T15:38:05.789Z"
+  },
+  "evidence": {
+    "catalog": null,
+    "stockTokens": null,
+    "appliedSkin": null,
+    "previewSkin": null,
+    "applyMutation": null,
+    "selfCheck": null,
+    "firstPaint": null,
+    "clipboard": null,
+    "lifecycle": null,
+    "profile": {
+      "state": {
+        "profileDir": "<home>/Personal/openprojects/dsh-livery/.tmp/acceptance/final-release-update-1795707477/profiles/web",
+        "exists": true,
+        "dependencies": {
+          "dsh-livery": "file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz"
+        },
+        "bundles": [
+          "@deepseek-ai/dsh-base",
+          "@deepseek-ai/dsh-web-app",
+          "dsh-livery"
+        ],
+        "patch": "# dsh-livery acceptance harness rows (isolated acceptance home — safe to discard)\n# Pin the locale exactly like the user's real web profile does, and skip the\n# first-run welcome notice so settings automation is deterministic.\n- id: locale\n  config:\n    preference: zh\n- id: ui-settings-general\n  name: '@deepseek-ai/dsh-client-ui-settings-general'\n  config:\n    welcomeNoticeVersion: 2026-09-28.1\n- id: livery\n  name: dsh-livery\n  config:\n    skinId: fjord\n"
+      },
+      "pluginManagerLogs": [
+        {
+          "operation": "operation-Sf98He",
+          "pnpmLogTail": ""
+        },
+        {
+          "operation": "operation-kbit6b",
+          "pnpmLogTail": "✓ Lockfile passes supply-chain policies (verified 3s ago)\nPackages: +1\n+\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\nDone in 169ms using pnpm v12.3.4\n"
+        }
+      ]
+    },
+    "deviations": [
+      "DSH 0.2.2-rc.5 serves client bundles through the boot-graph grouped URL (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (verified)."
+    ],
+    "knownLimitations": [
+      "UPDATE-PROBE MODE — this run installs the previous exact artifact through the official CLI, then updates to the candidate through the running Host plugin manager and asserts the in-process transition only. It is not a fresh-install acceptance run; the same scope still needs an ordinary schema-v2 run on the final candidate.",
+      "SCOPE — this run covers DSH 0.2.2-rc.5 + Web Profile + Chrome only. The DSH 0.2.1-rc.3 Desktop/macOS target is covered by the separate real-Electron desktop evidence; Windows and Web Edge are not-supported and are not claimed.",
+      "HONEST GAP — docs/design/implementation-plan.md §20 \"at least one safe layout capability actually effective\" cannot be met on DSH 0.2.2-rc.5: the certified adapter (installed-package) exposes no public density / transcript-width / message-flow hook (all three capability facts are unavailable). Livery degrades layout to host/stock and reports the unavailable capabilities in the self-check rather than faking them. Wallpaper is removed from schema v1.",
+      "Disable/hot-reload state-machine transitions and unknown-version fail-closed to stock are covered by unit/contract tests; this black-box run proves install → boot → stock start → panel config apply → hard reload → restore stock → official uninstall → restart residue (web) / install-admission + app-runtime boot (desktop).",
+      "§18.8 p95/CLS statistics need ≥30 samples per scenario; this run records per-run byte budgets and one cold-start paint trace/filmstrip, not a statistical distribution.",
+      "DSH 0.2.2-rc.5 serves client bundles only through boot-graph grouped URLs (plugins/??<pkg>/client.js&rev=…); the bare /plugins/<pkg>/client.js?rev= form returns 404 in this build (asserted as a documented warning).",
+      "No automatic Playwright browser download is used: the harness drives the system Chrome through channel: 'chrome' (or an explicit --chrome-binary matching the frozen certified version) for the web carrier, and connects over CDP to the Electron renderer (desktop).",
+      "Web Profile + Chrome only: desktop macOS/Windows native-window criteria, packaged-app runtime claims and Edge coverage are explicitly not-supported for this release line (not pending, not claimed)."
+    ],
+    "manualNotes": null
+  }
+}
