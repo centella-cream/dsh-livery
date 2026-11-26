@@ -94,7 +94,7 @@ describe('client stylesheet (plan §18.3 / §18.8)', () => {
     expect(CLIENT_CSS).toContain(roots.replaceAll('\\', ''))
     expect(CLIENT_CSS).toContain('--lw-fs-display:22px;--lw-fs-title:16px;--lw-fs-body:14px;--lw-fs-label:13px;--lw-fs-caption:12px')
     // Footer is a real two-line block: flex column with a gap, not inline spans.
-    expect(CLIENT_CSS).toMatch(/\.livery-about\{display:flex;flex-direction:column;gap:4px\}/)
+    expect(CLIENT_CSS).toMatch(/\.livery-about,\.livery-about__note\{display:flex;flex-direction:column;gap:4px\}/)
   })
 
   it('ships the nine-grid focal position control with visible selected and focus states', () => {

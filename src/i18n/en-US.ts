@@ -66,7 +66,7 @@ export const enUS = {
   'wallpaper.directHint': 'Online only; not cached. Atmosphere unavailable; originals may be large.',
   'wallpaper.providerHint': 'Auto tries in order; direct sources load on switch.',
   'wallpaper.searchUnavailable': 'This source cannot search; pick another source.',
-  'wallpaper.randomUnavailable': 'This source has no random images; pick another.',
+  'wallpaper.randomUnavailable': 'This source is search-only; Random is unavailable.',
   'wallpaper.status.loading': 'Loading wallpapers…',
   'wallpaper.status.ready': '{count} wallpapers found.',
   'wallpaper.status.empty': 'No wallpapers found.',

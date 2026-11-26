@@ -381,7 +381,7 @@ describe('online request policy (panel)', () => {
     expect(html).toMatch(/data-testid="wallpaper-random"[^>]*aria-describedby="wallpaper-capability-reason"/)
     expect(html).toContain('id="wallpaper-capability-reason"')
     expect(html).toContain('This source cannot search')
-    expect(html).toContain('This source has no random images')
+    expect(html).toContain('This source is search-only; Random is unavailable')
     // Refresh has nothing to repeat before a request runs.
     expect(html).toMatch(/data-testid="wallpaper-refresh"[^>]*disabled/)
   })
