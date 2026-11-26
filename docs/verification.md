@@ -210,6 +210,7 @@ and no Desktop hot update is claimed.
 - Floating surfaces: atmosphere layering below host Menu/Tooltip/HoverCard,
   Modal and Toast; opaque Settings Modal while frost is active.
 - CSS/token/contrast audits, loader-ABI checks and production dependency audit.
+- Web §20 report mappings are fail-closed: an unknown check id is reported as missing. The About footer and shared five-step type scale are covered by the client unit tests (`page.test.tsx`, `css.test.ts`) rather than a duplicate Web probe.
 - Desktop app: official install, renderer boot, sidebar path, panel,
   apply/persist, reload handshake and stock restore.
 
