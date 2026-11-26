@@ -92,6 +92,7 @@ function visibleAccent(sidebarFill: string, seeds: Seeds): string {
 
 const RECIPES: Readonly<Record<ChromeStyleId, Recipe>> = {
   plain: (_mode, seeds) => ({
+    '--dsw-specific-sidebar-fill': seeds.surface,
     '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(seeds.surface, seeds),
   }),
   tinted: (_mode, seeds) => ({

@@ -32,6 +32,7 @@ describe('chrome recipes', () => {
       }
     }
     expect(chromeTokens('plain', 'light', SEEDS)).toEqual({
+      '--dsw-specific-sidebar-fill': SEEDS.surface,
       '--dsw-specific-sidebar-nav-item-active-accent': expect.stringMatching(/^#[0-9a-f]{6}$/i),
     })
   })
