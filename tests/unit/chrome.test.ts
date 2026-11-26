@@ -31,10 +31,9 @@ describe('chrome recipes', () => {
         }
       }
     }
-    expect(chromeTokens('plain', 'light', SEEDS)).toEqual({
-      '--dsw-specific-sidebar-fill': SEEDS.surface,
-      '--dsw-specific-sidebar-nav-item-active-accent': expect.stringMatching(/^#[0-9a-f]{6}$/i),
-    })
+    const plain = chromeTokens('plain', 'light', SEEDS)
+    expect(plain['--dsw-specific-sidebar-fill']).not.toBe(SEEDS.surface)
+    expect(plain['--dsw-specific-sidebar-nav-item-active-accent']).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
   it('keeps distinct GUI roles for tinted, outline, terminal, editorial and poster', () => {

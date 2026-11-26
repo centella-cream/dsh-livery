@@ -91,10 +91,15 @@ function visibleAccent(sidebarFill: string, seeds: Seeds): string {
 }
 
 const RECIPES: Readonly<Record<ChromeStyleId, Recipe>> = {
-  plain: (_mode, seeds) => ({
-    '--dsw-specific-sidebar-fill': seeds.surface,
-    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(seeds.surface, seeds),
-  }),
+  plain: (_mode, seeds) => {
+    // Keep a faint rail separation for chrome-neutral palettes: a flat
+    // surface fill erases the only token-level distinction from the page.
+    const fill = textMix(seeds, 0.03)
+    return {
+      '--dsw-specific-sidebar-fill': fill,
+      '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(fill, seeds),
+    }
+  },
   tinted: (_mode, seeds) => ({
     '--dsw-specific-sidebar-fill': accentMix(seeds, 0.12),
     '--dsw-specific-sidebar-nav-item-hover': accentMix(seeds, 0.05),
