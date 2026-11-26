@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "runId": "2026-11-26T16-18-22-052Z-desktop",
+  "runId": "2026-11-26T17-03-56-855Z-desktop",
   "mode": "desktop-electron",
   "ok": true,
-  "startedAt": "2026-11-26T16:18:22.051Z",
-  "finishedAt": "2026-11-26T16:18:45.536Z",
+  "startedAt": "2026-11-26T17:03:56.854Z",
+  "finishedAt": "2026-11-26T17:04:20.818Z",
   "summary": {
     "pass": 35,
     "fail": 0,
@@ -13,7 +13,7 @@
     "total": 37
   },
   "environment": {
-    "date": "2026-11-26T16:18:22.051Z",
+    "date": "2026-11-26T17:03:56.854Z",
     "platform": "darwin",
     "arch": "arm64",
     "node": "v22.23.1",
@@ -23,13 +23,13 @@
     "electronVersion": "44.7.0",
     "windowElectronNode": "24.21.0",
     "chromeVersion": "152.0.7977.130",
-    "commit": "190670644f16dd7f2689051ad5f6ddc4f9c92624"
+    "commit": "dbe87b57fbc2682135b9de5312b7d90723cbc28c"
   },
   "target": {
     "packageName": "dsh-livery",
     "packageVersion": "0.2.3",
     "tarball": "file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz",
-    "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+    "tarballSha256": "50b6811142fa6ae271e6bbc7a133a9c84b98220210e964aa301b224afbc8adb9",
     "hostVersion": "0.2.1-rc.5",
     "adapterId": "dsh-0.2.1-rc.5-r1",
     "contractHash": "sha256:846aa7d51a291e5364def3a386aba19d3d9f5229354cd8030adf48b9c3f1b470",
@@ -120,45 +120,45 @@
           }
         }
       },
-      "at": "2026-11-26T16:18:22.297Z"
+      "at": "2026-11-26T17:03:57.114Z"
     },
     {
       "id": "desktop.official-install",
       "title": "official rc.3 plugin-manager install accepts the package with no version exemption",
       "status": "pass",
-      "detail": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz → exit 0 in 569ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"@deepseek-ai/dsh-experimental-agent-team-profile\",\"dsh-livery\"]; installed@0.2.3",
+      "detail": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz → exit 0 in 627ms; dependency=file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz; bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"@deepseek-ai/dsh-experimental-agent-team-profile\",\"dsh-livery\"]; installed@0.2.3",
       "evidence": {
-        "stdout": "Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <home>/Library/pnpm/store/v11 Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.2.3 Done in 385ms using pnpm v11.28.5",
+        "stdout": "Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Packages are cloned from the content-addressable store to the virtual store. Content-addressable store is at: <home>/Library/pnpm/store/v11 Virtual store is at: node_modules/.pnpm Progress: resolved 1, reused 1, downloaded 0, added 1, done dependencies: + dsh-livery 0.2.3 Done in 415ms using pnpm v11.28.5",
         "stderr": ""
       },
-      "at": "2026-11-26T16:18:22.874Z"
+      "at": "2026-11-26T17:03:57.750Z"
     },
     {
       "id": "desktop.preview-profiles-installed",
       "title": "at least one compiled catalog profile ships for the certified adapters",
       "status": "pass",
       "detail": "8 preview profile dir(s): sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94, sha256:5261f8acff0ab84417fc51a6d5c6b1b2b20fba0deee3560e49e8d4c8d613139e, sha256:53e0ceb22a79f9f96cebdaa7250cb801a99ad5864dbe623afff96dba7abeb6ae, sha256:5ce72e7e7775556b5c707db4d50d5697d8049a210711571b561c937045af4e04, sha256:78b5b7bb57f333aa61a40f523927e364be7e47aac2f5cb86aefba48a1c55560c, sha256:b67980c9300f2eaa594180a91af0a4ea24821963bc43227c3dd87944a44a2b1a, sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150, sha256:d79417c43791d0dc1ed795d6309001c66185eaef168d5521ea2a4de263602f05",
-      "at": "2026-11-26T16:18:22.874Z"
+      "at": "2026-11-26T17:03:57.750Z"
     },
     {
       "id": "desktop.engines-enforced",
       "title": "rc.3 runtime rejects a plugin whose engines.dsh allowlist excludes it (no exemption)",
       "status": "pass",
-      "detail": "synthetic 0.2.0-only plugin install → exit 1: ✓ Lockfile passes supply-chain policies (verified 345ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 224ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engi",
+      "detail": "synthetic 0.2.0-only plugin install → exit 1: ✓ Lockfile passes supply-chain policies (verified 391ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 255ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engi",
       "evidence": {
         "command": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<tmp>",
         "exitCode": 1,
         "rejected": true,
-        "excerpt": "✓ Lockfile passes supply-chain policies (verified 345ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 224ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engine-probe@0.0.0 is incompatible with dsh 0.2.1-rc.5: requirements {\"engines.dsh\":\"0.2.0-rc.2\"}. Running it may cause crashes or data loss. Update the plugin or install a plugin version compatible with this dsh runtime. To accept this risk explicitly, grant the exact-version exemption for dsh-livery-engine-probe@0.0.0 on dsh 0.2.1-rc.5 with `dsh plugin allow-version` or the plugin manager, then retry the installation or restart dsh. Exact-version exemption: not active. dsh: restored package.json, pnpm-lock.yaml, and node_modules. dsh: to accept the risk, run: dsh plugin --pro"
+        "excerpt": "✓ Lockfile passes supply-chain policies (verified 391ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 255ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engine-probe@0.0.0 is incompatible with dsh 0.2.1-rc.5: requirements {\"engines.dsh\":\"0.2.0-rc.2\"}. Running it may cause crashes or data loss. Update the plugin or install a plugin version compatible with this dsh runtime. To accept this risk explicitly, grant the exact-version exemption for dsh-livery-engine-probe@0.0.0 on dsh 0.2.1-rc.5 with `dsh plugin allow-version` or the plugin manager, then retry the installation or restart dsh. Exact-version exemption: not active. dsh: restored package.json, pnpm-lock.yaml, and node_modules. dsh: to accept the risk, run: dsh plugin --pro"
       },
-      "at": "2026-11-26T16:18:23.533Z"
+      "at": "2026-11-26T17:03:58.497Z"
     },
     {
       "id": "desktop.cli-refuses-boot",
       "title": "CLI boot of the desktop composition is refused (Electron-managed profile)",
       "status": "pass",
       "detail": "dsh --profile desktop --no-open → exit 1: error: profile \"desktop\" is managed exclusively by the Electron application",
-      "at": "2026-11-26T16:18:23.625Z"
+      "at": "2026-11-26T17:03:58.598Z"
     },
     {
       "id": "desktop.renderer-launches",
@@ -168,14 +168,14 @@
       "evidence": {
         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) @deepseek-ai/dsh-desktop/0.2.1-rc.5 Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36"
       },
-      "at": "2026-11-26T16:18:27.215Z"
+      "at": "2026-11-26T17:04:02.531Z"
     },
     {
       "id": "desktop.boot-graph-row",
       "title": "boot graph lists the dsh-livery client module",
       "status": "pass",
-      "detail": "rev=695b6afcaa03; entries=74; dsh-livery=true",
-      "at": "2026-11-26T16:18:27.215Z"
+      "detail": "rev=b975324ff611; entries=74; dsh-livery=true",
+      "at": "2026-11-26T17:04:02.531Z"
     },
     {
       "id": "desktop.catalog-identity",
@@ -188,7 +188,7 @@
         "catalogProfile": "sha256:b67980c9300f2eaa594180a91af0a4ea24821963bc43227c3dd87944a44a2b1a",
         "previewsBase": "/livery/assets/previews/sha256:b67980c9300f2eaa594180a91af0a4ea24821963bc43227c3dd87944a44a2b1a/"
       },
-      "at": "2026-11-26T16:18:27.423Z"
+      "at": "2026-11-26T17:04:02.735Z"
     },
     {
       "id": "desktop.stock-start",
@@ -198,111 +198,111 @@
       "evidence": {
         "bootPayload": null
       },
-      "at": "2026-11-26T16:18:27.431Z"
+      "at": "2026-11-26T17:04:02.744Z"
     },
     {
       "id": "desktop.sidebar-entry",
       "title": "Livery is registered as a left-sidebar plugin navigation row in the desktop shell",
       "status": "pass",
       "detail": "row #2 label \"视觉风格\" panellistSlot=true icon=true",
-      "at": "2026-11-26T16:18:27.573Z"
+      "at": "2026-11-26T17:04:02.917Z"
     },
     {
       "id": "desktop.main-panel",
       "title": "selecting the sidebar row opens the Visual Style main panel (h1 matches, conversation replaced) in the desktop shell",
       "status": "pass",
       "detail": "via=sidebar-panellist panelVisible=true conversationVisible=false selected=\"视觉风格\" h1=\"视觉风格\"",
-      "at": "2026-11-26T16:18:28.050Z"
+      "at": "2026-11-26T17:04:03.461Z"
     },
     {
       "id": "desktop.gallery",
       "title": "desktop Visual Style panel renders the 24 compiled styles",
       "status": "pass",
       "detail": "28 cards: cinnabar, bauhaus, graphite, phosphor, sakura, clay, rice-paper, blueprint, deep-sea, tokyo-night, amber-dusk, ayu, dracula, kanagawa, midnight, gruvbox, one-dark, plum, catppuccin, moss, linen, solarized, everforest, flexoki, fjord, nord, rose-pine, celadon",
-      "at": "2026-11-26T16:18:28.054Z"
+      "at": "2026-11-26T17:04:03.466Z"
     },
     {
       "id": "desktop.preview-locale",
       "title": "desktop gallery exposes the preview-language tab with Follow DSH active and zh thumbnails",
       "status": "pass",
       "detail": "tab found=true; buttons=[follow*,zh,en]; thumb locales=[\"zh\"]",
-      "at": "2026-11-26T16:18:28.299Z"
+      "at": "2026-11-26T17:04:03.714Z"
     },
     {
       "id": "desktop.preview-locale-en",
       "title": "desktop preview-language tab pins thumbnail URLs to -en- without touching copy",
       "status": "pass",
       "detail": "28 thumbs; locales=[\"en\"]",
-      "at": "2026-11-26T16:18:28.598Z"
+      "at": "2026-11-26T17:04:04.082Z"
     },
     {
       "id": "desktop.preview-locale-zh",
       "title": "desktop preview-language tab pins thumbnail URLs back to -zh-",
       "status": "pass",
       "detail": "28 thumbs; locales=[\"zh\"]",
-      "at": "2026-11-26T16:18:28.867Z"
+      "at": "2026-11-26T17:04:04.360Z"
     },
     {
       "id": "desktop.gallery-families",
       "title": "desktop gallery renders page tabs and one continuous grid covering all six families with their counts",
       "status": "pass",
       "detail": "families=[calm:7, nature:4, light:5, retro:5, vivid:3, dark:4]; expected=[calm:7, nature:4, light:5, retro:5, vivid:3, dark:4]",
-      "at": "2026-11-26T16:18:28.883Z"
+      "at": "2026-11-26T17:04:04.377Z"
     },
     {
       "id": "desktop.wallpaper",
       "title": "desktop wallpaper studio applies a built-in CSS layer through the owned stylesheet",
       "status": "pass",
       "detail": "curated builtins=8; all ids=24; attr=; marker=dsh-livery/wallpaper; selected=aurora",
-      "at": "2026-11-26T16:18:29.679Z"
+      "at": "2026-11-26T17:04:05.196Z"
     },
     {
       "id": "desktop.position-remote",
       "title": "desktop renderer applies the nine-grid focal position to remote wallpaper and persists state-v2 position",
       "status": "pass",
-      "detail": "{\"stored\":{\"schemaVersion\":2,\"revision\":3,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/desktop.jpg\",\"provenance\":{\"title\":\"自定义地址\",\"source\":\"images.example.test\"}},\"effects\":{\"blur\":8,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":0,\"y\":0},\"sourceId\":\"8009a4fe-846d-4956-bd32-b67352ee0bf0\"},\"styleHasTopLeft\":true,\"overlayPosition\":\"0% 0%\",\"heroPosition\":\"0% 0%\",\"group\":true,\"layerBlob\":true,\"layerRaw\":false}",
-      "at": "2026-11-26T16:18:30.805Z"
+      "detail": "{\"stored\":{\"schemaVersion\":2,\"revision\":3,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/desktop.jpg\",\"provenance\":{\"title\":\"自定义地址\",\"source\":\"images.example.test\"}},\"effects\":{\"blur\":8,\"dim\":25,\"frost\":35,\"atmosphere\":30},\"position\":{\"x\":0,\"y\":0},\"sourceId\":\"ff3d9591-214f-443b-84c0-ca03d128b186\"},\"styleHasTopLeft\":true,\"overlayPosition\":\"0% 0%\",\"heroPosition\":\"0% 0%\",\"group\":true,\"layerBlob\":true,\"layerRaw\":false}",
+      "at": "2026-11-26T17:04:06.377Z"
     },
     {
       "id": "desktop.reduced-transparency",
       "title": "desktop renderer removes translucent card glass under prefers-reduced-transparency:reduce",
       "status": "pass",
       "detail": "{\"media\":true,\"backdrop\":\"none\",\"background\":\"rgba(0, 0, 0, 0)\"}",
-      "at": "2026-11-26T16:18:31.476Z"
+      "at": "2026-11-26T17:04:07.035Z"
     },
     {
       "id": "desktop.floating-surfaces",
       "title": "desktop host floating surfaces stay opaque above wallpaper",
       "status": "pass",
       "detail": "{\"background\":\"rgb(255, 255, 255)\",\"alpha\":1,\"backdrop\":\"none\"}",
-      "at": "2026-11-26T16:18:32.150Z"
+      "at": "2026-11-26T17:04:07.659Z"
     },
     {
       "id": "desktop.preview",
       "title": "previewing a different livery updates desktop body attributes and tokens transiently",
       "status": "pass",
       "detail": "body attr null → plum; bg=#f7f2f5 (expected sample rgb(247, 242, 245))",
-      "at": "2026-11-26T16:18:32.404Z"
+      "at": "2026-11-26T17:04:07.904Z"
     },
     {
       "id": "desktop.preview-cancel",
       "title": "cancel restores the confirmed desktop state",
       "status": "pass",
       "detail": "body attr=null",
-      "at": "2026-11-26T16:18:32.741Z"
+      "at": "2026-11-26T17:04:08.212Z"
     },
     {
       "id": "desktop.apply-persists",
       "title": "apply writes exactly one livery config mutation into the isolated desktop profile patch",
       "status": "pass",
       "detail": "patch skinId=fjord (before (none)); rows=1",
-      "at": "2026-11-26T16:18:33.022Z"
+      "at": "2026-11-26T17:04:08.510Z"
     },
     {
       "id": "desktop.boot-injection",
       "title": "fresh desktop application launch delivers the certified rc.3 first-frame boot payload for the persisted skin",
       "status": "pass",
-      "detail": "boot payload available 1170 ms after launch: accepted hostVersion=0.2.1-rc.5 adapterId=dsh-0.2.1-rc.5-r1 profileKind=desktop skinId=fjord cssHash=sha256:5c877cf0392b56df6…",
+      "detail": "boot payload available 1069 ms after launch: accepted hostVersion=0.2.1-rc.5 adapterId=dsh-0.2.1-rc.5-r1 profileKind=desktop skinId=fjord cssHash=sha256:5c877cf0392b56df6…",
       "evidence": {
         "bootPayload": {
           "pluginVersion": "0.2.3",
@@ -321,89 +321,89 @@
           "entryId": "livery",
           "diagnostics": []
         },
-        "injectionMs": 1170,
+        "injectionMs": 1069,
         "applySession": {
           "bodyAttr": "fjord"
         }
       },
-      "at": "2026-11-26T16:18:36.558Z"
+      "at": "2026-11-26T17:04:11.928Z"
     },
     {
       "id": "desktop.hash-equality",
       "title": "desktop body hash equals the handshake cssHash and the compiled catalog cssHash",
       "status": "pass",
       "detail": "body=sha256:5c877cf0392b56df6… handshake=sha256:5c877cf0392b56df6… catalog=sha256:5c877cf0392b56df6…",
-      "at": "2026-11-26T16:18:36.558Z"
+      "at": "2026-11-26T17:04:11.928Z"
     },
     {
       "id": "desktop.theme-light",
       "title": "desktop light tokens match the compiled catalog values",
       "status": "pass",
       "detail": "actual=[\"rgb(240, 243, 246)\",\"rgb(27, 39, 51)\",\"rgba(0, 0, 0, 0.04)\"] expected=[\"rgb(240, 243, 246)\",\"rgb(27, 39, 51)\",\"rgba(0, 0, 0, 0.04)\"]",
-      "at": "2026-11-26T16:18:36.570Z"
+      "at": "2026-11-26T17:04:11.933Z"
     },
     {
       "id": "desktop.theme-dark",
       "title": "desktop follows host dark mode with the livery dark tokens without changing the host preference",
       "status": "pass",
       "detail": "darkAttr=\"\" themeSource=system actual=[\"rgb(24, 28, 33)\",\"rgb(238, 242, 246)\",\"rgba(255, 255, 255, 0.06)\"] expected=[\"rgb(24, 28, 33)\",\"rgb(238, 242, 246)\",\"rgba(255, 255, 255, 0.06)\"]",
-      "at": "2026-11-26T16:18:36.599Z"
+      "at": "2026-11-26T17:04:11.959Z"
     },
     {
       "id": "desktop.font-role-hooks",
       "title": "desktop renderer applies the documented 0.2.1 font role hooks (--dsh-font-family-text/-code)",
       "status": "pass",
       "detail": "--dsh-font-family-text=\"Hiragino Sans GB\",\"PingFang SC\",\"Noto Sans CJK SC\",\"Microsoft YaHei UI\",sans-serif; --dsh-font-family-code=\"SFMono-Regular\",Consolas,\"Liberation Mono\",\"Noto Sans Mono CJK SC\",monospace",
-      "at": "2026-11-26T16:18:36.746Z"
+      "at": "2026-11-26T17:04:12.132Z"
     },
     {
       "id": "desktop.first-paint-sampling",
       "title": "first painted desktop frames carry the livery styling",
       "status": "skip",
       "detail": "the desktop host injects first-frame rows through its internal boot-ready handshake; Playwright attaches after window creation, so pre-paint rAF frames cannot be sampled on the native startup path. Web-profile filmstrip covers the same renderer code path; boot payload availability is asserted instead.",
-      "at": "2026-11-26T16:18:36.872Z"
+      "at": "2026-11-26T17:04:12.262Z"
     },
     {
       "id": "desktop.self-check",
       "title": "self-check shows the rc.3 identity and reports host-font-role-hooks available",
       "status": "pass",
       "detail": "hostVersion shown=true adapter shown=true host-font-role-hooks=true",
-      "at": "2026-11-26T16:18:38.144Z"
+      "at": "2026-11-26T17:04:13.481Z"
     },
     {
       "id": "desktop.preset-import-apply",
       "title": "desktop preset export/import/diff/apply works in the real renderer and remote wallpaper stays cache-only",
       "status": "pass",
-      "detail": "export=true; diffRows=4; state={\"stored\":{\"schemaVersion\":2,\"revision\":6,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/desktop-preset.jpg\",\"provenance\":{\"title\":\"Desktop Preset\",\"creator\":\"Tester\",\"license\":\"CC0\",\"source\":\"https://images.example.test\"}},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60},\"position\":{\"x\":0,\"y\":0},\"sourceId\":\"afecaf98-1051-4573-bc36-8b8d83ed747e\"},\"styleHasBlob\":true,\"styleHasRaw\":false,\"bodyAttribute\":\"plum\",\"applyStatus\":true}; diag={\"fetchStatus\":200,\"panel\":true}",
-      "at": "2026-11-26T16:18:39.848Z"
+      "detail": "export=true; diffRows=4; state={\"stored\":{\"schemaVersion\":2,\"revision\":6,\"selection\":{\"kind\":\"remote\",\"url\":\"https://images.example.test/desktop-preset.jpg\",\"provenance\":{\"title\":\"Desktop Preset\",\"creator\":\"Tester\",\"license\":\"CC0\",\"source\":\"https://images.example.test\"}},\"effects\":{\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60},\"position\":{\"x\":0,\"y\":0},\"sourceId\":\"3cb64ea4-937a-4c27-9a42-c6837707f526\"},\"styleHasBlob\":true,\"styleHasRaw\":false,\"bodyAttribute\":\"plum\",\"applyStatus\":true}; diag={\"fetchStatus\":200,\"panel\":true}",
+      "at": "2026-11-26T17:04:15.130Z"
     },
     {
       "id": "desktop.state-migration-v1",
       "title": "desktop renderer hydrates a legacy v1 flat wallpaper as position 50/50 without clearing, and ignores corrupt records",
       "status": "pass",
       "detail": "migrated={\"stored\":{\"kind\":\"builtin\",\"id\":\"aurora\",\"blur\":12,\"dim\":40,\"frost\":35,\"atmosphere\":60},\"style\":true,\"attr\":\"\"}; corrupt={\"style\":true,\"attr\":\"\"}",
-      "at": "2026-11-26T16:18:41.415Z"
+      "at": "2026-11-26T17:04:16.775Z"
     },
     {
       "id": "desktop.clear-local-data",
       "title": "desktop clear-local-data reports a result and retains the current wallpaper",
       "status": "pass",
       "detail": "{\"result\":\"cleared\",\"style\":true,\"attr\":\"\"}",
-      "at": "2026-11-26T16:18:42.096Z"
+      "at": "2026-11-26T17:04:17.446Z"
     },
     {
       "id": "desktop.two-window-sync",
       "title": "two-window cross-tab wallpaper sync in the Desktop renderer",
       "status": "skip",
       "detail": "the packaged Electron app exposes a single BrowserWindow in this probe; cross-window storage-event sync is covered by the Web two-tab checks and is reported as a single-window limitation here",
-      "at": "2026-11-26T16:18:42.096Z"
+      "at": "2026-11-26T17:04:17.446Z"
     },
     {
       "id": "desktop.restore-stock",
       "title": "restore stock removes the livery from the desktop renderer",
       "status": "pass",
       "detail": "data-dsh-livery=null; hash=null; styles=0",
-      "at": "2026-11-26T16:18:43.002Z"
+      "at": "2026-11-26T17:04:18.295Z"
     },
     {
       "id": "desktop.sidebar-path",
@@ -435,7 +435,7 @@
           "tolerance": 0.03
         }
       },
-      "at": "2026-11-26T16:18:44.179Z"
+      "at": "2026-11-26T17:04:19.694Z"
     },
     {
       "id": "desktop.matrix-consistency",
@@ -452,15 +452,15 @@
           "detail": "the desktop host injects first-frame rows through its internal boot-ready handshake; Playwright attaches after window creation, so pre-paint rAF frames cannot be sampled on the native startup path. Web-profile filmstrip covers the same renderer code path; boot payload availability is asserted instead."
         }
       },
-      "at": "2026-11-26T16:18:45.524Z"
+      "at": "2026-11-26T17:04:20.808Z"
     }
   ],
   "artifacts": {
     "install": {
       "command": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<home>/Personal/openprojects/dsh-livery/.tmp/release-check/dsh-livery-0.2.3.tgz",
       "exitCode": 0,
-      "durationMs": 569,
-      "stdout": "Progress: resolved 0, reused 1, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery 0.2.3\n\nDone in 385ms using pnpm v11.28.5\n",
+      "durationMs": 627,
+      "stdout": "Progress: resolved 0, reused 1, downloaded 0, added 0\nPackages: +1\n+\nPackages are cloned from the content-addressable store to the virtual store.\n  Content-addressable store is at: <home>/Library/pnpm/store/v11\n  Virtual store is at:             node_modules/.pnpm\nProgress: resolved 1, reused 1, downloaded 0, added 1, done\n\ndependencies:\n+ dsh-livery 0.2.3\n\nDone in 415ms using pnpm v11.28.5\n",
       "stderr": "",
       "packageVersion": "0.2.3",
       "profileManifest": {
@@ -484,14 +484,14 @@
         "sha256:d2be3f5cfc144f4200185faa05cda85830d64a103eec6b8cf6262f22a4c43150",
         "sha256:d79417c43791d0dc1ed795d6309001c66185eaef168d5521ea2a4de263602f05"
       ],
-      "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+      "tarballSha256": "50b6811142fa6ae271e6bbc7a133a9c84b98220210e964aa301b224afbc8adb9",
       "deviceLabel": "desktop (rc.3 runtime, isolated /tmp home)"
     },
     "engineNegativeControl": {
       "command": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh plugin --profile desktop add file:<tmp>",
       "exitCode": 1,
       "rejected": true,
-      "excerpt": "✓ Lockfile passes supply-chain policies (verified 345ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 224ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engine-probe@0.0.0 is incompatible with dsh 0.2.1-rc.5: requirements {\"engines.dsh\":\"0.2.0-rc.2\"}. Running it may cause crashes or data loss. Update the plugin or install a plugin version compatible with this dsh runtime. To accept this risk explicitly, grant the exact-version exemption for dsh-livery-engine-probe@0.0.0 on dsh 0.2.1-rc.5 with `dsh plugin allow-version` or the plugin manager, then retry the installation or restart dsh. Exact-version exemption: not active. dsh: restored package.json, pnpm-lock.yaml, and node_modules. dsh: to accept the risk, run: dsh plugin --pro"
+      "excerpt": "✓ Lockfile passes supply-chain policies (verified 391ms ago) Progress: resolved 0, reused 1, downloaded 0, added 0 Packages: +1 + Progress: resolved 2, reused 2, downloaded 0, added 1, done dependencies: + dsh-livery-engine-probe 0.0.0 Done in 255ms using pnpm v11.28.5 dsh: installation rejected: Plugin dsh-livery-engine-probe@0.0.0 is incompatible with dsh 0.2.1-rc.5: requirements {\"engines.dsh\":\"0.2.0-rc.2\"}. Running it may cause crashes or data loss. Update the plugin or install a plugin version compatible with this dsh runtime. To accept this risk explicitly, grant the exact-version exemption for dsh-livery-engine-probe@0.0.0 on dsh 0.2.1-rc.5 with `dsh plugin allow-version` or the plugin manager, then retry the installation or restart dsh. Exact-version exemption: not active. dsh: restored package.json, pnpm-lock.yaml, and node_modules. dsh: to accept the risk, run: dsh plugin --pro"
     },
     "cliRefusal": {
       "command": ".tmp/desktop-apps/app-0.2.1-rc.5/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh --profile desktop --no-open --port 0",
@@ -501,77 +501,77 @@
     },
     "screenshots": [
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-stock-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-stock-desktop.png",
         "label": "desktop stock",
         "state": "stock"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-panel-gallery-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-panel-gallery-desktop.png",
         "label": "desktop livery panel gallery",
         "state": "panel-gallery"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-gallery-preview-en-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-gallery-preview-en-desktop.png",
         "label": "desktop gallery English preview language",
         "state": "gallery-preview-en"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-gallery-preview-zh-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-gallery-preview-zh-desktop.png",
         "label": "desktop gallery Chinese preview language",
         "state": "gallery-preview-zh"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-wallpaper-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-wallpaper-desktop.png",
         "label": "desktop wallpaper studio (built-in applied)",
         "state": "wallpaper-builtin"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-position-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-position-desktop.png",
         "label": "desktop focal position top-left",
         "state": "position-top-left"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-reduced-transparency-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-reduced-transparency-desktop.png",
         "label": "desktop reduced transparency",
         "state": "reduced-transparency"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-preview-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-preview-desktop.png",
         "label": "desktop previewing",
         "state": "previewing"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-applied-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-applied-desktop.png",
         "label": "desktop applied",
         "state": "applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-applied-dark-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-applied-dark-desktop.png",
         "label": "desktop applied dark",
         "state": "applied-dark"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-applied-desktop-reload.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-applied-desktop-reload.png",
         "label": "desktop applied after relaunch",
         "state": "applied-after-relaunch"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-selfcheck-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-selfcheck-desktop.png",
         "label": "desktop self-check",
         "state": "selfcheck"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-preset-applied-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-preset-applied-desktop.png",
         "label": "desktop preset applied",
         "state": "preset-applied"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-stock-restored-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-stock-restored-desktop.png",
         "label": "desktop stock restored",
         "state": "stock-restored"
       },
       {
-        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-head/desktop/0.2.1-rc.5/screens/zh-sidebar-parity-desktop.png",
+        "path": "<home>/Personal/openprojects/dsh-livery/.tmp/release-acceptance-final2/desktop/0.2.1-rc.5/screens/zh-sidebar-parity-desktop.png",
         "label": "desktop sidebar parity after wallpaper reapply",
         "state": "sidebar-parity"
       }
@@ -666,7 +666,7 @@
         "@deepseek-ai/dsh-api-session-controller",
         "@deepseek-ai/dsh-client-ui-directory-picker-native"
       ],
-      "bootRev": "695b6afcaa03"
+      "bootRev": "b975324ff611"
     }
   },
   "limitations": [

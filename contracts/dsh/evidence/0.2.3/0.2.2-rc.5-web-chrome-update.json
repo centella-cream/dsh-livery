@@ -1,10 +1,10 @@
 {
   "schemaVersion": 3,
-  "commit": "190670644f16dd7f2689051ad5f6ddc4f9c92624",
+  "commit": "dbe87b57fbc2682135b9de5312b7d90723cbc28c",
   "packageVersion": "0.2.3",
-  "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
-  "tarballBytes": 3634089,
-  "generatedAt": "2026-11-26T16:21:16.159Z",
+  "tarballSha256": "50b6811142fa6ae271e6bbc7a133a9c84b98220210e964aa301b224afbc8adb9",
+  "tarballBytes": 3634279,
+  "generatedAt": "2026-11-26T17:05:53.589Z",
   "scope": {
     "hostVersion": "0.2.2-rc.5",
     "profile": "web",
@@ -122,7 +122,7 @@
     "fromSha256": "46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff",
     "fromBytes": 3417842,
     "toVersion": "0.2.3",
-    "toSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+    "toSha256": "50b6811142fa6ae271e6bbc7a133a9c84b98220210e964aa301b224afbc8adb9",
     "trigger": "host-install-dialog",
     "pageReloaded": false,
     "staleBootObserved": true,
@@ -143,10 +143,10 @@
   "runs": [
     {
       "id": "0.2.2-rc.5-web-update",
-      "commit": "190670644f16dd7f2689051ad5f6ddc4f9c92624",
+      "commit": "dbe87b57fbc2682135b9de5312b7d90723cbc28c",
       "hostVersion": "0.2.2-rc.5",
       "adapterId": "dsh-0.2.2-rc.5-r1",
-      "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
+      "tarballSha256": "50b6811142fa6ae271e6bbc7a133a9c84b98220210e964aa301b224afbc8adb9",
       "summary": {
         "pass": 35,
         "fail": 0,
@@ -155,9 +155,9 @@
         "total": 38
       },
       "probe": "contracts/dsh/evidence/0.2.3/probes/0.2.2-rc.5-web-update.json",
-      "probeSha256": "093c84f53cf7a261d623941d9473840fd1aa837229a74111ef1ad5b880913911",
+      "probeSha256": "0a723051a641d4fdc9c5b32def4334352fdcb9bc5c4d57933e7311af571ba9a7",
       "report": "contracts/dsh/evidence/0.2.3/reports/0.2.2-rc.5-web-update.md",
-      "reportSha256": "69deff4891a0a10de96b1c75efef3d1484bbc98c8441c6fb0a9c5ca8019d2f2b"
+      "reportSha256": "5271fdaf1427d98deca8ffbbe905aa59c61f2ef3a492083e278d5370c0f2f7d5"
     }
   ]
 }
