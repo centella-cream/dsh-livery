@@ -114,6 +114,7 @@
     "audit:tokens": "node scripts/cli.mjs audit:tokens",
     "audit:css": "node scripts/cli.mjs audit:css",
     "audit:contrast": "node scripts/cli.mjs audit:contrast",
+    "audit:live-contrast": "node scripts/audit/live-contrast.mjs",
     "pack:check": "node scripts/cli.mjs pack:check",
     "smoke:profile": "node scripts/cli.mjs smoke:profile",
     "test:runtime:web": "node scripts/cli.mjs test:runtime:web",

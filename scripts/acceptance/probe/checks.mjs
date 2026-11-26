@@ -119,6 +119,37 @@ async function detectUiLocale(page) {
   return String(lang).toLowerCase().startsWith('en') ? 'en' : 'zh'
 }
 
+
+/** Parse a probe token colour (hex or rgb/rgba) into sRGB channels. */
+function probeColor(value) {
+  if (typeof value !== 'string') return null
+  const text = value.trim()
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text)
+  if (hex) {
+    const raw = hex[1].length === 3 ? hex[1].split('').map((part) => part + part).join('') : hex[1]
+    return { r: parseInt(raw.slice(0, 2), 16), g: parseInt(raw.slice(2, 4), 16), b: parseInt(raw.slice(4, 6), 16) }
+  }
+  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(text)
+  return rgb ? { r: Number(rgb[1]), g: Number(rgb[2]), b: Number(rgb[3]) } : null
+}
+
+function probeLuminance(color) {
+  const channel = (value) => {
+    const next = value / 255
+    return next <= 0.04045 ? next / 12.92 : ((next + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * channel(color.r) + 0.7152 * channel(color.g) + 0.0722 * channel(color.b)
+}
+
+function probeContrast(foreground, background) {
+  const a = probeColor(foreground)
+  const b = probeColor(background)
+  if (!a || !b) return null
+  const la = probeLuminance(a)
+  const lb = probeLuminance(b)
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+}
+
 function expect(runner, id, title, condition, detail, evidence) {
   if (condition) return runner.pass(id, title, detail, evidence)
   return runner.fail(id, title, detail, evidence)
@@ -3423,6 +3454,29 @@ export async function checkStyleContrast(ctx) {
     elements: entry.probe.elements,
     source: entry.source,
   }))
+  const selectedStateSamples = measurements.map((entry) => {
+    const tokens = entry.probe.tokens ?? {}
+    const accent = tokens['--dsw-specific-sidebar-nav-item-active-accent']
+    const fill = tokens['--dsw-specific-sidebar-fill']
+    const ratio = probeContrast(accent, fill)
+    return {
+      id: entry.livery.id,
+      accent,
+      fill,
+      ratio,
+      distinct: typeof accent === 'string' && typeof fill === 'string' && accent.trim().toLowerCase() !== fill.trim().toLowerCase(),
+    }
+  })
+  const selectedStateFailures = selectedStateSamples.filter((sample) =>
+    sample.ratio === null || sample.ratio < 1.25 || !sample.distinct)
+  expect(
+    runner,
+    'style.selected-state',
+    'sidebar selected accent stays visibly distinct from the sidebar fill',
+    selectedStateSamples.length > 0 && selectedStateFailures.length === 0,
+    selectedStateSamples.map((sample) => `${sample.id}: accent=${sample.accent ?? '(missing)'} fill=${sample.fill ?? '(missing)'} ratio=${sample.ratio === null ? '(unresolved)' : sample.ratio.toFixed(2)}`).join('; ') || 'no style token samples',
+    { selectedStateSamples },
+  )
   expect(
     runner,
     'style.candidates',

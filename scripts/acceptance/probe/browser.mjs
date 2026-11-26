@@ -796,6 +796,7 @@ export async function readHostStyleProbe(page) {
       '--dsw-menu-backdrop-filter', '--dsw-mask-blur', '--dsw-focus-ring-width',
       '--dsw-font-family', '--dsh-font-family-text', '--dsh-font-family-code',
       '--dsw-font-s-14', '--dsw-font-l-20', '--dsw-font-family-brand',
+      '--dsw-specific-sidebar-fill', '--dsw-specific-sidebar-nav-item-active-accent',
     ]
     const bodyStyle = getComputedStyle(document.body)
     const tokens = {}
