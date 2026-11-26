@@ -375,15 +375,13 @@ describe('online request policy (panel)', () => {
     })
     studio.setProvider('openverse')
     const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
-    // Openverse is legacy-only and declares neither capability.
-    expect(html).toMatch(/data-testid="wallpaper-search-go"[^>]*disabled/)
-    expect(html).toMatch(/data-testid="wallpaper-random"[^>]*disabled/)
-    expect(html).toMatch(/data-testid="wallpaper-random"[^>]*aria-describedby="wallpaper-capability-reason"/)
-    expect(html).toContain('id="wallpaper-capability-reason"')
-    expect(html).toContain('This source cannot search')
-    expect(html).toContain('This source is search-only; Random is unavailable')
-    // Refresh has nothing to repeat before a request runs.
-    expect(html).toMatch(/data-testid="wallpaper-refresh"[^>]*disabled/)
+    // Openverse is legacy-only and declares neither capability; unsupported
+    // actions are omitted instead of rendering disabled clutter or a second
+    // explanatory line.
+    expect(html).not.toContain('data-testid="wallpaper-search-go"')
+    expect(html).not.toContain('data-testid="wallpaper-random"')
+    expect(html).not.toContain('data-testid="wallpaper-capability-reason"')
+    expect(html).not.toContain('data-testid="wallpaper-refresh"')
   })
 
 
@@ -658,7 +656,7 @@ describe('wallpaper studio render', () => {
     expect(html).toContain('data-testid="wallpaper-clear-local-data"')
     expect(html).toContain('data-testid="wallpaper-search"')
     expect(html).toContain('data-testid="wallpaper-search-go"')
-    expect(html).toContain('data-testid="wallpaper-refresh"')
+    expect(html).not.toContain('data-testid="wallpaper-refresh"')
     expect(html).toContain('data-testid="wallpaper-random"')
     expect(html).not.toContain('data-testid="wallpaper-status"')
     expect(html).not.toContain('data-testid="wallpaper-result"')

@@ -109,7 +109,6 @@ const SEARCH = 'livery-search'
 /** Stable id of the visible Follow-style disabled reason. */
 export const STYLE_DISABLED_REASON_ID = 'wallpaper-style-disabled-reason'
 /** Stable id of the capability-gated action reason. */
-export const CAPABILITY_REASON_ID = 'wallpaper-capability-reason'
 
 const BUILTIN_KEYS: Record<BuiltinWallpaperId, LiveryKey> = {
   aurora: 'wallpaper.builtin.aurora', dusk: 'wallpaper.builtin.dusk',
@@ -955,12 +954,6 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
   const searchCapability = onlineCapability(online.provider, 'search')
   const randomCapability = onlineCapability(online.provider, 'random')
   const refreshEnabled = online.lastRequest !== undefined && online.status !== 'loading'
-  const capabilityReason = (() => {
-    const reasons: string[] = []
-    if (!searchCapability.enabled) reasons.push(t('wallpaper.searchUnavailable'))
-    if (!randomCapability.enabled) reasons.push(t('wallpaper.randomUnavailable'))
-    return reasons.length === 0 ? undefined : reasons.join(' ')
-  })()
   const statusText = online.status === 'idle'
     ? undefined
     : online.status === 'loading'
@@ -1308,7 +1301,6 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
           >
             <section className="wallpaper-source-section" data-testid="wallpaper-online-card">
               <h3 className="livery-ui-card__title">{t('wallpaper.onlineTitle')}</h3>
-              <p className="livery-ui-card__hint">{t('wallpaper.onlineHint')}</p>
               <div className="wallpaper-provider">
                 <label className="wallpaper-provider__label" htmlFor="wallpaper-provider">{t('wallpaper.providerLabel')}</label>
                 <select
@@ -1329,60 +1321,59 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                   ))}
                 </select>
               </div>
-              <p className="livery-ui-card__hint">{t('wallpaper.providerHint')}</p>
               {openverseNoticeVisible && (
                 <p className="livery-ui-card__hint" data-testid="wallpaper-openverse-notice">
                   {t('wallpaper.online.openverseNotice')}
                 </p>
               )}
 
-              <div className={SEARCH}>
-                <Input
-                  data-testid="wallpaper-search"
-                  type="search"
-                  value={online.query}
-                  aria-label={t('wallpaper.onlineTitle')}
-                  placeholder={t('wallpaper.searchPlaceholder')}
-                  aria-invalid={onlineFailure !== undefined}
-                  aria-describedby={onlineFailure === undefined ? undefined : 'wallpaper-online-error'}
-                  aria-errormessage={onlineFailure === undefined ? undefined : 'wallpaper-online-error'}
-                  onChange={event => studio.setQuery(event.target.value)}
-                  onKeyDown={event => { if (event.key === 'Enter') void studio.search() }}
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="wallpaper-search-go"
-                  disabled={!searchCapability.enabled}
-                  aria-describedby={searchCapability.enabled ? undefined : CAPABILITY_REASON_ID}
-                  onClick={() => { void studio.search() }}
-                >
-                  {t('wallpaper.search')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="wallpaper-random"
-                  disabled={!randomCapability.enabled}
-                  aria-describedby={randomCapability.enabled ? undefined : CAPABILITY_REASON_ID}
-                  onClick={() => { void studio.random() }}
-                >
-                  {t('wallpaper.random')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="wallpaper-refresh"
-                  disabled={!refreshEnabled}
-                  onClick={() => { void studio.refresh() }}
-                >
-                  {t('wallpaper.refresh')}
-                </Button>
-              </div>
-              {capabilityReason !== undefined && (
-                <p id={CAPABILITY_REASON_ID} className="livery-ui-card__hint" data-testid="wallpaper-capability-reason">
-                  {capabilityReason}
-                </p>
+              {(searchCapability.enabled || randomCapability.enabled || refreshEnabled) && (
+                <div className={SEARCH}>
+                  {searchCapability.enabled && (
+                    <Input
+                      data-testid="wallpaper-search"
+                      type="search"
+                      value={online.query}
+                      aria-label={t('wallpaper.onlineTitle')}
+                      placeholder={t('wallpaper.searchPlaceholder')}
+                      aria-invalid={onlineFailure !== undefined}
+                      aria-describedby={onlineFailure === undefined ? undefined : 'wallpaper-online-error'}
+                      aria-errormessage={onlineFailure === undefined ? undefined : 'wallpaper-online-error'}
+                      onChange={event => studio.setQuery(event.target.value)}
+                      onKeyDown={event => { if (event.key === 'Enter') void studio.search() }}
+                    />
+                  )}
+                  {searchCapability.enabled && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="wallpaper-search-go"
+                      onClick={() => { void studio.search() }}
+                    >
+                      {t('wallpaper.search')}
+                    </Button>
+                  )}
+                  {randomCapability.enabled && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="wallpaper-random"
+                      onClick={() => { void studio.random() }}
+                    >
+                      {t('wallpaper.random')}
+                    </Button>
+                  )}
+                  {refreshEnabled && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="wallpaper-refresh"
+                      onClick={() => { void studio.refresh() }}
+                    >
+                      {t('wallpaper.refresh')}
+                    </Button>
+                  )}
+                </div>
               )}
               {statusText !== undefined && (
                 <p
@@ -1393,13 +1384,14 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                   aria-live="polite"
                 >
                   {statusText}
-                </p>
-              )}
-              {online.status === 'ready' && online.servedBy !== undefined && (
-                <p className="livery-ui-card__hint" data-testid="wallpaper-served-by" role="status" aria-live="polite">
-                  {t('wallpaper.online.servedBy', {
-                    provider: providerDisplayName(online.servedBy, snapshot.locale) ?? online.servedBy,
-                  })}
+                  {online.status === 'ready' && online.servedBy !== undefined && (
+                    <span data-testid="wallpaper-served-by">
+                      {' · '}
+                      {t('wallpaper.online.servedBy', {
+                        provider: providerDisplayName(online.servedBy, snapshot.locale) ?? online.servedBy,
+                      })}
+                    </span>
+                  )}
                 </p>
               )}
               {onlineFailure !== undefined && (
