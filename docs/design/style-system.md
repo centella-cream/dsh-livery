@@ -166,12 +166,15 @@ licences).
 - Client gzip budget is **72 KiB (73,728 B)** — an explicit, reviewed increase
   from 60 KiB for the wallpaper studio, provider registry, direct layer and
   detail surface. The accepted `0.2.2` build measured 73,094 B; the 0.2.3
-  candidate measures **73,655 B (73 B headroom)**. The exact measured bytes and
+  candidate measures **73,666 B (62 B headroom)**. The exact measured bytes and
   headroom are recorded by `lib/build-report.json` and the acceptance probe.
 - The contrast matrix includes the host question-card recommended badge pair
   (`--dsw-alias-button-info-fill` on
-  `--dsw-specific-sidebar-nav-item-active-accent`); the deriver repairs the
-  foreground when both would resolve to the same accent colour.
+  `--dsw-specific-sidebar-nav-item-active-accent`) plus the host pairs that
+  regress under a livery: send/error icon fills, option numbers, business tags,
+  preview badge, code viewer, sidebar labels, delete button and broken badge.
+  The deriver repairs the foreground when a pair would fall below the stock
+  host, and the sidebar active accent is a stock-compatible tint.
 - **Pre-release review item:** when client gzip headroom is **< 100 B**, the
   candidate must record the exact headroom in the build report and re-measure it
   after all packaged docs/code are frozen. This is a warning in `build`, not a

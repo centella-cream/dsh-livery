@@ -57,20 +57,24 @@ rebuilt tarball are still missing; this is not a release claim.
   rows against `src/provider-manifests.json`.
 - Client gzip stays under the existing **72 KiB** cap without raising it. The
   build now minifies the factory body with pinned `terser` while preserving the
-  loader envelope byte-for-byte; the candidate measures **73,662 B** at the
+  loader envelope byte-for-byte; the candidate measures **73,666 B** at the
   time of this entry (66 B headroom), so the cap remains the hard gate.
 - Non-essential i18n copy was shortened to keep the 72 KiB budget; the client
   stylesheet string is whitespace-compacted with selector semantics preserved.
 
 ### Fixed
 
-- **Recommended-question badge contrast:** the host user-question UI paints the
-  “推荐” badge with `--dsw-alias-button-info-fill` text on
-  `--dsw-specific-sidebar-nav-item-active-accent`. In several liveries (notably
-  bauhaus) both tokens resolved to the same accent, making the badge a solid
-  gold block that covered its label. Added the
-  `badge-label/selection-accent` contrast pair and a bounded foreground repair;
-  all 28 styles now pass 3360 contrast assertions.
+- **Native host token contrast regressions:** the host question card’s
+  recommended badge painted `--dsw-alias-button-info-fill` text on
+  `--dsw-specific-sidebar-nav-item-active-accent`; several styles resolved both
+  to the same accent, turning “推荐” into a solid colour block. A broader audit
+  of shipped host CSS found the same class of regressions in the input send
+  icon, attachment failure badge, question option number, business tags,
+  preview badge, code viewer, sidebar labels, delete button and broken badge.
+  The contrast matrix now includes these host pairs, the sidebar active accent
+  is a stock-compatible tint rather than the raw accent, and the command palette
+  / version / attribution accents use the foreground token. All 28 styles pass
+  3808 assertions, with no Livery-introduced regression against the stock host.
 - **Review hardening:** direct full/thumbnail URLs are now validated against a
   reviewed provider-host allowlist at both the v3 preset-import and v3
   persisted-state boundaries (providerId required), closing the arbitrary-https
