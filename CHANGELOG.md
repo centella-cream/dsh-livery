@@ -74,7 +74,7 @@ rebuilt tarball are still missing; this is not a release claim.
   The contrast matrix now includes these host pairs, the sidebar active accent
   is a stock-compatible tint rather than the raw accent, and the command palette
   / version / attribution accents use the foreground token. All 28 styles pass
-  3808 assertions, with no Livery-introduced regression against the stock host.
+  4480 assertions, with no Livery-introduced regression against the stock host.
 - **Review hardening:** direct full/thumbnail URLs are now validated against a
   reviewed provider-host allowlist at both the v3 preset-import and v3
   persisted-state boundaries (providerId required), closing the arbitrary-https
