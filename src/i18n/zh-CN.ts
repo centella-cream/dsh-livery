@@ -62,6 +62,7 @@ export const zhCN: Record<LiveryKey, string> = {
   'wallpaper.providerAuto': '自动',
   'wallpaper.directHint': '仅在线显示，不缓存；无氛围层，原图可能较大。',
   'wallpaper.status.loading': '正在加载壁纸…',
+  'wallpaper.online.idleHint': '点击搜索或随机加载壁纸。',
   'wallpaper.status.ready': '找到 {count} 张壁纸',
   'wallpaper.status.empty': '没有找到壁纸。',
   'wallpaper.status.failed': '请求没有完成。',

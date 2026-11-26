@@ -311,6 +311,7 @@ describe('online request policy (panel)', () => {
     })
     const html = renderPanel(enUS as unknown as Dict, READY, { onlineStudio: studio })
     expect(studio.getSnapshot().status).toBe('idle')
+    expect(html).toContain('data-testid="wallpaper-online-idle"')
     expect(html).not.toContain('data-testid="wallpaper-status"')
   })
 

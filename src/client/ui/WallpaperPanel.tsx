@@ -1375,6 +1375,11 @@ export function WallpaperPanel({ t, snapshot, runtime, onlineStudio: injectedStu
                   )}
                 </div>
               )}
+              {online.status === 'idle' && online.results.length === 0 && (
+                <p className="livery-ui-card__hint" data-testid="wallpaper-online-idle">
+                  {t('wallpaper.online.idleHint')}
+                </p>
+              )}
               {statusText !== undefined && (
                 <p
                   className="livery-ui-card__hint"

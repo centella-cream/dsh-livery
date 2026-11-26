@@ -64,6 +64,7 @@ export const enUS = {
   'wallpaper.providerAuto': 'Auto',
   'wallpaper.directHint': 'Online only; not cached. Atmosphere unavailable; originals may be large.',
   'wallpaper.status.loading': 'Loading wallpapers…',
+  'wallpaper.online.idleHint': 'Search or Random to load a batch.',
   'wallpaper.status.ready': '{count} wallpapers found',
   'wallpaper.status.empty': 'No wallpapers found.',
   'wallpaper.status.failed': 'The request did not finish.',
