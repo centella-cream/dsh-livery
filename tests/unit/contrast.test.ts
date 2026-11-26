@@ -58,7 +58,13 @@ describe('contrast matrix', () => {
 
   it('references real stock tokens only in the frozen matrix', () => {
     for (const spec of CONTRAST_CHECKS) {
-      expect(spec.min).toBeGreaterThanOrEqual(3)
+      // WCAG checks stay at 3+; the selected-row visibility floor is a
+      // separate Livery guard above the stock 1.127 rail/fill baseline.
+      if (spec.role === 'selection-accent' && spec.state === 'selected') {
+        expect(spec.min).toBeGreaterThanOrEqual(1.25)
+      } else {
+        expect(spec.min).toBeGreaterThanOrEqual(3)
+      }
       expect(['text', 'large-text', 'non-text']).toContain(spec.kind)
     }
     for (const token of Object.values(CONTRAST_SURFACES)) expect(token.startsWith('--dsw-')).toBe(true)
@@ -109,6 +115,7 @@ describe('contrast matrix', () => {
   it('keeps the host component regression pairs in the matrix', () => {
     for (const role of [
       'badge-label/selection-accent/default',
+      'selection-accent/sidebar/selected',
       'host-info-fill/on-color/default',
       'host-on-error-fill/error-fill/default',
       'host-contrast-fill/button-contrast-fill/default',

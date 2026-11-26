@@ -208,6 +208,7 @@ export const CONTRAST_CHECKS: readonly ContrastCheck[] = [
   // sidebar active-accent chip. Both derive from the accent seed in some
   // styles (e.g. bauhaus), so a missing pair makes the chip label invisible.
   check('badge-label', 'selection-accent', 'default', F.buttonInfoFill, '--dsw-specific-sidebar-nav-item-active-accent', 4.5, TEXT),
+  check('selection-accent', 'sidebar', 'selected', '--dsw-specific-sidebar-nav-item-active-accent', S.sidebar, 1.25, NON_TEXT, { adjustable: false }),
   // Literal host component token pairs: foreground text/icon role on the
   // background fill the host actually paints. Text pairs assert WCAG AA 4.5;
   // icon fills assert 3.0 non-text contrast. The bounded pass repairs the

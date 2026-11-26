@@ -31,7 +31,9 @@ describe('chrome recipes', () => {
         }
       }
     }
-    expect(chromeTokens('plain', 'light', SEEDS)).toEqual({})
+    expect(chromeTokens('plain', 'light', SEEDS)).toEqual({
+      '--dsw-specific-sidebar-nav-item-active-accent': expect.stringMatching(/^#[0-9a-f]{6}$/i),
+    })
   })
 
   it('keeps distinct GUI roles for tinted, outline, terminal, editorial and poster', () => {

@@ -11,7 +11,7 @@
  * the compile-time contrast matrix remains the authority on legibility.
  */
 import type { ChromeStyleId, Mode, Seeds, TokenMap } from './types.js'
-import { formatHex, mixOklab, parseColor } from './color.js'
+import { contrastRatio, formatHex, mixOklab, parseColor } from './color.js'
 
 /** Consumed component fills a chrome recipe may author. */
 export const CHROME_TOKEN_NAMES: readonly string[] = [
@@ -73,13 +73,32 @@ function shade(seeds: Seeds, amount: number): string {
   return mixTo(seeds.surface, '#000000', amount)
 }
 
+/** A selected-state accent that stays visibly distinct from its sidebar fill. */
+function visibleAccent(sidebarFill: string, seeds: Seeds): string {
+  const fill = parseColor(sidebarFill)
+  const fillHex = formatHex(fill).toLowerCase()
+  const accent = parseColor(seeds.accent)
+  for (const amount of [0.26, 0.32, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86]) {
+    const candidate = formatHex(mixOklab(fill, accent, amount))
+    if (candidate.toLowerCase() !== fillHex && contrastRatio(parseColor(candidate), fill) >= 1.32) return candidate
+  }
+  const text = parseColor(seeds.text)
+  for (const amount of [0.2, 0.4, 0.6, 0.8]) {
+    const candidate = formatHex(mixOklab(accent, text, amount))
+    if (candidate.toLowerCase() !== fillHex && contrastRatio(parseColor(candidate), fill) >= 1.32) return candidate
+  }
+  return formatHex(text)
+}
+
 const RECIPES: Readonly<Record<ChromeStyleId, Recipe>> = {
-  plain: () => ({}),
+  plain: (_mode, seeds) => ({
+    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(seeds.surface, seeds),
+  }),
   tinted: (_mode, seeds) => ({
-    '--dsw-specific-sidebar-fill': accentMix(seeds, 0.06),
+    '--dsw-specific-sidebar-fill': accentMix(seeds, 0.12),
     '--dsw-specific-sidebar-nav-item-hover': accentMix(seeds, 0.05),
-    '--dsw-specific-sidebar-nav-item-active': accentMix(seeds, 0.12),
-    '--dsw-specific-sidebar-nav-item-active-accent': accentMix(seeds, 0.06),
+    '--dsw-specific-sidebar-nav-item-active': accentMix(seeds, 0.20),
+    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(accentMix(seeds, 0.12), seeds),
     '--dsw-specific-input-major': accentMix(seeds, 0.03),
     '--dsw-specific-bubble': accentMix(seeds, 0.1),
     '--dsw-specific-bubble-highlight': accentMix(seeds, 0.16),
@@ -89,27 +108,30 @@ const RECIPES: Readonly<Record<ChromeStyleId, Recipe>> = {
     '--dsw-specific-sidebar-fill': seeds.surface,
     '--dsw-specific-sidebar-nav-item-hover': textMix(seeds, 0.03),
     '--dsw-specific-sidebar-nav-item-active': seeds.surface,
-    '--dsw-specific-sidebar-nav-item-active-accent': accentMix(seeds, 0.06),
+    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(seeds.surface, seeds),
     '--dsw-specific-input-major': seeds.surface,
     '--dsw-specific-bubble': seeds.surface,
     '--dsw-specific-bubble-highlight': textMix(seeds, 0.04),
     '--dsw-specific-selector': seeds.surface,
   }),
-  terminal: (mode, seeds) => ({
-    '--dsw-specific-sidebar-fill': mode === 'light' ? shade(seeds, 0.06) : shade(seeds, 0.25),
-    '--dsw-specific-sidebar-nav-item-hover': accentMix(seeds, 0.06),
-    '--dsw-specific-sidebar-nav-item-active': accentMix(seeds, 0.14),
-    '--dsw-specific-sidebar-nav-item-active-accent': accentMix(seeds, 0.06),
+  terminal: (mode, seeds) => {
+    const fill = mode === 'light' ? shade(seeds, 0.06) : shade(seeds, 0.25)
+    return {
+      '--dsw-specific-sidebar-fill': fill,
+      '--dsw-specific-sidebar-nav-item-hover': accentMix(seeds, 0.20),
+      '--dsw-specific-sidebar-nav-item-active': accentMix(seeds, 0.14),
+      '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(fill, seeds),
     '--dsw-specific-input-major': seeds.surface,
     '--dsw-specific-bubble': mode === 'light' ? textMix(seeds, 0.04) : textMix(seeds, 0.06),
-    '--dsw-specific-bubble-highlight': mode === 'light' ? textMix(seeds, 0.07) : textMix(seeds, 0.09),
-    '--dsw-specific-selector': seeds.surface,
-  }),
+      '--dsw-specific-bubble-highlight': mode === 'light' ? textMix(seeds, 0.07) : textMix(seeds, 0.09),
+      '--dsw-specific-selector': seeds.surface,
+    }
+  },
   editorial: (_mode, seeds) => ({
     '--dsw-specific-sidebar-fill': seeds.surface,
     '--dsw-specific-sidebar-nav-item-hover': seeds.surface,
     '--dsw-specific-sidebar-nav-item-active': seeds.surface,
-    '--dsw-specific-sidebar-nav-item-active-accent': accentMix(seeds, 0.06),
+    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(seeds.surface, seeds),
     '--dsw-specific-input-major': seeds.surface,
     '--dsw-specific-bubble': textMix(seeds, 0.04),
     '--dsw-specific-bubble-highlight': textMix(seeds, 0.07),
@@ -119,11 +141,11 @@ const RECIPES: Readonly<Record<ChromeStyleId, Recipe>> = {
     '--dsw-specific-sidebar-fill': accentMix(seeds, 0.14),
     '--dsw-specific-sidebar-nav-item-hover': accentMix(seeds, 0.1),
     '--dsw-specific-sidebar-nav-item-active': accentMix(seeds, 0.24),
-    '--dsw-specific-sidebar-nav-item-active-accent': accentMix(seeds, 0.06),
+    '--dsw-specific-sidebar-nav-item-active-accent': visibleAccent(accentMix(seeds, 0.14), seeds),
     '--dsw-specific-input-major': seeds.surface,
     '--dsw-specific-bubble': accentMix(seeds, 0.2),
     '--dsw-specific-bubble-highlight': accentMix(seeds, 0.28),
-    '--dsw-specific-selector': accentMix(seeds, 0.12),
+    '--dsw-specific-selector': accentMix(seeds, 0.20),
   }),
 }
 
