@@ -1,10 +1,10 @@
 {
   "schemaVersion": 2,
-  "commit": "71d62827b65cbec870791efc93c6359214622888",
+  "commit": "190670644f16dd7f2689051ad5f6ddc4f9c92624",
   "packageVersion": "0.2.3",
   "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
   "tarballBytes": 3634089,
-  "generatedAt": "2026-11-26T15:40:50.629Z",
+  "generatedAt": "2026-11-26T16:21:16.075Z",
   "scope": {
     "hostVersion": "0.2.2-rc.5",
     "profile": "desktop",
@@ -95,14 +95,14 @@
   ],
   "auditEnvelopes": [
     {
-      "path": "contracts/dsh/evidence/0.2.3/audit-envelopes/audit-envelopes-sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94-audit-envelope.json",
+      "path": "contracts/dsh/evidence/0.2.3/audit-envelopes/sha256:0a58dee4f5c8d5669c976a02e8c2981bd04468a5d998af3e8c9354346c89be94-audit-envelope.json",
       "sha256": "df425f25fcf0eda7fd819e5185baa37b357a5ce273e964a45ac0d8c0b566fd64"
     }
   ],
   "runs": [
     {
       "id": "0.2.2-rc.5-desktop",
-      "commit": "71d62827b65cbec870791efc93c6359214622888",
+      "commit": "190670644f16dd7f2689051ad5f6ddc4f9c92624",
       "hostVersion": "0.2.2-rc.5",
       "adapterId": "dsh-0.2.2-rc.5-r1",
       "tarballSha256": "c2dba48ec96e24579a7c727b4dcc8034d8eceb1b30937eb4e818411f405230ad",
@@ -114,9 +114,9 @@
         "total": 37
       },
       "probe": "contracts/dsh/evidence/0.2.3/probes/0.2.2-rc.5-desktop.json",
-      "probeSha256": "fdb00f09375d65467d1aaa199a40b2d521e92364b6da48fe004125a1a8f5728b",
+      "probeSha256": "04ef1af6064cf0da5fae667f5df8b486cdf514da41f10e998a28716cf7bd5955",
       "report": "contracts/dsh/evidence/0.2.3/reports/0.2.2-rc.5-desktop.md",
-      "reportSha256": "09b6b461b09ccb243d68f1042c1af7575a5b7754774177ad0b93513a9b814667"
+      "reportSha256": "1bd5adecac9b3c258c6e69a4d5a4319cc8a5b978043779483e57fe6a49fe427a"
     }
   ]
 }
