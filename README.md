@@ -206,19 +206,19 @@ outside plugin certification. Full policy: [docs/design/multi-version.md](docs/d
 
 ## Install
 
-Latest published package: [`dsh-livery@0.2.2`](https://www.npmjs.com/package/dsh-livery).
+Latest published package: [`dsh-livery@0.2.3`](https://www.npmjs.com/package/dsh-livery).
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.2.2
+dsh plugin --profile web add dsh-livery@0.2.3
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.2.2
+dsh plugin --profile desktop add dsh-livery@0.2.3
 ```
 
 Restart the app after the package changes. You can also install by package name
@@ -229,14 +229,14 @@ tarball after verifying its published sha256. Never install an unverified tarbal
 
 ## Verification
 
-The `0.2.2` artifact passed full isolated acceptance on all 13 Web/Desktop
+The `0.2.3` artifact passed full isolated acceptance on all 13 Web/Desktop
 scopes: Web `0.2.1-rc.2`, `0.2.1-rc.4`, `0.2.1-rc.5`, `0.2.2-rc.1`,
 `0.2.2-rc.2`, `0.2.2-rc.3`, `0.2.2-rc.5`, and Desktop `0.2.1-rc.3`,
 `0.2.1-rc.5`, `0.2.2-rc.1`, `0.2.2-rc.2`, `0.2.2-rc.3`, `0.2.2-rc.5`, with
-**zero failed checks** in every scope. A real `0.2.1 → 0.2.2` Web update was
+**zero failed checks** in every scope. A real `0.2.2 → 0.2.3` Web update was
 also accepted through the running Host's plugin manager: no page reload, stale
 startup frame observed, catalog re-adopted and manager outcome `applied`.
-Evidence is bound under `contracts/dsh/evidence/0.2.2/`. Scope, exact counts,
+Evidence is bound under `contracts/dsh/evidence/0.2.3/`. Scope, exact counts,
 artifact sha256 and limitations: [docs/verification.md](docs/verification.md).
 
 Release gates include `tsc`, the full test suite, token/contrast/CSS audits,
@@ -254,10 +254,12 @@ rebuilds the accepted tarball.
 
 ## Earlier releases
 
+- **0.2.3** — keyless direct-display Cleveland/Met sources, Host-served provider
+  manifests, search-only control hierarchy, host-pair contrast hardening and the
+  `0.2.2 → 0.2.3` Web hot-update path. Current release.
 - **0.2.2** — wallpaper studio (8 curated + 16 Classic, Follow style, Wikimedia
   Commons), provider/licence hardening, plugin-detail surface, opaque
   `MenuSurface`/jobs surfaces and the Web `0.2.1 → 0.2.2` hot-update repair.
-  Current release.
 - **0.2.1** — opaque `--dsw-specific-menu` alias and direct-paint sidebar alpha
   matched to the macOS composite. The real `MenuSurface` fill and jobs fill
   tokens were completed in 0.2.2. Published.

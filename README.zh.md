@@ -22,7 +22,7 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
 
 ![DSH Livery 视觉风格页：实时预览、当前风格与 28 套风格目录](docs/assets/hero-zh.jpg)
 
-截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。这里的视觉风格页在 `0.2.2` 中未改变；新的壁纸工作室与插件详情面见设计文档和 CHANGELOG。
+截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。这里的视觉风格页在 `0.2.3` 中未改变；新的壁纸工作室与插件详情面见设计文档和 CHANGELOG。
 
 ## 0.2.3 更新
 
@@ -139,19 +139,19 @@ Dock/rightbar 和系统级 DPI 由宿主负责，不在插件认证范围内。�
 
 ## 安装
 
-npm 最新发布版：[`dsh-livery@0.2.2`](https://www.npmjs.com/package/dsh-livery)。
+npm 最新发布版：[`dsh-livery@0.2.3`](https://www.npmjs.com/package/dsh-livery)。
 
 ### Web Profile
 
 ```bash
-dsh plugin --profile web add dsh-livery@0.2.2
+dsh plugin --profile web add dsh-livery@0.2.3
 dsh web
 ```
 
 ### Desktop app
 
 ```bash
-dsh plugin --profile desktop add dsh-livery@0.2.2
+dsh plugin --profile desktop add dsh-livery@0.2.3
 ```
 
 包变化后重启 App。也可以在 **设置 → 插件** 中按包名安装。
@@ -161,12 +161,12 @@ sha256。不要安装未校验的 tarball。
 
 ## 验收
 
-`0.2.2` 制品已在全部 13 个 Web/Desktop scope 上完成隔离全量验收：
+`0.2.3` 制品已在全部 13 个 Web/Desktop scope 上完成隔离全量验收：
 Web `0.2.1-rc.2`、`0.2.1-rc.4`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`、`0.2.2-rc.5`
 与 Desktop `0.2.1-rc.3`、`0.2.1-rc.5`、`0.2.2-rc.1`、`0.2.2-rc.2`、`0.2.2-rc.3`、`0.2.2-rc.5`，
-每个 scope 均为 **0 失败**。同时通过运行中的宿主插件管理器完成真实的 `0.2.1 → 0.2.2`
+每个 scope 均为 **0 失败**。同时通过运行中的宿主插件管理器完成真实的 `0.2.2 → 0.2.3`
 Web 更新验收：无页面重载、观察到 stale startup frame、catalog 重新采用、manager outcome
-为 `applied`。证据绑定在 `contracts/dsh/evidence/0.2.2/`。范围、精确计数、制品 sha256 和
+为 `applied`。证据绑定在 `contracts/dsh/evidence/0.2.3/`。范围、精确计数、制品 sha256 和
 已知限制见 [docs/verification.md](docs/verification.md)。
 
 发布门禁包括 `tsc`、完整测试、token/对比度/CSS 审计、loader ABI、支持矩阵/release
@@ -182,9 +182,11 @@ Web 更新验收：无页面重载、观察到 stale startup frame、catalog 重
 
 ## 早期版本
 
+- **0.2.3** — 免密钥直连 Cleveland/Met 图源、Host 提供的 provider manifest、仅搜索控件层级、
+  宿主 token 对对比度加固与 `0.2.2 → 0.2.3` Web 热更新路径。当前版本。
 - **0.2.2** — 壁纸工作室（8 精选 + 16 Classic、Follow style、Wikimedia Commons）、
   provider/许可加固、插件详情面、`MenuSurface`/jobs 表面不透明与 Web
-  `0.2.1 → 0.2.2` 热更新修复。当前版本。
+  `0.2.1 → 0.2.2` 热更新修复。
 - **0.2.1** — `--dsw-specific-menu` 别名改为不透明，直接绘制侧栏 alpha 与 macOS 合成路径对齐；真正的 `MenuSurface` fill 与 jobs fill token 在 0.2.2 补齐。已发布。
 - **0.2.0** — 视觉语言升级：13 套本地字体栈、按风格的标签层级、26/28 风格的 L5a Studio
   Decoration、更克制的风格页、v2 presentation axes 与协议加固。详见 [CHANGELOG](CHANGELOG.md)。
