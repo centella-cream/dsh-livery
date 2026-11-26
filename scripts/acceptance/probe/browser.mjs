@@ -1236,6 +1236,8 @@ export async function readWallpaperState(page) {
       },
       capabilityReasonPresent: present('[data-testid="wallpaper-capability-reason"]'),
       capabilityReasonText: text('[data-testid="wallpaper-capability-reason"]'),
+      searchPresent: present('[data-testid="wallpaper-search-go"]'),
+      randomPresent: present('[data-testid="wallpaper-random"]'),
       openverseNoticePresent: present('[data-testid="wallpaper-openverse-notice"]'),
       openverseNoticeText: text('[data-testid="wallpaper-openverse-notice"]'),
       styleDisabledReasonPresent: present('[data-testid="wallpaper-style-disabled"]'),

@@ -184,7 +184,7 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
   'visual.menu-surface-opaque',
   'visual.floating-surfaces',
   'style.selected-state',
-  'wallpaper.direct-search-only-copy',
+  'wallpaper.direct-search-only-actions',
 ])
 
 /** Fresh-install Desktop critical checks (shared by evidence emission and release gate). */

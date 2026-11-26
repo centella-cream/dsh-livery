@@ -3681,7 +3681,6 @@ export async function checkWallpaperStudio(ctx) {
   const zh = uiLocale !== 'en'
   const copy = zh
     ? {
-        onlineHint: '打开即加载一批；操作按钮点击获取。',
         noRequestHint: '内置设计离线加载；在线图片使用缓存。',
         presetsTitle: '背景预设',
         presetNone: '无壁纸',
@@ -3702,7 +3701,6 @@ export async function checkWallpaperStudio(ctx) {
         random: '随机',
       }
     : {
-        onlineHint: 'Opening loads one batch; actions fetch.',
         noRequestHint: 'Built-in designs load offline; online uses the cache.',
         presetsTitle: 'Background presets',
         presetNone: 'No wallpaper',
@@ -3910,11 +3908,12 @@ export async function checkWallpaperStudio(ctx) {
     const onlineCardText = await textOf('wallpaper-online-card')
     expect(
       runner,
-      'copy.wallpaper-online-hint',
-      'the online card copy says one batch loads on tab activation and explicit actions are the only other fetches',
-      onlineCardText.includes(copy.onlineHint) &&
-        onlineCardText.includes(zh ? '来源' : 'Source') &&
-        onlineCardText.includes(copy.providerWikimedia),
+      'copy.wallpaper-online-controls',
+      'the online card keeps source, search and attribution without redundant helper copy',
+      onlineCardText.includes(zh ? '来源' : 'Source') &&
+        onlineCardText.includes(copy.providerWikimedia) &&
+        !onlineCardText.includes(zh ? '打开即加载' : 'Opening loads one batch') &&
+        !onlineCardText.includes(zh ? 'Auto 按序尝试' : 'Auto tries in order'),
       `online card text=${oneLine(onlineCardText, 260)}`,
     )
     const effectsCardText = await textOf('wallpaper-effects-card')
@@ -5195,16 +5194,15 @@ export async function checkWallpaperStudio(ctx) {
         providers.clevelandRequests.length === beforeCleveland + 1,
       `status=${clevelandBatch.status}; results=${JSON.stringify(clevelandBatch.results)}; requests=${beforeCleveland}→${providers.clevelandRequests.length}`,
     )
-    const searchOnlyCopy = zh ? '仅支持搜索' : 'search-only'
-    const noRandomCopy = zh ? '没有随机图片' : 'no random images'
     expect(
       runner,
-      'wallpaper.direct-search-only-copy',
-      'a direct search-only source explains Random without claiming the source has no images',
-      clevelandBatch.capabilityReasonText.includes(searchOnlyCopy) &&
-        !clevelandBatch.capabilityReasonText.includes(noRandomCopy),
-      `reason="${oneLine(clevelandBatch.capabilityReasonText, 160)}"`,
-      { capabilityReasonText: clevelandBatch.capabilityReasonText },
+      'wallpaper.direct-search-only-actions',
+      'a direct search-only source exposes Search and hides Random instead of rendering disabled clutter or helper copy',
+      clevelandBatch.searchPresent === true &&
+        clevelandBatch.randomPresent === false &&
+        clevelandBatch.capabilityReasonPresent === false,
+      `search=${clevelandBatch.searchPresent}; random=${clevelandBatch.randomPresent}; reason=${clevelandBatch.capabilityReasonPresent}`,
+      { searchPresent: clevelandBatch.searchPresent, randomPresent: clevelandBatch.randomPresent, capabilityReasonPresent: clevelandBatch.capabilityReasonPresent },
     )
     await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
     await page.waitForFunction(() => {
