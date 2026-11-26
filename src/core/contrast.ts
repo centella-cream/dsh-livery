@@ -208,12 +208,10 @@ export const CONTRAST_CHECKS: readonly ContrastCheck[] = [
   // sidebar active-accent chip. Both derive from the accent seed in some
   // styles (e.g. bauhaus), so a missing pair makes the chip label invisible.
   check('badge-label', 'selection-accent', 'default', F.buttonInfoFill, '--dsw-specific-sidebar-nav-item-active-accent', 4.5, TEXT),
-  // Host component token pairs that regress under a livery compared with the
-  // stock host. These are the pairs where the host paints text or an icon on a
-  // fill; the foreground token is repaired by the bounded pass below. Pairs
-  // that already fail in the stock host are intentionally not asserted here:
-  // a livery must not pretend to fix a host-level contrast defect by changing
-  // unrelated semantic roles.
+  // Literal host component token pairs: foreground text/icon role on the
+  // background fill the host actually paints. Text pairs assert WCAG AA 4.5;
+  // icon fills assert 3.0 non-text contrast. The bounded pass repairs the
+  // foreground token when a derived style falls below the requirement.
   check('host-info-fill', 'on-color', 'default', F.buttonInfoFill, F.onColor, 3, NON_TEXT),
   check('host-on-error-fill', 'error-fill', 'default', F.onColor, F.error, 3, NON_TEXT),
   check('host-contrast-fill', 'button-contrast-fill', 'default', F.buttonContrastFill, F.inverted, 4.5, TEXT),
@@ -223,7 +221,19 @@ export const CONTRAST_CHECKS: readonly ContrastCheck[] = [
   check('host-preview-badge', 'business-tertiary', 'default', F.primaryBlish, '--dsw-alias-state-business-tertiary', 4.5, TEXT),
   check('host-viewer-code', 'layer-2', 'default', F.secondary, '--dsw-alias-bg-layer-2', 4.5, TEXT),
   check('host-tertiary-sidebar', 'sidebar', 'default', F.tertiary, S.sidebar, 4.5, TEXT),
-  check('host-broken-badge', 'layer-3', 'default', F.error, '--dsw-alias-bg-layer-3', 3, NON_TEXT),
+  check('host-broken-badge', 'layer-3', 'default', F.error, '--dsw-alias-bg-layer-3', 4.5, TEXT),
+  check('host-warn-primary', 'warn-tertiary', 'default', F.warnPrimary, S.warnTertiary, 4.5, TEXT),
+  check('host-address-tertiary', 'layer-2', 'default', F.tertiary, '--dsw-alias-bg-layer-2', 4.5, TEXT),
+  check('host-search-caption', 'layer-2', 'default', F.caption, '--dsw-alias-bg-layer-2', 4.5, TEXT),
+  check('host-message-tertiary', 'ghost-active-fill', 'default', F.tertiary, '--dsw-alias-button-ghost-active-fill', 4.5, TEXT),
+  check('host-warning-label', 'module-platform', 'default', F.warn, '--dsw-alias-bg-module-platform', 4.5, TEXT),
+  check('host-caption-module', 'module-platform', 'default', F.caption, '--dsw-alias-bg-module-platform', 4.5, TEXT),
+  check('host-tertiary-module', 'module-platform', 'default', F.tertiary, '--dsw-alias-bg-module-platform', 4.5, TEXT),
+  check('host-notice-warn', 'warn-tertiary', 'default', F.warn, '--dsw-alias-state-warn-tertiary', 4.5, TEXT),
+  check('host-instructions-caption', 'code-banner', 'default', F.caption, '--dsw-alias-markdown-code-block-banner', 4.5, TEXT),
+  check('host-code-tertiary', 'markdown-code-block', 'default', F.tertiary, '--dsw-alias-markdown-code-block', 4.5, TEXT),
+  check('host-success-tag', 'success-tertiary', 'default', F.success, '--dsw-alias-state-success-tertiary', 4.5, TEXT),
+  check('host-reply-prompt', 'layer-3', 'default', F.disabled, '--dsw-alias-bg-layer-3', 4.5, TEXT),
   // on-accent: label on a brand-primary fill (§18.2 `brand` + `on-accent`).
   check('on-accent', 'brand-fill', 'default', F.onAccent, F.brandFill, 4.5, TEXT),
   check('on-accent', 'button-fill', 'default', F.onAccent, F.buttonPrimaryFill, 4.5, TEXT),

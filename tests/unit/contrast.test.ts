@@ -110,11 +110,27 @@ describe('contrast matrix', () => {
     for (const role of [
       'badge-label/selection-accent/default',
       'host-info-fill/on-color/default',
+      'host-on-error-fill/error-fill/default',
+      'host-contrast-fill/button-contrast-fill/default',
       'host-option-number/overlay/default',
       'host-business-tag/business-tertiary/default',
+      'host-attempt-badge/layer-3/default',
+      'host-preview-badge/business-tertiary/default',
       'host-viewer-code/layer-2/default',
       'host-tertiary-sidebar/sidebar/default',
       'host-broken-badge/layer-3/default',
+      'host-warn-primary/warn-tertiary/default',
+      'host-address-tertiary/layer-2/default',
+      'host-search-caption/layer-2/default',
+      'host-message-tertiary/ghost-active-fill/default',
+      'host-warning-label/module-platform/default',
+      'host-caption-module/module-platform/default',
+      'host-tertiary-module/module-platform/default',
+      'host-notice-warn/warn-tertiary/default',
+      'host-instructions-caption/code-banner/default',
+      'host-code-tertiary/markdown-code-block/default',
+      'host-success-tag/success-tertiary/default',
+      'host-reply-prompt/layer-3/default',
     ]) {
       expect(CONTRAST_CHECKS.some((spec) => `${spec.role}/${spec.surface}/${spec.state}` === role)).toBe(true)
     }
