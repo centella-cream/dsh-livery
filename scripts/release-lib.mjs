@@ -171,7 +171,7 @@ export const REQUIRED_WEB_CHECKS = Object.freeze([
   'merged.clear-local-data',
   'merged.preset-style-roundtrip',
   'merged.preset-v2-attribution',
-  'wallpaper.no-request-before-online',
+  'wallpaper.online-auto-random',
   'wallpaper.online-first-batch',
   'wallpaper.provider-selector',
   'wallpaper.provider-served-by',

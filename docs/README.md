@@ -67,7 +67,7 @@ Windows, Web Edge and any other DSH build are not supported.
   Slot proof covers 6 of 8 hosts: `0.2.1-rc.2` (Web) is covered by the runtime
   detail check; `0.2.1-rc.3` (Desktop) has no runtime detail check, so it is a
   documented per-scope limitation, not a passed claim.
-- **[0.2.3 plan](design/0.2.3-plan.md)** — implementation candidate for two new keyless wallpaper
+- **[0.2.3 plan](design/0.2.3-plan.md)** — shipped 0.2.3 release notes for two keyless direct wallpaper
   sources (Cleveland + Met), data-driven provider manifests with **no client
   gzip increase**, direct-display mode, the 0.2.2 legacy Openverse-notice fix
   (Openverse itself is not re-added) and the robustness backlog. **Planning

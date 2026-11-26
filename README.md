@@ -47,7 +47,7 @@ adapters as `0.2.2`; it adds no host adapter and no new host capability.
 - **Contrast and UI hardening.** Host component token pairs are audited against
   the stock host, the selected sidebar state keeps a visible accent and rail step,
   and the Online card is reduced to one control row plus one contextual status.
-- **A real `0.2.2 → 0.2.3` Web update transition.** The candidate keeps the
+- **A real `0.2.2 → 0.2.3` Web update transition.** The release keeps the
   existing client gzip cap and the stale-boot repair path.
 
 ## What's new in 0.2.2 (previous)
