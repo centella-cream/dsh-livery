@@ -134,6 +134,7 @@ describe('formal support matrix schema v2 (0.1.3 exact certification claims)', (
     expect(web.evidence).toEqual([
       'contracts/dsh/evidence/0.1.9/0.2.1-rc.2-web-chrome.json',
       'contracts/dsh/evidence/0.2.2/0.2.1-rc.2-web-chrome.json',
+      'contracts/dsh/evidence/0.2.3/0.2.1-rc.2-web-chrome.json',
     ])
     expect(supportedProfiles(web)).toEqual(['web.chrome'])
     expect(notSupportedProfiles(web)).toEqual(['desktop.macos', 'desktop.win32', 'web.edge'])
