@@ -39,7 +39,7 @@ Minimum measured ratio across the 28 styles, light and dark:
 | Host usage | Pair | Min | Required |
 |---|---|---:|---:|
 | Recommended question badge | `button-info-fill` on `sidebar-nav-item-active-accent` | 4.53 | 4.5 |
-| Selected sidebar accent | `sidebar-nav-item-active-accent` on `sidebar-fill` | 1.28 | 1.25 |
+| Selected sidebar accent | `sidebar-nav-item-active-accent` on `sidebar-fill` | 1.32 | 1.25 |
 | Input send icon | `label-on-color` on `button-info-fill` | 3.01 | 3 |
 | Attachment failure icon | `label-on-color` on `state-error-primary` | 3.04 | 3 |
 | Remove control | `label-primary-inverted` on `button-contrast-fill` | 4.51 | 4.5 |
@@ -75,7 +75,7 @@ foreground roles; attribution links use the already-audited
 
 ## Result
 
-`livery:compile` reports **4536 contrast assertions / 0 failures** across eight
+`livery:compile` reports **4536–4648 contrast assertions / 0 failures** across eight
 profiles. The acceptance probe adds `style.selected-state`, and
 `pnpm audit:live-contrast` wraps the repeatable computed-style scan for a running
 carrier (`scripts/audit/live-contrast.mjs`). The Web acceptance run remains

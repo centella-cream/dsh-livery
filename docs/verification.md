@@ -53,7 +53,7 @@ final rebuilt tarball is required for formal evidence. A local web-profile
 manual check after the direct-source fix saw Cleveland load 12 and Met load 6
 results on source selection; Met's prior 20-detail batch timed out at the 6 s
 provider attempt. The follow-up contrast audit added host component pairs and
-recompiled 4536 assertions; a local computed-style scan of the conversation,
+recompiled 4536–4648 assertions; a local computed-style scan of the conversation,
 Livery style/wallpaper pages and plugin page found no visible text below its
 WCAG AA threshold.
 
