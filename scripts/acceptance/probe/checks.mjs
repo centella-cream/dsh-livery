@@ -5195,6 +5195,17 @@ export async function checkWallpaperStudio(ctx) {
         providers.clevelandRequests.length === beforeCleveland + 1,
       `status=${clevelandBatch.status}; results=${JSON.stringify(clevelandBatch.results)}; requests=${beforeCleveland}→${providers.clevelandRequests.length}`,
     )
+    const searchOnlyCopy = zh ? '仅支持搜索' : 'search-only'
+    const noRandomCopy = zh ? '没有随机图片' : 'no random images'
+    expect(
+      runner,
+      'wallpaper.direct-search-only-copy',
+      'a direct search-only source explains Random without claiming the source has no images',
+      clevelandBatch.capabilityReasonText.includes(searchOnlyCopy) &&
+        !clevelandBatch.capabilityReasonText.includes(noRandomCopy),
+      `reason="${oneLine(clevelandBatch.capabilityReasonText, 160)}"`,
+      { capabilityReasonText: clevelandBatch.capabilityReasonText },
+    )
     await page.locator('[data-testid="wallpaper-result"]').first().click({ timeout: 8_000 })
     await page.waitForFunction(() => {
       const wrapper = document.getElementById('dsh-livery-wallpaper-direct')

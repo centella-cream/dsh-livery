@@ -32,6 +32,7 @@ describe('0.1.3 release parameterization', () => {
     expect(evidenceGate).toContain('REQUIRED_WEB_CHECKS')
     expect(evidenceGate).toContain('REQUIRED_DESKTOP_CHECKS')
     expect(read('scripts/release-lib.mjs')).toContain("'style.selected-state'")
+    expect(read('scripts/release-lib.mjs')).toContain("'wallpaper.direct-search-only-copy'")
     expect(workflow).not.toContain('pnpm pack:candidate')
     expect(workflow).toContain('LIVERY_ACCEPTANCE_RUN_ID')
     expect(workflow).toContain('actions/download-artifact@v4')
