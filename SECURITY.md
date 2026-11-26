@@ -4,12 +4,12 @@
 
 | Version | Supported |
 |---|---|
-| `0.2.2` (current published release) | Yes |
-| `0.2.3` (candidate, not yet published) | Pending acceptance; do not treat as a supported release yet |
+| `0.2.3` (current release) | Yes |
+| `0.2.2` (previous release) | No (superseded) |
 | `0.2.1` (previous release) | No (superseded) |
 | `0.1.x` (prior releases) | No (superseded) |
 
-This document describes the `0.2.2` published artifact. The `0.2.3` candidate adds a CORS-less direct `<img>` display path for two providers; it must pass the frozen acceptance matrix before this policy changes.
+This document describes the `0.2.3` release artifact. The direct-display sources use a plugin-owned `<img>` layer; their CORS-less image CDNs are never fetched into the Blob cache.
 
 The supported scope is the exact matrix in
 [contracts/dsh/support-matrix.json](contracts/dsh/support-matrix.json), documented in

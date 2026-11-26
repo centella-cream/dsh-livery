@@ -7,16 +7,13 @@ support; `0.1.2` added the latest-DSH preview and fixed wallpaper UI/layering;
 Earlier development rounds used temporary internal version numbers for evidence
 packaging; they are folded into the `0.1.0` entry.
 
-## [0.2.3] — 2026-11-25 (unreleased candidate)
+## [0.2.3] — 2026-11-26
 
-`0.2.3` is a client/Host feature candidate on the same eight exact-certified host
-adapters as `0.2.2`. It is not published and has no formal acceptance evidence
-yet; the `0.2.2` record below remains the frozen release until the candidate is
-accepted. Local candidate validation: all 13 declared scopes passed
-(7 Web × 308/0, 6 Desktop × 35/0) plus the isolated `0.2.2 → 0.2.3` update
-transition on Web `0.2.2-rc.1` and `0.2.2-rc.5` (35/0 each). Formal evidence
-directories, committed probe/report artifacts, the audit envelope and the final
-rebuilt tarball are still missing; this is not a release claim.
+`0.2.3` is a client/Host feature release on the same eight exact-certified host
+adapters as `0.2.2`. Formal acceptance evidence for the exact tarball is recorded
+under `contracts/dsh/evidence/0.2.3/`; all 13 declared scopes passed, and the
+isolated `0.2.2 → 0.2.3` Web update transition passed without a page reload
+(stale startup frame observed, catalog re-adopted, manager outcome `applied`).
 
 ### Added
 

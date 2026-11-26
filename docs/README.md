@@ -1,25 +1,23 @@
 # Documentation
 
-**`0.2.2` is the current published release (`dsh-livery@0.2.2`).** The
-authoritative support policy is `contracts/dsh/support-matrix.json`; the exact
-accepted artifact and probe evidence are recorded in
-`contracts/dsh/evidence/0.2.2/` and `docs/verification.md`.
+**`0.2.3` is the current release (`dsh-livery@0.2.3`).** The authoritative
+support policy is `contracts/dsh/support-matrix.json`; the exact accepted artifact
+and probe evidence are recorded in `contracts/dsh/evidence/0.2.3/` and
+`docs/verification.md`.
 
-`0.2.3` is an **implementation candidate on this branch, not yet published**.
-It adds two keyless direct-display sources (Cleveland Museum of Art, The Met),
-data-driven Host provider manifests, a dedicated direct `<img>` layer, the
-legacy-Openverse notice, and the `0.2.2 → 0.2.3` update transition. Acceptance
-evidence for `0.2.3` does not exist yet; the tables below remain the frozen
-`0.2.2` release record.
+`0.2.3` adds two keyless direct-display sources (Cleveland Museum of Art, The
+Met), data-driven Host provider manifests, a dedicated direct `<img>` layer, the
+legacy-Openverse notice, and the `0.2.2 → 0.2.3` update transition. It keeps the
+same 13 declared scopes as `0.2.2`.
 
-## Livery 0.2.2 acceptance scope
+## Livery 0.2.3 acceptance scope
 
 This table records the DSH host builds against which the **`0.2.2` artifact** was
 accepted against the formal support policy (see
 `contracts/dsh/support-matrix.json` and [multi-version policy](design/multi-version.md)
 for stable vs preview rules).
 
-| Host | Scope | Status (Livery `0.2.2`) |
+| Host | Scope | Status (Livery `0.2.3`) |
 |---|---|---|
 | DSH `0.2.1-rc.2` | Web Profile, Chrome 156.0.8078.48, Node 22.23.1 | Stable certified (npm `latest`); Web accepted |
 | DSH `0.2.1-rc.3` | Desktop app, macOS, Electron/Node 24.21.0, Chromium 152.0.7977.130 | Stable certified renderer surface (GitHub-tagged); Desktop accepted |
@@ -30,9 +28,9 @@ for stable vs preview rules).
 | DSH `0.2.2-rc.3` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `next`); Web + Desktop accepted |
 | DSH `0.2.2-rc.5` | Web + Desktop macOS, Chrome 156.0.8078.48 / Electron 44.7.0 / Node 22.23.1 / 24.21.0 / Chromium 152.0.7977.130 | Preview (npm `latest`); Web + Desktop accepted |
 
-These are eight host adapters and 13 scopes (7 Web + 6 Desktop). `0.2.2` keeps the
-same host set: it is a client-only release with no new host adapter, plus one
-accepted `0.2.1 → 0.2.2` Web update transition under `0.2.2-rc.5`. DSH Desktop
+These are eight host adapters and 13 scopes (7 Web + 6 Desktop). `0.2.3` keeps the
+same host set: it is a client/Host release with no new host adapter, plus one
+accepted `0.2.2 → 0.2.3` Web update transition under `0.2.2-rc.5`. DSH Desktop
 Windows, Web Edge and any other DSH build are not supported.
 
 ## Current documents

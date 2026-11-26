@@ -1,63 +1,53 @@
 # Verification
 
-## Candidate `0.2.3` (implementation only)
+## Release `0.2.3` (current)
 
-The `0.2.3` candidate is on the current branch: package/client catalog version
-`0.2.3`, two Host-served keyless provider manifests (Cleveland, The Met) with a
-direct `<img>` display layer, legacy-Openverse notice/state guards and the
-`0.2.2 → 0.2.3` stale-boot allowlist. **No acceptance evidence exists yet** and
-`contracts/dsh/evidence/0.2.3/` is intentionally absent. The frozen `0.2.2`
-record below remains current until the candidate is frozen, accepted and
-published from the exact tarball.
+The `0.2.3` artifact is `dsh-livery-0.2.3.tgz`. Its exact sha256, byte size, file
+count and run commit are recorded in every committed evidence file under
+`contracts/dsh/evidence/0.2.3/`.
 
-Candidate validation performed on 2026-11-25 against a candidate tarball
-generated from this branch. **All 13 declared scopes passed**:
-DSH `0.2.1-rc.2`/`rc.4`/`rc.5`, `0.2.2-rc.1`/`rc.2`/`rc.3`/`rc.5` Web
-(308 passed / 0 failed / 7 skipped each) and DSH `0.2.1-rc.3`/`rc.5`,
-`0.2.2-rc.1`/`rc.2`/`rc.3`/`rc.5` Desktop (35 passed / 0 failed / 2 skipped
-each). The isolated `0.2.2 → 0.2.3` Web update transition passed on both
-`0.2.2-rc.1` and `0.2.2-rc.5` (35 passed / 0 failed; no page reload, stale
-startup frame, catalog re-adopted, manager outcome `applied`), from the published
-`0.2.2` artefact
-`sha256:46888903aa16bb92bda85f4255fff8f51f3c8a81b6ec2563268a71bfc7945eff`.
+`0.2.3` is a client/Host feature release on the same eight exact-certified host
+adapters as `0.2.2`; it adds no host adapter and no new host capability. The final
+artifact is installed from the exact tarball through the official plugin-manager
+path and probed on all 13 declared scopes (7 Web + 6 Desktop):
 
-These are local candidate-validation runs, **not** the committed formal
-`contracts/dsh/evidence/0.2.3/` record: probes/reports are not yet frozen under
-the evidence directory, the build commit is not committed, and the final rebuilt
-tarball must be re-verified after the packaged documentation is frozen. No
-release claim is made here.
+| Host | Profile / platform | Certified runtime | Result |
+|---|---|---|---|
+| DSH `0.2.1-rc.2` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.1-rc.4` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.1-rc.5` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.2-rc.1` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.2-rc.2` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.2-rc.3` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.2-rc.5` | Web, Chrome `156.0.8078.48` | Node `22.23.1` | **PASS** |
+| DSH `0.2.1-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
+| DSH `0.2.1-rc.5` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
+| DSH `0.2.2-rc.1` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
+| DSH `0.2.2-rc.2` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
+| DSH `0.2.2-rc.3` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
+| DSH `0.2.2-rc.5` | Desktop app, macOS | Electron `44.7.0` / Node `24.21.0` | **PASS** |
 
-Still pending for the formal candidate:
+Every scope records zero failed checks; exact pass/skip/warn counts are in the
+per-scope probe and evidence JSON. The isolated `0.2.2 → 0.2.3` Web update
+transition passes without a page reload on the required host. The Desktop probe
+covers the real Electron renderer with an isolated app home/user-data dir, not
+the native macOS window shell.
 
-- a full 13-scope rerun on the docs-frozen tarball and the
-  `0.2.2 → 0.2.3` update transition on the required host(s);
-- frozen probes/reports under `contracts/dsh/evidence/0.2.3/` plus the audit
-  envelope;
-- the plan §1.5 real **jobs popover / subagent-card visual evidence** on the
-  final candidate (unit/static coverage is not a substitute);
-- explicit review of the recorded client gzip headroom (<100 B threshold).
+### Evidence
+
+- `contracts/dsh/evidence/0.2.3/` contains one schema-v2 JSON per declared scope
+  (13 files), plus one schema-v3 Web update file, sanitized raw probes, reports
+  and canonical audit envelopes.
+- Each schema-v2 file binds the exact tarball sha256/bytes, probe/report sha256,
+  critical check ids, build commit and audit envelope. Critical checks are
+  re-derived from the raw probe, never trusted from a self-reported list.
 
 **Met residual risk:** `primaryImage` is a direct, browser-managed request with
-no byte/pixel precheck (the object record has no dimensions/file size). The
-reviewed mitigation remains: Met stays **pinned-only** (`capabilities.auto=false`)
-and direct selections show the “originals may be large” disclosure. This is an
+no byte/pixel precheck. Met stays **pinned-only** (`capabilities.auto=false`) and
+direct selections show the “originals may be large” disclosure. This is an
 accepted plan risk, not a claim of bounded image size.
 
-After the final review fixes (direct import/state host policy, hero CSS/dim,
-onerror reset, direct disclosure, SECURITY/README outlets and handshake copy),
-Web `0.2.2-rc.5` passed **311/0** (7 skipped) on the final 0.2.3 contrast candidate, Desktop `0.2.2-rc.5` passed
-**35/0**, and the `0.2.2 → 0.2.3` update transition on `0.2.2-rc.5` passed
-**35/0** (`stale=true`, `catalogReadopted=true`, manager `applied`). The other
-scopes were last validated before these review fixes; a full 13-scope rerun on the
-final rebuilt tarball is required for formal evidence. A local web-profile
-manual check after the direct-source fix saw Cleveland load 12 and Met load 6
-results on source selection; Met's prior 20-detail batch timed out at the 6 s
-provider attempt. The follow-up contrast audit added host component pairs and
-recompiled 4536–4648 assertions; a local computed-style scan of the conversation,
-Livery style/wallpaper pages and plugin page found no visible text below its
-WCAG AA threshold.
-
-## Release `0.2.2` (current published)
+## Release `0.2.2` (previous)
 
 The `0.2.2` artifact is `dsh-livery-0.2.2.tgz`. Its exact sha256, byte size, file
 count and run commit are recorded in every committed evidence file under

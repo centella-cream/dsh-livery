@@ -11,24 +11,15 @@ A visual layer for DeepSeek Harness: **28 curated styles**, a wallpaper studio w
 access-gated online images and blur/frost effects, and a style gallery. It is a
 plugin, not a host theme takeover.
 
-> **Release status: `0.2.2` is the current release (2026-11-24).**
-> The artifact is `dsh-livery@0.2.2`; all 13 declared scopes and the
-> `0.2.1 → 0.2.2` Web in-process update transition have acceptance evidence.
+> **Release status: `0.2.3` is the current release (2026-11-26).**
+> The artifact is `dsh-livery@0.2.3`; all 13 declared scopes and the
+> `0.2.2 → 0.2.3` Web in-process update transition have acceptance evidence.
 > **Stable certified:** DSH `0.2.1-rc.2` + Web Profile, and DSH `0.2.1-rc.3` +
 > macOS Desktop. **Preview:** DSH `0.2.1-rc.4` Web, DSH `0.2.1-rc.5` Web/Desktop,
 > DSH `0.2.2-rc.1` Web/Desktop, DSH `0.2.2-rc.2` Web/Desktop, DSH `0.2.2-rc.3`
-> Web/Desktop and DSH `0.2.2-rc.5` Web/Desktop. `0.2.2-rc.3` is npm `next` and a GitHub prerelease; `0.2.2-rc.5` is npm
-> `latest` but still a GitHub prerelease, so both remain preview claims. The `0.2.2` candidate is **exact-certified only**: unknown
-> builds fail closed; Windows Desktop, Edge and other DSH builds remain
+> Web/Desktop and DSH `0.2.2-rc.5` Web/Desktop. The `0.2.3` claim is **exact-certified only**:
+> unknown builds fail closed; Windows Desktop, Edge and other DSH builds remain
 > unsupported.
-
-> **Candidate `0.2.3` (not yet published).** This branch implements the
-> approved `0.2.3` plan: two keyless direct-display sources (Cleveland Museum of
-> Art and The Met), Host-served provider manifests, a dedicated direct `<img>`
-> layer with state/preset/Recent compatibility, and a legacy-Openverse notice.
-> It keeps the 72 KiB client gzip cap and adds the `0.2.2 → 0.2.3` update
-> transition. It has **no acceptance evidence yet** and is not a supported
-> release until the exact tarball passes all 13 scopes.
 
 English · [中文](README.zh.md)
 
@@ -36,10 +27,30 @@ English · [中文](README.zh.md)
 
 Screenshots are from the English UI; the Chinese README uses the Chinese UI.
 Livery follows the DSH host locale. The Visual Style page shown here is unchanged
-in `0.2.2`; the new wallpaper studio and plugin-detail surfaces are documented in
-the design notes and CHANGELOG.
+in `0.2.3`; the wallpaper studio, direct-display sources and plugin-detail surface
+are documented in the design notes and CHANGELOG.
 
-## What's new in 0.2.2
+## What's new in 0.2.3
+
+`0.2.3` is a client/Host feature release on the same eight exact-certified host
+adapters as `0.2.2`; it adds no host adapter and no new host capability.
+
+- **Two keyless direct-display sources.** Cleveland Museum of Art and The Met are
+  offered alongside Wikimedia Commons. Their image CDNs are displayed through a
+  plugin-owned `<img referrerpolicy="no-referrer">` layer; no CORS, blob cache or
+  body-background URL is assumed.
+- **Host-served provider manifests.** `/livery/api/providers` is the reviewed
+  registry; the client contains no per-provider fetch implementation.
+- **Search-only direct sources.** Selecting Cleveland or Met auto-loads its
+  default batch; Random is omitted, unavailable actions are omitted rather than
+  rendered disabled, and result count + attribution share one status line.
+- **Contrast and UI hardening.** Host component token pairs are audited against
+  the stock host, the selected sidebar state keeps a visible accent and rail step,
+  and the Online card is reduced to one control row plus one contextual status.
+- **A real `0.2.2 → 0.2.3` Web update transition.** The candidate keeps the
+  existing client gzip cap and the stale-boot repair path.
+
+## What's new in 0.2.2 (previous)
 
 `0.2.2` is a client-only feature release on the same eight exact-certified host
 adapters as `0.2.1`; it adds no host adapter and no new host capability.

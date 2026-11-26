@@ -10,22 +10,13 @@
 DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁的在线图片与虚化/磨砂效果的壁纸
 工作室，以及视觉风格画廊。它以插件形式提供视觉层，**不接管宿主主题**。
 
-> **发布状态：`0.2.2` 是当前版本（2026-11-24）。**
-> 制品为 `dsh-livery@0.2.2`；13 个声明 scope 与 `0.2.1 → 0.2.2` Web 进程内更新转换均已绑定验收证据。
+> **发布状态：`0.2.3` 是当前版本（2026-11-26）。**
+> 制品为 `dsh-livery@0.2.3`；13 个声明 scope 与 `0.2.2 → 0.2.3` Web 进程内更新转换均已绑定验收证据。
 > **稳定认证：** DSH `0.2.1-rc.2` + Web Profile，DSH `0.2.1-rc.3` + macOS Desktop。
 > **预览：** DSH `0.2.1-rc.4` Web、DSH `0.2.1-rc.5` Web/Desktop、DSH `0.2.2-rc.1`
 > Web/Desktop、DSH `0.2.2-rc.2` Web/Desktop、DSH `0.2.2-rc.3` Web/Desktop、DSH `0.2.2-rc.5` Web/Desktop。
-> `0.2.2-rc.3` 是 npm `next` 且 GitHub prerelease；`0.2.2-rc.5` 是 npm
-> `latest` 但仍是 GitHub prerelease，因此两者都保持预览声明。`0.2.2`
-> 候选只接受 exact-certified 宿主：未知构建整体 fail closed；Windows Desktop、Edge
+> `0.2.3` 只接受 exact-certified 宿主：未知构建整体 fail closed；Windows Desktop、Edge
 > 和其他 DSH 构建不在支持范围内。
-
-> **候选版 `0.2.3`（尚未发布）。** 当前分支已实现经批准的 `0.2.3` 方案：
-> 两个免密钥、直接展示的图源（克利夫兰艺术博物馆和大都会艺术博物馆）、Host
-> 提供的 provider manifest、专用 direct `<img>` 图层及状态/预设/Recent 兼容，
-> 并恢复旧版 Openverse 提示。不提高 72 KiB client gzip 上限，新增
-> `0.2.2 → 0.2.3` 更新转换。该候选**尚无验收证据**，在精确 tarball 通过全部
-> 13 个 scope 前不是受支持版本。
 
 [English](README.md) · 中文
 
@@ -33,7 +24,17 @@ DeepSeek Harness 的视觉层插件：**28 套精选风格**、带访问门禁�
 
 截图为中文界面；英文 README 使用英文界面。Livery 跟随 DSH 宿主语言。这里的视觉风格页在 `0.2.2` 中未改变；新的壁纸工作室与插件详情面见设计文档和 CHANGELOG。
 
-## 0.2.2 更新
+## 0.2.3 更新
+
+`0.2.3` 是同一组 8 个 exact-certified 宿主 adapter 上的客户端/Host 功能版本；不新增宿主 adapter，也不新增宿主能力。
+
+- **两个免密钥直连图源。** 克利夫兰艺术博物馆与大都会艺术博物馆和 Wikimedia Commons 并列；其图片 CDN 通过插件自有 `<img referrerpolicy="no-referrer">` 展示，不假设 CORS、blob 缓存或 body 背景 URL。
+- **Host 提供的 provider manifest。** `/livery/api/providers` 是审核后的注册表，客户端没有按 provider 写死的抓取实现。
+- **仅搜索的直连源。** 选择 Cleveland/Met 会自动加载默认批次；Random 不渲染，不可用操作直接省略而不是灰置，结果数与归属合并为一行状态。
+- **对比度与界面加固。** 宿主组件 token 对按 stock 基线审计，侧栏选中态保留可见 accent 与栏色阶，Online 卡片只保留一行操作和一行状态。
+- **真实的 `0.2.2 → 0.2.3` Web 更新转换。** 保持既有 client gzip 上限与 stale-boot 修复路径。
+
+## 0.2.2 更新（上一版）
 
 `0.2.2` 是同一组 8 个 exact-certified 宿主 adapter 上的只改客户端的功能版本；不新增宿主 adapter，也不新增宿主能力。
 
