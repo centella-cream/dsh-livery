@@ -45,7 +45,7 @@ accepted plan risk, not a claim of bounded image size.
 
 After the final review fixes (direct import/state host policy, hero CSS/dim,
 onerror reset, direct disclosure, SECURITY/README outlets and handshake copy),
-Web `0.2.2-rc.5` passed **310/0** (7 skipped) on the final 0.2.3 contrast candidate, Desktop `0.2.2-rc.5` passed
+Web `0.2.2-rc.5` passed **311/0** (7 skipped) on the final 0.2.3 contrast candidate, Desktop `0.2.2-rc.5` passed
 **35/0**, and the `0.2.2 → 0.2.3` update transition on `0.2.2-rc.5` passed
 **35/0** (`stale=true`, `catalogReadopted=true`, manager `applied`). The other
 scopes were last validated before these review fixes; a full 13-scope rerun on the
@@ -111,7 +111,7 @@ shell.
 | Measure | Budget | Result |
 |---|---|---|
 | Client bundle gzip | 72 KiB (73,728 B) | within budget (build gate) |
-| Client gzip headroom | review if <100 B | 0.2.3 candidate: 73,666 B / 62 B headroom — explicit pre-release review item |
+| Client gzip headroom | review if <100 B | 0.2.3 candidate: 73,668 B / 60 B headroom — explicit pre-release review item |
 | Largest livery/boot CSS | 14 KiB (14,336 B) | within budget (build gate) |
 | Host bundle gzip | 360 KiB (368,640 B) | within budget (build gate) |
 | Package tarball | 4 MiB (4,194,304 B) | within budget (`release-check`) |

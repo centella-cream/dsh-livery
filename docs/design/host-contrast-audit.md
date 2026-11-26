@@ -86,7 +86,7 @@ repair.
 profiles. The acceptance probe adds `style.selected-state`, and
 `pnpm audit:live-contrast` wraps the repeatable computed-style scan for a running
 carrier (`scripts/audit/live-contrast.mjs`). The Web acceptance run remains
-**310 passed / 0 failed / 7 skipped**.
+**311 passed / 0 failed / 7 skipped**.
 
 ## Boundary
 
