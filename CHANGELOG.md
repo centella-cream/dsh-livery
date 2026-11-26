@@ -57,8 +57,8 @@ rebuilt tarball are still missing; this is not a release claim.
   rows against `src/provider-manifests.json`.
 - Client gzip stays under the existing **72 KiB** cap without raising it. The
   build now minifies the factory body with pinned `terser` while preserving the
-  loader envelope byte-for-byte; the candidate measures **73,389 B** at the
-  time of this entry (339 B headroom), so the cap remains the hard gate.
+  loader envelope byte-for-byte; the candidate measures **73,462 B** at the
+  time of this entry (266 B headroom), so the cap remains the hard gate.
 - Non-essential i18n copy was shortened to keep the 72 KiB budget; the client
   stylesheet string is whitespace-compacted with selector semantics preserved.
 
@@ -77,7 +77,8 @@ rebuilt tarball are still missing; this is not a release claim.
   `plain` keeps a faint text-tinted rail instead of becoming byte-identical to
   the page base. The Online card now uses one control row, one status/attribution
   line and no redundant helper paragraphs; unsupported actions are omitted
-  instead of rendered disabled. The Web evidence gate requires the selected-state
+  instead of rendered disabled. A short idle hint appears only when a non-direct
+  provider switch leaves the panel empty. The Web evidence gate requires the selected-state
   and direct-search-only action probes. All 28 styles pass 4536–4648 assertions
   with no Livery-introduced regression against the stock host.
 - **Review hardening:** direct full/thumbnail URLs are now validated against a
