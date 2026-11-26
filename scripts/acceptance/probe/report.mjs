@@ -370,7 +370,7 @@ export const PLAN20_ROWS = [
   },
   {
     criterion: 'Gallery groups styles into six non-empty family sections with compact filters',
-    checks: ['gallery.page-tabs', 'gallery.family-chips', 'gallery.family-sections', 'gallery.family-mapping', 'gallery.more-filters', 'gallery.more-filters-expanded', 'gallery.more-filters-collapsed', 'gallery.family-filter', 'gallery.family-keyboard'],
+    checks: ['gallery.page-tabs', 'gallery.family-chips', 'gallery.family-sections', 'gallery.family-mapping', 'gallery.more-filters', 'gallery.more-filters-expanded', 'gallery.more-filters-collapsed', 'gallery.family-filter', 'gallery.card-keyboard'],
     note: 'display order calm→nature→light→retro→vivid→dark; family priority nature→calm→light→retro→vivid→dark; all six sections non-empty; 16 tag chips behind 更多筛选; roving focus crosses sections',
   },
   {
@@ -384,9 +384,9 @@ export const PLAN20_ROWS = [
     note: 'Host /livery/api/providers serves two reviewed direct-display manifests (Cleveland, The Met); Wikimedia Commons remains the compiled first Auto source. Auto fails over from a mocked Wikimedia failure to the Cleveland manifest source; a pinned provider makes one attempt and typed failures surface with Retry/Built-in/None; 429 shows Retry-After; licence-null results are non-selectable; direct results use a plugin-owned <img referrerpolicy=no-referrer> layer with a thumbnail hero and emit no remote URL in body CSS; a stored legacy Openverse selection shows the non-endorsement notice and makes no api.openverse.org request; no live network (mocked provider JSON + declared image hosts only)',
   },
   {
-    criterion: 'Round-11 copy/type: human About footer, unified five-step typography, online-card request copy',
-    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'copy.wallpaper-online-controls', 'selfcheck.copy-diagnostics-content'],
-    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; the online card uses one control row and one count/attribution status line, with no redundant helper copy',
+    criterion: 'Online-card copy and diagnostics',
+    checks: ['copy.wallpaper-online-controls', 'copy.frost-label', 'selfcheck.copy-diagnostics-content'],
+    note: 'Online card: one control row, one count/attribution status line, no redundant helper copy; Frost keeps its plain label; diagnostics stay isolated in the self-check. The About footer and shared five-step type scale are covered by the client unit tests (page.test.tsx / css.test.ts), not by this probe.',
   },
   {
     criterion: 'Plugin detail surface: live-build badge, observable-facts section, truthful actions, subject filter',
@@ -394,9 +394,9 @@ export const PLAN20_ROWS = [
     note: 'Plugins → Livery bundle page renders the live Livery 0.2.3 badge, the facts <dl>, the handshake-selected update-boundary statement, Open Livery (only while the main panel is registered) and the hot-update tab action; only the three plugins.detail.* slots are consumed (no plugins.bundle.config / plugins.item registration) and other bundle/row/item subjects render nothing. A host without the plugin-manager page records skipped checks with the limitation, never a fake pass.',
   },
   {
-    criterion: 'Round-10 card layout: two-column card hierarchy, responsive stacking, bounded sliders, no overflow',
-    checks: ['layout.style-2col', 'layout.style-cards', 'layout.style-hero-thumb', 'layout.style-card-surfaces', 'layout.style-stacked-1024', 'layout.style-no-overflow-1440', 'layout.style-no-overflow-1024', 'layout.wallpaper-2col', 'layout.wallpaper-cards', 'layout.wallpaper-card-surfaces', 'layout.effects-sliders-bounded', 'layout.wallpaper-stacked-1024', 'layout.wallpaper-no-overflow-1440', 'layout.wallpaper-no-overflow-1024'],
-    note: 'style page: current-style hero + gallery card + 操作/自检 rail; wallpaper page: hero/library/random/custom/effects/builtins cards; 2 tracks ≥1100px, single column below; sliders 80–220px; screenshots at 1440×900 and 1024×800',
+    criterion: 'Current card layout: hero + full-width gallery, workbench + cards, responsive stacking, bounded sliders, no overflow',
+    checks: ['layout.style-wide-hero', 'layout.style-wide-hero-preview', 'layout.style-wide-gallery', 'layout.style-wide-toolbar', 'layout.style-wide-no-overflow', 'layout.style-preview-in-hero', 'layout.style-1024-hero', 'layout.style-1024-gallery', 'layout.style-1024-toolbar', 'layout.style-1024-no-overflow', 'layout.style-767-no-overflow', 'layout.wallpaper-workbench', 'layout.wallpaper-order', 'layout.wallpaper-cards', 'layout.wallpaper-effects', 'layout.wallpaper-no-overflow-1440', 'layout.wallpaper-1024-stacked', 'layout.wallpaper-1024-no-overflow', 'layout.wallpaper-767-stacked', 'layout.wallpaper-767-no-overflow'],
+    note: 'style page: current-style hero + full-width gallery + toolbar at 1440/1024/767; wallpaper page: workbench + ordered cards + bounded effects; no horizontal overflow at the certified widths',
   },
   {
     criterion: 'Livery lives in the left-sidebar plugin navigation (main panel), not in Settings',
