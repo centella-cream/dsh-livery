@@ -45,7 +45,7 @@ accepted plan risk, not a claim of bounded image size.
 
 After the final review fixes (direct import/state host policy, hero CSS/dim,
 onerror reset, direct disclosure, SECURITY/README outlets and handshake copy),
-Web `0.2.2-rc.5` passed **309/0** (7 skipped) on the final 0.2.3 contrast candidate, Desktop `0.2.2-rc.5` passed
+Web `0.2.2-rc.5` passed **310/0** (7 skipped) on the final 0.2.3 contrast candidate, Desktop `0.2.2-rc.5` passed
 **35/0**, and the `0.2.2 → 0.2.3` update transition on `0.2.2-rc.5` passed
 **35/0** (`stale=true`, `catalogReadopted=true`, manager `applied`). The other
 scopes were last validated before these review fixes; a full 13-scope rerun on the
@@ -53,7 +53,7 @@ final rebuilt tarball is required for formal evidence. A local web-profile
 manual check after the direct-source fix saw Cleveland load 12 and Met load 6
 results on source selection; Met's prior 20-detail batch timed out at the 6 s
 provider attempt. The follow-up contrast audit added host component pairs and
-recompiled 4480 assertions; a local computed-style scan of the conversation,
+recompiled 4536 assertions; a local computed-style scan of the conversation,
 Livery style/wallpaper pages and plugin page found no visible text below its
 WCAG AA threshold.
 
@@ -247,6 +247,7 @@ the current support matrix or as `0.2.2` evidence.
 ```bash
 pnpm install
 pnpm verify
+# optional after booting a candidate: pnpm audit:live-contrast --url <URL> --chrome-binary <Chrome>
 pnpm build:cli
 pnpm gate:support-matrix -- --all
 pnpm gate:release -- --all

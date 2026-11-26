@@ -58,7 +58,7 @@ rebuilt tarball are still missing; this is not a release claim.
 - Client gzip stays under the existing **72 KiB** cap without raising it. The
   build now minifies the factory body with pinned `terser` while preserving the
   loader envelope byte-for-byte; the candidate measures **73,666 B** at the
-  time of this entry (66 B headroom), so the cap remains the hard gate.
+  time of this entry (62 B headroom), so the cap remains the hard gate.
 - Non-essential i18n copy was shortened to keep the 72 KiB budget; the client
   stylesheet string is whitespace-compacted with selector semantics preserved.
 
@@ -72,9 +72,10 @@ rebuilt tarball are still missing; this is not a release claim.
   icon, attachment failure badge, question option number, business tags,
   preview badge, code viewer, sidebar labels, delete button and broken badge.
   The contrast matrix now includes these host pairs, the sidebar active accent
-  is a stock-compatible tint rather than the raw accent, and the command palette
-  / version / attribution accents use the foreground token. All 28 styles pass
-  4480 assertions, with no Livery-introduced regression against the stock host.
+  is an adaptive visible tint that is never byte-equal to the rail fill, and the
+  command palette / version / attribution accents use foreground/link tokens.
+  All 28 styles pass 4536 assertions, with no Livery-introduced regression
+  against the stock host.
 - **Review hardening:** direct full/thumbnail URLs are now validated against a
   reviewed provider-host allowlist at both the v3 preset-import and v3
   persisted-state boundaries (providerId required), closing the arbitrary-https

@@ -39,6 +39,7 @@ Minimum measured ratio across the 28 styles, light and dark:
 | Host usage | Pair | Min | Required |
 |---|---|---:|---:|
 | Recommended question badge | `button-info-fill` on `sidebar-nav-item-active-accent` | 4.53 | 4.5 |
+| Selected sidebar accent | `sidebar-nav-item-active-accent` on `sidebar-fill` | 1.28 | 1.25 |
 | Input send icon | `label-on-color` on `button-info-fill` | 3.01 | 3 |
 | Attachment failure icon | `label-on-color` on `state-error-primary` | 3.04 | 3 |
 | Remove control | `label-primary-inverted` on `button-contrast-fill` | 4.51 | 4.5 |
@@ -62,20 +63,23 @@ Minimum measured ratio across the 28 styles, light and dark:
 | Success tag | `state-success-primary` on `state-success-tertiary` | 4.53 | 4.5 |
 | Reply prompt | `label-dimmed` on `bg-layer-3` | 4.53 | 4.5 |
 
-The sidebar active accent now uses the stock-compatible tint recipe
-(`accentMix(seeds, 0.06)`) instead of the raw accent. Host `badge` background is
-therefore a pale accent, while the foreground repair keeps its label readable.
+The selected sidebar accent uses an adaptive visible-accent derivation: it
+searches accent/text mixes against the actual rail fill until the result is never
+byte-equal to that fill and reaches at least 1.25:1 (stock baseline 1.127:1). A
+dedicated matrix assertion and the acceptance `style.selected-state` check lock
+this, so the selected row cannot silently collapse into the rail again.
 
-Livery's own selected chips, version chip, focal-position selection and
-attribution links use `--lw-fg` rather than the accent as text, because the accent
-is not guaranteed to reach 4.5:1 on its tinted surface.
+Livery's own selected chips, version chip and focal-position selection use
+foreground roles; attribution links use the already-audited
+`--dsw-alias-link`.
 
 ## Result
 
-`livery:compile` reports **4480 contrast assertions / 0 failures** across eight
-profiles. A computed-style scan of the local conversation, Livery style page,
-Wallpaper page and Plugins page reports no visible text below its WCAG AA
-threshold. The Web acceptance run remains **309 passed / 0 failed / 7 skipped**.
+`livery:compile` reports **4536 contrast assertions / 0 failures** across eight
+profiles. The acceptance probe adds `style.selected-state`, and
+`pnpm audit:live-contrast` wraps the repeatable computed-style scan for a running
+carrier (`scripts/audit/live-contrast.mjs`). The Web acceptance run remains
+**310 passed / 0 failed / 7 skipped**.
 
 ## Boundary
 
@@ -84,5 +88,3 @@ Client CSS Modules and the local `dsh-charter` render fixture. Pairs expressed
 through `color-mix()` or inherited backgrounds are covered by the live
 computed-style scan instead. The matrix does not attempt to assert arbitrary
 third-party CSS; plugin authors remain responsible for their own styles.
-
-The Web acceptance run remains **309 passed / 0 failed / 7 skipped**.
