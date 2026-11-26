@@ -31,6 +31,7 @@ describe('0.1.3 release parameterization', () => {
     const evidenceGate = read('scripts/release-evidence.mjs')
     expect(evidenceGate).toContain('REQUIRED_WEB_CHECKS')
     expect(evidenceGate).toContain('REQUIRED_DESKTOP_CHECKS')
+    expect(read('scripts/release-lib.mjs')).toContain("'style.selected-state'")
     expect(workflow).not.toContain('pnpm pack:candidate')
     expect(workflow).toContain('LIVERY_ACCEPTANCE_RUN_ID')
     expect(workflow).toContain('actions/download-artifact@v4')
