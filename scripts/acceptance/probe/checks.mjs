@@ -4390,7 +4390,7 @@ export async function checkWallpaperStudio(ctx) {
     expect(
       runner,
       'wallpaper.provider-switch-no-fetch',
-      'changing the provider clears results to idle and never fetches implicitly; the removed Openverse provider is not offered',
+      'changing between non-direct providers clears results to idle and never fetches implicitly; direct sources intentionally auto-load, and the removed Openverse provider is not offered',
       afterWikimediaSwitch.status === null &&
         afterWikimediaSwitch.results.length === 0 &&
         afterWikimediaSwitch.servedByPresent === false &&

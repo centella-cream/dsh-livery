@@ -376,7 +376,7 @@ export const PLAN20_ROWS = [
   {
     criterion: 'Wallpaper studio (client-only layer, background presets, curated/Classic built-ins, effects, uploads, validation)',
     checks: ['wallpaper.tab', 'wallpaper.preset-cards', 'wallpaper.online-auto-random', 'wallpaper.builtin-visible-8', 'wallpaper.builtin-classic', 'wallpaper.builtin-current-classic', 'wallpaper.builtin-applied', 'wallpaper.style-card', 'wallpaper.style-applied', 'wallpaper.style-disabled-no-catalog', 'wallpaper.effects-blur-dim', 'wallpaper.frost', 'wallpaper.reset', 'wallpaper.persistence', 'wallpaper.url-validation', 'wallpaper.url-accepted', 'wallpaper.clear', 'wallpaper.tab-restore'],
-    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; two background-preset cards above the four unchanged source tabs; 8 curated + a collapsed 16-design Classic group (all 24 ids render exactly once, an active Classic id pins once); Follow style is a CSS-only generated layer (no blob/IndexedDB/cache/url()); uploads, atmosphere overlay and tab persistence (no live network on page open)',
+    note: 'owned <style data-plugin-css="dsh-livery/wallpaper"> + body[data-dsh-wallpaper]; two background-preset cards above the four unchanged source tabs; 8 curated + a collapsed 16-design Classic group (all 24 ids render exactly once, an active Classic id pins once); Follow style is a CSS-only generated layer (no blob/IndexedDB/cache/url()); uploads, atmosphere overlay and tab persistence; opening Online performs one automatic Random batch, and provider/image requests are mocked',
   },
   {
     criterion: 'Wallpaper online provider registry: manifest-backed sources, direct-display layer, explicit request policy, Auto failover, typed failures and attribution',
@@ -385,8 +385,8 @@ export const PLAN20_ROWS = [
   },
   {
     criterion: 'Round-11 copy/type: human About footer, unified five-step typography, online-card request copy',
-    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'copy.wallpaper-online-hint', 'selfcheck.copy-diagnostics-content'],
-    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; the online card copy states one batch on tab activation and explicit-action-only fetches',
+    checks: ['footer.about-copy', 'footer.about-lines', 'footer.about-no-jargon', 'typography.five-step-style', 'typography.root-tokens', 'typography.five-step-wallpaper', 'typography.about-rail', 'copy.wallpaper-online-controls', 'selfcheck.copy-diagnostics-content'],
+    note: 'About footer: two human lines, engineering ids only in copied diagnostics; visible type sizes ⊆ {11,12,13,15,20}; the online card uses one control row and one count/attribution status line, with no redundant helper copy',
   },
   {
     criterion: 'Plugin detail surface: live-build badge, observable-facts section, truthful actions, subject filter',
@@ -434,11 +434,15 @@ export const PLAN20_ROWS = [
   },
 ]
 
-function plan20RowStatus(checkById, row) {
+export function plan20RowStatus(checkById, row) {
   if (!row.checks.length) return { icon: '—', text: row.note ?? 'out of scope' }
+  const missing = row.checks.filter((id) => !checkById.has(id))
+  if (missing.length) {
+    return { icon: '❌', text: `missing mapped checks: ${missing.join(', ')}` }
+  }
   const states = row.checks.map((id) => checkById.get(id)?.status)
   if (states.some((status) => status === 'fail')) return { icon: '❌', text: row.note ?? 'failed checks present' }
-  if (states.some((status) => status === 'undefined' || status === 'skip')) {
+  if (states.some((status) => status !== 'pass')) {
     return { icon: '⏭', text: row.note ?? 'not fully exercised in this run' }
   }
   return { icon: '✅', text: row.note ?? 'all mapped checks passed' }
